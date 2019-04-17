@@ -1,4 +1,4 @@
-package types
+package series
 
 import (
 	"fmt"
@@ -77,4 +77,55 @@ func interfaceToStringSlice(vals []interface{}) []string {
 		ret[i] = val.(string)
 	}
 	return ret
+}
+
+// New series constructor with an optional index
+func New(data interface{}, index ...interface{}) *Series {
+	var idx []interface{}
+	intIdx := make([]int, len(data))
+	stringIdx := make([]string, 0)
+
+	var priorIntIdx bool
+
+	switch len(index) {
+	case 0:
+		idx = make([]interface{}, len(data))
+	case 1:
+		idx = index[0]
+		if err := isHomogenous(idx); err != nil {
+			fmt.Fprintf(os.Stderr, "Index must be of homogenous type: %v", err)
+			return nil
+		}
+		switch idx[0].(type) {
+		case string:
+			stringIdx = interfaceToStringSlice(idx)
+		case int:
+			intIdx = interfaceToIntSlice(idx)
+			priorIntIdx = true
+		}
+
+	default:
+		fmt.Fprintf(os.Stderr, "Index parameter accepts at most 1 value. You provided %d: %v", len(index), index)
+		return nil
+	}
+
+	vals := make([]interface{}, len(data))
+
+	intValMap := make(map[int]int)
+	stringValMap := make(map[string]int)
+	for i, val := range data {
+		if !priorIntIdx {
+			intIdx[i] = i
+		}
+		intValMap[intIdx[i]] = i
+		if len(stringIdx) > 0 {
+			stringValMap[stringIdx[i]] = i
+		}
+		vals[i] = val
+	}
+	return &Series{
+		Index:  Index{IntIdx: intIdx, IntValMap: intValMap, StringIdx: stringIdx, StringValMap: stringValMap},
+		Values: vals,
+		Type:   reflect.Int,
+	}
 }

@@ -1,4 +1,4 @@
-package types
+package series
 
 import (
 	"fmt"
@@ -8,6 +8,9 @@ import (
 // An Index contains integer and string index positions corresponding to Values.
 // After a sort, only the idx-value maps should be updated
 type Index struct {
+	Loc  map[string]interface{}
+	ILoc map[int]interface{}
+
 	IntIdx       []int
 	IntValMap    map[int]int
 	StringIdx    []string

@@ -1,4 +1,4 @@
-package types
+package series
 
 import (
 	"reflect"
