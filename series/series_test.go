@@ -25,15 +25,14 @@ func TestFloat64(t *testing.T) {
 
 func TestFloatNaN(t *testing.T) {
 	s, err := New(
-		[]interface{}{1, nil, "", 3.5, "na", "nan", "NaN", "3.5"},
+		[]interface{}{int32(1), nil, "", 3.5, uint64(2), "na", "nan", "NaN", "3.5"},
 		SeriesType(Float))
 	if err != nil {
 		t.Errorf("%v returned err, nil expected: %v", t.Name(), err)
 		return
 	}
-	fmt.Println(s)
 	got, _ := s.Sum()
-	want := 8.0
+	want := 10.0
 	if got != want {
 		t.Errorf("Sum() returned %v, want %v", got, want)
 	}
@@ -94,4 +93,9 @@ func TestUnsupported(t *testing.T) {
 	if err == nil {
 		t.Errorf("Returned nil, want error")
 	}
+}
+
+func TestString(t *testing.T) {
+	s, err := New([]string{"low", "", "high"})
+	fmt.Println(s, err)
 }
