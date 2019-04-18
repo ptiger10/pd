@@ -12,6 +12,8 @@ func TestMath_Int(t *testing.T) {
 		wantCount  int
 		wantMean   float64
 		wantMedian float64
+		wantMin    float64
+		wantMax    float64
 	}{
 		{
 			input:      []int64{-2, 0, 3, 3},
@@ -19,6 +21,8 @@ func TestMath_Int(t *testing.T) {
 			wantCount:  4,
 			wantMean:   1,
 			wantMedian: 1.5,
+			wantMin:    -2,
+			wantMax:    3,
 		},
 		{
 			input:      []int64{-2, 0, 5},
@@ -26,6 +30,8 @@ func TestMath_Int(t *testing.T) {
 			wantCount:  3,
 			wantMean:   1,
 			wantMedian: 0,
+			wantMin:    -2,
+			wantMax:    5,
 		},
 	}
 	for _, test := range tests {
@@ -36,15 +42,24 @@ func TestMath_Int(t *testing.T) {
 		}
 		gotCount := s.Count()
 		if gotCount != test.wantCount {
-			t.Errorf("Count() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+			t.Errorf("Count() returned %v for input %v, want %v", gotCount, test.input, test.wantCount)
 		}
 		gotMean, _ := s.Mean()
 		if gotMean != test.wantMean {
-			t.Errorf("Mean() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+			t.Errorf("Mean() returned %v for input %v, want %v", gotMean, test.input, test.wantMean)
 		}
 		gotMedian, _ := s.Median()
 		if gotMedian != test.wantMedian {
-			t.Errorf("Median() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+			t.Errorf("Median() returned %v for input %v, want %v", gotMedian, test.input, test.wantMedian)
+		}
+
+		gotMin, _ := s.Min()
+		if gotMin != test.wantMin {
+			t.Errorf("Mean() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
+		}
+		gotMax, _ := s.Max()
+		if gotMax != test.wantMax {
+			t.Errorf("Median() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
 		}
 	}
 }

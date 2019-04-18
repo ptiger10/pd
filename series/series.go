@@ -29,20 +29,6 @@ type IndexLevel struct {
 }
 
 type Values interface {
+	describe() string
+	count() int
 }
-
-// func (vals intValues) Describe() string {
-// 	return ""
-// }
-
-// func (vals stringValues) Describe() string {
-// 	return ""
-// }
-
-// func (vals boolValues) Describe() string {
-// 	return ""
-// }
-
-// func (vals dateTimeValues) Describe() string {
-// 	return ""
-// }

@@ -26,9 +26,19 @@ func (vals intValues) toFloat() floatValues {
 
 // Methods
 // ------------------------------------------------
+func (vals intValues) count() int {
+	floatVals := vals.toFloat()
+	return floatVals.count()
+}
+
 func (vals intValues) sum() float64 {
 	floatVals := vals.toFloat()
 	return floatVals.sum()
+}
+
+func (vals intValues) mean() float64 {
+	floatVals := vals.toFloat()
+	return floatVals.mean()
 }
 
 func (vals intValues) median() float64 {
@@ -36,9 +46,19 @@ func (vals intValues) median() float64 {
 	return floatVals.median()
 }
 
-func (vals intValues) mean() float64 {
+func (vals intValues) min() float64 {
 	floatVals := vals.toFloat()
-	return floatVals.mean()
+	return floatVals.min()
+}
+
+func (vals intValues) max() float64 {
+	floatVals := vals.toFloat()
+	return floatVals.max()
+}
+
+func (vals intValues) describe() string {
+	floatVals := vals.toFloat()
+	return floatVals.describe()
 }
 
 // Constructor Functions

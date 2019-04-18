@@ -12,6 +12,8 @@ func TestMath_Float(t *testing.T) {
 		wantCount  int
 		wantMean   float64
 		wantMedian float64
+		wantMin    float64
+		wantMax    float64
 	}{
 		{
 			input:      []float64{-2.5, 0, 0, 3.5, math.NaN()},
@@ -19,6 +21,8 @@ func TestMath_Float(t *testing.T) {
 			wantCount:  4,
 			wantMean:   .25,
 			wantMedian: 0,
+			wantMin:    -2.5,
+			wantMax:    3.5,
 		},
 		{
 			input:      []float64{-1, 3, 4, math.NaN()},
@@ -26,6 +30,8 @@ func TestMath_Float(t *testing.T) {
 			wantCount:  3,
 			wantMean:   2,
 			wantMedian: 3,
+			wantMin:    -1,
+			wantMax:    4,
 		},
 	}
 	for _, test := range tests {
@@ -46,15 +52,24 @@ func TestMath_Float(t *testing.T) {
 		if gotMedian != test.wantMedian {
 			t.Errorf("Median() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
 		}
+		gotMin, _ := s.Min()
+		if gotMin != test.wantMin {
+			t.Errorf("Mean() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
+		}
+		gotMax, _ := s.Max()
+		if gotMax != test.wantMax {
+			t.Errorf("Median() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
+		}
 	}
 }
 
 func TestAdd_Float(t *testing.T) {
 	s, _ := New([]float64{math.NaN(), 1, 1, math.NaN(), 1})
-	s, err := s.AddConst(float64(1))
+	s, err := s.AddConst(1)
 	if err != nil {
-		t.Errorf("Unable to add constant to float: %v", err)
+		t.Errorf("Unable to add int to float: %v", err)
 	}
+
 	gotSum, _ := s.Sum()
 	wantSum := 6.0
 	if gotSum != wantSum {
@@ -63,6 +78,22 @@ func TestAdd_Float(t *testing.T) {
 
 	gotCount := s.Count()
 	wantCount := 3
+	if gotCount != wantCount {
+		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
+	}
+
+	s, err = s.AddConst(1.0)
+	if err != nil {
+		t.Errorf("Unable to add float to float: %v", err)
+	}
+
+	gotSum, _ = s.Sum()
+	wantSum = 9.0
+	if gotSum != wantSum {
+		t.Errorf("Sum() returned %v, want %v", gotSum, wantSum)
+	}
+	gotCount = s.Count()
+	wantCount = 3
 	if gotCount != wantCount {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}

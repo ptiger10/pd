@@ -6,11 +6,15 @@ import (
 )
 
 func TestConstructor_SliceString(t *testing.T) {
-	s, err := New([]string{"low", "", "high"})
+	_, err := New([]string{"low", "", "high"})
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 	}
-	_, err = s.Sum()
+}
+
+func TestString_Unsupported(t *testing.T) {
+	s, _ := New([]string{"low", "", "high"})
+	_, err := s.Sum()
 	if err == nil {
 		t.Errorf("Returned nil error when summing string series, want error")
 	}
@@ -21,6 +25,16 @@ func TestConstructor_SliceString(t *testing.T) {
 	_, err = s.Mean()
 	if err == nil {
 		t.Errorf("Returned nil error when finding mean of string series, want error")
+	}
+
+	_, err = s.Min()
+	if err == nil {
+		t.Errorf("Returned nil error when finding min of string series, want error")
+	}
+
+	_, err = s.Max()
+	if err == nil {
+		t.Errorf("Returned nil error when finding max of string series, want error")
 	}
 }
 

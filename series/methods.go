@@ -22,14 +22,22 @@ func (s Series) Sum() (float64, error) {
 	}
 }
 
+func (s Series) Describe() {
+	fmt.Println(s.Values.describe())
+}
+
 func (s Series) AddConst(c interface{}) (Series, error) {
 	switch s.Kind {
 	case Float:
 		switch c.(type) {
 		case float32, float64:
-			v := reflect.ValueOf(c).Float()
 			vals := s.Values.(floatValues)
+			v := reflect.ValueOf(c).Float()
 			return vals.addConst(v), nil
+		case int, int8, int16, int32, int64:
+			vals := s.Values.(floatValues)
+			v := reflect.ValueOf(c).Int()
+			return vals.addConst(float64(v)), nil
 		default:
 			return s, fmt.Errorf("Cannot add type %T to Float Series", c)
 		}
@@ -64,8 +72,34 @@ func (s Series) Median() (float64, error) {
 	}
 }
 
+func (s Series) Min() (float64, error) {
+	switch s.Kind {
+	case Float:
+		vals := s.Values.(floatValues)
+		return vals.min(), nil
+	case Int:
+		vals := s.Values.(intValues)
+		return vals.min(), nil
+	default:
+		return math.NaN(), fmt.Errorf("Median not supported for type %v", s.Kind)
+	}
+}
+
+func (s Series) Max() (float64, error) {
+	switch s.Kind {
+	case Float:
+		vals := s.Values.(floatValues)
+		return vals.max(), nil
+	case Int:
+		vals := s.Values.(intValues)
+		return vals.max(), nil
+	default:
+		return math.NaN(), fmt.Errorf("Median not supported for type %v", s.Kind)
+	}
+}
+
 func (s Series) Count() int {
-	return count(s.Values)
+	return s.Values.count()
 }
 
 func (s Series) String() string {
@@ -80,19 +114,6 @@ func (s Series) String() string {
 	default:
 		return print(s.Values)
 	}
-}
-
-// expects to receive a slice of typed value structs (eg pd.floatValues)
-// each struct must contain a boolean field called "null"
-func count(data interface{}) int {
-	var count int
-	d := reflect.ValueOf(data)
-	for i := 0; i < d.Len(); i++ {
-		if !d.Index(i).FieldByName("null").Bool() {
-			count++
-		}
-	}
-	return count
 }
 
 // expects to receive a slice of typed value structs (eg pd.floatValues)
