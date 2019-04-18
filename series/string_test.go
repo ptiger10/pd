@@ -2,6 +2,7 @@ package series
 
 import (
 	"math"
+	"reflect"
 	"testing"
 )
 
@@ -50,5 +51,14 @@ func TestConstructor_InterfaceString(t *testing.T) {
 	wantCount := 8
 	if gotCount != wantCount {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
+	}
+}
+
+func TestValueCounts(t *testing.T) {
+	s, _ := New([]string{"low", "", "high", "high", "high"})
+	got, _ := s.ValueCounts()
+	want := map[string]int{"high": 3, "low": 1}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.ValueCounts() returned %v, want %v", got, want)
 	}
 }

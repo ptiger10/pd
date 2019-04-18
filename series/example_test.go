@@ -29,29 +29,33 @@ func ExampleSeries_dateTime() {
 }
 
 func ExampleSeries_Describe_float() {
-	s, _ := series.New([]float64{1.0, math.NaN(), 3.0, 5.0})
+	s, _ := series.New([]float64{1, math.NaN(), 2, 3, 4, 5, math.NaN(), 6, 7, 8, 9})
 	s.Describe()
 	// Output:
-	// len     4
-	// valid   3
-	// null    1
-	// mean    3.0000
-	// median  3.0000
+	// len     11
+	// valid   9
+	// null    2
+	// mean    5.0000
 	// min     1.0000
-	// max     5.0000
+	// 25%     2.5000
+	// 50%     5.0000
+	// 75%     7.5000
+	// max     9.0000
 }
 
 func ExampleSeries_Describe_int() {
-	s, _ := series.New([]int64{-1, 0, 1})
+	s, _ := series.New([]int64{1, 2, 3, 4, 5, 6, 7, 8, 9})
 	s.Describe()
 	// Output:
-	// len     3
-	// valid   3
+	// len     9
+	// valid   9
 	// null    0
-	// mean    0.0000
-	// median  0.0000
-	// min     -1.0000
-	// max     1.0000
+	// mean    5.0000
+	// min     1.0000
+	// 25%     2.5000
+	// 50%     5.0000
+	// 75%     7.5000
+	// max     9.0000
 }
 
 func ExampleSeries_Describe_string() {
@@ -61,6 +65,7 @@ func ExampleSeries_Describe_string() {
 	// len     4
 	// valid   3
 	// null    1
+	// unique  2
 }
 
 func ExampleSeries_Describe_bool() {

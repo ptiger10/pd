@@ -7,7 +7,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/gonum/floats"
+	"github.com/gonum/floats"       // uses optimized gonum/floats methods where available
+	"github.com/montanaflynn/stats" // and stats package otherwise
 )
 
 // data type
@@ -107,19 +108,28 @@ func (vals floatValues) max() float64 {
 	return floats.Max(valid)
 }
 
+func (vals floatValues) quartiles() stats.Quartiles {
+	valid, _ := vals.valid()
+	val, _ := stats.Quartile(valid)
+	return val
+}
+
 func (vals floatValues) describe() string {
 	offset := 7
 	precision := 4
 	l := len(vals)
 	v := vals.count()
+	quartiles := vals.quartiles()
 	len := fmt.Sprintf("%-*s %d\n", offset, "len", l)
 	valid := fmt.Sprintf("%-*s %d\n", offset, "valid", v)
 	null := fmt.Sprintf("%-*s %d\n", offset, "null", l-v)
 	mean := fmt.Sprintf("%-*s %.*f\n", offset, "mean", precision, vals.mean())
-	median := fmt.Sprintf("%-*s %.*f\n", offset, "median", precision, vals.median())
 	min := fmt.Sprintf("%-*s %.*f\n", offset, "min", precision, vals.min())
+	firstQ := fmt.Sprintf("%-*s %.*f\n", offset, "25%", precision, quartiles.Q1)
+	secondQ := fmt.Sprintf("%-*s %.*f\n", offset, "50%", precision, quartiles.Q2)
+	thirdQ := fmt.Sprintf("%-*s %.*f\n", offset, "75%", precision, quartiles.Q3)
 	max := fmt.Sprintf("%-*s %.*f\n", offset, "max", precision, vals.max())
-	return fmt.Sprint(len, valid, null, mean, median, min, max)
+	return fmt.Sprint(len, valid, null, mean, min, firstQ, secondQ, thirdQ, max)
 }
 
 // constructor functions

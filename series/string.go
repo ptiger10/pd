@@ -27,6 +27,19 @@ func isNullString(s string) bool {
 	return false
 }
 
+func (vals stringValues) valid() ([]string, []int) {
+	var valid []string
+	var nullMap []int
+	for i, val := range vals {
+		if !val.null {
+			valid = append(valid, val.v)
+		} else {
+			nullMap = append(nullMap, i)
+		}
+	}
+	return valid, nullMap
+}
+
 // Methods
 // ------------------------------------------------
 func (vals stringValues) count() int {
@@ -39,6 +52,20 @@ func (vals stringValues) count() int {
 	return count
 }
 
+func (vals stringValues) valueCounts() map[string]int {
+	counter := make(map[string]int)
+	valid, _ := vals.valid()
+	for _, val := range valid {
+		counter[val]++
+	}
+	return counter
+}
+
+func (vals stringValues) unique() int {
+	counter := vals.valueCounts()
+	return len(counter)
+}
+
 func (vals stringValues) describe() string {
 	offset := 7
 	l := len(vals)
@@ -46,7 +73,8 @@ func (vals stringValues) describe() string {
 	len := fmt.Sprintf("%-*s %d\n", offset, "len", l)
 	valid := fmt.Sprintf("%-*s %d\n", offset, "valid", v)
 	null := fmt.Sprintf("%-*s %d\n", offset, "null", l-v)
-	return fmt.Sprint(len, valid, null)
+	unique := fmt.Sprintf("%-*s %d\n", offset, "unique", vals.unique())
+	return fmt.Sprint(len, valid, null, unique)
 }
 
 // Constructor Functions

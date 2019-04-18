@@ -105,6 +105,14 @@ func TestAdd_Float(t *testing.T) {
 	}
 }
 
+func TestFloat_Unsupported(t *testing.T) {
+	s, _ := New([]float64{1, 2, 3, 4})
+	_, err := s.ValueCounts()
+	if err == nil {
+		t.Errorf("Returned nil error when calling ValueCounts() on float series, want error")
+	}
+}
+
 func TestConstructor_Float32(t *testing.T) {
 	s, _ := New([]float32{1, -2, 3.5, 0})
 	got, _ := s.Sum()

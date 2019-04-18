@@ -18,7 +18,7 @@ func (s Series) Sum() (float64, error) {
 		vals := s.Values.(boolValues)
 		return vals.sum(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Sum not supported for type %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Sum not Series  %v", s.Kind)
 	}
 }
 
@@ -42,7 +42,7 @@ func (s Series) AddConst(c interface{}) (Series, error) {
 			return s, fmt.Errorf("Cannot add type %T to Float Series", c)
 		}
 	default:
-		return s, fmt.Errorf("AddConst not supported for type %v", s.Kind)
+		return s, fmt.Errorf("AddConst not Series  %v", s.Kind)
 	}
 }
 
@@ -55,7 +55,7 @@ func (s Series) Mean() (float64, error) {
 		vals := s.Values.(intValues)
 		return vals.mean(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Mean not supported for type %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Mean not Series  %v", s.Kind)
 	}
 }
 
@@ -68,7 +68,7 @@ func (s Series) Median() (float64, error) {
 		vals := s.Values.(intValues)
 		return vals.median(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Median not supported for type %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Median not Series  %v", s.Kind)
 	}
 }
 
@@ -81,7 +81,7 @@ func (s Series) Min() (float64, error) {
 		vals := s.Values.(intValues)
 		return vals.min(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Median not supported for type %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Min not supported for Series type %v", s.Kind)
 	}
 }
 
@@ -94,7 +94,17 @@ func (s Series) Max() (float64, error) {
 		vals := s.Values.(intValues)
 		return vals.max(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Median not supported for type %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Max not supported for Series type %v", s.Kind)
+	}
+}
+
+func (s Series) ValueCounts() (map[string]int, error) {
+	switch s.Kind {
+	case String:
+		vals := s.Values.(stringValues)
+		return vals.valueCounts(), nil
+	default:
+		return nil, fmt.Errorf("ValueCounts not supported for Series type %v", s.Kind)
 	}
 }
 
