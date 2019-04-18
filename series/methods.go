@@ -22,6 +22,22 @@ func (s Series) Sum() (float64, error) {
 	}
 }
 
+func (s Series) AddConst(c interface{}) (Series, error) {
+	switch s.Kind {
+	case Float:
+		switch c.(type) {
+		case float32, float64:
+			v := reflect.ValueOf(c).Float()
+			vals := s.Values.(floatValues)
+			return vals.addConst(v), nil
+		default:
+			return s, fmt.Errorf("Cannot add type %T to Float Series", c)
+		}
+	default:
+		return s, fmt.Errorf("AddConst not supported for type %v", s.Kind)
+	}
+}
+
 func (s Series) Mean() (float64, error) {
 	switch s.Kind {
 	case Float:

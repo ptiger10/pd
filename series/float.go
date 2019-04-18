@@ -5,10 +5,13 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+
+	"github.com/gonum/floats"
 )
 
 // data type
 // ------------------------------------------------
+
 type floatValues []floatValue
 type floatValue struct {
 	v    float64
@@ -17,14 +20,18 @@ type floatValue struct {
 
 // convenience functions
 // ------------------------------------------------
-func (vals floatValues) valid() []float64 {
-	var ret []float64
-	for _, val := range vals {
+
+func (vals floatValues) valid() ([]float64, []int) {
+	var valid []float64
+	var nullMap []int
+	for i, val := range vals {
 		if !val.null {
-			ret = append(ret, float64(val.v))
+			valid = append(valid, float64(val.v))
+		} else {
+			nullMap = append(nullMap, i)
 		}
 	}
-	return ret
+	return valid, nullMap
 }
 
 // methods
@@ -40,7 +47,7 @@ func (vals floatValues) sum() float64 {
 }
 
 func (vals floatValues) median() float64 {
-	valid := vals.valid()
+	valid, _ := vals.valid()
 	sort.Float64s(valid)
 	mNumber := len(valid) / 2
 	if len(valid)%2 != 0 { // checks if sequence has odd number of elements
@@ -59,6 +66,34 @@ func (vals floatValues) mean() float64 {
 		}
 	}
 	return sum / float64(count)
+}
+
+// transcribe copies []float64 into a new floatValues object but inserts null values wherever they existed in the original
+func (vals floatValues) transcribe(valid []float64, nullMap []int) floatValues {
+	var fv floatValues
+	var nullCounter int
+	for i := 0; i < len(vals); i++ {
+		validCounter := i - nullCounter
+		if nullCounter == len(nullMap) { // in this case, there are no more nil values to transcribe
+			fv = append(fv, floatValue{v: valid[validCounter]})
+		} else if nullMap[nullCounter] == i {
+			fv = append(fv, floatValue{null: true, v: math.NaN()})
+			nullCounter++
+		} else {
+			fv = append(fv, floatValue{v: valid[validCounter]})
+		}
+	}
+	return fv
+}
+
+func (vals floatValues) addConst(c float64) Series {
+	valid, nullMap := vals.valid()
+	floats.AddConst(c, valid)
+	fv := vals.transcribe(valid, nullMap)
+	return Series{
+		Values: fv,
+		Kind:   Float,
+	}
 }
 
 // constructor functions

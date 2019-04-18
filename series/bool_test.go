@@ -37,3 +37,11 @@ func TestConstructor_InterfaceBool(t *testing.T) {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
 }
+
+func TestAdd_BoolUnsupported(t *testing.T) {
+	s, _ := New([]bool{true, true, false, true})
+	_, err := s.AddConst(1)
+	if err == nil {
+		t.Error("Returned nil error when adding constant to Bool, want error")
+	}
+}

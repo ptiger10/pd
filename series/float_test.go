@@ -49,6 +49,31 @@ func TestMath_Float(t *testing.T) {
 	}
 }
 
+func TestAdd_Float(t *testing.T) {
+	s, _ := New([]float64{math.NaN(), 1, 1, math.NaN(), 1})
+	s, err := s.AddConst(float64(1))
+	if err != nil {
+		t.Errorf("Unable to add constant to float: %v", err)
+	}
+	gotSum, _ := s.Sum()
+	wantSum := 6.0
+	if gotSum != wantSum {
+		t.Errorf("Sum() returned %v, want %v", gotSum, wantSum)
+	}
+
+	gotCount := s.Count()
+	wantCount := 3
+	if gotCount != wantCount {
+		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
+	}
+
+	unsupported := "dog"
+	_, err = s.AddConst(unsupported)
+	if err == nil {
+		t.Errorf("Returned nil error when adding unsupported type (%T) to Float, want error", unsupported)
+	}
+}
+
 func TestConstructor_Float32(t *testing.T) {
 	s, _ := New([]float32{1, -2, 3.5, 0})
 	got, _ := s.Sum()
