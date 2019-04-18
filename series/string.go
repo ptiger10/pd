@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// data type
+// Data Type
 // ------------------------------------------------
 type stringValues []stringValue
 type stringValue struct {
@@ -15,7 +15,7 @@ type stringValue struct {
 	null bool
 }
 
-// convenience methods
+// Convenience Functions
 // ------------------------------------------------
 func isNullString(s string) bool {
 	nullStrings := []string{"nan", "n/a", ""}
@@ -27,7 +27,7 @@ func isNullString(s string) bool {
 	return false
 }
 
-// constructor functions
+// Constructor Functions
 // ------------------------------------------------
 func stringToStringValues(data interface{}) stringValues {
 	var vals []stringValue

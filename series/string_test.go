@@ -12,7 +12,15 @@ func TestConstructor_SliceString(t *testing.T) {
 	}
 	_, err = s.Sum()
 	if err == nil {
-		t.Errorf("Returned nil error when when summing string series, want error")
+		t.Errorf("Returned nil error when summing string series, want error")
+	}
+	_, err = s.Median()
+	if err == nil {
+		t.Errorf("Returned nil error when finding median of string series, want error")
+	}
+	_, err = s.Mean()
+	if err == nil {
+		t.Errorf("Returned nil error when finding mean of string series, want error")
 	}
 }
 
