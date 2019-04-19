@@ -30,18 +30,18 @@ func (s Series) FilterFloat(callbackFn func(float64) bool) (Series, error) {
 }
 
 // Int
-func (vals intValues) Filter(callbackFn func(int64) bool) intValues {
+func (vals intValues) Filter(callbackFn func(float64) bool) intValues {
 	var ret intValues
 	valid, _ := vals.valid()
 	for _, val := range valid {
-		if callbackFn(val) {
+		if callbackFn(float64(val)) {
 			ret = append(ret, intValue{v: val})
 		}
 	}
 	return ret
 }
 
-func (s Series) FilterInt(callbackFn func(int64) bool) (Series, error) {
+func (s Series) FilterInt(callbackFn func(float64) bool) (Series, error) {
 	if s.Kind != Int {
 		return s, fmt.Errorf("FilterInt can be called only on Series with type Int, not %v", s.Kind)
 	}

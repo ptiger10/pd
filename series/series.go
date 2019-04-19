@@ -19,15 +19,6 @@ type Series struct {
 	Kind   reflect.Kind
 }
 
-type Index struct {
-	Levels []IndexLevel
-}
-
-type IndexLevel struct {
-	Type   reflect.Kind
-	Values Values
-}
-
 type Values interface {
 	describe() string
 	count() int
