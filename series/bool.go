@@ -14,16 +14,27 @@ type boolValue struct {
 	null bool
 }
 
+// Convenience Methods
+// ------------------------------------------------
+
+func (vals boolValues) valid() ([]bool, []int) {
+	var valid []bool
+	var nullMap []int
+	for i, val := range vals {
+		if !val.null {
+			valid = append(valid, val.v)
+		} else {
+			nullMap = append(nullMap, i)
+		}
+	}
+	return valid, nullMap
+}
+
 // Methods
 // ------------------------------------------------
 func (vals boolValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
+	valid, _ := vals.valid()
+	return len(valid)
 }
 
 // sum of true values

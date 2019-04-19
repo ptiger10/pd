@@ -129,3 +129,12 @@ func ExampleSeries_Describe_datetime() {
 	// valid   2
 	// null    1
 }
+
+func ExampleSeries_Describe_datetime_empty() {
+	s, _ := series.New([]time.Time{time.Time{}})
+	s.Describe()
+	// Output:
+	// len     1
+	// valid   0
+	// null    1
+}

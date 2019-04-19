@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestFilter_Float(t *testing.T) {
@@ -23,22 +24,6 @@ func TestFilter_Float(t *testing.T) {
 	wantCount := 2
 	if gotCount != wantCount {
 		t.Errorf("Count() returned %v after filtering, want %v", gotCount, wantCount)
-	}
-}
-
-func TestFilter_Unsupported(t *testing.T) {
-	s, _ := New([]bool{true, true})
-	_, err := s.FilterFloat(func(v float64) bool { return v > 3 })
-	if err == nil {
-		t.Errorf("Returned nil error when calling unsupported FilterFloat on Bool series, want error")
-	}
-	_, err = s.FilterInt(func(v int64) bool { return v > 3 })
-	if err == nil {
-		t.Errorf("Returned nil error when calling unsupported FilterInt on Bool series, want error")
-	}
-	_, err = s.FilterString(func(v string) bool { return strings.Contains(v, "cats") })
-	if err == nil {
-		t.Errorf("Returned nil error when calling unsupported FilterString on Bool series, want error")
 	}
 }
 
@@ -77,5 +62,39 @@ func TestFilter_String(t *testing.T) {
 	wantCount := 3
 	if gotCount != wantCount {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
+	}
+}
+
+func TestFilter_DateTime(t *testing.T) {
+	s, _ := New([]time.Time{time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC)})
+	s, err := s.FilterDateTime(func(v time.Time) bool { return v.After(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)) })
+	if err != nil {
+		t.Errorf("Unable to filter String Series: %v", err)
+	}
+
+	gotCount := s.Count()
+	wantCount := 1
+	if gotCount != wantCount {
+		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
+	}
+}
+
+func TestFilter_Unsupported(t *testing.T) {
+	s, _ := New([]bool{true, true})
+	_, err := s.FilterFloat(func(v float64) bool { return v > 3 })
+	if err == nil {
+		t.Errorf("Returned nil error when calling unsupported FilterFloat on Bool series, want error")
+	}
+	_, err = s.FilterInt(func(v int64) bool { return v > 3 })
+	if err == nil {
+		t.Errorf("Returned nil error when calling unsupported FilterInt on Bool series, want error")
+	}
+	_, err = s.FilterString(func(v string) bool { return strings.Contains(v, "cats") })
+	if err == nil {
+		t.Errorf("Returned nil error when calling unsupported FilterString on Bool series, want error")
+	}
+	_, err = s.FilterDateTime(func(v time.Time) bool { return v.After(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)) })
+	if err == nil {
+		t.Errorf("Returned nil error when calling unsupported FilterDateTime on Bool series, want error")
 	}
 }

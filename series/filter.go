@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"time"
 )
 
 // Float
@@ -77,3 +78,25 @@ func (s Series) FilterString(callbackFn func(string) bool) (Series, error) {
 }
 
 // Datetime
+func (vals dateTimeValues) Filter(callbackFn func(time.Time) bool) dateTimeValues {
+	var ret dateTimeValues
+	valid, _ := vals.valid()
+	for _, val := range valid {
+		if callbackFn(val) {
+			ret = append(ret, dateTimeValue{v: val})
+		}
+	}
+	return ret
+}
+
+func (s Series) FilterDateTime(callbackFn func(time.Time) bool) (Series, error) {
+	if s.Kind != DateTime {
+		return s, fmt.Errorf("FilterString can be called only on Series with type String, not %v", s.Kind)
+	}
+	vals := s.Values.(dateTimeValues).Filter(callbackFn)
+
+	return Series{
+		Values: vals,
+		Kind:   DateTime,
+	}, nil
+}
