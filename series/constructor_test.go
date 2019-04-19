@@ -1,6 +1,7 @@
 package series
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"time"
@@ -56,6 +57,11 @@ func TestConstructor_InterfaceFloat(t *testing.T) {
 	if gotCount != wantCount {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
+}
+
+func TestConstructor_Float_IntIndex_Default(t *testing.T) {
+	s, _ := New([]float64{4, 5, 6})
+	fmt.Println(s.Index.Levels[0].Labels.At(2))
 }
 
 // Int

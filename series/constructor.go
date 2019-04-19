@@ -97,5 +97,23 @@ func New(data interface{}, options ...newSeriesOption) (Series, error) {
 	default:
 		return s, fmt.Errorf("Type not supported: %T", data)
 	}
+
+	s.Index =
+		Index{
+			Levels: []IndexLevel{
+				IndexLevel{
+					Type: Int,
+					Labels: intLabels{
+						l: makeRange(0, s.Count()),
+					},
+				}}}
 	return s, nil
+}
+
+func makeRange(min, max int) []int64 {
+	a := make([]int64, max-min)
+	for i := range a {
+		a[i] = int64(min + i)
+	}
+	return a
 }

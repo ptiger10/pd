@@ -4,6 +4,7 @@ import (
 	"reflect"
 )
 
+// Series Type options
 const (
 	Float    = reflect.Float64
 	Int      = reflect.Int64
@@ -13,6 +14,7 @@ const (
 	None     = reflect.UnsafePointer // pseudo-nil value for type reflect.Kind
 )
 
+// A Series is a 1-D data container with a labeled index, static type, and the ability to handle null values
 type Series struct {
 	Index  Index
 	Values Values
