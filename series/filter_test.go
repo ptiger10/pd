@@ -60,7 +60,7 @@ func TestFilter_Int(t *testing.T) {
 		{"eq", cmp.Eq(5), 5, 1},
 		{"neq", cmp.Neq(10), 45, 9},
 	}
-	s, _ := series.New([]interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, "", ""}, series.SeriesType(series.Int))
+	s, _ := series.New([]interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, "", ""}, series.Type(series.Int))
 	for _, test := range tests {
 		sFilt, err := s.FilterInt(test.filterFn)
 		if err != nil {

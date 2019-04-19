@@ -17,6 +17,7 @@ type Series struct {
 	Index  Index
 	Values Values
 	Kind   reflect.Kind
+	Name   string
 }
 
 type Values interface {

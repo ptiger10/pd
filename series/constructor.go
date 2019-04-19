@@ -10,11 +10,18 @@ type newSeriesOption func(*newSeriesConfig)
 type newSeriesConfig struct {
 	kind  reflect.Kind
 	index interface{}
+	name  string
 }
 
-func SeriesType(t reflect.Kind) newSeriesOption {
+func Type(t reflect.Kind) newSeriesOption {
 	return func(c *newSeriesConfig) {
 		c.kind = t
+	}
+}
+
+func Name(n string) newSeriesOption {
+	return func(c *newSeriesConfig) {
+		c.name = n
 	}
 }
 
@@ -23,12 +30,13 @@ func SeriesType(t reflect.Kind) newSeriesOption {
 // If passing []interface{}, must supply a type expectation for the Series.
 // Options: Float, Int, String, Bool, DateTime
 func New(data interface{}, options ...newSeriesOption) (Series, error) {
-	advanced := newSeriesConfig{kind: None}
+	config := newSeriesConfig{kind: None}
 	for _, option := range options {
-		option(&advanced)
+		option(&config)
 	}
 	s := Series{
-		Kind: advanced.kind,
+		Kind: config.kind,
+		Name: config.name,
 	}
 
 	switch data.(type) {
@@ -64,7 +72,7 @@ func New(data interface{}, options ...newSeriesOption) (Series, error) {
 
 	case []interface{}:
 		d := reflect.ValueOf(data)
-		switch advanced.kind {
+		switch config.kind {
 		case None: // this checks for the pseduo-nil type
 			return Series{}, fmt.Errorf("Must supply a SeriesType to decode interface")
 		case Float:
@@ -83,7 +91,7 @@ func New(data interface{}, options ...newSeriesOption) (Series, error) {
 			vals := interfaceToDateTimeValues(d)
 			s.Values = vals
 		default:
-			return s, fmt.Errorf("Type not supported for conversion from []interface: %v", advanced.kind)
+			return s, fmt.Errorf("Type not supported for conversion from []interface: %v", config.kind)
 		}
 
 	default:

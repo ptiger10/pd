@@ -9,11 +9,16 @@ import (
 // Float
 // ------------------------------------------------
 func TestConstructor_Float32(t *testing.T) {
-	s, _ := New([]float32{1, -2, 3.5, 0})
+	s, _ := New([]float32{1, -2, 3.5, 0}, Name("float32"))
 	got, _ := s.Sum()
 	want := 2.5
 	if got != want {
 		t.Errorf("Sum() returned %v, want %v", got, want)
+	}
+	gotName := s.Name
+	wantName := "float32"
+	if gotName != wantName {
+		t.Errorf("Constructor did not read Name correctly: returned %s, want %s", gotName, wantName)
 	}
 }
 
@@ -24,12 +29,17 @@ func TestConstructor_Float64(t *testing.T) {
 	if got != want {
 		t.Errorf("Sum() returned %v, want %v", got, want)
 	}
+	gotName := s.Name
+	wantName := ""
+	if gotName != wantName {
+		t.Errorf("Constructor did not create default Name correctly: returned %s, want %s", gotName, wantName)
+	}
 }
 
 func TestConstructor_InterfaceFloat(t *testing.T) {
 	s, err := New(
 		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(Float))
+		Type(Float))
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 		return
@@ -113,7 +123,7 @@ func TestConstructor_UInt64(t *testing.T) {
 func TestConstructor_InterfaceInt(t *testing.T) {
 	s, err := New(
 		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(Int))
+		Type(Int))
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 		return
@@ -143,7 +153,7 @@ func TestConstructor_SliceString(t *testing.T) {
 func TestConstructor_InterfaceString(t *testing.T) {
 	s, err := New(
 		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(String))
+		Type(String))
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 		return
@@ -172,7 +182,7 @@ func TestConstructor_Bool(t *testing.T) {
 func TestConstructor_InterfaceBool(t *testing.T) {
 	s, err := New(
 		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(Bool))
+		Type(Bool))
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 		return
@@ -221,7 +231,7 @@ func TestConstructor_InterfaceDateTime(t *testing.T) {
 			[]string{"1", "2"}, // slice cannot be parsed
 			time.Location{},    // struct other than time.Time cannot be parsed
 			nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(DateTime))
+		Type(DateTime))
 	if err != nil {
 		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
 		return

@@ -16,7 +16,7 @@ func Test_ConstructorUnsupported(t *testing.T) {
 		t.Errorf("Returned nil error when constructing interface without supplying series type, want error")
 	}
 
-	_, err = New([]interface{}{10}, SeriesType(reflect.Ptr))
+	_, err = New([]interface{}{10}, Type(reflect.Ptr))
 	if err == nil {
 		t.Errorf("Returned nil error when constructing interface with unsupported series type, want error")
 	}

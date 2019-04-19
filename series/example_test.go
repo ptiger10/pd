@@ -74,7 +74,7 @@ func ExampleSeries_Describe_int() {
 }
 
 func ExampleSeries_Describe_int_empty() {
-	s, _ := series.New([]interface{}{"", ""}, series.SeriesType(series.Int))
+	s, _ := series.New([]interface{}{"", ""}, series.Type(series.Int))
 	s.Describe()
 	// Output:
 	// len     2
