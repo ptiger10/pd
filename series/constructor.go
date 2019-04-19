@@ -69,19 +69,15 @@ func New(data interface{}, options ...newSeriesOption) (Series, error) {
 			return Series{}, fmt.Errorf("Must supply a SeriesType to decode interface")
 		case Float:
 			vals := interfaceToFloatValues(d)
-
 			s.Values = vals
 		case Int:
 			vals := interfaceToIntValues(d)
-
 			s.Values = vals
 		case String:
 			vals := interfaceToStringValues(d)
-
 			s.Values = vals
 		case Bool:
 			vals := interfaceToBoolValues(d)
-
 			s.Values = vals
 		case DateTime:
 			vals := interfaceToDateTimeValues(d)

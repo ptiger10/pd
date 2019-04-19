@@ -8,7 +8,7 @@ import (
 	"github.com/ptiger10/pd/series"
 )
 
-func ExampleSeries_default() {
+func ExampleSeries_int_printer() {
 	s, _ := series.New([]int64{1, 3, 5})
 	fmt.Println(s)
 	// Output:
@@ -16,7 +16,7 @@ func ExampleSeries_default() {
 	// 3
 	// 5
 }
-func ExampleSeries_dateTime() {
+func ExampleSeries_dateTime_printer() {
 	s, _ := series.New([]time.Time{
 		time.Date(2019, 4, 18, 15, 0, 0, 0, time.UTC),
 		time.Date(2019, 4, 19, 15, 0, 0, 0, time.UTC)})
@@ -43,6 +43,21 @@ func ExampleSeries_Describe_float() {
 	// max     9.0000
 }
 
+func ExampleSeries_Describe_float_empty() {
+	s, _ := series.New([]float32{})
+	s.Describe()
+	// Output:
+	// len     0
+	// valid   0
+	// null    0
+	// mean    NaN
+	// min     NaN
+	// 25%     NaN
+	// 50%     NaN
+	// 75%     NaN
+	// max     NaN
+}
+
 func ExampleSeries_Describe_int() {
 	s, _ := series.New([]int64{1, 2, 3, 4, 5, 6, 7, 8, 9})
 	s.Describe()
@@ -58,6 +73,21 @@ func ExampleSeries_Describe_int() {
 	// max     9.0000
 }
 
+func ExampleSeries_Describe_int_empty() {
+	s, _ := series.New([]interface{}{"", ""}, series.SeriesType(series.Int))
+	s.Describe()
+	// Output:
+	// len     2
+	// valid   0
+	// null    2
+	// mean    NaN
+	// min     NaN
+	// 25%     NaN
+	// 50%     NaN
+	// 75%     NaN
+	// max     NaN
+}
+
 func ExampleSeries_Describe_string() {
 	s, _ := series.New([]string{"low", "medium", "medium", ""})
 	s.Describe()
@@ -66,6 +96,16 @@ func ExampleSeries_Describe_string() {
 	// valid   3
 	// null    1
 	// unique  2
+}
+
+func ExampleSeries_Describe_string_empty() {
+	s, _ := series.New([]string{"", ""})
+	s.Describe()
+	// Output:
+	// len     2
+	// valid   0
+	// null    2
+	// unique  0
 }
 
 func ExampleSeries_Describe_bool() {

@@ -33,6 +33,15 @@ func TestMath_Int(t *testing.T) {
 			wantMin:    -2,
 			wantMax:    5,
 		},
+		{
+			input:      []int64{},
+			wantSum:    0,
+			wantCount:  0,
+			wantMean:   math.NaN(),
+			wantMedian: math.NaN(),
+			wantMin:    math.NaN(),
+			wantMax:    math.NaN(),
+		},
 	}
 	for _, test := range tests {
 		s, _ := New(test.input)
@@ -45,101 +54,21 @@ func TestMath_Int(t *testing.T) {
 			t.Errorf("Count() returned %v for input %v, want %v", gotCount, test.input, test.wantCount)
 		}
 		gotMean, _ := s.Mean()
-		if gotMean != test.wantMean {
+		if gotMean != test.wantMean && !math.IsNaN(gotMean) {
 			t.Errorf("Mean() returned %v for input %v, want %v", gotMean, test.input, test.wantMean)
 		}
 		gotMedian, _ := s.Median()
-		if gotMedian != test.wantMedian {
+		if gotMedian != test.wantMedian && !math.IsNaN(gotMedian) {
 			t.Errorf("Median() returned %v for input %v, want %v", gotMedian, test.input, test.wantMedian)
 		}
 
 		gotMin, _ := s.Min()
-		if gotMin != test.wantMin {
-			t.Errorf("Mean() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
+		if gotMin != test.wantMin && !math.IsNaN(gotMin) {
+			t.Errorf("Min() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
 		}
 		gotMax, _ := s.Max()
-		if gotMax != test.wantMax {
-			t.Errorf("Median() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
+		if gotMax != test.wantMax && !math.IsNaN(gotMax) {
+			t.Errorf("Max() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
 		}
-	}
-}
-
-func TestConstructor_Int(t *testing.T) {
-	s, _ := New([]int{1, -2, 3, 0})
-	got, _ := s.Sum()
-	want := 2.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-func TestConstructor_Int32(t *testing.T) {
-	s, _ := New([]int32{1, -2, 3, 0})
-	got, _ := s.Sum()
-	want := 2.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-func TestConstructor_Int64(t *testing.T) {
-	s, _ := New([]int64{1, -2, 3, 0})
-	got, _ := s.Sum()
-	want := 2.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-
-func TestConstructor_UInt(t *testing.T) {
-	s, err := New([]uint{1, 2, 3, 0})
-	if err != nil {
-		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
-	}
-	got, _ := s.Sum()
-	want := 6.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-func TestConstructor_UInt32(t *testing.T) {
-	s, err := New([]uint32{1, 2, 3, 0})
-	if err != nil {
-		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
-	}
-	got, _ := s.Sum()
-	want := 6.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-func TestConstructor_UInt64(t *testing.T) {
-	s, err := New([]uint64{1, 2, 3, 0})
-	if err != nil {
-		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
-	}
-	got, _ := s.Sum()
-	want := 6.0
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-
-func TestConstructor_InterfaceInt(t *testing.T) {
-	s, err := New(
-		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(Int))
-	if err != nil {
-		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
-		return
-	}
-	gotSum, _ := s.Sum()
-	wantSum := 7.0
-	if gotSum != wantSum {
-		t.Errorf("Sum() returned %v, want %v", gotSum, wantSum)
-	}
-
-	gotCount := s.Count()
-	wantCount := 8
-	if gotCount != wantCount {
-		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
 }

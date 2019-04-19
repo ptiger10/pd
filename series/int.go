@@ -24,6 +24,19 @@ func (vals intValues) toFloat() floatValues {
 	return ret
 }
 
+func (vals intValues) valid() ([]int64, []int) {
+	var valid []int64
+	var nullMap []int
+	for i, val := range vals {
+		if !val.null {
+			valid = append(valid, int64(val.v))
+		} else {
+			nullMap = append(nullMap, i)
+		}
+	}
+	return valid, nullMap
+}
+
 // Methods
 // ------------------------------------------------
 func (vals intValues) count() int {

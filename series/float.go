@@ -11,7 +11,7 @@ import (
 	"github.com/montanaflynn/stats" // and stats package otherwise
 )
 
-// data type
+// Data Type
 // ------------------------------------------------
 
 type floatValues []floatValue
@@ -20,7 +20,7 @@ type floatValue struct {
 	null bool
 }
 
-// convenience methods
+// Convenience Methods
 // ------------------------------------------------
 
 func (vals floatValues) valid() ([]float64, []int) {
@@ -54,7 +54,7 @@ func (vals floatValues) transcribe(valid []float64, nullMap []int) floatValues {
 	return fv
 }
 
-// methods
+// Methods
 // ------------------------------------------------
 func (vals floatValues) sum() float64 {
 	valid, _ := vals.valid()
@@ -80,6 +80,9 @@ func (vals floatValues) mean() float64 {
 
 func (vals floatValues) median() float64 {
 	valid, _ := vals.valid()
+	if len(valid) == 0 {
+		return math.NaN()
+	}
 	sort.Float64s(valid)
 	mNumber := len(valid) / 2
 	if len(valid)%2 != 0 { // checks if sequence has odd number of elements
@@ -100,17 +103,26 @@ func (vals floatValues) addConst(c float64) Series {
 
 func (vals floatValues) min() float64 {
 	valid, _ := vals.valid()
+	if len(valid) == 0 {
+		return math.NaN()
+	}
 	return floats.Min(valid)
 }
 
 func (vals floatValues) max() float64 {
 	valid, _ := vals.valid()
+	if len(valid) == 0 {
+		return math.NaN()
+	}
 	return floats.Max(valid)
 }
 
 func (vals floatValues) quartiles() stats.Quartiles {
 	valid, _ := vals.valid()
-	val, _ := stats.Quartile(valid)
+	val, err := stats.Quartile(valid)
+	if err != nil {
+		return stats.Quartiles{Q1: math.NaN(), Q2: math.NaN(), Q3: math.NaN()}
+	}
 	return val
 }
 
@@ -132,7 +144,7 @@ func (vals floatValues) describe() string {
 	return fmt.Sprint(len, valid, null, mean, min, firstQ, secondQ, thirdQ, max)
 }
 
-// constructor functions
+// Constructor Functions
 // ------------------------------------------------
 func floatToFloatValues(data interface{}) floatValues {
 	var vals []floatValue

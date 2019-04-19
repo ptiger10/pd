@@ -33,6 +33,24 @@ func TestMath_Float(t *testing.T) {
 			wantMin:    -1,
 			wantMax:    4,
 		},
+		{
+			input:      []float64{},
+			wantSum:    0,
+			wantCount:  0,
+			wantMean:   math.NaN(),
+			wantMedian: math.NaN(),
+			wantMin:    math.NaN(),
+			wantMax:    math.NaN(),
+		},
+		{
+			input:      []float64{math.NaN(), math.NaN()},
+			wantSum:    0,
+			wantCount:  0,
+			wantMean:   math.NaN(),
+			wantMedian: math.NaN(),
+			wantMin:    math.NaN(),
+			wantMax:    math.NaN(),
+		},
 	}
 	for _, test := range tests {
 		s, _ := New(test.input)
@@ -42,29 +60,30 @@ func TestMath_Float(t *testing.T) {
 		}
 		gotCount := s.Count()
 		if gotCount != test.wantCount {
-			t.Errorf("Count() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+			t.Errorf("Count() returned %v for input %v, want %v", gotCount, test.input, test.wantCount)
 		}
 		gotMean, _ := s.Mean()
-		if gotMean != test.wantMean {
-			t.Errorf("Mean() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+		if gotMean != test.wantMean && !math.IsNaN(gotMean) {
+			t.Errorf("Mean() returned %v for input %v, want %v", gotMean, test.input, test.wantMean)
 		}
 		gotMedian, _ := s.Median()
-		if gotMedian != test.wantMedian {
-			t.Errorf("Median() returned %v for input %v, want %v", gotSum, test.input, test.wantSum)
+		if gotMedian != test.wantMedian && !math.IsNaN(gotMedian) {
+			t.Errorf("Median() returned %v for input %v, want %v", gotMedian, test.input, test.wantMedian)
 		}
 		gotMin, _ := s.Min()
-		if gotMin != test.wantMin {
-			t.Errorf("Mean() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
+		if gotMin != test.wantMin && !math.IsNaN(gotMin) {
+			t.Errorf("Min() returned %v for input %v, want %v", gotMin, test.input, test.wantMin)
 		}
 		gotMax, _ := s.Max()
-		if gotMax != test.wantMax {
-			t.Errorf("Median() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
+		if gotMax != test.wantMax && !math.IsNaN(gotMax) {
+			t.Errorf("Max() returned %v for input %v, want %v", gotMax, test.input, test.wantMax)
 		}
 	}
 }
 
 func TestAdd_Float(t *testing.T) {
 	s, _ := New([]float64{math.NaN(), 1, 1, math.NaN(), 1})
+	// Adding an int
 	s, err := s.AddConst(1)
 	if err != nil {
 		t.Errorf("Unable to add int to float: %v", err)
@@ -82,6 +101,7 @@ func TestAdd_Float(t *testing.T) {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
 
+	// Adding a float
 	s, err = s.AddConst(1.0)
 	if err != nil {
 		t.Errorf("Unable to add float to float: %v", err)
@@ -98,6 +118,7 @@ func TestAdd_Float(t *testing.T) {
 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
 
+	// Adding a string
 	unsupported := "dog"
 	_, err = s.AddConst(unsupported)
 	if err == nil {
@@ -110,45 +131,5 @@ func TestFloat_Unsupported(t *testing.T) {
 	_, err := s.ValueCounts()
 	if err == nil {
 		t.Errorf("Returned nil error when calling ValueCounts() on float series, want error")
-	}
-}
-
-func TestConstructor_Float32(t *testing.T) {
-	s, _ := New([]float32{1, -2, 3.5, 0})
-	got, _ := s.Sum()
-	want := 2.5
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-
-func TestConstructor_Float64(t *testing.T) {
-	s, _ := New([]float64{1, -2, 3.5, 0})
-	got, _ := s.Sum()
-	want := 2.5
-	if got != want {
-		t.Errorf("Sum() returned %v, want %v", got, want)
-	}
-}
-
-func TestConstructor_InterfaceFloat(t *testing.T) {
-	s, err := New(
-		[]interface{}{float32(1), float64(1.5), 0.5, int32(1), 1, uint64(2), "0.5", "1", nil, complex64(1), "", "n/a", "N/A", "nan", "NaN", math.NaN()},
-		SeriesType(Float))
-	if err != nil {
-		t.Errorf("Unable to create new series for %v: %v", t.Name(), err)
-		return
-	}
-
-	gotSum, _ := s.Sum()
-	wantSum := 8.5
-	if gotSum != wantSum {
-		t.Errorf("Sum() returned %v, want %v", gotSum, wantSum)
-	}
-
-	gotCount := s.Count()
-	wantCount := 8
-	if gotCount != wantCount {
-		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 	}
 }
