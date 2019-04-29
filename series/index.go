@@ -62,10 +62,10 @@ import (
 // }
 
 type Index struct {
-	Levels []IndexLevel
+	Levels []Level
 }
 
-type IndexLevel struct {
+type Level struct {
 	Type   reflect.Kind
 	Labels Labels
 }

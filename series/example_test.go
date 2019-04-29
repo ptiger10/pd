@@ -12,9 +12,9 @@ func ExampleSeries_int_printer() {
 	s, _ := series.New([]int64{1, 3, 5})
 	fmt.Println(s)
 	// Output:
-	// 1
-	// 3
-	// 5
+	// 0  1
+	// 1  3
+	// 2  5
 }
 func ExampleSeries_dateTime_printer() {
 	s, _ := series.New([]time.Time{

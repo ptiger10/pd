@@ -100,10 +100,11 @@ func New(data interface{}, options ...newSeriesOption) (Series, error) {
 
 	s.Index =
 		Index{
-			Levels: []IndexLevel{
-				IndexLevel{
+			Levels: []Level{
+				Level{
 					Type: Int,
 					Labels: intLabels{
+
 						l: makeRange(0, s.Count()),
 					},
 				}}}

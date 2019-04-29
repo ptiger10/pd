@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-// Series Type options
+// Series Type convenience options
 const (
 	Float    = reflect.Float64
 	Int      = reflect.Int64
@@ -24,5 +24,4 @@ type Series struct {
 
 type Values interface {
 	describe() string
-	count() int
 }

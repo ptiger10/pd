@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 )
@@ -18,7 +19,7 @@ func (s Series) Sum() (float64, error) {
 		vals := s.Values.(boolValues)
 		return vals.sum(), nil
 	default:
-		return math.NaN(), fmt.Errorf("Sum not Series  %v", s.Kind)
+		return math.NaN(), fmt.Errorf("Sum not supported for Series type %v", s.Kind)
 	}
 }
 
@@ -109,7 +110,26 @@ func (s Series) ValueCounts() (map[string]int, error) {
 }
 
 func (s Series) Count() int {
-	return s.Values.count()
+	switch s.Kind {
+	case Float:
+		vals := s.Values.(floatValues)
+		return vals.count()
+	case Int:
+		vals := s.Values.(intValues)
+		return vals.count()
+	case Bool:
+		vals := s.Values.(boolValues)
+		return vals.count()
+	case String:
+		vals := s.Values.(stringValues)
+		return vals.count()
+	case DateTime:
+		vals := s.Values.(dateTimeValues)
+		return vals.count()
+	default:
+		log.Printf("Count not supported for Series type %v", s.Kind)
+		return 0
+	}
 }
 
 func (s Series) String() string {
