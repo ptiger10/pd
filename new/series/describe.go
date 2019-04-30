@@ -3,8 +3,8 @@ package series
 import (
 	"log"
 
-	"github.com/ptiger10/pd/new/datatypes"
 	"github.com/ptiger10/pd/new/internal/values"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 func (s Series) Len() int {
@@ -18,7 +18,7 @@ func (s Series) Len() int {
 	// case Bool:
 	// 	vals := s.Values.(boolValues)
 	// 	return vals.count()
-	case datatypes.String:
+	case kinds.String:
 		vals := s.Values.(values.StringValues)
 		return vals.Len()
 	// case DateTime:

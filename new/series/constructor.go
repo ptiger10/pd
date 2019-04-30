@@ -4,43 +4,63 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ptiger10/pd/new/datatypes"
 	"github.com/ptiger10/pd/new/internal/index"
 	constructIdx "github.com/ptiger10/pd/new/internal/index/constructors"
 	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
-type seriesOption func(*seriesConfig)
+type Option func(*seriesConfig)
 type seriesConfig struct {
 	kind  reflect.Kind
-	index []interface{}
+	index []newIndex
 	name  string
 }
 
-func Type(t reflect.Kind) seriesOption {
+type newIndex struct {
+	data interface{}
+	name string
+}
+
+func Kind(t reflect.Kind) Option {
 	return func(c *seriesConfig) {
 		c.kind = t
 	}
 }
 
-func Name(n string) seriesOption {
+func Name(n string) Option {
 	return func(c *seriesConfig) {
 		c.name = n
 	}
 }
 
-func Index(data interface{}) seriesOption {
+// Index returns a Option for use in the Series constructor New(),
+// and takes an optional Name. If name is blank, defaults to RangeLabels (0, 1, 2, ...n)
+func Index(data interface{}, options ...Option) Option {
+	config := seriesConfig{}
+	for _, option := range options {
+		option(&config)
+	}
 	return func(c *seriesConfig) {
-		c.index = append(c.index, data)
+		newIndex := newIndex{
+			data: data,
+			name: config.name,
+		}
+		c.index = append(c.index, newIndex)
+
 	}
 }
 
 // New Series constructor
-// that expects to receive a slice of values.
+// Optional
+// - Index(): If no index is supplied, defaults to RangeLabels (0, 1, 2, ...n)
+// - Name(): If no name is supplied, no name will appear when Series is printed
+// - Kind(): Supplying a type will try to cast the Series values into a specific kind
 // If passing []interface{}, must supply a type expectation for the Series.
 // Options: Float, Int, String, Bool, DateTime
-func New(data interface{}, options ...seriesOption) (Series, error) {
-	config := seriesConfig{kind: datatypes.None}
+func New(data interface{}, options ...Option) (Series, error) {
+	// config := seriesConfig{kind: datatypes.None}
+	config := seriesConfig{}
 
 	for _, option := range options {
 		option(&config)
@@ -70,7 +90,7 @@ func New(data interface{}, options ...seriesOption) (Series, error) {
 		vals := constructVal.SliceString(data)
 		s.Values = vals
 
-		s.Kind = datatypes.String
+		s.Kind = kinds.String
 
 	// case []bool:
 	// 	vals := boolToBoolValues(data)
@@ -111,15 +131,17 @@ func New(data interface{}, options ...seriesOption) (Series, error) {
 	}
 
 	if config.index == nil {
-		level := constructIdx.SliceInt(makeRange(0, s.Len()))
-		s.Index = constructIdx.New([]index.Level{level})
+		s.Index = constructIdx.Default(s.Len())
 	} else {
 		var levels []index.Level
-		for _, idxInput := range config.index {
-			switch idxInput.(type) {
+		nameMap := make(index.LabelMap)
+		for i, newIndex := range config.index {
+			switch newIndex.data.(type) {
 			case []int, []int8, []int16, []int32, []int64:
-				level := constructIdx.SliceInt(idxInput)
+				level := constructIdx.SliceInt(newIndex.data)
+				level.Name = newIndex.name
 				levels = append(levels, level)
+				nameMap[newIndex.name] = append(nameMap[newIndex.name], i)
 			}
 		}
 		s.Index = constructIdx.New(levels)
@@ -130,12 +152,4 @@ func New(data interface{}, options ...seriesOption) (Series, error) {
 
 func (s Series) Set(subset Series, data interface{}) {
 
-}
-
-func makeRange(min, max int) []int64 {
-	a := make([]int64, max-min)
-	for i := range a {
-		a[i] = int64(min + i)
-	}
-	return a
 }

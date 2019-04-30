@@ -1,8 +1,8 @@
-package datatypes
+package kinds
 
 import "reflect"
 
-// Type convenience options
+// Kind convenience options
 const (
 	Float    = reflect.Float64
 	Int      = reflect.Int64

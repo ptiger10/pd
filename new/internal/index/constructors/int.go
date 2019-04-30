@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/ptiger10/pd/new/datatypes"
 	"github.com/ptiger10/pd/new/internal/index"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 // SliceInt converts []int (of any int type) -> IndexLevel with IntLabels
@@ -20,7 +20,7 @@ func SliceInt(data interface{}) index.Level {
 		labelMap[strLabel] = append(labelMap[strLabel], i)
 	}
 	ret := index.Level{
-		Kind:     datatypes.Int,
+		Kind:     kinds.Int,
 		Labels:   labels,
 		LabelMap: labelMap,
 	}
