@@ -3,19 +3,22 @@ package values
 import (
 	"fmt"
 	"log"
+	"reflect"
+
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 // Data Type
 type StringValues []StringValue
 type StringValue struct {
-	v    string
-	null bool
+	V    string
+	Null bool
 }
 
 func String(v string, null bool) StringValue {
 	return StringValue{
-		v:    v,
-		null: null,
+		V:    v,
+		Null: null,
 	}
 }
 
@@ -24,7 +27,7 @@ func String(v string, null bool) StringValue {
 func (vals StringValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.null {
+		if !val.Null {
 			count++
 		}
 	}
@@ -51,4 +54,12 @@ func (vals StringValues) In(positions []int) interface{} {
 		ret = append(ret, vals[position])
 	}
 	return ret
+}
+
+func (vals StringValues) Kind() reflect.Kind {
+	return kinds.String
+}
+
+func (vals StringValues) At(position int) interface{} {
+	return vals[position].V
 }

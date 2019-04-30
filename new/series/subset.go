@@ -16,29 +16,29 @@ type Element struct {
 }
 
 func (s Series) Elem() Element {
-	valElem := reflect.ValueOf(s.Values.In([]int{0})).Elem()
-	val := valElem.FieldByName("v")
-	null := valElem.FieldByName("null").Bool()
+	positions := []int{0}
+	valElem := reflect.ValueOf(s.Values.In(positions)).Index(0)
+	val := valElem.FieldByName("V").Interface()
+	null := valElem.FieldByName("Null").Bool()
 
 	var idx []interface{}
 	for _, lvl := range s.Index.Levels {
-		idx = append(idx, lvl.Labels.In([]int{0}))
+		idxVal := reflect.ValueOf(lvl.Labels.In(positions)).Index(0).Interface()
+		idx = append(idx, idxVal)
 	}
 	kind := s.Kind
-	return Element{
-		val,
-		idx,
-		kind,
-		null,
-	}
+	return Element{val, idx, kind, null}
 }
 
 func (s Series) At(position int) Series {
-	slicer := []int{position}
-	copy := Series(s)
-	copy.Values = s.Values.In(slicer).(values.Values)
-	for i, level := range copy.Index.Levels {
-		copy.Index.Levels[i].Labels = level.Labels.In(slicer).(index.Labels)
+	return s.at(position)
+}
+
+func (s Series) at(position int) Series {
+	positions := []int{position}
+	s.Values = s.Values.In(positions).(values.Values)
+	for i, level := range s.Index.Levels {
+		s.Index.Levels[i].Labels = level.Labels.In(positions).(index.Labels)
 	}
-	return copy
+	return s
 }

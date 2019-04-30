@@ -80,7 +80,7 @@ func (s Series) print() string {
 			}
 		}
 		// s.Values[i].v
-		valStr := fmt.Sprint(vals.Index(i).FieldByName("v"))
+		valStr := fmt.Sprint(vals.Index(i).FieldByName("V"))
 		// add buffer at beginning
 		val := strings.Repeat(" ", options.DisplayValuesWhitespaceBuffer) + valStr
 		// null string values must not return any trailing whitespace

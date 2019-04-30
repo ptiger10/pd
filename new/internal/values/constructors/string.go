@@ -36,6 +36,7 @@ func SliceString(data interface{}) values.StringValues {
 		} else {
 			vals = append(vals, values.String(val, false))
 		}
+
 	}
 	return vals
 }

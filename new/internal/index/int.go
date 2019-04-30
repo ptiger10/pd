@@ -1,9 +1,12 @@
 package index
 
-import "log"
+import (
+	"log"
+)
 
 type IntLabels []int64
 
+// In returns a slice of IntLabel
 func (labels IntLabels) In(positions []int) interface{} {
 	var ret IntLabels
 	for _, position := range positions {
