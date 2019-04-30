@@ -6,11 +6,17 @@ import (
 )
 
 // Data Type
-// ------------------------------------------------
 type StringValues []StringValue
 type StringValue struct {
-	V    string
-	Null bool
+	v    string
+	null bool
+}
+
+func String(v string, null bool) StringValue {
+	return StringValue{
+		v:    v,
+		null: null,
+	}
 }
 
 // Convenience methods
@@ -18,7 +24,7 @@ type StringValue struct {
 func (vals StringValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}

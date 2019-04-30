@@ -25,7 +25,7 @@ func (s Series) Len() int {
 	// 	vals := s.Values.(dateTimeValues)
 	// 	return vals.count()
 	default:
-		log.Printf("Count not supported for Series type %v", s.Kind)
+		log.Printf("Len not supported for Series type %v", s.Kind)
 		return 0
 	}
 }

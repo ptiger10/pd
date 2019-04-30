@@ -79,8 +79,8 @@ func (s Series) print() string {
 				prior[j] = idxStr
 			}
 		}
-		// s.Values[i].V
-		valStr := fmt.Sprint(vals.Index(i).FieldByName("V"))
+		// s.Values[i].v
+		valStr := fmt.Sprint(vals.Index(i).FieldByName("v"))
 		// add buffer at beginning
 		val := strings.Repeat(" ", options.DisplayValuesWhitespaceBuffer) + valStr
 		// null string values must not return any trailing whitespace
