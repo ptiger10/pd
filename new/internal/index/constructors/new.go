@@ -4,7 +4,7 @@ import (
 	"github.com/ptiger10/pd/new/internal/index"
 )
 
-// New receives one or more Levels and returns a new Index
+// New receives one or more Levels and returns a new Index. Expects that Levels already have labelMappings set.
 func New(levels ...index.Level) index.Index {
 	idx := index.Index{
 		Levels: levels,
@@ -16,7 +16,9 @@ func New(levels ...index.Level) index.Index {
 // Default creates an unnamed index level with range labels (0, 1, 2, ...n)
 func Default(length int) index.Index {
 	defaultRange := makeRange(0, length)
-	return New(SliceInt(defaultRange, ""))
+	return New(
+		SliceInt(defaultRange, ""),
+	)
 }
 
 // makeRange returns a sequential series of numbers for use in default constructors

@@ -1,14 +1,11 @@
 package values
 
-import (
-	"reflect"
-)
-
+// The Values interface is the primary means of handling a collection of values
+// Thes same interface and value types are used for both Series values and Index labels
 type Values interface {
-	Describe() string
-	// Important - returning []interface{} means you can't type assert values.Values
-	In([]int) interface{}
-	Kind() reflect.Kind
 	// returns all values regardless of null status
 	All() []interface{}
+	Describe() string
+	In([]int) Values
+	Len() int
 }

@@ -23,7 +23,7 @@ func isNullString(s string) bool {
 
 // [END Convenience Functions]
 
-// Constructor Functions
+// [START Constructor Functions]
 
 // SliceString converts []string -> values.StringValues
 func SliceString(data interface{}) values.StringValues {
@@ -76,3 +76,5 @@ func floatToString(v float64) values.StringValue {
 	}
 	return values.String(fmt.Sprint(v), false)
 }
+
+// [END Constructor Functions]

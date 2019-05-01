@@ -28,8 +28,11 @@ func (s Series) Elem() Element {
 	return Element{val, idx, kind, null}
 }
 
+// At subsets a Series by integer position
 func (s Series) At(position int) Series {
-	return s.at(position)
+	s = s.at(position)
+	s.Index.Refresh()
+	return s
 }
 
 func (s Series) at(position int) Series {

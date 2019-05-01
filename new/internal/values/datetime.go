@@ -2,24 +2,25 @@ package values
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ptiger10/pd/new/options"
 )
 
 // [START Definitions]
 
-// StringValues is a slice of string-typed Value/Null structs
-type StringValues []StringValue
+// DateTimeValues is a slice of time.Time-typed Value/Null structs
+type DateTimeValues []DateTimeValue
 
-// A StringValue is one string-typed Value/Null struct
-type StringValue struct {
-	V    string
+// A DateTimeValue is one time.Time-typed Value/Null struct
+type DateTimeValue struct {
+	V    time.Time
 	Null bool
 }
 
-// String constructs a StringValue
-func String(v string, null bool) StringValue {
-	return StringValue{
+// DateTime constructs a DateTimeValue
+func DateTime(v time.Time, null bool) DateTimeValue {
+	return DateTimeValue{
 		V:    v,
 		Null: null,
 	}
@@ -30,7 +31,7 @@ func String(v string, null bool) StringValue {
 // [START Methods]
 
 // Describe the values in the collection
-func (vals StringValues) Describe() string {
+func (vals DateTimeValues) Describe() string {
 	offset := options.DisplayValuesWhitespaceBuffer
 	l := len(vals)
 	len := fmt.Sprintf("%-*s%d\n", offset, "len", l)

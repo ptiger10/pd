@@ -8,18 +8,18 @@ import (
 
 // [START Definitions]
 
-// StringValues is a slice of string-typed Value/Null structs
-type StringValues []StringValue
+// BoolValues is a slice of bool-typed Value/Null structs
+type BoolValues []BoolValue
 
-// A StringValue is one string-typed Value/Null struct
-type StringValue struct {
-	V    string
+// A BoolValue is one bool-typed Value/Null struct
+type BoolValue struct {
+	V    bool
 	Null bool
 }
 
-// String constructs a StringValue
-func String(v string, null bool) StringValue {
-	return StringValue{
+// Bool constructs a BoolValue
+func Bool(v bool, null bool) BoolValue {
+	return BoolValue{
 		V:    v,
 		Null: null,
 	}
@@ -30,7 +30,7 @@ func String(v string, null bool) StringValue {
 // [START Methods]
 
 // Describe the values in the collection
-func (vals StringValues) Describe() string {
+func (vals BoolValues) Describe() string {
 	offset := options.DisplayValuesWhitespaceBuffer
 	l := len(vals)
 	len := fmt.Sprintf("%-*s%d\n", offset, "len", l)

@@ -15,7 +15,6 @@ func Level(labels values.Values, kind reflect.Kind, name string) index.Level {
 		Kind:   kind,
 		Name:   name,
 	}
-	lvl.UpdateLabelMap()
-	lvl.ComputeLongest()
+	lvl.Refresh()
 	return lvl
 }

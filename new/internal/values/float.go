@@ -8,18 +8,18 @@ import (
 
 // [START Definitions]
 
-// StringValues is a slice of string-typed Value/Null structs
-type StringValues []StringValue
+// FloatValues is a slice of Float64-typed Value/Null structs
+type FloatValues []FloatValue
 
-// A StringValue is one string-typed Value/Null struct
-type StringValue struct {
-	V    string
+// A FloatValue is one Float64-typed Value/Null struct
+type FloatValue struct {
+	V    float64
 	Null bool
 }
 
-// String constructs a StringValue
-func String(v string, null bool) StringValue {
-	return StringValue{
+// Float constructs a FloatValue
+func Float(v float64, null bool) FloatValue {
+	return FloatValue{
 		V:    v,
 		Null: null,
 	}
@@ -30,7 +30,7 @@ func String(v string, null bool) StringValue {
 // [START Methods]
 
 // Describe the values in the collection
-func (vals StringValues) Describe() string {
+func (vals FloatValues) Describe() string {
 	offset := options.DisplayValuesWhitespaceBuffer
 	l := len(vals)
 	len := fmt.Sprintf("%-*s%d\n", offset, "len", l)

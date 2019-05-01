@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/ptiger10/pd/new/internal/index"
@@ -50,6 +51,15 @@ func Index(data interface{}, options ...Option) Option {
 		c.index = append(c.index, idx)
 
 	}
+}
+
+// Calls New and panics if error. For use in testing
+func mustNew(data interface{}, options ...Option) Series {
+	s, err := New(data, options...)
+	if err != nil {
+		log.Panic(err)
+	}
+	return s
 }
 
 // New Series constructor

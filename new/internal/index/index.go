@@ -4,14 +4,15 @@ import (
 	"reflect"
 
 	"github.com/ptiger10/pd/new/internal/values"
-	"github.com/ptiger10/pd/new/options"
 )
 
+// An Index is a collection of levels, plus label mappings
 type Index struct {
 	Levels  []Level
 	NameMap LabelMap
 }
 
+// A Level is a single collection of labels within an index, plus label mappings and metadata
 type Level struct {
 	Kind     reflect.Kind
 	Labels   values.Values
@@ -20,26 +21,5 @@ type Level struct {
 	Longest  int
 }
 
-type Labels interface {
-	In([]int) interface{}
-}
-
+// A LabelMap records the position of labels, in the form {label name: [label position(s)]}
 type LabelMap map[string][]int
-
-// ComputeLongest finds the max length of either the level name or the longest string in the LabelMap,
-// for use in printing a Series or DataFrame
-func (lvl *Level) ComputeLongest() {
-	var max int
-	for k := range lvl.LabelMap {
-		if len(k) > max {
-			max = len(k)
-		}
-	}
-	if len(lvl.Name) > max {
-		max = len(lvl.Name)
-	}
-	if max > options.DisplayIndexMaxWidth {
-		max = options.DisplayIndexMaxWidth
-	}
-	lvl.Longest = max
-}
