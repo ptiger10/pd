@@ -9,7 +9,7 @@ import (
 	"github.com/ptiger10/pd/new/internal/values"
 )
 
-// **[START Utilities]**
+// [START Convenience Functions]
 
 func isNullString(s string) bool {
 	nullStrings := []string{"nan", "n/a", ""}
@@ -21,7 +21,7 @@ func isNullString(s string) bool {
 	return false
 }
 
-// **[END Utilities]**
+// [END Convenience Functions]
 
 // Constructor Functions
 
