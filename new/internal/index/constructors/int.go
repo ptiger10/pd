@@ -1,29 +1,17 @@
 package constructors
 
 import (
-	"reflect"
-	"strconv"
-
 	"github.com/ptiger10/pd/new/internal/index"
+	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
 	"github.com/ptiger10/pd/new/kinds"
 )
 
-// SliceInt converts []int (of any int type) -> IndexLevel with IntLabels
-func SliceInt(data interface{}) index.Level {
-	var labels index.IntLabels
-	labelMap := make(index.LabelMap)
-	d := reflect.ValueOf(data)
-	for i := 0; i < d.Len(); i++ {
-		label := d.Index(i).Int()
-		labels = append(labels, label)
-		strLabel := strconv.Itoa(int(label))
-		labelMap[strLabel] = append(labelMap[strLabel], i)
-	}
-	ret := index.Level{
-		Kind:     kinds.Int,
-		Labels:   labels,
-		LabelMap: labelMap,
-	}
-	return ret
-
+// SliceInt converts []int (of any variety) -> IndexLevel of kind reflect.Int64
+func SliceInt(data interface{}, name string) index.Level {
+	level := Level(
+		constructVal.SliceInt(data),
+		kinds.Int,
+		name,
+	)
+	return level
 }

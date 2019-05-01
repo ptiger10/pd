@@ -22,8 +22,8 @@ func (s Series) String() string {
 	}
 }
 
-// expects to receive a slice of typed value structs (eg pd.floatValues)
-// each struct must contain a boolean field called "v"
+// expects to receive a slice of typed value structs (eg values.floatValues)
+// each struct must contain a boolean field called "Null" and a value field called "V"
 func (s Series) print() string {
 
 	vals := reflect.ValueOf(s.Values)
@@ -54,7 +54,7 @@ func (s Series) print() string {
 			var buffer string
 			padding := s.Index.Levels[j].Longest
 			// s.Index.Levels[j].Labels[i]
-			idxVal := levels.Index(j).FieldByName("Labels").Elem().Index(i)
+			idxVal := levels.Index(j).FieldByName("Labels").Elem().Index(i).FieldByName("V")
 			idxStr := fmt.Sprint(idxVal)
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last

@@ -3,6 +3,7 @@ package index
 import (
 	"reflect"
 
+	"github.com/ptiger10/pd/new/internal/values"
 	"github.com/ptiger10/pd/new/options"
 )
 
@@ -13,7 +14,7 @@ type Index struct {
 
 type Level struct {
 	Kind     reflect.Kind
-	Labels   Labels
+	Labels   values.Values
 	LabelMap LabelMap
 	Name     string
 	Longest  int

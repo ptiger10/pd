@@ -6,6 +6,7 @@ import (
 
 	"github.com/ptiger10/pd/new/internal/index"
 	constructIdx "github.com/ptiger10/pd/new/internal/index/constructors"
+	"github.com/ptiger10/pd/new/internal/values"
 	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
 	"github.com/ptiger10/pd/new/kinds"
 )
@@ -13,11 +14,11 @@ import (
 type Option func(*seriesConfig)
 type seriesConfig struct {
 	kind  reflect.Kind
-	index []newIndex
+	index []idx
 	name  string
 }
 
-type newIndex struct {
+type idx struct {
 	data interface{}
 	name string
 }
@@ -42,11 +43,11 @@ func Index(data interface{}, options ...Option) Option {
 		option(&config)
 	}
 	return func(c *seriesConfig) {
-		newIndex := newIndex{
+		idx := idx{
 			data: data,
 			name: config.name,
 		}
-		c.index = append(c.index, newIndex)
+		c.index = append(c.index, idx)
 
 	}
 }
@@ -65,10 +66,10 @@ func New(data interface{}, options ...Option) (Series, error) {
 	for _, option := range options {
 		option(&config)
 	}
-	s := Series{
-		Kind: config.kind,
-		Name: config.name,
-	}
+	var v values.Values
+	var idx index.Index
+	kind := config.kind
+	name := config.name
 
 	switch data.(type) {
 	// case []float32, []float64:
@@ -76,21 +77,17 @@ func New(data interface{}, options ...Option) (Series, error) {
 	// 	s.Values = vals
 	// 	s.Kind = Float
 
-	// case []int, []int8, []int16, []int32, []int64:
-	// 	vals := intToIntValues(data)
-	// 	s.Values = vals
-	// 	s.Kind = Int
+	case []int, []int8, []int16, []int32, []int64:
+		v = constructVal.SliceInt(data)
+		kind = kinds.Int
 
-	// case []uint, []uint8, []uint16, []uint32, []uint64:
-	// 	vals := uIntToIntValues(data)
-	// 	s.Values = vals
-	// 	s.Kind = Int
+	case []uint, []uint8, []uint16, []uint32, []uint64:
+		v = constructVal.SliceUInt(data)
+		kind = kinds.Int
 
 	case []string:
-		vals := constructVal.SliceString(data)
-		s.Values = vals
-
-		s.Kind = kinds.String
+		v = constructVal.SliceString(data)
+		kind = kinds.String
 
 	// case []bool:
 	// 	vals := boolToBoolValues(data)
@@ -127,24 +124,28 @@ func New(data interface{}, options ...Option) (Series, error) {
 	// 	}
 
 	default:
-		return s, fmt.Errorf("Type not supported: %T", data)
+		return Series{}, fmt.Errorf("Type not supported: %T", data)
 	}
 
 	if config.index == nil {
-		s.Index = constructIdx.Default(s.Len())
+		n := len(v.All())
+		idx = constructIdx.Default(n)
 	} else {
 		var levels []index.Level
-		nameMap := make(index.LabelMap)
-		for i, newIndex := range config.index {
-			switch newIndex.data.(type) {
+		for _, labels := range config.index {
+			switch labels.data.(type) {
 			case []int, []int8, []int16, []int32, []int64:
-				level := constructIdx.SliceInt(newIndex.data)
-				level.Name = newIndex.name
+				level := constructIdx.SliceInt(labels.data, labels.name)
 				levels = append(levels, level)
-				nameMap[newIndex.name] = append(nameMap[newIndex.name], i)
 			}
 		}
-		s.Index = constructIdx.New(levels)
+		idx = constructIdx.New(levels...)
+	}
+	s := Series{
+		Index:  idx,
+		Values: v,
+		Kind:   kind,
+		Name:   name,
 	}
 
 	return s, nil

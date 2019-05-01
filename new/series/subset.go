@@ -3,8 +3,6 @@ package series
 import (
 	"reflect"
 
-	"github.com/ptiger10/pd/new/internal/index"
-
 	"github.com/ptiger10/pd/new/internal/values"
 )
 
@@ -38,7 +36,7 @@ func (s Series) at(position int) Series {
 	positions := []int{position}
 	s.Values = s.Values.In(positions).(values.Values)
 	for i, level := range s.Index.Levels {
-		s.Index.Levels[i].Labels = level.Labels.In(positions).(index.Labels)
+		s.Index.Levels[i].Labels = level.Labels.In(positions).(values.Values)
 	}
 	return s
 }
