@@ -13,5 +13,5 @@ type Values interface {
 	ToInt() Values
 	ToString() Values
 	ToBool() Values
-	// ToDateTime() Values
+	ToDateTime() Values
 }

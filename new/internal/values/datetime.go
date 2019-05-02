@@ -83,6 +83,11 @@ func (vals DateTimeValues) ToBool() Values {
 	return ret
 }
 
+// ToDateTime returns itself
+func (vals DateTimeValues) ToDateTime() Values {
+	return vals
+}
+
 // [END Converters]
 
 // [START Methods]

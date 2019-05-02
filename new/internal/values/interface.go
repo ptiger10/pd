@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"strconv"
+	"time"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -58,13 +58,7 @@ func (vals InterfaceValues) ToFloat() Values {
 					ret = append(ret, Float(math.NaN(), true))
 					continue
 				}
-				v, err := strconv.ParseFloat(vStr, 64)
-				if err != nil {
-					ret = append(ret, Float(math.NaN(), true))
-					continue
-				} else {
-					ret = append(ret, Float(v, false))
-				}
+				ret = append(ret, stringToFloat(vStr))
 			}
 		}
 	}
@@ -97,13 +91,7 @@ func (vals InterfaceValues) ToInt() Values {
 					ret = append(ret, Int(0, true))
 					continue
 				}
-				v, err := strconv.Atoi(vStr)
-				if err != nil {
-					ret = append(ret, Int(0, true))
-					continue
-				} else {
-					ret = append(ret, Int(int64(v), false))
-				}
+				ret = append(ret, stringToInt(vStr))
 			}
 		}
 	}
@@ -120,6 +108,38 @@ func (vals InterfaceValues) ToBool() Values {
 			ret = append(ret, Bool(false, true))
 		} else {
 			ret = append(ret, Bool(true, false))
+		}
+	}
+	return ret
+}
+
+// ToDateTime converts InterfaceValues to DateTimeValues
+//
+// null: false; notnull: true
+func (vals InterfaceValues) ToDateTime() Values {
+	var ret DateTimeValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, DateTime(time.Time{}, true))
+		} else {
+			switch val.V.(type) {
+			case float32, float64:
+				f := reflect.ValueOf(val.V).Float()
+				ret = append(ret, floatToDateTime(f))
+			case int, int8, int16, int32, int64:
+				i := reflect.ValueOf(val.V).Int()
+				ret = append(ret, intToDateTime(i))
+			case uint, uint8, uint16, uint32, uint64:
+				u := reflect.ValueOf(val.V).Uint()
+				ret = append(ret, intToDateTime(int64(u)))
+			default:
+				vStr, ok := val.V.(string)
+				if !ok {
+					ret = append(ret, DateTime(time.Time{}, true))
+					continue
+				}
+				ret = append(ret, stringToDateTime(vStr))
+			}
 		}
 	}
 	return ret

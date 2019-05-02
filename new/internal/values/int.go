@@ -79,15 +79,18 @@ func (vals IntValues) ToDateTime() Values {
 		if val.Null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			v := time.Unix(val.V, 0)
-			if v == (time.Time{}) {
-				ret = append(ret, DateTime(time.Time{}, true))
-			} else {
-				ret = append(ret, DateTime(v, false))
-			}
+			ret = append(ret, intToDateTime(val.V))
 		}
 	}
 	return ret
+}
+
+func intToDateTime(i int64) DateTimeValue {
+	v := time.Unix(i, 0)
+	if v == (time.Time{}) {
+		return DateTime(time.Time{}, true)
+	}
+	return DateTime(v, false)
 }
 
 // [END Converters]

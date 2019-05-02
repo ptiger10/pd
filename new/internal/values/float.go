@@ -78,15 +78,18 @@ func (vals FloatValues) ToDateTime() Values {
 		if val.Null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			v := time.Unix(int64(val.V), 0)
-			if v == (time.Time{}) {
-				ret = append(ret, DateTime(time.Time{}, true))
-			} else {
-				ret = append(ret, DateTime(v, false))
-			}
+			ret = append(ret, floatToDateTime(val.V))
 		}
 	}
 	return ret
+}
+
+func floatToDateTime(f float64) DateTimeValue {
+	v := time.Unix(int64(f), 0)
+	if v == (time.Time{}) {
+		return DateTime(time.Time{}, true)
+	}
+	return DateTime(v, false)
 }
 
 // [END Converters]
