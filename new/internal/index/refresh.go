@@ -22,6 +22,7 @@ func (idx *Index) UpdateNameMap() {
 	for i, lvl := range idx.Levels {
 		nameMap[lvl.Name] = append(nameMap[lvl.Name], i)
 	}
+	idx.NameMap = nameMap
 }
 
 // UpdateLongest finds the max length of either the level name or the longest string in the LabelMap,

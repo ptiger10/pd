@@ -72,7 +72,8 @@ func (vals IntValues) ToBool() Values {
 }
 
 // ToDateTime converts IntValues to DateTimeValues.
-// Tries to convert from Unix EPOCH time, otherwise returns null
+// Tries to convert from Unix EPOCH timestamp.
+// Defaults to 1970-01-01 00:00:00 +0000 UTC.
 func (vals IntValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
@@ -86,10 +87,9 @@ func (vals IntValues) ToDateTime() Values {
 }
 
 func intToDateTime(i int64) DateTimeValue {
-	v := time.Unix(i, 0)
-	if v == (time.Time{}) {
-		return DateTime(time.Time{}, true)
-	}
+	// convert from nanoseconds to seconds
+	i /= 1000000000
+	v := time.Unix(i, 0).UTC()
 	return DateTime(v, false)
 }
 

@@ -9,23 +9,25 @@ import (
 
 // Convert an index level from one kind to another
 func (lvl Level) Convert(kind reflect.Kind) (Level, error) {
+	var convertedLvl Level
 	switch kind {
 	case kinds.None: // this checks for the pseduo-nil type
 		return Level{}, fmt.Errorf("Unable to convert index level: must supply a valid Kind")
 	case kinds.Float:
-		return lvl.toFloat(), nil
+		convertedLvl = lvl.toFloat()
 	case kinds.Int:
-		return lvl.toInt(), nil
+		convertedLvl = lvl.toInt()
 	case kinds.String:
-		return lvl.toString(), nil
+		convertedLvl = lvl.toString()
 	case kinds.Bool:
-		return lvl.toBool(), nil
-	// case kinds.DateTime:
-	// 	return lvl.toDateTime(), nil
+		convertedLvl = lvl.toBool()
+	case kinds.DateTime:
+		convertedLvl = lvl.toDateTime()
 	default:
 		return Level{}, fmt.Errorf("Unable to convert level: kind not supported: %v", kind)
-
 	}
+	convertedLvl.Refresh()
+	return convertedLvl, nil
 }
 
 func (lvl Level) toFloat() Level {
@@ -52,8 +54,8 @@ func (lvl Level) toBool() Level {
 	return lvl
 }
 
-// func (lvl Level) toDateTime() Level {
-// 	lvl.Labels = lvl.Labels.ToDateTime()
-// 	lvl.Kind = kinds.DateTime
-// 	return lvl
-// }
+func (lvl Level) toDateTime() Level {
+	lvl.Labels = lvl.Labels.ToDateTime()
+	lvl.Kind = kinds.DateTime
+	return lvl
+}

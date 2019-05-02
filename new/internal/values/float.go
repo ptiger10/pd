@@ -85,11 +85,7 @@ func (vals FloatValues) ToDateTime() Values {
 }
 
 func floatToDateTime(f float64) DateTimeValue {
-	v := time.Unix(int64(f), 0)
-	if v == (time.Time{}) {
-		return DateTime(time.Time{}, true)
-	}
-	return DateTime(v, false)
+	return intToDateTime(int64(f))
 }
 
 // [END Converters]
