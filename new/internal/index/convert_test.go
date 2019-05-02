@@ -12,41 +12,47 @@ import (
 )
 
 func TestConvertIndex_int(t *testing.T) {
+	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	var tests = []struct {
 		lvl       index.Level
 		convertTo reflect.Kind
 	}{
-
+		// Float
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.Float},
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.Int},
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.String},
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.Bool},
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.DateTime},
 
-		{constructIdx.SliceInt([]int{1, 2, 3}, ""), kinds.Float},
-		{constructIdx.SliceInt([]int{1, 2, 3}, ""), kinds.Int},
-		{constructIdx.SliceInt([]int{1, 2, 3}, ""), kinds.String},
-		{constructIdx.SliceInt([]int{1, 2, 3}, ""), kinds.Bool},
-		{constructIdx.SliceInt([]int{1, 2, 3}, ""), kinds.DateTime},
+		// Int
+		{constructIdx.SliceInt([]int64{1, 2, 3}, ""), kinds.Float},
+		{constructIdx.SliceInt([]int64{1, 2, 3}, ""), kinds.Int},
+		{constructIdx.SliceInt([]int64{1, 2, 3}, ""), kinds.String},
+		{constructIdx.SliceInt([]int64{1, 2, 3}, ""), kinds.Bool},
+		{constructIdx.SliceInt([]int64{1, 2, 3}, ""), kinds.DateTime},
 
+		// String
 		{constructIdx.SliceString([]string{"1", "2", "3"}, ""), kinds.Float},
 		{constructIdx.SliceString([]string{"1", "2", "3"}, ""), kinds.Int},
 		{constructIdx.SliceString([]string{"1", "2", "3"}, ""), kinds.String},
 		{constructIdx.SliceString([]string{"1", "2", "3"}, ""), kinds.Bool},
 		{constructIdx.SliceString([]string{"1", "2", "3"}, ""), kinds.DateTime},
 
+		// Bool
 		{constructIdx.SliceBool([]bool{true, false, false}, ""), kinds.Float},
 		{constructIdx.SliceBool([]bool{true, false, false}, ""), kinds.Int},
 		{constructIdx.SliceBool([]bool{true, false, false}, ""), kinds.String},
 		{constructIdx.SliceBool([]bool{true, false, false}, ""), kinds.Bool},
 		{constructIdx.SliceBool([]bool{true, false, false}, ""), kinds.DateTime},
 
-		{constructIdx.SliceDateTime([]time.Time{time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)}, ""), kinds.Float},
-		{constructIdx.SliceDateTime([]time.Time{time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)}, ""), kinds.Int},
-		{constructIdx.SliceDateTime([]time.Time{time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)}, ""), kinds.String},
-		{constructIdx.SliceDateTime([]time.Time{time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)}, ""), kinds.Bool},
-		{constructIdx.SliceDateTime([]time.Time{time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)}, ""), kinds.DateTime},
+		// DateTime
+		{constructIdx.SliceDateTime([]time.Time{testDate}, ""), kinds.Float},
+		{constructIdx.SliceDateTime([]time.Time{testDate}, ""), kinds.Int},
+		{constructIdx.SliceDateTime([]time.Time{testDate}, ""), kinds.String},
+		{constructIdx.SliceDateTime([]time.Time{testDate}, ""), kinds.Bool},
+		{constructIdx.SliceDateTime([]time.Time{testDate}, ""), kinds.DateTime},
 
+		// Interface
 		{constructIdx.SliceInterface([]interface{}{1, "2", true}, ""), kinds.Float},
 		{constructIdx.SliceInterface([]interface{}{1, "2", true}, ""), kinds.Int},
 		{constructIdx.SliceInterface([]interface{}{1, "2", true}, ""), kinds.String},
@@ -65,12 +71,12 @@ func TestConvertIndex_int(t *testing.T) {
 }
 
 func TestConvert_Numeric_Datetime(t *testing.T) {
-	n := 1556668800000000000
+	n := int64(1556668800000000000)
 	wantVal := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	var tests = []struct {
 		lvl index.Level
 	}{
-		{constructIdx.SliceInt([]int{n}, "")},
+		{constructIdx.SliceInt([]int64{n}, "")},
 		{constructIdx.SliceFloat([]float64{float64(n)}, "")},
 	}
 	for _, test := range tests {

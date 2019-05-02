@@ -6,11 +6,11 @@ import (
 	"github.com/ptiger10/pd/new/kinds"
 )
 
-// SliceDateTime converts []time.Time{} -> IndexLevel of kind reflect.Struct
-func SliceDateTime(data interface{}, name string) index.Level {
+// SliceInterface converts []interface{} -> IndexLevel of kind reflect.Interface
+func SliceInterface(data []interface{}, name string) index.Level {
 	level := level(
-		constructVal.SliceDateTime(data),
-		kinds.DateTime,
+		constructVal.SliceInterface(data),
+		kinds.Interface,
 		name,
 	)
 	return level

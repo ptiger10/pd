@@ -1,16 +1,15 @@
-package constructors
+package values
 
 import (
 	"fmt"
 	"reflect"
 
-	"github.com/ptiger10/pd/new/internal/values"
 	"github.com/ptiger10/pd/new/kinds"
 )
 
 // Convert converts a collection of values from one type to another, if possible
-func Convert(currentVals values.Values, kind reflect.Kind) (values.Values, error) {
-	var vals values.Values
+func Convert(currentVals Values, kind reflect.Kind) (Values, error) {
+	var vals Values
 	switch kind {
 	case kinds.None: // this checks for the pseduo-nil type
 		return nil, fmt.Errorf("Unable to convert values: must supply a valid Kind")

@@ -28,18 +28,15 @@ func isNullInterface(i interface{}) bool {
 // [END Convenience Functions]
 
 // SliceInterface converts []interface -> values.InterfaceValues
-func SliceInterface(data interface{}) values.InterfaceValues {
-	var vals values.InterfaceValues
-	d := data.([]interface{})
-	for i := 0; i < len(d); i++ {
-		val := d[i]
-		vals = append(vals)
+func SliceInterface(vals []interface{}) values.InterfaceValues {
+	var v values.InterfaceValues
+	for _, val := range vals {
 		if isNullInterface(val) {
-			vals = append(vals, values.Interface(val, true))
+			v = append(v, values.Interface(val, true))
 		} else {
-			vals = append(vals, values.Interface(val, false))
+			v = append(v, values.Interface(val, false))
 		}
 
 	}
-	return vals
+	return v
 }

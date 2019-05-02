@@ -7,25 +7,33 @@ import (
 
 	"github.com/ptiger10/pd/new/internal/index"
 	"github.com/ptiger10/pd/new/internal/values"
+	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
 )
 
 // LevelFromSlice creates an Index Level from an interface{} that reflects Slice
 func LevelFromSlice(data interface{}, name string) (index.Level, error) {
 	switch data.(type) {
 	case []float32, []float64:
-		return SliceFloat(data, name), nil
+		vals := constructVal.InterfaceToSliceFloat(data)
+		return SliceFloat(vals, name), nil
 	case []int, []int8, []int16, []int32, []int64:
-		return SliceInt(data, name), nil
+		vals := constructVal.InterfaceToSliceInt(data)
+		return SliceInt(vals, name), nil
 	case []uint, []uint8, []uint16, []uint32, []uint64:
-		return SliceUint(data, name), nil
+		vals := constructVal.InterfaceToSliceUint(data)
+		return SliceInt(vals, name), nil
 	case []string:
-		return SliceString(data, name), nil
+		vals := data.([]string)
+		return SliceString(vals, name), nil
 	case []bool:
-		return SliceBool(data, name), nil
+		vals := data.([]bool)
+		return SliceBool(vals, name), nil
 	case []time.Time:
-		return SliceDateTime(data, name), nil
+		vals := data.([]time.Time)
+		return SliceDateTime(vals, name), nil
 	case []interface{}:
-		return SliceInterface(data, name), nil
+		vals := data.([]interface{})
+		return SliceInterface(vals, name), nil
 	default:
 		return index.Level{}, fmt.Errorf("Unable to create level from Slice: data type not supported: %T", data)
 	}

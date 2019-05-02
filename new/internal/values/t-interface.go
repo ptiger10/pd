@@ -107,7 +107,14 @@ func (vals InterfaceValues) ToBool() Values {
 		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
-			ret = append(ret, Bool(true, false))
+			switch val.v.(type) {
+			case bool:
+				v := val.v.(bool)
+				ret = append(ret, Bool(v, false))
+			default:
+				ret = append(ret, Bool(false, true))
+			}
+
 		}
 	}
 	return ret
@@ -132,6 +139,14 @@ func (vals InterfaceValues) ToDateTime() Values {
 			case uint, uint8, uint16, uint32, uint64:
 				u := reflect.ValueOf(val.v).Uint()
 				ret = append(ret, intToDateTime(int64(u)))
+			case time.Time:
+				t := val.v.(time.Time)
+				if t == (time.Time{}) {
+					ret = append(ret, DateTime(time.Time{}, true))
+				} else {
+					ret = append(ret, DateTime(t, false))
+				}
+
 			default:
 				vStr, ok := val.v.(string)
 				if !ok {

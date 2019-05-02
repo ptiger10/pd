@@ -72,14 +72,15 @@ func (vals BoolValues) ToBool() Values {
 
 // ToDateTime converts BoolValues to DateTimeValues
 //
-// notnull: time.Time{}
+// notnull: time.Date(1970,1,1,0,0,0,0,time.UTC)
 func (vals BoolValues) ToDateTime() Values {
+	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	var ret DateTimeValues
 	for _, val := range vals {
 		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			ret = append(ret, DateTime(time.Time{}, false))
+			ret = append(ret, DateTime(epochDate, false))
 		}
 	}
 	return ret

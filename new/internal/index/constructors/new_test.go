@@ -9,7 +9,7 @@ import (
 )
 
 func Test_New(t *testing.T) {
-	labels := constructVal.SliceInt([]int{0, 1, 2})
+	labels := constructVal.SliceInt([]int64{0, 1, 2})
 	lvl := level(labels, kinds.Int, "")
 	index := New(lvl)
 	gotLen := len(index.Levels)
@@ -21,10 +21,10 @@ func Test_New(t *testing.T) {
 
 func Test_NewMulti(t *testing.T) {
 	lvl1 := level(
-		constructVal.SliceInt([]int{0, 1, 2}),
+		constructVal.SliceInt([]int64{0, 1, 2}),
 		kinds.Int, "")
 	lvl2 := level(
-		constructVal.SliceInt([]int{100, 101, 102}),
+		constructVal.SliceInt([]int64{100, 101, 102}),
 		kinds.Int, "")
 	index := New(lvl1, lvl2)
 	gotLen := len(index.Levels)
@@ -38,7 +38,7 @@ func Test_NewMulti(t *testing.T) {
 func Test_Default(t *testing.T) {
 	got := Default(3)
 	want := New(level(
-		constructVal.SliceInt([]int{0, 1, 2}),
+		constructVal.SliceInt([]int64{0, 1, 2}),
 		kinds.Int, "",
 	))
 	if !reflect.DeepEqual(got, want) {

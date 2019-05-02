@@ -26,13 +26,13 @@ func TestLevel(t *testing.T) {
 		},
 		{
 			data:       []int{0, 1, 2},
-			wantLabels: constructVal.SliceInt([]int{0, 1, 2}),
+			wantLabels: constructVal.SliceInt([]int64{0, 1, 2}),
 			wantKind:   kinds.Int,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
-			wantLabels: constructVal.SliceUint([]uint{0, 1, 2}),
+			wantLabels: constructVal.SliceInt([]int64{0, 1, 2}),
 			wantKind:   kinds.Int,
 			wantName:   "test",
 		},

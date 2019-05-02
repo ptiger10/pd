@@ -46,7 +46,7 @@ func (vals StringValues) ToFloat() Values {
 
 func stringToFloat(s string) FloatValue {
 	v, err := strconv.ParseFloat(s, 64)
-	if err != nil || math.IsNaN(v) {
+	if err != nil {
 		return Float(math.NaN(), true)
 	}
 	return Float(v, false)
@@ -68,7 +68,7 @@ func (vals StringValues) ToInt() Values {
 }
 
 func stringToInt(s string) IntValue {
-	v, err := strconv.Atoi(s)
+	v, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return Int(0, true)
 	}
@@ -201,7 +201,8 @@ func (vals StringValues) ToDateTime() Values {
 		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-
+			v := stringToDateTime(val.v)
+			ret = append(ret, v)
 		}
 	}
 	return ret

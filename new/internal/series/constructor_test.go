@@ -383,7 +383,7 @@ func TestMini_single(t *testing.T) {
 		t.Error(err)
 	}
 	want := constructIdx.New(
-		constructIdx.SliceInt([]int{1, 2, 3}, "test"),
+		constructIdx.SliceInt([]int64{1, 2, 3}, "test"),
 	)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("MiniIndex returned %v, want %v", got, want)

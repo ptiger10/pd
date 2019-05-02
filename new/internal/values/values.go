@@ -8,6 +8,7 @@ type Values interface {
 	Describe() string
 	In([]int) Values
 	Len() int
+	// Element returns a value element at an integer position in the form []interface{} {val, null}
 	Element(int) []interface{}
 
 	ToFloat() Values

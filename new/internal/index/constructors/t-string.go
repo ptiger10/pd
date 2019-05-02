@@ -6,11 +6,11 @@ import (
 	"github.com/ptiger10/pd/new/kinds"
 )
 
-// SliceInterface converts []interface{} -> IndexLevel of kind reflect.Interface
-func SliceInterface(data interface{}, name string) index.Level {
+// SliceString converts []string -> IndexLevel of kind reflect.String
+func SliceString(data []string, name string) index.Level {
 	level := level(
-		constructVal.SliceInterface(data),
-		kinds.Interface,
+		constructVal.SliceString(data),
+		kinds.String,
 		name,
 	)
 	return level

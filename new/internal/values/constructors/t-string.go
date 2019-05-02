@@ -23,19 +23,17 @@ func isNullString(s string) bool {
 // [START Constructor Functions]
 
 // SliceString converts []string -> values.StringValues
-func SliceString(data interface{}) values.StringValues {
-	var vals values.StringValues
-	d := data.([]string)
-	for i := 0; i < len(d); i++ {
-		val := d[i]
+func SliceString(vals []string) values.StringValues {
+	var v values.StringValues
+	for _, val := range vals {
 		if isNullString(val) {
-			vals = append(vals, values.String("", true))
+			v = append(v, values.String("", true))
 		} else {
-			vals = append(vals, values.String(val, false))
+			v = append(v, values.String(val, false))
 		}
 
 	}
-	return vals
+	return v
 }
 
 // [END Constructor Functions]

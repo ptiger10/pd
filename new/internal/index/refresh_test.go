@@ -17,11 +17,11 @@ func Test_RefreshLevel(t *testing.T) {
 		wantLabelMap index.LabelMap
 		wantLongest  int
 	}{
-		{constructVal.SliceInt([]int{3, 4}), index.LabelMap{"3": []int{0}, "4": []int{1}}, 1},
-		{constructVal.SliceInt([]int{10, 20}), index.LabelMap{"10": []int{0}, "20": []int{1}}, 2},
+		{constructVal.SliceInt([]int64{3, 4}), index.LabelMap{"3": []int{0}, "4": []int{1}}, 1},
+		{constructVal.SliceInt([]int64{10, 20}), index.LabelMap{"10": []int{0}, "20": []int{1}}, 2},
 	}
 	for _, test := range tests {
-		lvl := constructIdx.SliceInt([]int{1, 2}, "")
+		lvl := constructIdx.SliceInt([]int64{1, 2}, "")
 		origLabelMap := index.LabelMap{"1": []int{0}, "2": []int{1}}
 		if !reflect.DeepEqual(lvl.LabelMap, origLabelMap) {
 			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, origLabelMap)
@@ -44,10 +44,10 @@ func Test_RefreshIndex(t *testing.T) {
 		wantNameMap index.LabelMap
 		wantName    string
 	}{
-		{constructIdx.SliceInt([]int{1, 2}, "ints"), index.LabelMap{"ints": []int{0}}, "ints"},
+		{constructIdx.SliceInt([]int64{1, 2}, "ints"), index.LabelMap{"ints": []int{0}}, "ints"},
 	}
 	for _, test := range tests {
-		orig := constructIdx.SliceInt([]int{1, 2}, "")
+		orig := constructIdx.SliceInt([]int64{1, 2}, "")
 		idx := constructIdx.New(orig)
 		idx.Levels[0] = test.newLevel
 		idx.Refresh()

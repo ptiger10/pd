@@ -54,7 +54,11 @@ func (vals FloatValues) Element(position int) []interface{} {
 func (vals FloatValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
@@ -110,7 +114,11 @@ func (vals IntValues) Element(position int) []interface{} {
 func (vals IntValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
@@ -166,7 +174,11 @@ func (vals StringValues) Element(position int) []interface{} {
 func (vals StringValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
@@ -222,7 +234,11 @@ func (vals BoolValues) Element(position int) []interface{} {
 func (vals BoolValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
@@ -278,7 +294,11 @@ func (vals DateTimeValues) Element(position int) []interface{} {
 func (vals DateTimeValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
@@ -334,7 +354,11 @@ func (vals InterfaceValues) Element(position int) []interface{} {
 func (vals InterfaceValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.v), val.null))
+		if val.null {
+			ret = append(ret, String("", true))
+		} else {
+			ret = append(ret, String(fmt.Sprint(val.v), false))
+		}
 	}
 	return ret
 }
