@@ -46,6 +46,11 @@ func (vals IntValues) ToFloat() Values {
 	return ret
 }
 
+// ToInt returns itself
+func (vals IntValues) ToInt() Values {
+	return vals
+}
+
 // [END Converters]
 
 // [START Methods]

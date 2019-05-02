@@ -47,6 +47,22 @@ func (vals DateTimeValues) ToFloat() Values {
 	return ret
 }
 
+// ToInt converts DateTimeValues to IntValues of the Unix EPOCH timestamp
+// (seconds since midnight January 1, 1970)
+// 2019-05-01 00:00:00 +0000 UTC: 1556757505
+func (vals DateTimeValues) ToInt() Values {
+	var ret IntValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Int(0, true))
+		} else {
+			v := val.V.UnixNano()
+			ret = append(ret, Int(v, false))
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]

@@ -34,6 +34,22 @@ func (vals FloatValues) ToFloat() Values {
 	return vals
 }
 
+// ToInt converts FloatValues to IntValues
+//
+// 1.9: 1, 1.5: 1, null: 0
+func (vals FloatValues) ToInt() Values {
+	var ret IntValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Int(0, true))
+		} else {
+			v := int64(val.V)
+			ret = append(ret, Int(v, false))
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]
