@@ -94,7 +94,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	if config.indices == nil {
 		idx = constructIdx.Default(v.Len())
 	} else {
-		idx, err = constructIdx.IndexFromMiniIndex(config.indices)
+		idx, err = indexFromMiniIndex(config.indices, v.Len())
 		if err != nil {
 			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
 		}
@@ -109,4 +109,42 @@ func New(data interface{}, options ...Option) (Series, error) {
 	}
 
 	return s, err
+}
+
+// [START MiniIndex]
+
+// an untyped representation of one index level.
+// It is used for unpacking client-supplied index data and optional metadata
+type miniIndex struct {
+	Data interface{}
+	Kind reflect.Kind
+	Name string
+}
+
+// creates a full index from a mini client-supplied representation of an index level,
+// but returns an error if every index level is not the same length as requiredLen
+
+func indexFromMiniIndex(minis []index.MiniIndex, requiredLen int) (index.Index, error) {
+	var levels []index.Level
+	for _, miniIdx := range minis {
+		if reflect.ValueOf(miniIdx.Data).Kind() != reflect.Slice {
+			return index.Index{}, fmt.Errorf("Unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.Data)
+		}
+		level, err := constructIdx.LevelFromSlice(miniIdx.Data, miniIdx.Name)
+		if err != nil {
+			return index.Index{}, fmt.Errorf("Unable to construct index: %v", err)
+		}
+		if level.Labels.Len() != requiredLen {
+			return index.Index{}, fmt.Errorf("Unable to construct index %v:"+
+				"mismatch between supplied index length (%v) and expected length (%v)",
+				miniIdx.Data, level.Labels.Len(), requiredLen)
+		}
+		if miniIdx.Kind != kinds.None {
+			level.Convert(miniIdx.Kind)
+		}
+		levels = append(levels, level)
+	}
+	idx := constructIdx.New(levels...)
+	return idx, nil
+
 }

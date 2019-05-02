@@ -3,7 +3,12 @@ package series
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"testing"
+
+	"github.com/ptiger10/pd/new/internal/index"
+	constructIdx "github.com/ptiger10/pd/new/internal/index/constructors"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 // Calls New and panics if error. For use in testing
@@ -336,3 +341,22 @@ func TestBaseConstructor_Index_Slice_Float(t *testing.T) {
 // 		t.Errorf("Count() returned %v, want %v", gotCount, wantCount)
 // 	}
 // }
+
+func TestMini_single(t *testing.T) {
+	mini := index.MiniIndex{
+		Data: []int{1, 2, 3},
+		Kind: kinds.Int,
+		Name: "test",
+	}
+	got, err := indexFromMiniIndex([]index.MiniIndex{mini}, 3)
+	if err != nil {
+		t.Error(err)
+	}
+	want := constructIdx.New(
+		constructIdx.SliceInt([]int{1, 2, 3}, "test"),
+	)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("MiniIndex returned %v, want %v", got, want)
+	}
+
+}
