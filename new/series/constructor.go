@@ -102,8 +102,8 @@ func New(data interface{}, options ...Option) (Series, error) {
 
 	// Construct Series
 	s := Series{
-		Index:  idx,
-		Values: v,
+		index:  idx,
+		values: v,
 		Kind:   kind,
 		Name:   name,
 	}

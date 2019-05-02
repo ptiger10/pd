@@ -2,7 +2,6 @@ package series
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/ptiger10/pd/new/options"
@@ -12,7 +11,7 @@ func (s Series) String() string {
 	switch s.Kind {
 	// case DateTime:
 	// 	var printer string
-	// 	vals := s.Values.(dateTimeValues)
+	// 	vals := s.values.(dateTimeValues)
 	// 	for _, val := range vals {
 	// 		printer += fmt.Sprintln(val.v.Format("01/02/2006"))
 	// 	}
@@ -22,51 +21,51 @@ func (s Series) String() string {
 	}
 }
 
-// expects to receive a slice of typed value structs (eg values.floatValues)
-// each struct must contain a boolean field called "Null" and a value field called "V"
+// expects to receive a slice of typed value structs (eg values.FloatValues)
 func (s Series) print() string {
-
-	vals := reflect.ValueOf(s.Values)
-	levels := reflect.ValueOf(s.Index.Levels)
-	numLevels := len(s.Index.Levels)
-	var printer string
+	numLevels := len(s.index.Levels)
 	var header string
-	// header row
+	var printer string
+	// [START header row]
 	for j := 0; j < numLevels; j++ {
-		name := s.Index.Levels[j].Name
-		padding := s.Index.Levels[j].Longest
+		name := s.index.Levels[j].Name
+		padding := s.index.Levels[j].Longest
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
 			header += strings.Repeat(" ", options.DisplayIndexWhitespaceBuffer)
 		}
 	}
-	if header != "" {
+	// omit header line if empty
+	if strings.TrimSpace((header)) != "" {
 		header = fmt.Sprintln(header)
 	}
 	printer += header
+	// [END header row]
+
+	// [START rows]
 	prior := make(map[int]string)
 	for i := 0; i < s.Len(); i++ {
-
+		elem := s.Elem(i)
 		var newLine string
+
+		// [START index printer]
 		for j := 0; j < numLevels; j++ {
 			var skip bool
 			var buffer string
-			padding := s.Index.Levels[j].Longest
-			// s.Index.Levels[j].Labels[i]
-			idxVal := levels.Index(j).FieldByName("Labels").Elem().Index(i).FieldByName("V")
-			idxStr := fmt.Sprint(idxVal)
+			padding := s.index.Levels[j].Longest
+			idx := fmt.Sprint(elem.Index[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
 				buffer = strings.Repeat(" ", options.DisplayIndexWhitespaceBuffer)
 				// skip repeated label values if this is not the last index level
-				if prior[j] == idxStr {
+				if prior[j] == idx {
 					skip = true
-					idxStr = ""
+					idx = ""
 				}
 			}
 
-			printStr := fmt.Sprintf("%*v", padding, idxStr)
+			printStr := fmt.Sprintf("%*v", padding, idx)
 			// elide index string if longer than the max allowable width
 			if padding == options.DisplayIndexMaxWidth {
 				printStr = printStr[:len(printStr)-4] + "..."
@@ -76,11 +75,13 @@ func (s Series) print() string {
 
 			// set prior row value for each index level except the last
 			if j != numLevels-1 && !skip {
-				prior[j] = idxStr
+				prior[j] = idx
 			}
 		}
-		// s.Values[i].v
-		valStr := fmt.Sprint(vals.Index(i).FieldByName("V"))
+		// [END index printer]
+
+		// [START value printer]
+		valStr := fmt.Sprint(elem.Value)
 		// add buffer at beginning
 		val := strings.Repeat(" ", options.DisplayValuesWhitespaceBuffer) + valStr
 		// null string values must not return any trailing whitespace
@@ -92,6 +93,8 @@ func (s Series) print() string {
 		printer += fmt.Sprintln(newLine)
 	}
 	printer += fmt.Sprintf("kind: %s\n", s.Kind)
+	// [END rows]
+
 	if s.Name != "" {
 		printer += fmt.Sprintf("name: %s\n", s.Name)
 	}
