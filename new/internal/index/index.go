@@ -23,3 +23,10 @@ type Level struct {
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
 type LabelMap map[string][]int
+
+// A MiniIndex is used for storing client-supplied index data and optional metadata
+type MiniIndex struct {
+	Data interface{}
+	Name string
+	Kind reflect.Kind
+}

@@ -44,7 +44,7 @@ func ValuesFromSlice(data interface{}) (values.Values, reflect.Kind, error) {
 		kind = kinds.Interface
 
 	default:
-		return nil, kinds.None, fmt.Errorf("Datatype %T not supported", data)
+		return nil, kinds.None, fmt.Errorf("Type %T not supported", data)
 	}
 
 	return v, kind, nil

@@ -1,6 +1,9 @@
 package values
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 // [START FloatValues]
 
@@ -37,6 +40,15 @@ func (vals FloatValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
 		ret = append(ret, val.V)
+	}
+	return ret
+}
+
+// ToString converts the values to String values
+func (vals FloatValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
 	}
 	return ret
 }
@@ -82,6 +94,15 @@ func (vals IntValues) All() []interface{} {
 	return ret
 }
 
+// ToString converts the values to String values
+func (vals IntValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+	}
+	return ret
+}
+
 // [END IntValues]
 
 // [START StringValues]
@@ -119,6 +140,15 @@ func (vals StringValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
 		ret = append(ret, val.V)
+	}
+	return ret
+}
+
+// ToString converts the values to String values
+func (vals StringValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
 	}
 	return ret
 }
@@ -164,6 +194,15 @@ func (vals BoolValues) All() []interface{} {
 	return ret
 }
 
+// ToString converts the values to String values
+func (vals BoolValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+	}
+	return ret
+}
+
 // [END BoolValues]
 
 // [START DateTimeValues]
@@ -205,6 +244,15 @@ func (vals DateTimeValues) All() []interface{} {
 	return ret
 }
 
+// ToString converts the values to String values
+func (vals DateTimeValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+	}
+	return ret
+}
+
 // [END DateTimeValues]
 
 // [START InterfaceValues]
@@ -242,6 +290,15 @@ func (vals InterfaceValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
 		ret = append(ret, val.V)
+	}
+	return ret
+}
+
+// ToString converts the values to String values
+func (vals InterfaceValues) ToString() Values {
+	var ret StringValues
+	for _, val := range vals {
+		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
 	}
 	return ret
 }

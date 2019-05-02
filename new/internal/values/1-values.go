@@ -8,4 +8,5 @@ type Values interface {
 	Describe() string
 	In([]int) Values
 	Len() int
+	ToString() Values
 }
