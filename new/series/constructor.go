@@ -15,7 +15,7 @@ import (
 // An Option is an optional parameter in the Series constructor
 type Option func(*seriesConfig)
 type seriesConfig struct {
-	indices []index.MiniIndex
+	indices []miniIndex
 	kind    reflect.Kind
 	name    string
 }
@@ -42,7 +42,7 @@ func Index(data interface{}, options ...Option) Option {
 		option(&config)
 	}
 	return func(c *seriesConfig) {
-		idx := index.MiniIndex{
+		idx := miniIndex{
 			Data: data,
 			Kind: config.kind,
 			Name: config.name,
@@ -124,7 +124,7 @@ type miniIndex struct {
 // creates a full index from a mini client-supplied representation of an index level,
 // but returns an error if every index level is not the same length as requiredLen
 
-func indexFromMiniIndex(minis []index.MiniIndex, requiredLen int) (index.Index, error) {
+func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error) {
 	var levels []index.Level
 	for _, miniIdx := range minis {
 		if reflect.ValueOf(miniIdx.Data).Kind() != reflect.Slice {
@@ -148,3 +148,5 @@ func indexFromMiniIndex(minis []index.MiniIndex, requiredLen int) (index.Index, 
 	return idx, nil
 
 }
+
+// [END MiniIndex]

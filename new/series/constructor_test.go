@@ -1,12 +1,10 @@
 package series
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/new/internal/index"
 	constructIdx "github.com/ptiger10/pd/new/internal/index/constructors"
 	"github.com/ptiger10/pd/new/kinds"
 )
@@ -22,7 +20,7 @@ func mustNew(data interface{}, options ...Option) Series {
 
 // Float Tests
 // ------------------------------------------------
-func TestBaseConstructor_Slice_Float(t *testing.T) {
+func TestConstructor_Slice_Float(t *testing.T) {
 	var err error
 
 	_, err = New([]float32{-1.5, 0, 1.5})
@@ -36,7 +34,7 @@ func TestBaseConstructor_Slice_Float(t *testing.T) {
 	}
 }
 
-func TestBaseConstructor_Name_Slice_Float(t *testing.T) {
+func TestConstructor_Name_Slice_Float(t *testing.T) {
 	var err error
 
 	_, err = New([]float32{-1.5, 0, 1.5}, Name("float32"))
@@ -49,17 +47,49 @@ func TestBaseConstructor_Name_Slice_Float(t *testing.T) {
 	}
 }
 
-func TestBaseConstructor_Index_Slice_Float(t *testing.T) {
+func TestConstructor_Index_Slice_Float(t *testing.T) {
 	var err error
 
-	s, err := New([]float32{-1.5, 0, 1.5}, Index([]float32{2, 3}))
+	_, err = New([]float32{-1.5, 0, 1.5}, Index([]float32{1, 2, 3}))
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Printf("%+v", s)
-	_, err = New([]float64{-1.5, 0, 1.5}, Index([]float32{1, 2, 3}))
+	_, err = New([]float64{-1.5, 0, 1.5}, Index([]float64{1, 2, 3}))
 	if err != nil {
 		t.Error(err)
+	}
+	_, err = New([]float64{-1.5, 0, 1.5}, Index([]float64{1}))
+	if err == nil {
+		t.Errorf("Returned nil error, want error due to mismatched value/index lengths")
+	}
+}
+
+func TestConstructor_Kind_Slice_Float(t *testing.T) {
+	var err error
+
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Float))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Int))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.String))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Bool))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.DateTime))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Interface))
+	if err == nil {
+		t.Error("Returned nil error, want error due to unsupported conversion type")
 	}
 }
 
@@ -343,12 +373,12 @@ func TestBaseConstructor_Index_Slice_Float(t *testing.T) {
 // }
 
 func TestMini_single(t *testing.T) {
-	mini := index.MiniIndex{
+	mini := miniIndex{
 		Data: []int{1, 2, 3},
 		Kind: kinds.Int,
 		Name: "test",
 	}
-	got, err := indexFromMiniIndex([]index.MiniIndex{mini}, 3)
+	got, err := indexFromMiniIndex([]miniIndex{mini}, 3)
 	if err != nil {
 		t.Error(err)
 	}
