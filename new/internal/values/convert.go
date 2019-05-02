@@ -7,7 +7,7 @@ import (
 	"github.com/ptiger10/pd/new/kinds"
 )
 
-// Convert converts a collection of values from one type to another, if possible
+// Convert a collection of values from one type to another, and coerce to null if a value cannot be converted sensibly
 func Convert(currentVals Values, kind reflect.Kind) (Values, error) {
 	var vals Values
 	switch kind {
