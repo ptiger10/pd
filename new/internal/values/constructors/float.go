@@ -2,26 +2,23 @@ package constructors
 
 import (
 	"math"
-	"reflect"
 
 	"github.com/ptiger10/pd/new/internal/values"
 )
 
 // [START Constructor Functions]
 
-// SliceFloat converts []float (of any variety) -> values.FloatValues
-func SliceFloat(data interface{}) values.FloatValues {
-	var vals values.FloatValues
-	d := reflect.ValueOf(data)
-	for i := 0; i < d.Len(); i++ {
-		val := d.Index(i).Float()
+// SliceFloat converts []float64  -> values.FloatValues
+func SliceFloat(vals []float64) values.FloatValues {
+	var v values.FloatValues
+	for _, val := range vals {
 		if math.IsNaN(val) {
-			vals = append(vals, values.Float(val, true))
+			v = append(v, values.Float(val, true))
 			continue
 		}
-		vals = append(vals, values.Float(val, false))
+		v = append(v, values.Float(val, false))
 	}
-	return vals
+	return v
 }
 
 // [END Constructor Functions]

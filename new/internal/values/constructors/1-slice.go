@@ -16,15 +16,30 @@ func ValuesFromSlice(data interface{}) (values.Values, reflect.Kind, error) {
 
 	switch data.(type) {
 	case []float32, []float64:
-		v = SliceFloat(data)
+		var vals []float64
+		d := reflect.ValueOf(data)
+		for i := 0; i < d.Len(); i++ {
+			vals = append(vals, d.Index(i).Float())
+		}
+		v = SliceFloat(vals)
 		kind = kinds.Float
 
 	case []int, []int8, []int16, []int32, []int64:
-		v = SliceInt(data)
+		var vals []int64
+		d := reflect.ValueOf(data)
+		for i := 0; i < d.Len(); i++ {
+			vals = append(vals, d.Index(i).Int())
+		}
+		v = SliceInt(vals)
 		kind = kinds.Int
 
 	case []uint, []uint8, []uint16, []uint32, []uint64:
-		v = SliceUint(data)
+		var vals []int64
+		d := reflect.ValueOf(data)
+		for i := 0; i < d.Len(); i++ {
+			vals = append(vals, int64(d.Index(i).Uint()))
+		}
+		v = SliceInt(data)
 		kind = kinds.Int
 
 	case []string:
