@@ -8,7 +8,7 @@ import (
 
 // SliceDateTime converts []time.Time{} -> IndexLevel of kind reflect.Struct
 func SliceDateTime(data interface{}, name string) index.Level {
-	level := Level(
+	level := level(
 		constructVal.SliceDateTime(data),
 		kinds.DateTime,
 		name,

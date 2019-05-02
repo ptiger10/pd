@@ -10,7 +10,7 @@ import (
 
 func Test_New(t *testing.T) {
 	labels := constructVal.SliceInt([]int{0, 1, 2})
-	lvl := Level(labels, kinds.Int, "")
+	lvl := level(labels, kinds.Int, "")
 	index := New(lvl)
 	gotLen := len(index.Levels)
 	wantLen := 1
@@ -20,10 +20,10 @@ func Test_New(t *testing.T) {
 }
 
 func Test_NewMulti(t *testing.T) {
-	lvl1 := Level(
+	lvl1 := level(
 		constructVal.SliceInt([]int{0, 1, 2}),
 		kinds.Int, "")
-	lvl2 := Level(
+	lvl2 := level(
 		constructVal.SliceInt([]int{100, 101, 102}),
 		kinds.Int, "")
 	index := New(lvl1, lvl2)
@@ -37,7 +37,7 @@ func Test_NewMulti(t *testing.T) {
 
 func Test_Default(t *testing.T) {
 	got := Default(3)
-	want := New(Level(
+	want := New(level(
 		constructVal.SliceInt([]int{0, 1, 2}),
 		kinds.Int, "",
 	))

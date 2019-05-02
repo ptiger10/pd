@@ -22,6 +22,11 @@ func Test_RefreshLevel(t *testing.T) {
 	}
 	for _, test := range tests {
 		lvl := constructIdx.SliceInt([]int{1, 2}, "")
+		origLabelMap := index.LabelMap{"1": []int{0}, "2": []int{1}}
+		if !reflect.DeepEqual(lvl.LabelMap, origLabelMap) {
+			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, origLabelMap)
+		}
+
 		lvl.Labels = test.newLabels
 		lvl.Refresh()
 		if !reflect.DeepEqual(lvl.LabelMap, test.wantLabelMap) {

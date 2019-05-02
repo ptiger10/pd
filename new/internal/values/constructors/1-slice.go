@@ -24,7 +24,7 @@ func ValuesFromSlice(data interface{}) (values.Values, reflect.Kind, error) {
 		kind = kinds.Int
 
 	case []uint, []uint8, []uint16, []uint32, []uint64:
-		v = SliceUInt(data)
+		v = SliceUint(data)
 		kind = kinds.Int
 
 	case []string:

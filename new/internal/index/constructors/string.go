@@ -8,7 +8,7 @@ import (
 
 // SliceString converts []string -> IndexLevel of kind reflect.String
 func SliceString(data interface{}, name string) index.Level {
-	level := Level(
+	level := level(
 		constructVal.SliceString(data),
 		kinds.String,
 		name,

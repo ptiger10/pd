@@ -8,7 +8,7 @@ import (
 
 // SliceBool converts []bool -> IndexLevel of kind reflect.Bool
 func SliceBool(data interface{}, name string) index.Level {
-	level := Level(
+	level := level(
 		constructVal.SliceBool(data),
 		kinds.Bool,
 		name,

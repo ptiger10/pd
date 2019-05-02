@@ -8,7 +8,7 @@ import (
 
 // SliceFloat converts []float (of any variety) -> IndexLevel of kind reflect.Float64
 func SliceFloat(data interface{}, name string) index.Level {
-	level := Level(
+	level := level(
 		constructVal.SliceFloat(data),
 		kinds.Float,
 		name,

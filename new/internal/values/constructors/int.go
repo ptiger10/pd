@@ -23,8 +23,8 @@ func SliceInt(data interface{}) values.IntValues {
 	return vals
 }
 
-// SliceUInt converts []uint (of any variety) -> values.IntValues
-func SliceUInt(data interface{}) values.IntValues {
+// SliceUint converts []uint (of any variety) -> values.IntValues
+func SliceUint(data interface{}) values.IntValues {
 	var vals values.IntValues
 	d := reflect.ValueOf(data)
 	for i := 0; i < d.Len(); i++ {
