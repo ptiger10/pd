@@ -12,9 +12,9 @@ import (
 // [START Convenience Functions]
 
 func isNullString(s string) bool {
-	nullStrings := []string{"nan", "n/a", ""}
+	nullStrings := []string{"NaN", "n/a", "N/A", "", "nil"}
 	for _, ns := range nullStrings {
-		if strings.TrimSpace(strings.ToLower(s)) == ns {
+		if strings.TrimSpace(s) == ns {
 			return true
 		}
 	}

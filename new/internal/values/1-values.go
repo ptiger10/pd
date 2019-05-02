@@ -8,5 +8,10 @@ type Values interface {
 	Describe() string
 	In([]int) Values
 	Len() int
+
+	ToFloat() Values
+	// ToInt() Values
 	ToString() Values
+	// ToBool() Values
+	// ToDateTime() Values
 }

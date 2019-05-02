@@ -28,7 +28,7 @@ func TestConvert_string(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		v, err = convert(test.input, kinds.String)
+		v, err = Convert(test.input, kinds.String)
 		if err != nil {
 			t.Errorf("Unable to convert to string: %v", err)
 		}

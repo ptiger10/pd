@@ -21,6 +21,7 @@ func TestAt_singleindex(t *testing.T) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
+
 }
 
 func TestAt_multiindex(t *testing.T) {

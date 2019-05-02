@@ -2,6 +2,7 @@ package values
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/ptiger10/pd/new/options"
@@ -27,6 +28,26 @@ func DateTime(v time.Time, null bool) DateTimeValue {
 }
 
 // [END Definitions]
+
+// [START Converters]
+
+// ToFloat converts DateTimeValues to FloatValues of the Unix EPOCH timestamp
+// (seconds since midnight January 1, 1970)
+// 2019-05-01 00:00:00 +0000 UTC: 1556757505
+func (vals DateTimeValues) ToFloat() Values {
+	var ret FloatValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Float(math.NaN(), true))
+		} else {
+			v := val.V.UnixNano()
+			ret = append(ret, Float(float64(v), false))
+		}
+	}
+	return ret
+}
+
+// [END Converters]
 
 // [START Methods]
 

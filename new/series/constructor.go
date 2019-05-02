@@ -15,8 +15,8 @@ import (
 
 type Option func(*seriesConfig)
 type seriesConfig struct {
-	kind    reflect.Kind
 	indices []index.MiniIndex
+	kind    reflect.Kind
 	name    string
 }
 
@@ -42,8 +42,8 @@ func Index(data interface{}, options ...Option) Option {
 	return func(c *seriesConfig) {
 		idx := index.MiniIndex{
 			Data: data,
-			Name: config.name,
 			Kind: config.kind,
+			Name: config.name,
 		}
 		c.indices = append(c.indices, idx)
 	}

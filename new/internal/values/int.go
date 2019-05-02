@@ -2,6 +2,7 @@ package values
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -26,6 +27,26 @@ func Int(v int64, null bool) IntValue {
 }
 
 // [END Definitions]
+
+// [START Converters]
+
+// ToFloat converts IntValues to FloatValues
+//
+// 1: 1.0
+func (vals IntValues) ToFloat() Values {
+	var ret FloatValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Float(math.NaN(), true))
+		} else {
+			v := float64(val.V)
+			ret = append(ret, Float(v, false))
+		}
+	}
+	return ret
+}
+
+// [END Converters]
 
 // [START Methods]
 

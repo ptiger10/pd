@@ -2,6 +2,8 @@ package values
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -26,6 +28,30 @@ func String(v string, null bool) StringValue {
 }
 
 // [END Definitions]
+
+// [START Converters]
+
+// ToFloat converts StringValues to FloatValues
+//
+// "1": 1.0, Null: NaN
+func (vals StringValues) ToFloat() Values {
+	var ret FloatValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Float(math.NaN(), true))
+		} else {
+			v, err := strconv.ParseFloat(val.V, 64)
+			if err != nil {
+				ret = append(ret, Float(math.NaN(), true))
+			} else {
+				ret = append(ret, Float(v, false))
+			}
+		}
+	}
+	return ret
+}
+
+// [END Converters]
 
 // [START Methods]
 

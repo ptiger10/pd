@@ -2,6 +2,7 @@ package values
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -26,6 +27,27 @@ func Bool(v bool, null bool) BoolValue {
 }
 
 // [END Definitions]
+
+// [START Converters]
+
+// ToFloat converts BoolValues to FloatValues
+//
+// true: 1.0, false: 0.0, null: NaN
+func (vals BoolValues) ToFloat() Values {
+	var ret FloatValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Float(math.NaN(), true))
+		} else if val.V {
+			ret = append(ret, Float(1, false))
+		} else {
+			ret = append(ret, Float(0, false))
+		}
+	}
+	return ret
+}
+
+// [END Converters]
 
 // [START Methods]
 

@@ -27,6 +27,15 @@ func Float(v float64, null bool) FloatValue {
 
 // [END Definitions]
 
+// [START Converters]
+
+// ToFloat returns itself
+func (vals FloatValues) ToFloat() Values {
+	return vals
+}
+
+// [END Converters]
+
 // [START Methods]
 
 // Describe the values in the collection
