@@ -10,7 +10,7 @@ import (
 func (vals FloatValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -39,16 +39,22 @@ func (vals FloatValues) In(positions []int) Values {
 func (vals FloatValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals FloatValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals FloatValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }
@@ -60,7 +66,7 @@ func (vals FloatValues) ToString() Values {
 func (vals IntValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -89,16 +95,22 @@ func (vals IntValues) In(positions []int) Values {
 func (vals IntValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals IntValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals IntValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }
@@ -110,7 +122,7 @@ func (vals IntValues) ToString() Values {
 func (vals StringValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -139,16 +151,22 @@ func (vals StringValues) In(positions []int) Values {
 func (vals StringValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals StringValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals StringValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }
@@ -160,7 +178,7 @@ func (vals StringValues) ToString() Values {
 func (vals BoolValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -189,16 +207,22 @@ func (vals BoolValues) In(positions []int) Values {
 func (vals BoolValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals BoolValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals BoolValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }
@@ -210,7 +234,7 @@ func (vals BoolValues) ToString() Values {
 func (vals DateTimeValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -239,16 +263,22 @@ func (vals DateTimeValues) In(positions []int) Values {
 func (vals DateTimeValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals DateTimeValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals DateTimeValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }
@@ -260,7 +290,7 @@ func (vals DateTimeValues) ToString() Values {
 func (vals InterfaceValues) count() int {
 	var count int
 	for _, val := range vals {
-		if !val.Null {
+		if !val.null {
 			count++
 		}
 	}
@@ -289,16 +319,22 @@ func (vals InterfaceValues) In(positions []int) Values {
 func (vals InterfaceValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
-		ret = append(ret, val.V)
+		ret = append(ret, val.v)
 	}
 	return ret
+}
+
+// Element returns a value element at an integer position in form
+// []interface{val, null}
+func (vals InterfaceValues) Element(position int) []interface{} {
+	return []interface{}{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to String values
 func (vals InterfaceValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
-		ret = append(ret, String(fmt.Sprint(val.V), val.Null))
+		ret = append(ret, String(fmt.Sprint(val.v), val.null))
 	}
 	return ret
 }

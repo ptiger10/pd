@@ -15,15 +15,15 @@ type BoolValues []BoolValue
 
 // A BoolValue is one bool-typed Value/Null struct
 type BoolValue struct {
-	V    bool
-	Null bool
+	v    bool
+	null bool
 }
 
 // Bool constructs a BoolValue
 func Bool(v bool, null bool) BoolValue {
 	return BoolValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -37,9 +37,9 @@ func Bool(v bool, null bool) BoolValue {
 func (vals BoolValues) ToFloat() Values {
 	var ret FloatValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Float(math.NaN(), true))
-		} else if val.V {
+		} else if val.v {
 			ret = append(ret, Float(1, false))
 		} else {
 			ret = append(ret, Float(0, false))
@@ -54,9 +54,9 @@ func (vals BoolValues) ToFloat() Values {
 func (vals BoolValues) ToInt() Values {
 	var ret IntValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Int(0, true))
-		} else if val.V {
+		} else if val.v {
 			ret = append(ret, Int(1, false))
 		} else {
 			ret = append(ret, Int(0, false))
@@ -76,7 +76,7 @@ func (vals BoolValues) ToBool() Values {
 func (vals BoolValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
 			ret = append(ret, DateTime(time.Time{}, false))

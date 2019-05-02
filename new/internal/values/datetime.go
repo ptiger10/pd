@@ -15,15 +15,15 @@ type DateTimeValues []DateTimeValue
 
 // A DateTimeValue is one time.Time-typed Value/Null struct
 type DateTimeValue struct {
-	V    time.Time
-	Null bool
+	v    time.Time
+	null bool
 }
 
 // DateTime constructs a DateTimeValue
 func DateTime(v time.Time, null bool) DateTimeValue {
 	return DateTimeValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -37,10 +37,10 @@ func DateTime(v time.Time, null bool) DateTimeValue {
 func (vals DateTimeValues) ToFloat() Values {
 	var ret FloatValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Float(math.NaN(), true))
 		} else {
-			v := val.V.UnixNano()
+			v := val.v.UnixNano()
 			ret = append(ret, Float(float64(v), false))
 		}
 	}
@@ -54,10 +54,10 @@ func (vals DateTimeValues) ToFloat() Values {
 func (vals DateTimeValues) ToInt() Values {
 	var ret IntValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Int(0, true))
 		} else {
-			v := val.V.UnixNano()
+			v := val.v.UnixNano()
 			ret = append(ret, Int(v, false))
 		}
 	}
@@ -70,10 +70,10 @@ func (vals DateTimeValues) ToInt() Values {
 func (vals DateTimeValues) ToBool() Values {
 	var ret BoolValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
-			if val.V == (time.Time{}) {
+			if val.v == (time.Time{}) {
 				ret = append(ret, Bool(false, false))
 			} else {
 				ret = append(ret, Bool(true, false))

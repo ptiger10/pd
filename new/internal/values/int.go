@@ -15,15 +15,15 @@ type IntValues []IntValue
 
 // An IntValue is one Int64-typed Value/Null struct
 type IntValue struct {
-	V    int64
-	Null bool
+	v    int64
+	null bool
 }
 
 // Int constructs an IntValue
 func Int(v int64, null bool) IntValue {
 	return IntValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -37,10 +37,10 @@ func Int(v int64, null bool) IntValue {
 func (vals IntValues) ToFloat() Values {
 	var ret FloatValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Float(math.NaN(), true))
 		} else {
-			v := float64(val.V)
+			v := float64(val.v)
 			ret = append(ret, Float(v, false))
 		}
 	}
@@ -58,10 +58,10 @@ func (vals IntValues) ToInt() Values {
 func (vals IntValues) ToBool() Values {
 	var ret BoolValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
-			if val.V == 0 {
+			if val.v == 0 {
 				ret = append(ret, Bool(false, false))
 			} else {
 				ret = append(ret, Bool(true, false))
@@ -76,10 +76,10 @@ func (vals IntValues) ToBool() Values {
 func (vals IntValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			ret = append(ret, intToDateTime(val.V))
+			ret = append(ret, intToDateTime(val.v))
 		}
 	}
 	return ret

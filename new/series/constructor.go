@@ -2,7 +2,6 @@ package series
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/ptiger10/pd/new/kinds"
@@ -13,6 +12,7 @@ import (
 	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
 )
 
+// An Option is an optional parameter in the Series constructor
 type Option func(*seriesConfig)
 type seriesConfig struct {
 	indices []index.MiniIndex
@@ -20,12 +20,14 @@ type seriesConfig struct {
 	name    string
 }
 
-func Kind(t reflect.Kind) Option {
+// Kind will convert either values or an index level to the specified kind
+func Kind(kind reflect.Kind) Option {
 	return func(c *seriesConfig) {
-		c.kind = t
+		c.kind = kind
 	}
 }
 
+// Name will name either values or an index level
 func Name(n string) Option {
 	return func(c *seriesConfig) {
 		c.name = n
@@ -49,15 +51,6 @@ func Index(data interface{}, options ...Option) Option {
 	}
 }
 
-// Calls New and panics if error. For use in testing
-func mustNew(data interface{}, options ...Option) Series {
-	s, err := New(data, options...)
-	if err != nil {
-		log.Panic(err)
-	}
-	return s
-}
-
 // New Series constructor
 // Optional
 // - Index(): If no index is supplied, defaults to a single index of IntValues (0, 1, 2, ...n)
@@ -72,7 +65,8 @@ func New(data interface{}, options ...Option) (Series, error) {
 	for _, option := range options {
 		option(&config)
 	}
-	kind := config.kind
+	suppliedKind := config.kind
+	var kind reflect.Kind
 	name := config.name
 
 	var v values.Values
@@ -88,9 +82,9 @@ func New(data interface{}, options ...Option) (Series, error) {
 		return Series{}, fmt.Errorf("Unable to construct new Series: type not supported: %T", data)
 	}
 
-	// Optional client-provided conversion
-	if kind != kinds.None {
-		v, err = constructVal.Convert(v, kind)
+	// Optional kind conversion
+	if suppliedKind != kinds.None {
+		v, err = constructVal.Convert(v, suppliedKind)
 		if err != nil {
 			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
 		}
@@ -115,8 +109,4 @@ func New(data interface{}, options ...Option) (Series, error) {
 	}
 
 	return s, err
-}
-
-func (s Series) Set(subset Series, data interface{}) {
-
 }

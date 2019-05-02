@@ -10,5 +10,5 @@ const (
 	Bool      = reflect.Bool
 	DateTime  = reflect.Struct // time.Time{} are the only structs accepted by constructor
 	Interface = reflect.Interface
-	None      = reflect.UnsafePointer // pseudo-nil value for type reflect.Kind
+	None      = reflect.Invalid // pseudo-nil value for type reflect.Kind
 )

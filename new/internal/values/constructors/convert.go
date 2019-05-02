@@ -14,16 +14,16 @@ func Convert(currentVals values.Values, kind reflect.Kind) (values.Values, error
 	switch kind {
 	case kinds.None: // this checks for the pseduo-nil type
 		return nil, fmt.Errorf("Unable to convert values: must supply a valid Kind")
-	// case kinds.Float:
-	// 	vals = currentVals.ToFloat()
-	// case kinds.Int:
-	// 	vals = currentVals.ToInt()
+	case kinds.Float:
+		vals = currentVals.ToFloat()
+	case kinds.Int:
+		vals = currentVals.ToInt()
 	case kinds.String:
 		vals = currentVals.ToString()
-	// case kinds.Bool:
-	// 	vals = currentVals.ToBool()
-	// case kinds.DateTime:
-	// 	vals = currentVals.ToDateTime()
+	case kinds.Bool:
+		vals = currentVals.ToBool()
+	case kinds.DateTime:
+		vals = currentVals.ToDateTime()
 	default:
 		return nil, fmt.Errorf("Unable to convert values: kind not supported: %v", kind)
 	}

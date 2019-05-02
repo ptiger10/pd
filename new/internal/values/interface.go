@@ -16,15 +16,15 @@ type InterfaceValues []InterfaceValue
 
 // An InterfaceValue is one interface-typed Value/Null struct
 type InterfaceValue struct {
-	V    interface{}
-	Null bool
+	v    interface{}
+	null bool
 }
 
 // Interface constructs an InterfaceValue
 func Interface(v interface{}, null bool) InterfaceValue {
 	return InterfaceValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -39,21 +39,21 @@ func Interface(v interface{}, null bool) InterfaceValue {
 func (vals InterfaceValues) ToFloat() Values {
 	var ret FloatValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Float(math.NaN(), true))
 		} else {
-			switch val.V.(type) {
+			switch val.v.(type) {
 			case float32, float64:
-				v := reflect.ValueOf(val.V).Float()
+				v := reflect.ValueOf(val.v).Float()
 				ret = append(ret, Float(v, false))
 			case int, int8, int16, int32, int64:
-				v := reflect.ValueOf(val.V).Int()
+				v := reflect.ValueOf(val.v).Int()
 				ret = append(ret, Float(float64(v), false))
 			case uint, uint8, uint16, uint32, uint64:
-				v := reflect.ValueOf(val.V).Uint()
+				v := reflect.ValueOf(val.v).Uint()
 				ret = append(ret, Float(float64(v), false))
 			default:
-				vStr, ok := val.V.(string)
+				vStr, ok := val.v.(string)
 				if !ok {
 					ret = append(ret, Float(math.NaN(), true))
 					continue
@@ -72,21 +72,21 @@ func (vals InterfaceValues) ToFloat() Values {
 func (vals InterfaceValues) ToInt() Values {
 	var ret IntValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Int(0, true))
 		} else {
-			switch val.V.(type) {
+			switch val.v.(type) {
 			case float32, float64:
-				v := reflect.ValueOf(val.V).Float()
+				v := reflect.ValueOf(val.v).Float()
 				ret = append(ret, Int(int64(v), false))
 			case int, int8, int16, int32, int64:
-				v := reflect.ValueOf(val.V).Int()
+				v := reflect.ValueOf(val.v).Int()
 				ret = append(ret, Int(v, false))
 			case uint, uint8, uint16, uint32, uint64:
-				v := reflect.ValueOf(val.V).Uint()
+				v := reflect.ValueOf(val.v).Uint()
 				ret = append(ret, Int(int64(v), false))
 			default:
-				vStr, ok := val.V.(string)
+				vStr, ok := val.v.(string)
 				if !ok {
 					ret = append(ret, Int(0, true))
 					continue
@@ -104,7 +104,7 @@ func (vals InterfaceValues) ToInt() Values {
 func (vals InterfaceValues) ToBool() Values {
 	var ret BoolValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
 			ret = append(ret, Bool(true, false))
@@ -119,21 +119,21 @@ func (vals InterfaceValues) ToBool() Values {
 func (vals InterfaceValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			switch val.V.(type) {
+			switch val.v.(type) {
 			case float32, float64:
-				f := reflect.ValueOf(val.V).Float()
+				f := reflect.ValueOf(val.v).Float()
 				ret = append(ret, floatToDateTime(f))
 			case int, int8, int16, int32, int64:
-				i := reflect.ValueOf(val.V).Int()
+				i := reflect.ValueOf(val.v).Int()
 				ret = append(ret, intToDateTime(i))
 			case uint, uint8, uint16, uint32, uint64:
-				u := reflect.ValueOf(val.V).Uint()
+				u := reflect.ValueOf(val.v).Uint()
 				ret = append(ret, intToDateTime(int64(u)))
 			default:
-				vStr, ok := val.V.(string)
+				vStr, ok := val.v.(string)
 				if !ok {
 					ret = append(ret, DateTime(time.Time{}, true))
 					continue

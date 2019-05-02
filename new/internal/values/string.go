@@ -17,15 +17,15 @@ type StringValues []StringValue
 
 // A StringValue is one string-typed Value/Null struct
 type StringValue struct {
-	V    string
-	Null bool
+	v    string
+	null bool
 }
 
 // String constructs a StringValue
 func String(v string, null bool) StringValue {
 	return StringValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -39,7 +39,7 @@ func String(v string, null bool) StringValue {
 func (vals StringValues) ToFloat() Values {
 	var ret FloatValues
 	for _, val := range vals {
-		ret = append(ret, stringToFloat(val.V))
+		ret = append(ret, stringToFloat(val.v))
 	}
 	return ret
 }
@@ -58,10 +58,10 @@ func stringToFloat(s string) FloatValue {
 func (vals StringValues) ToInt() Values {
 	var ret IntValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Int(0, true))
 		} else {
-			ret = append(ret, stringToInt(val.V))
+			ret = append(ret, stringToInt(val.v))
 		}
 	}
 	return ret
@@ -81,7 +81,7 @@ func stringToInt(s string) IntValue {
 func (vals StringValues) ToBool() Values {
 	var ret BoolValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
 			ret = append(ret, Bool(true, false))
@@ -198,7 +198,7 @@ func (vals StringValues) ToBool() Values {
 func (vals StringValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
 

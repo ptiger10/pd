@@ -14,15 +14,15 @@ type FloatValues []FloatValue
 
 // A FloatValue is one Float64-typed Value/Null struct
 type FloatValue struct {
-	V    float64
-	Null bool
+	v    float64
+	null bool
 }
 
 // Float constructs a FloatValue
 func Float(v float64, null bool) FloatValue {
 	return FloatValue{
-		V:    v,
-		Null: null,
+		v:    v,
+		null: null,
 	}
 }
 
@@ -41,10 +41,10 @@ func (vals FloatValues) ToFloat() Values {
 func (vals FloatValues) ToInt() Values {
 	var ret IntValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Int(0, true))
 		} else {
-			v := int64(val.V)
+			v := int64(val.v)
 			ret = append(ret, Int(v, false))
 		}
 	}
@@ -57,10 +57,10 @@ func (vals FloatValues) ToInt() Values {
 func (vals FloatValues) ToBool() Values {
 	var ret BoolValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, Bool(false, true))
 		} else {
-			if val.V == 0 {
+			if val.v == 0 {
 				ret = append(ret, Bool(false, false))
 			} else {
 				ret = append(ret, Bool(true, false))
@@ -75,10 +75,10 @@ func (vals FloatValues) ToBool() Values {
 func (vals FloatValues) ToDateTime() Values {
 	var ret DateTimeValues
 	for _, val := range vals {
-		if val.Null {
+		if val.null {
 			ret = append(ret, DateTime(time.Time{}, true))
 		} else {
-			ret = append(ret, floatToDateTime(val.V))
+			ret = append(ret, floatToDateTime(val.v))
 		}
 	}
 	return ret

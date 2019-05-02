@@ -8,6 +8,7 @@ type Values interface {
 	Describe() string
 	In([]int) Values
 	Len() int
+	Element(int) []interface{}
 
 	ToFloat() Values
 	ToInt() Values
