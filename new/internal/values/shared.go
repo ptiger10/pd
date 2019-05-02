@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"log"
+	"time"
 )
 
 // [START FloatValues]
@@ -34,17 +35,20 @@ func (vals FloatValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elements in the collection (including null values)
-// as an interface that supports type assertions
-func (vals FloatValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals FloatValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals FloatValues) Vals() []interface{} {
-	var ret []interface{}
+func (vals FloatValues) Vals() interface{} {
+	var ret []float64
 	for _, val := range vals {
 		ret = append(ret, val.v)
 	}
@@ -123,17 +127,20 @@ func (vals IntValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elementsin the collection (including null values)
-// as an interface that supports type assertions
-func (vals IntValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals IntValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals IntValues) Vals() []interface{} {
-	var ret []interface{}
+func (vals IntValues) Vals() interface{} {
+	var ret []int64
 	for _, val := range vals {
 		ret = append(ret, val.v)
 	}
@@ -212,17 +219,20 @@ func (vals StringValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elements in the collection (including null values)
-// as an interface that supports type assertions
-func (vals StringValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals StringValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals StringValues) Vals() []interface{} {
-	var ret []interface{}
+func (vals StringValues) Vals() interface{} {
+	var ret []string
 	for _, val := range vals {
 		ret = append(ret, val.v)
 	}
@@ -301,17 +311,20 @@ func (vals BoolValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elements in the collection (including null values)
-// as an
-func (vals BoolValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals BoolValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals BoolValues) Vals() []interface{} {
-	var ret []interface{}
+func (vals BoolValues) Vals() interface{} {
+	var ret []bool
 	for _, val := range vals {
 		ret = append(ret, val.v)
 	}
@@ -390,17 +403,20 @@ func (vals DateTimeValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elements in the collection (including null values)
-// as an interface that supports type assertions
-func (vals DateTimeValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals DateTimeValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals DateTimeValues) Vals() []interface{} {
-	var ret []interface{}
+func (vals DateTimeValues) Vals() interface{} {
+	var ret []time.Time
 	for _, val := range vals {
 		ret = append(ret, val.v)
 	}
@@ -479,16 +495,19 @@ func (vals InterfaceValues) In(positions []int) Values {
 	return ret
 }
 
-// All returns all of the value elements in the collection (including null values)
-// as an interface that supports type assertions
-func (vals InterfaceValues) All() interface{} {
-	return vals
+// All returns all of the values in the collection (including null values) as an interface slice
+func (vals InterfaceValues) All() []interface{} {
+	var ret []interface{}
+	for _, val := range vals {
+		ret = append(ret, val.v)
+	}
+	return ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals InterfaceValues) Vals() []interface{} {
+func (vals InterfaceValues) Vals() interface{} {
 	var ret []interface{}
 	for _, val := range vals {
 		ret = append(ret, val.v)

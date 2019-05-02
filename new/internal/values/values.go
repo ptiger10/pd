@@ -6,8 +6,8 @@ type Values interface {
 	Describe() string
 	Len() int
 
-	All() interface{}          // all Value/Null elements regardless of null status
-	Vals() []interface{}       // all values regardless of null status
+	All() []interface{}        // all values regardless of null status, as interface slice
+	Vals() interface{}         // all value elements in their native form, ready for type assertion
 	In([]int) Values           // Value/Null elements at one or more integer positions
 	Valid() []int              // integer positions of non-null values
 	Null() []int               // integer positions of null values

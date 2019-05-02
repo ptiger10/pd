@@ -17,3 +17,9 @@ func (s Series) at(position int) Series {
 	}
 	return s
 }
+
+// an interface of valid (non-null) values, ready for type assertion
+func (s Series) validVals() interface{} {
+	valid := s.values.In(s.values.Valid())
+	return valid.Vals()
+}
