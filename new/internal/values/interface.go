@@ -110,6 +110,21 @@ func (vals InterfaceValues) ToInt() Values {
 	return ret
 }
 
+// ToBool converts InterfaceValues to BoolValues
+//
+// null: false; notnull: true
+func (vals InterfaceValues) ToBool() Values {
+	var ret BoolValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Bool(false, true))
+		} else {
+			ret = append(ret, Bool(true, false))
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]

@@ -50,6 +50,25 @@ func (vals FloatValues) ToInt() Values {
 	return ret
 }
 
+// ToBool converts FloatValues to BoolValues
+//
+// x != 0: true; x == 0: false; null: false
+func (vals FloatValues) ToBool() Values {
+	var ret BoolValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Bool(false, true))
+		} else {
+			if val.V == 0 {
+				ret = append(ret, Bool(false, false))
+			} else {
+				ret = append(ret, Bool(true, false))
+			}
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]

@@ -64,6 +64,11 @@ func (vals BoolValues) ToInt() Values {
 	return ret
 }
 
+// ToBool returns itself
+func (vals BoolValues) ToBool() Values {
+	return vals
+}
+
 // [END Converters]
 
 // [START Methods]

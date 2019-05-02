@@ -10,8 +10,8 @@ type Values interface {
 	Len() int
 
 	ToFloat() Values
-	// ToInt() Values
+	ToInt() Values
 	ToString() Values
-	// ToBool() Values
+	ToBool() Values
 	// ToDateTime() Values
 }

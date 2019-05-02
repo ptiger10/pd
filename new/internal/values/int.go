@@ -51,6 +51,25 @@ func (vals IntValues) ToInt() Values {
 	return vals
 }
 
+// ToBool converts IntValues to BoolValues
+//
+// x != 0: true; x == 0: false; null: false
+func (vals IntValues) ToBool() Values {
+	var ret BoolValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Bool(false, true))
+		} else {
+			if val.V == 0 {
+				ret = append(ret, Bool(false, false))
+			} else {
+				ret = append(ret, Bool(true, false))
+			}
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]

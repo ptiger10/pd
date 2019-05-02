@@ -49,6 +49,7 @@ func (vals DateTimeValues) ToFloat() Values {
 
 // ToInt converts DateTimeValues to IntValues of the Unix EPOCH timestamp
 // (seconds since midnight January 1, 1970)
+//
 // 2019-05-01 00:00:00 +0000 UTC: 1556757505
 func (vals DateTimeValues) ToInt() Values {
 	var ret IntValues
@@ -58,6 +59,25 @@ func (vals DateTimeValues) ToInt() Values {
 		} else {
 			v := val.V.UnixNano()
 			ret = append(ret, Int(v, false))
+		}
+	}
+	return ret
+}
+
+// ToBool converts DateTimeValues to BoolValues
+//
+// x != time.Time{}: true; x == time.Time{}: false; null: false
+func (vals DateTimeValues) ToBool() Values {
+	var ret BoolValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Bool(false, true))
+		} else {
+			if val.V == (time.Time{}) {
+				ret = append(ret, Bool(false, false))
+			} else {
+				ret = append(ret, Bool(true, false))
+			}
 		}
 	}
 	return ret

@@ -18,8 +18,8 @@ func (lvl Level) Convert(kind reflect.Kind) (Level, error) {
 		return lvl.toInt(), nil
 	case kinds.String:
 		return lvl.toString(), nil
-	// case kinds.Bool:
-	// 	return lvl.toBool(), nil
+	case kinds.Bool:
+		return lvl.toBool(), nil
 	// case kinds.DateTime:
 	// 	return lvl.toDateTime(), nil
 	default:
@@ -46,11 +46,11 @@ func (lvl Level) toString() Level {
 	return lvl
 }
 
-// func (lvl Level) toBool() Level {
-// 	lvl.Labels = lvl.Labels.ToBool()
-// 	lvl.Kind = kinds.Bool
-// 	return lvl
-// }
+func (lvl Level) toBool() Level {
+	lvl.Labels = lvl.Labels.ToBool()
+	lvl.Kind = kinds.Bool
+	return lvl
+}
 
 // func (lvl Level) toDateTime() Level {
 // 	lvl.Labels = lvl.Labels.ToDateTime()

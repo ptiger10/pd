@@ -51,6 +51,41 @@ func (vals StringValues) ToFloat() Values {
 	return ret
 }
 
+// ToInt converts StringValues to IntValues
+//
+// "1": 1, null: NaN
+func (vals StringValues) ToInt() Values {
+	var ret IntValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Int(0, true))
+		} else {
+			v, err := strconv.Atoi(val.V)
+			if err != nil {
+				ret = append(ret, Int(0, true))
+			} else {
+				ret = append(ret, Int(int64(v), false))
+			}
+		}
+	}
+	return ret
+}
+
+// ToBool converts StringValues to BoolValues
+//
+// null: false; notnull: true
+func (vals StringValues) ToBool() Values {
+	var ret BoolValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, Bool(false, true))
+		} else {
+			ret = append(ret, Bool(true, false))
+		}
+	}
+	return ret
+}
+
 // [END Converters]
 
 // [START Methods]
