@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -64,6 +65,25 @@ func (vals IntValues) ToBool() Values {
 				ret = append(ret, Bool(false, false))
 			} else {
 				ret = append(ret, Bool(true, false))
+			}
+		}
+	}
+	return ret
+}
+
+// ToDateTime converts IntValues to DateTimeValues.
+// Tries to convert from Unix EPOCH time, otherwise returns null
+func (vals IntValues) ToDateTime() Values {
+	var ret DateTimeValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, DateTime(time.Time{}, true))
+		} else {
+			v := time.Unix(val.V, 0)
+			if v == (time.Time{}) {
+				ret = append(ret, DateTime(time.Time{}, true))
+			} else {
+				ret = append(ret, DateTime(v, false))
 			}
 		}
 	}

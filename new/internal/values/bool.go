@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/ptiger10/pd/new/options"
 )
@@ -67,6 +68,21 @@ func (vals BoolValues) ToInt() Values {
 // ToBool returns itself
 func (vals BoolValues) ToBool() Values {
 	return vals
+}
+
+// ToDateTime converts BoolValues to DateTimeValues
+//
+// notnull: time.Time{}
+func (vals BoolValues) ToDateTime() Values {
+	var ret DateTimeValues
+	for _, val := range vals {
+		if val.Null {
+			ret = append(ret, DateTime(time.Time{}, true))
+		} else {
+			ret = append(ret, DateTime(time.Time{}, false))
+		}
+	}
+	return ret
 }
 
 // [END Converters]
