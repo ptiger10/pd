@@ -15,7 +15,7 @@ func TestLevel(t *testing.T) {
 	var tests = []struct {
 		data       interface{}
 		wantLabels values.Values
-		wantKind   reflect.Kind
+		wantKind   kinds.Kind
 		wantName   string
 	}{
 		{

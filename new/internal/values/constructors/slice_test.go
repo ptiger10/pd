@@ -15,7 +15,7 @@ func TestSliceConstructor(t *testing.T) {
 	var tests = []struct {
 		data     interface{}
 		wantVals values.Values
-		wantKind reflect.Kind
+		wantKind kinds.Kind
 	}{
 		{
 			data:     []float64{0, 1, 2},

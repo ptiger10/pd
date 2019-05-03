@@ -1,14 +1,16 @@
 package series
 
-import "reflect"
+import (
+	"github.com/ptiger10/pd/new/kinds"
+)
 
 // An Element is a single item in a Series
 type Element struct {
 	Value      interface{}
 	Null       bool
-	Kind       reflect.Kind
+	Kind       kinds.Kind
 	Index      []interface{}
-	IndexKinds []reflect.Kind
+	IndexKinds []kinds.Kind
 }
 
 // Elem returns the Series Element at position
@@ -19,7 +21,7 @@ func (s Series) Elem(position int) Element {
 	kind := s.Kind
 
 	var idx []interface{}
-	var idxKinds []reflect.Kind
+	var idxKinds []kinds.Kind
 	for _, lvl := range s.index.Levels {
 		idxElem := lvl.Labels.Element(position)
 		idxVal := idxElem[0]

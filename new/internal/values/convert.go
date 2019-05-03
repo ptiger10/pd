@@ -2,16 +2,15 @@ package values
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/ptiger10/pd/new/kinds"
 )
 
 // Convert a collection of values from one type to another, and coerce to null if a value cannot be converted sensibly
-func Convert(currentVals Values, kind reflect.Kind) (Values, error) {
+func Convert(currentVals Values, kind kinds.Kind) (Values, error) {
 	var vals Values
 	switch kind {
-	case kinds.None: // this checks for the pseduo-nil type
+	case kinds.Invalid:
 		return nil, fmt.Errorf("Unable to convert values: must supply a valid Kind")
 	case kinds.Float:
 		vals = currentVals.ToFloat()

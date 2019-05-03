@@ -1,9 +1,8 @@
 package index
 
 import (
-	"reflect"
-
 	"github.com/ptiger10/pd/new/internal/values"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 // An Index is a collection of levels, plus label mappings
@@ -14,7 +13,7 @@ type Index struct {
 
 // A Level is a single collection of labels within an index, plus label mappings and metadata
 type Level struct {
-	Kind     reflect.Kind
+	Kind     kinds.Kind
 	Labels   values.Values
 	LabelMap LabelMap
 	Name     string

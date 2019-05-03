@@ -2,12 +2,12 @@ package constructors
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/ptiger10/pd/new/internal/index"
 	"github.com/ptiger10/pd/new/internal/values"
 	constructVal "github.com/ptiger10/pd/new/internal/values/constructors"
+	"github.com/ptiger10/pd/new/kinds"
 )
 
 // LevelFromSlice creates an Index Level from an interface{} that reflects Slice
@@ -41,7 +41,7 @@ func LevelFromSlice(data interface{}, name string) (index.Level, error) {
 
 // Level returns an Index level with updated label map and longest value computed.
 // NB: Create labels using the values.constructors methods
-func level(labels values.Values, kind reflect.Kind, name string) index.Level {
+func level(labels values.Values, kind kinds.Kind, name string) index.Level {
 	lvl := index.Level{
 		Labels: labels,
 		Kind:   kind,

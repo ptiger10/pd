@@ -96,10 +96,10 @@ func ExampleSeries_Describe_datetime() {
 		time.Time{}})
 	s.Describe()
 	// Output:
-	// len     3
-	// valid   2
-	// null    1
-	//kind: datetime
+	//   len    3
+	// valid    2
+	//  null    1
+	//kind: time.Time
 	//name: description
 }
 
@@ -107,7 +107,9 @@ func ExampleSeries_Describe_datetime_empty() {
 	s, _ := New([]time.Time{time.Time{}})
 	s.Describe()
 	// Output:
-	// len     1
-	// valid   0
-	// null    1
+	//   len    1
+	// valid    0
+	//  null    1
+	//kind: time.Time
+	//name: description
 }

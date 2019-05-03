@@ -12,13 +12,13 @@ import (
 // ExtendedValues is an extended representation of values containing values and kind
 type ExtendedValues struct {
 	V    values.Values
-	Kind reflect.Kind
+	Kind kinds.Kind
 }
 
 // ValuesFromSlice creates values from an interface{} with Slice reflection
 func ValuesFromSlice(data interface{}) (ExtendedValues, error) {
 	var v values.Values
-	var kind reflect.Kind
+	var kind kinds.Kind
 
 	switch data.(type) {
 	case []float32, []float64:
@@ -58,7 +58,7 @@ func ValuesFromSlice(data interface{}) (ExtendedValues, error) {
 		kind = kinds.Interface
 
 	default:
-		ret := ExtendedValues{nil, kinds.None}
+		ret := ExtendedValues{nil, kinds.Invalid}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 

@@ -1,14 +1,33 @@
 package kinds
 
-import "reflect"
+// Kind is a modified reflect.Kind, including time.Time
+type Kind int
 
 // Kind convenience options
 const (
-	Float     = reflect.Float64
-	Int       = reflect.Int64
-	String    = reflect.String
-	Bool      = reflect.Bool
-	DateTime  = reflect.Struct // time.Time{} are the only structs accepted by constructor
-	Interface = reflect.Interface
-	None      = reflect.Invalid // pseudo-nil value for type reflect.Kind
+	Invalid Kind = iota
+	Float
+	Int
+	String
+	Bool
+	DateTime
+	Interface
+	Unsupported
 )
+
+func (kind Kind) String() string {
+	kinds := []string{
+		"invalid",
+		"float64",
+		"int64",
+		"string",
+		"bool",
+		"time.Time",
+		"interface",
+	}
+
+	if kind < Invalid || kind > Unsupported {
+		return "unknown"
+	}
+	return kinds[kind]
+}

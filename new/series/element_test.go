@@ -22,7 +22,7 @@ func TestElement(t *testing.T) {
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
 	wantKind := kinds.String
-	wantIdxKinds := []reflect.Kind{kinds.String, kinds.Int}
+	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int}
 	for _, test := range tests {
 		got := s.Elem(test.position)
 		if got.Value != test.wantVal {

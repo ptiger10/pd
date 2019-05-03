@@ -2,7 +2,6 @@ package values_test
 
 import (
 	"math"
-	"reflect"
 	"testing"
 	"time"
 
@@ -20,7 +19,7 @@ func TestConvert(t *testing.T) {
 	nan := math.NaN()
 	var tests = []struct {
 		input     values.Values
-		convertTo reflect.Kind
+		convertTo kinds.Kind
 		wantVal   interface{}
 		wantNull  bool
 	}{
@@ -151,10 +150,10 @@ func TestConvert(t *testing.T) {
 
 func TestConvert_Unsupported(t *testing.T) {
 	var tests = []struct {
-		kind reflect.Kind
+		kind kinds.Kind
 	}{
-		{kinds.None},
-		{reflect.Complex64},
+		{kinds.Invalid},
+		{kinds.Unsupported},
 	}
 	for _, test := range tests {
 		vals := constructVal.SliceFloat([]float64{1.5})

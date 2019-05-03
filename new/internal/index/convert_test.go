@@ -1,7 +1,6 @@
 package index_test
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -15,7 +14,7 @@ func TestConvertIndex_int(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	var tests = []struct {
 		lvl       index.Level
-		convertTo reflect.Kind
+		convertTo kinds.Kind
 	}{
 		// Float
 		{constructIdx.SliceFloat([]float64{1, 2, 3}, ""), kinds.Float},
@@ -91,10 +90,10 @@ func TestConvert_Numeric_Datetime(t *testing.T) {
 
 func TestConvert_Unsupported(t *testing.T) {
 	var tests = []struct {
-		kind reflect.Kind
+		kind kinds.Kind
 	}{
-		{kinds.None},
-		{reflect.Complex64},
+		{kinds.Invalid},
+		{kinds.Unsupported},
 	}
 	for _, test := range tests {
 		lvl := constructIdx.SliceFloat([]float64{1, 2, 3}, "")

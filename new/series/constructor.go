@@ -16,12 +16,12 @@ import (
 type Option func(*seriesConfig)
 type seriesConfig struct {
 	indices []miniIndex
-	kind    reflect.Kind
+	kind    kinds.Kind
 	name    string
 }
 
 // Kind will convert either values or an index level to the specified kind
-func Kind(kind reflect.Kind) Option {
+func Kind(kind kinds.Kind) Option {
 	return func(c *seriesConfig) {
 		c.kind = kind
 	}
@@ -67,7 +67,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 		option(&config)
 	}
 	suppliedKind := config.kind
-	var kind reflect.Kind
+	var kind kinds.Kind
 	name := config.name
 
 	var extendedVals constructVal.ExtendedValues
@@ -89,7 +89,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	kind = extendedVals.Kind
 
 	// Optional kind conversion
-	if suppliedKind != kinds.None {
+	if suppliedKind != kinds.Invalid {
 		v, err = values.Convert(v, suppliedKind)
 		if err != nil {
 			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
@@ -124,7 +124,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 // It is used for unpacking client-supplied index data and optional metadata
 type miniIndex struct {
 	data interface{}
-	kind reflect.Kind
+	kind kinds.Kind
 	name string
 }
 
@@ -147,7 +147,7 @@ func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error)
 				"mismatch between supplied index length (%v) and expected length (%v)",
 				miniIdx.data, labelLen, requiredLen)
 		}
-		if miniIdx.kind != kinds.None {
+		if miniIdx.kind != kinds.Invalid {
 			level.Convert(miniIdx.kind)
 		}
 

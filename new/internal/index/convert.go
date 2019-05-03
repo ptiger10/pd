@@ -2,16 +2,15 @@ package index
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/ptiger10/pd/new/kinds"
 )
 
 // Convert an index level from one kind to another
-func (lvl Level) Convert(kind reflect.Kind) (Level, error) {
+func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	var convertedLvl Level
 	switch kind {
-	case kinds.None: // this checks for the pseduo-nil type
+	case kinds.Invalid:
 		return Level{}, fmt.Errorf("Unable to convert index level: must supply a valid Kind")
 	case kinds.Float:
 		convertedLvl = lvl.toFloat()
