@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestMath(t *testing.T) {
+func TestMath_numerics(t *testing.T) {
 	var tests = []struct {
 		s          Series
 		wantSum    float64
@@ -58,6 +58,27 @@ func TestMath(t *testing.T) {
 		gotStd := test.s.Std()
 		if math.Round(gotStd*100)/100 != math.Round(test.wantStd*100)/100 {
 			t.Errorf("Std() returned %v for input\n%v, want %v", gotStd, test.s, test.wantStd)
+		}
+	}
+}
+
+func TestMath_bool(t *testing.T) {
+	var tests = []struct {
+		s        Series
+		wantSum  float64
+		wantMean float64
+	}{
+		{mustNew([]bool{true, false}), 1, .5},
+		{mustNew([]bool{false}), 0, 0},
+	}
+	for _, test := range tests {
+		gotSum := test.s.Sum()
+		if gotSum != test.wantSum {
+			t.Errorf("Sum() returned %v for input\n%v, want %v", gotSum, test.s, test.wantSum)
+		}
+		gotMean := test.s.Mean()
+		if gotMean != test.wantMean {
+			t.Errorf("Mean() returned %v for input\n%v, want %v", gotMean, test.s, test.wantMean)
 		}
 	}
 }

@@ -12,12 +12,12 @@ func ExampleSeries_Describe_float() {
 	//   len    11
 	// valid    9
 	//  null    2
-	//  mean    5.0000
-	//   min    1.0000
-	//   25%    2.5000
-	//   50%    5.0000
-	//   75%    7.5000
-	//   max    9.0000
+	//  mean    5.00
+	//   min    1.00
+	//   25%    2.50
+	//   50%    5.00
+	//   75%    7.50
+	//   max    9.00
 	//kind: float64
 	//name: description
 }
@@ -46,12 +46,12 @@ func ExampleSeries_Describe_int() {
 	//   len    9
 	// valid    9
 	//  null    0
-	//  mean    5.0000
-	//   min    1.0000
-	//   25%    2.5000
-	//   50%    5.0000
-	//   75%    7.5000
-	//   max    9.0000
+	//  mean    5.00
+	//   min    1.00
+	//   25%    2.50
+	//   50%    5.00
+	//   75%    7.50
+	//   max    9.00
 	//kind: int64
 	//name: description
 }
@@ -87,6 +87,8 @@ func ExampleSeries_Describe_bool() {
 	//   len    3
 	// valid    3
 	//  null    0
+	//   sum    1.00
+	//  mean    0.33
 	//kind: bool
 	//name: description
 }

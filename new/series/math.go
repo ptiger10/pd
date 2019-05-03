@@ -40,7 +40,7 @@ func ensureBools(vals interface{}) []bool {
 	return nil
 }
 
-// Sum of a series. For bool values, sum of true values.
+// Sum of non-null series elements. For bool values, sum of true values.
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
 func (s Series) Sum() float64 {
@@ -63,7 +63,7 @@ func (s Series) Sum() float64 {
 	}
 }
 
-// Mean of a series.
+// Mean of non-null series values. For bool values, mean of true values.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Mean() float64 {
@@ -76,6 +76,9 @@ func (s Series) Mean() float64 {
 			sum += d
 		}
 		return sum / float64(len(data))
+	case kinds.Bool:
+		l := len(s.validAll())
+		return s.Sum() / float64(l)
 	default:
 		return math.NaN()
 	}

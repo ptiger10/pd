@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/ptiger10/pd/new/options"
+
 	"github.com/ptiger10/pd/new/kinds"
 )
 
@@ -32,7 +34,7 @@ func (s Series) Describe() {
 	// type-specific data
 	switch s.Kind {
 	case kinds.Float, kinds.Int:
-		precision := 4
+		precision := options.DisplayFloatPrecision
 		mean := fmt.Sprintf("%.*f", precision, s.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Min())
 		q1 := fmt.Sprintf("%.*f", precision, s.Quartile(1))
@@ -45,10 +47,16 @@ func (s Series) Describe() {
 		s, err = New(values, idx, Name("description"))
 
 	case kinds.String:
-		// value counts
 		unique := fmt.Sprint(len(s.Unique()))
 		values := []string{length, valid, null, unique}
 		idx := Index([]string{"len", "valid", "null", "unique"})
+		s, err = New(values, idx, Name("description"))
+	case kinds.Bool:
+		precision := options.DisplayFloatPrecision
+		sum := fmt.Sprintf("%.*f", precision, s.Sum())
+		mean := fmt.Sprintf("%.*f", precision, s.Mean())
+		values := []string{length, valid, null, sum, mean}
+		idx := Index([]string{"len", "valid", "null", "sum", "mean"})
 		s, err = New(values, idx, Name("description"))
 	case kinds.DateTime:
 		unique := fmt.Sprint(len(s.Unique()))
