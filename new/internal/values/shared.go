@@ -8,21 +8,6 @@ import (
 
 // [START FloatValues]
 
-func (vals FloatValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals FloatValues) Len() int {
-	return len(vals)
-}
-
 // In returns the values located at specific index positions
 func (vals FloatValues) In(positions []int) Values {
 	var ret FloatValues
@@ -99,21 +84,6 @@ func (vals FloatValues) ToString() Values {
 // [END FloatValues]
 
 // [START IntValues]
-
-func (vals IntValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals IntValues) Len() int {
-	return len(vals)
-}
 
 // In returns the values located at specific index positions
 func (vals IntValues) In(positions []int) Values {
@@ -192,21 +162,6 @@ func (vals IntValues) ToString() Values {
 
 // [START StringValues]
 
-func (vals StringValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals StringValues) Len() int {
-	return len(vals)
-}
-
 // In returns the values located at specific index positions
 func (vals StringValues) In(positions []int) Values {
 	var ret StringValues
@@ -283,21 +238,6 @@ func (vals StringValues) ToString() Values {
 // [END StringValues]
 
 // [START BoolValues]
-
-func (vals BoolValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals BoolValues) Len() int {
-	return len(vals)
-}
 
 // In returns the values located at specific index positions
 func (vals BoolValues) In(positions []int) Values {
@@ -376,21 +316,6 @@ func (vals BoolValues) ToString() Values {
 
 // [START DateTimeValues]
 
-func (vals DateTimeValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals DateTimeValues) Len() int {
-	return len(vals)
-}
-
 // In returns the values located at specific index positions
 func (vals DateTimeValues) In(positions []int) Values {
 	var ret DateTimeValues
@@ -467,21 +392,6 @@ func (vals DateTimeValues) ToString() Values {
 // [END DateTimeValues]
 
 // [START InterfaceValues]
-
-func (vals InterfaceValues) count() int {
-	var count int
-	for _, val := range vals {
-		if !val.null {
-			count++
-		}
-	}
-	return count
-}
-
-// Len returns the total number of values in the collection (including null values)
-func (vals InterfaceValues) Len() int {
-	return len(vals)
-}
 
 // In returns the values located at specific index positions
 func (vals InterfaceValues) In(positions []int) Values {

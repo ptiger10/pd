@@ -18,7 +18,8 @@ func ensureFloatFromNumerics(vals interface{}) []float64 {
 	} else if floatValues, ok := vals.([]float64); ok {
 		data = floatValues
 	} else {
-		log.Fatalf("EnsureFloatFromNumerics has received an unallowable value: %v", vals)
+		log.Printf("EnsureFloatFromNumerics has received an unallowable value: %v", vals)
+		return nil
 	}
 	return data
 }

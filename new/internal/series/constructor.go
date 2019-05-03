@@ -43,9 +43,9 @@ func Index(data interface{}, options ...Option) Option {
 	}
 	return func(c *seriesConfig) {
 		idx := miniIndex{
-			Data: data,
-			Kind: config.kind,
-			Name: config.name,
+			data: data,
+			kind: config.kind,
+			name: config.name,
 		}
 		c.indices = append(c.indices, idx)
 	}
@@ -96,10 +96,11 @@ func New(data interface{}, options ...Option) (Series, error) {
 	}
 	// Index
 	// Default case: no client-supplied Index
+	requiredLen := len(v.All())
 	if config.indices == nil {
-		idx = constructIdx.Default(v.Len())
+		idx = constructIdx.Default(requiredLen)
 	} else {
-		idx, err = indexFromMiniIndex(config.indices, v.Len())
+		idx, err = indexFromMiniIndex(config.indices, requiredLen)
 		if err != nil {
 			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
 		}
@@ -121,9 +122,9 @@ func New(data interface{}, options ...Option) (Series, error) {
 // an untyped representation of one index level.
 // It is used for unpacking client-supplied index data and optional metadata
 type miniIndex struct {
-	Data interface{}
-	Kind reflect.Kind
-	Name string
+	data interface{}
+	kind reflect.Kind
+	name string
 }
 
 // creates a full index from a mini client-supplied representation of an index level,
@@ -132,20 +133,21 @@ type miniIndex struct {
 func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error) {
 	var levels []index.Level
 	for _, miniIdx := range minis {
-		if reflect.ValueOf(miniIdx.Data).Kind() != reflect.Slice {
-			return index.Index{}, fmt.Errorf("Unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.Data)
+		if reflect.ValueOf(miniIdx.data).Kind() != reflect.Slice {
+			return index.Index{}, fmt.Errorf("Unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.data)
 		}
-		level, err := constructIdx.LevelFromSlice(miniIdx.Data, miniIdx.Name)
+		level, err := constructIdx.LevelFromSlice(miniIdx.data, miniIdx.name)
 		if err != nil {
 			return index.Index{}, fmt.Errorf("Unable to construct index: %v", err)
 		}
-		if level.Labels.Len() != requiredLen {
+		labelLen := len(level.Labels.All())
+		if labelLen != requiredLen {
 			return index.Index{}, fmt.Errorf("Unable to construct index %v:"+
 				"mismatch between supplied index length (%v) and expected length (%v)",
-				miniIdx.Data, level.Labels.Len(), requiredLen)
+				miniIdx.data, labelLen, requiredLen)
 		}
-		if miniIdx.Kind != kinds.None {
-			level.Convert(miniIdx.Kind)
+		if miniIdx.kind != kinds.None {
+			level.Convert(miniIdx.kind)
 		}
 		levels = append(levels, level)
 	}

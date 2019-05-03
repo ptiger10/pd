@@ -374,9 +374,9 @@ func TestConstructor_Kind_Slice_Float(t *testing.T) {
 
 func TestMini_single(t *testing.T) {
 	mini := miniIndex{
-		Data: []int{1, 2, 3},
-		Kind: kinds.Int,
-		Name: "test",
+		data: []int{1, 2, 3},
+		kind: kinds.Int,
+		name: "test",
 	}
 	got, err := indexFromMiniIndex([]miniIndex{mini}, 3)
 	if err != nil {

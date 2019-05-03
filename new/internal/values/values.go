@@ -3,9 +3,6 @@ package values
 // The Values interface is the primary means of handling a collection of values
 // Thes same interface and value types are used for both Series values and Index labels
 type Values interface {
-	Describe() string
-	Len() int
-
 	All() []interface{}        // all values regardless of null status, as interface slice
 	Vals() interface{}         // all value elements in their native form, ready for type assertion
 	In([]int) Values           // Value/Null elements at one or more integer positions
