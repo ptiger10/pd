@@ -11,7 +11,7 @@ import (
 // [START Convenience Functions]
 
 func isNullString(s string) bool {
-	nullStrings := []string{"NaN", "n/a", "N/A", "", "nil"}
+	nullStrings := options.StringNullValues
 	for _, ns := range nullStrings {
 		if strings.TrimSpace(s) == ns {
 			return true
