@@ -18,7 +18,7 @@ func ensureFloatFromNumerics(vals interface{}) []float64 {
 	} else if floats, ok := vals.([]float64); ok {
 		data = floats
 	} else {
-		log.Printf("EnsureFloatFromNumerics has received an unallowable value: %v", vals)
+		log.Printf("Internal error: ensureFloatFromNumerics has received an unallowable value: %v", vals)
 		return nil
 	}
 	return data
@@ -32,15 +32,32 @@ func convertIntToFloat(vals []int64) []float64 {
 	return ret
 }
 
-// Sum of a series.
+func ensureBools(vals interface{}) []bool {
+	if bools, ok := vals.([]bool); ok {
+		return bools
+	}
+	log.Printf("Internal error: ensureBools has received an unallowable value: %v", vals)
+	return nil
+}
+
+// Sum of a series. For bool values, sum of true values.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
 func (s Series) Sum() float64 {
 	vals := s.validVals()
 	switch s.Kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		return gonum.Sum(data)
+	case kinds.Bool:
+		var sum float64
+		data := ensureBools(vals)
+		for _, d := range data {
+			if d {
+				sum++
+			}
+		}
+		return sum
 	default:
 		return math.NaN()
 	}
@@ -48,7 +65,7 @@ func (s Series) Sum() float64 {
 
 // Mean of a series.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Mean() float64 {
 	var sum float64
 	vals := s.validVals()
@@ -66,7 +83,7 @@ func (s Series) Mean() float64 {
 
 // Median of a series.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Median() float64 {
 	vals := s.validVals()
 	switch s.Kind {
@@ -88,7 +105,7 @@ func (s Series) Median() float64 {
 
 // Min of a series.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Min() float64 {
 	vals := s.validVals()
 	switch s.Kind {
@@ -105,7 +122,7 @@ func (s Series) Min() float64 {
 
 // Max of a series.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Max() float64 {
 	vals := s.validVals()
 	switch s.Kind {
@@ -122,7 +139,7 @@ func (s Series) Max() float64 {
 
 // Quartile i (must be 1, 2, 3)
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Quartile(i int) float64 {
 	vals := s.validVals()
 	switch s.Kind {
@@ -149,7 +166,7 @@ func (s Series) Quartile(i int) float64 {
 
 // Std returns the Standard Deviation of a series.
 //
-// Applies to: Float, Int
+// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Std() float64 {
 	vals := s.validVals()
 	switch s.Kind {

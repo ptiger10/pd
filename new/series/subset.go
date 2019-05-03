@@ -23,3 +23,9 @@ func (s Series) validVals() interface{} {
 	valid := s.values.In(s.values.Valid())
 	return valid.Vals()
 }
+
+// an interface slice of valid (non-null) values
+func (s Series) validAll() []interface{} {
+	valid := s.values.In(s.values.Valid())
+	return valid.All()
+}

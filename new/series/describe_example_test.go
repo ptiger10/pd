@@ -60,9 +60,10 @@ func ExampleSeries_Describe_string() {
 	s, _ := New([]string{"low", "medium", "medium", ""})
 	s.Describe()
 	// Output:
-	//   len    4
-	// valid    3
-	//  null    1
+	//    len    4
+	//  valid    3
+	//   null    1
+	// unique    2
 	//kind: string
 	//name: description
 }
@@ -71,9 +72,10 @@ func ExampleSeries_Describe_string_empty() {
 	s, _ := New([]string{"", ""})
 	s.Describe()
 	// Output:
-	//   len    2
-	// valid    0
-	//  null    2
+	//    len    2
+	//  valid    0
+	//   null    2
+	// unique    0
 	//kind: string
 	//name: description
 }
@@ -96,9 +98,12 @@ func ExampleSeries_Describe_datetime() {
 		time.Time{}})
 	s.Describe()
 	// Output:
-	//   len    3
-	// valid    2
-	//  null    1
+	//      len    3
+	//    valid    2
+	//     null    1
+	//   unique    2
+	// earliest    2019-04-18 15:00:00 +0000 UTC
+	//   latest    2019-04-19 15:00:00 +0000 UTC
 	//kind: time.Time
 	//name: description
 }
@@ -107,9 +112,12 @@ func ExampleSeries_Describe_datetime_empty() {
 	s, _ := New([]time.Time{time.Time{}})
 	s.Describe()
 	// Output:
-	//   len    1
-	// valid    0
-	//  null    1
+	//      len    1
+	//    valid    0
+	//     null    1
+	//   unique    0
+	// earliest    0001-01-01 00:00:00 +0000 UTC
+	//   latest    0001-01-01 00:00:00 +0000 UTC
 	//kind: time.Time
 	//name: description
 }

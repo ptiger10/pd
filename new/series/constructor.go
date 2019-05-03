@@ -87,6 +87,9 @@ func New(data interface{}, options ...Option) (Series, error) {
 	// Sets values and kind based on the Values switch
 	v = extendedVals.V
 	kind = extendedVals.Kind
+	if err != nil {
+		return Series{}, fmt.Errorf("Unable to construct new Series: unable to construct values: %v", err)
+	}
 
 	// Optional kind conversion
 	if suppliedKind != kinds.Invalid {

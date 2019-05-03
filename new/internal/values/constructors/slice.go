@@ -15,7 +15,9 @@ type ExtendedValues struct {
 	Kind kinds.Kind
 }
 
-// ValuesFromSlice creates values from an interface{} with Slice reflection
+// ValuesFromSlice creates values from an interface{} that has been determined elsewhere to be a Slice.
+// Be careful modifying this constructor and its children,
+// as reflection is inherently unsafe and each function expects to receive specific types only.
 func ValuesFromSlice(data interface{}) (ExtendedValues, error) {
 	var v values.Values
 	var kind kinds.Kind
