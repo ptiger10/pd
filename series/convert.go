@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/ptiger10/pd/kinds"
 )
@@ -27,6 +28,7 @@ func (s Series) As(kind kinds.Kind) Series {
 		s.values = s.values.ToDateTime()
 		s.kind = kinds.DateTime
 	default:
+		log.Print("Unsupported kind - returning original Series")
 		return s
 	}
 	return s
@@ -38,6 +40,7 @@ func (s Series) As(kind kinds.Kind) Series {
 func (s Series) IndexAs(kind kinds.Kind) Series {
 	lvl, err := s.index.Levels[0].Convert(kind)
 	if err != nil {
+		log.Print("Unsupported kind - returning original Series")
 		return s
 	}
 	s.index.Levels[0] = lvl
@@ -49,10 +52,11 @@ func (s Series) IndexAs(kind kinds.Kind) Series {
 // Applies to All. If unsupported Kind, returns original Series. If invalid invalid level is supplied, returns error.
 func (s Series) IndexLevelAs(level int, kind kinds.Kind) (Series, error) {
 	if level >= len(s.index.Levels) {
-		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range", level)
+		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range (Series has %d levels)", level, len(s.index.Levels))
 	}
 	lvl, err := s.index.Levels[level].Convert(kind)
 	if err != nil {
+		log.Print("Unsupported kind - returning original Series")
 		return s, nil
 	}
 	s.index.Levels[level] = lvl
