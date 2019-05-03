@@ -5,6 +5,8 @@ import (
 )
 
 // As converts the series values to the kind supplied
+//
+// Applies to All. If unsupported Kind is supplied, returns original Series.
 func (s Series) As(kind kinds.Kind) Series {
 	switch kind {
 	case kinds.Float:
@@ -22,11 +24,15 @@ func (s Series) As(kind kinds.Kind) Series {
 	case kinds.DateTime:
 		s.values = s.values.ToDateTime()
 		s.Kind = kinds.DateTime
+	default:
+		return s
 	}
 	return s
 }
 
 // IndexAs converts the first level of the series index to the kind supplied
+//
+// Applies to All. If unsupported Kind is supplied, returns original Series.
 func (s Series) IndexAs(kind kinds.Kind) Series {
 	lvl, err := s.index.Levels[0].Convert(kind)
 	if err != nil {
@@ -37,7 +43,12 @@ func (s Series) IndexAs(kind kinds.Kind) Series {
 }
 
 // IndexLevelAs converts the specific integer level of the series index to the kind supplied
+//
+// Applies to All. If unsupported Kind or invalid level is supplied, returns original Series.
 func (s Series) IndexLevelAs(level int, kind kinds.Kind) Series {
+	if level >= len(s.index.Levels) {
+		return s
+	}
 	lvl, err := s.index.Levels[level].Convert(kind)
 	if err != nil {
 		return s
