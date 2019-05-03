@@ -24,6 +24,7 @@ func (kind Kind) String() string {
 		"bool",
 		"time.Time",
 		"interface",
+		"unsupported",
 	}
 
 	if kind < Invalid || kind > Unsupported {
