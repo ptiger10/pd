@@ -3,118 +3,162 @@ package series
 import (
 	"fmt"
 	"reflect"
-	"time"
+
+	"github.com/ptiger10/pd/kinds"
+
+	"github.com/ptiger10/pd/internal/index"
+	constructIdx "github.com/ptiger10/pd/internal/index/constructors"
+	"github.com/ptiger10/pd/internal/values"
+	constructVal "github.com/ptiger10/pd/internal/values/constructors"
 )
 
-type newSeriesOption func(*newSeriesConfig)
-type newSeriesConfig struct {
-	kind  reflect.Kind
-	index interface{}
-	name  string
+// An Option is an optional parameter in the Series constructor
+type Option func(*seriesConfig)
+type seriesConfig struct {
+	indices []miniIndex
+	kind    kinds.Kind
+	name    string
 }
 
-func Type(t reflect.Kind) newSeriesOption {
-	return func(c *newSeriesConfig) {
-		c.kind = t
+// Kind will convert either values or an index level to the specified kind
+func Kind(kind kinds.Kind) Option {
+	return func(c *seriesConfig) {
+		c.kind = kind
 	}
 }
 
-func Name(n string) newSeriesOption {
-	return func(c *newSeriesConfig) {
+// Name will name either values or an index level
+func Name(n string) Option {
+	return func(c *seriesConfig) {
 		c.name = n
+	}
+
+}
+
+// Index returns a Option for use in the Series constructor New(),
+// and takes an optional Name.
+func Index(data interface{}, options ...Option) Option {
+	config := seriesConfig{}
+	for _, option := range options {
+		option(&config)
+	}
+	return func(c *seriesConfig) {
+		idx := miniIndex{
+			data: data,
+			kind: config.kind,
+			name: config.name,
+		}
+		c.indices = append(c.indices, idx)
 	}
 }
 
 // New Series constructor
-// that expects to receive a slice of values.
+// Optional
+// - Index(): If no index is supplied, defaults to a single index of IntValues (0, 1, 2, ...n)
+// - Name(): If no name is supplied, no name will appear when Series is printed
+// - Kind(): Convert the Series values to the specified kind
 // If passing []interface{}, must supply a type expectation for the Series.
 // Options: Float, Int, String, Bool, DateTime
-func New(data interface{}, options ...newSeriesOption) (Series, error) {
-	config := newSeriesConfig{kind: None}
+func New(data interface{}, options ...Option) (Series, error) {
+	// Setup
+	config := seriesConfig{}
+
 	for _, option := range options {
 		option(&config)
 	}
-	s := Series{
-		Kind: config.kind,
-		Name: config.name,
-	}
+	suppliedKind := config.kind
+	var kind kinds.Kind
+	name := config.name
 
-	switch data.(type) {
-	case []float32, []float64:
-		vals := floatToFloatValues(data)
-		s.Values = vals
-		s.Kind = Float
+	var extendedVals constructVal.ExtendedValues
+	var v values.Values
+	var idx index.Index
+	var err error
 
-	case []int, []int8, []int16, []int32, []int64:
-		vals := intToIntValues(data)
-		s.Values = vals
-		s.Kind = Int
-
-	case []uint, []uint8, []uint16, []uint32, []uint64:
-		vals := uIntToIntValues(data)
-		s.Values = vals
-		s.Kind = Int
-
-	case []string:
-		vals := stringToStringValues(data)
-		s.Values = vals
-		s.Kind = String
-
-	case []bool:
-		vals := boolToBoolValues(data)
-		s.Values = vals
-		s.Kind = Bool
-
-	case []time.Time:
-		vals := timeToDateTimeValues(data)
-		s.Values = vals
-		s.Kind = DateTime
-
-	case []interface{}:
-		d := reflect.ValueOf(data)
-		switch config.kind {
-		case None: // this checks for the pseduo-nil type
-			return Series{}, fmt.Errorf("Must supply a SeriesType to decode interface")
-		case Float:
-			vals := interfaceToFloatValues(d)
-			s.Values = vals
-		case Int:
-			vals := interfaceToIntValues(d)
-			s.Values = vals
-		case String:
-			vals := interfaceToStringValues(d)
-			s.Values = vals
-		case Bool:
-			vals := interfaceToBoolValues(d)
-			s.Values = vals
-		case DateTime:
-			vals := interfaceToDateTimeValues(d)
-			s.Values = vals
-		default:
-			return s, fmt.Errorf("Type not supported for conversion from []interface: %v", config.kind)
-		}
+	// Values
+	switch reflect.ValueOf(data).Kind() {
+	case reflect.Slice:
+		extendedVals, err = constructVal.ValuesFromSlice(data)
 
 	default:
-		return s, fmt.Errorf("Type not supported: %T", data)
+		return Series{}, fmt.Errorf("Unable to construct new Series: type not supported: %T", data)
 	}
 
-	s.Index =
-		Index{
-			Levels: []Level{
-				Level{
-					Type: Int,
-					Labels: intLabels{
-
-						l: makeRange(0, s.Count()),
-					},
-				}}}
-	return s, nil
-}
-
-func makeRange(min, max int) []int64 {
-	a := make([]int64, max-min)
-	for i := range a {
-		a[i] = int64(min + i)
+	// Sets values and kind based on the Values switch
+	v = extendedVals.V
+	kind = extendedVals.Kind
+	if err != nil {
+		return Series{}, fmt.Errorf("Unable to construct new Series: unable to construct values: %v", err)
 	}
-	return a
+
+	// Optional kind conversion
+	if suppliedKind != kinds.Invalid {
+		v, err = values.Convert(v, suppliedKind)
+		if err != nil {
+			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
+		}
+	}
+	// Index
+	// Default case: no client-supplied Index
+	requiredLen := len(v.All())
+	if config.indices == nil {
+		idx = constructIdx.Default(requiredLen)
+	} else {
+		idx, err = indexFromMiniIndex(config.indices, requiredLen)
+		if err != nil {
+			return Series{}, fmt.Errorf("Unable to construct new Series: %v", err)
+		}
+	}
+
+	// Construct Series
+	s := Series{
+		index:  idx,
+		values: v,
+		Kind:   kind,
+		Name:   name,
+	}
+
+	return s, err
 }
+
+// [START MiniIndex]
+
+// an untyped representation of one index level.
+// It is used for unpacking client-supplied index data and optional metadata
+type miniIndex struct {
+	data interface{}
+	kind kinds.Kind
+	name string
+}
+
+// creates a full index from a mini client-supplied representation of an index level,
+// but returns an error if every index level is not the same length as requiredLen
+
+func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error) {
+	var levels []index.Level
+	for _, miniIdx := range minis {
+		if reflect.ValueOf(miniIdx.data).Kind() != reflect.Slice {
+			return index.Index{}, fmt.Errorf("Unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.data)
+		}
+		level, err := constructIdx.LevelFromSlice(miniIdx.data, miniIdx.name)
+		if err != nil {
+			return index.Index{}, fmt.Errorf("Unable to construct index: %v", err)
+		}
+		labelLen := len(level.Labels.All())
+		if labelLen != requiredLen {
+			return index.Index{}, fmt.Errorf("Unable to construct index %v:"+
+				"mismatch between supplied index length (%v) and expected length (%v)",
+				miniIdx.data, labelLen, requiredLen)
+		}
+		if miniIdx.kind != kinds.Invalid {
+			level.Convert(miniIdx.kind)
+		}
+
+		levels = append(levels, level)
+	}
+	idx := constructIdx.New(levels...)
+	return idx, nil
+
+}
+
+// [END MiniIndex]
