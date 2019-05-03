@@ -1,6 +1,7 @@
 package series
 
 import (
+	"math"
 	"testing"
 )
 
@@ -15,10 +16,11 @@ func TestMath(t *testing.T) {
 		wantQ1     float64
 		wantQ2     float64
 		wantQ3     float64
+		wantStd    float64
 	}{
-		{mustNew([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5},
-		{mustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5},
-		{mustNew([]float64{-1, 2, 3, 4}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5},
+		{mustNew([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
+		{mustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
+		{mustNew([]float64{-1, 2, 3, 4}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
 	}
 	for _, test := range tests {
 		gotSum := test.s.Sum()
@@ -52,6 +54,10 @@ func TestMath(t *testing.T) {
 		gotQ3 := test.s.Quartile(3)
 		if gotQ3 != test.wantQ3 {
 			t.Errorf("Quartile(3) returned %v for input\n%v, want %v", gotQ3, test.s, test.wantQ3)
+		}
+		gotStd := test.s.Std()
+		if math.Round(gotStd*100)/100 != math.Round(test.wantStd*100)/100 {
+			t.Errorf("Std() returned %v for input\n%v, want %v", gotStd, test.s, test.wantStd)
 		}
 	}
 }

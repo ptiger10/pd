@@ -13,10 +13,10 @@ import (
 // appropriate for numeric data only ([]float64 or []int64)
 func ensureFloatFromNumerics(vals interface{}) []float64 {
 	var data []float64
-	if intValues, ok := vals.([]int64); ok {
-		data = convertIntToFloat(intValues)
-	} else if floatValues, ok := vals.([]float64); ok {
-		data = floatValues
+	if ints, ok := vals.([]int64); ok {
+		data = convertIntToFloat(ints)
+	} else if floats, ok := vals.([]float64); ok {
+		data = floats
 	} else {
 		log.Printf("EnsureFloatFromNumerics has received an unallowable value: %v", vals)
 		return nil
@@ -142,6 +142,27 @@ func (s Series) Quartile(i int) float64 {
 		default:
 			return math.NaN()
 		}
+	default:
+		return math.NaN()
+	}
+}
+
+// Std returns the Standard Deviation of a series.
+//
+// Applies to: Float, Int
+func (s Series) Std() float64 {
+	vals := s.validVals()
+	switch s.Kind {
+	case kinds.Float, kinds.Int:
+		data := ensureFloatFromNumerics(vals)
+		if len(data) == 0 {
+			return math.NaN()
+		}
+		std, err := stats.StandardDeviation(data)
+		if err != nil {
+			return math.NaN()
+		}
+		return std
 	default:
 		return math.NaN()
 	}
