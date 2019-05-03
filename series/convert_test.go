@@ -23,8 +23,8 @@ func TestConvert(t *testing.T) {
 			t.Error(err)
 		}
 		s = s.As(test.convertTo)
-		if s.Kind != test.convertTo {
-			t.Errorf("Conversion of Series' []interface values to %v returned %v, want %v", test.convertTo, s.Kind, test.convertTo)
+		if s.kind != test.convertTo {
+			t.Errorf("Conversion of Series' []interface values to %v returned %v, want %v", test.convertTo, s.kind, test.convertTo)
 		}
 	}
 }
@@ -72,7 +72,10 @@ func TestConvertIndexMulti(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		s = s.IndexLevelAs(test.lvl, test.convertTo)
+		s, err = s.IndexLevelAs(test.lvl, test.convertTo)
+		if err != nil {
+			t.Error(err)
+		}
 		if s.index.Levels[test.lvl].Kind != test.convertTo {
 			t.Errorf("Conversion of Series' multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, s.index.Levels[test.lvl].Kind, test.convertTo)
 		}
@@ -106,12 +109,12 @@ func TestConvertUnsupportedIndexLevel(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexLevelAs(0, kinds.Unsupported)
+	newS, err := s.IndexLevelAs(0, kinds.Unsupported)
 	if !reflect.DeepEqual(s, newS) {
 		t.Errorf("Unsupported conversion returned %v, want %v", newS, s)
 	}
-	newS = s.IndexLevelAs(5, kinds.Float)
-	if !reflect.DeepEqual(s, newS) {
-		t.Errorf("Out-of-range conversion returned %v, want %v", newS, s)
+	newS, err = s.IndexLevelAs(5, kinds.Float)
+	if err == nil {
+		t.Errorf("Returned nil error, expected error due to out-of-range conversion")
 	}
 }

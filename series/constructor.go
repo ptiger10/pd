@@ -114,7 +114,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	s := Series{
 		index:  idx,
 		values: v,
-		Kind:   kind,
+		kind:   kind,
 		Name:   name,
 	}
 

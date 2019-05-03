@@ -1,6 +1,8 @@
 package series
 
 import (
+	"fmt"
+
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
@@ -10,6 +12,11 @@ import (
 type Series struct {
 	index  index.Index
 	values values.Values
-	Kind   kinds.Kind
+	kind   kinds.Kind
 	Name   string
+}
+
+// Kind is the data kind of the Series' values. Mimics reflect.Kind with the addition of time.Time
+func (s Series) Kind() string {
+	return fmt.Sprint(s.kind)
 }

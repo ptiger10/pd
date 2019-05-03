@@ -18,7 +18,7 @@ func (s Series) Elem(position int) Element {
 	elemSlice := s.values.Element(position)
 	val := elemSlice[0]
 	null := elemSlice[1].(bool)
-	kind := s.Kind
+	kind := s.kind
 
 	var idx []interface{}
 	var idxKinds []kinds.Kind

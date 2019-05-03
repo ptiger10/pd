@@ -14,7 +14,7 @@ import (
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
 func (s Series) Sum() float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		return gonum.Sum(data)
@@ -38,7 +38,7 @@ func (s Series) Sum() float64 {
 func (s Series) Mean() float64 {
 	var sum float64
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		for _, d := range data {
@@ -58,7 +58,7 @@ func (s Series) Mean() float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Median() float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -80,7 +80,7 @@ func (s Series) Median() float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Min() float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -97,7 +97,7 @@ func (s Series) Min() float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Max() float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -114,7 +114,7 @@ func (s Series) Max() float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Quartile(i int) float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		val, err := stats.Quartile(data)
@@ -141,7 +141,7 @@ func (s Series) Quartile(i int) float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s Series) Std() float64 {
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {

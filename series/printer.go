@@ -8,7 +8,7 @@ import (
 )
 
 func (s Series) String() string {
-	switch s.Kind {
+	switch s.kind {
 	// case DateTime:
 	// 	var printer string
 	// 	vals := s.values.(dateTimeValues)
@@ -92,7 +92,7 @@ func (s Series) print() string {
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
-	printer += fmt.Sprintf("kind: %s\n", s.Kind)
+	printer += fmt.Sprintf("kind: %s\n", s.kind)
 	// [END rows]
 
 	if s.Name != "" {

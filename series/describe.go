@@ -24,7 +24,7 @@ func (s Series) Len() int {
 func (s Series) Describe() {
 	var err error
 	// shared data
-	origKind := s.Kind
+	origKind := s.kind
 	l := s.Len()
 	valids := len(s.values.Valid())
 	nulls := len(s.values.Null())
@@ -32,7 +32,7 @@ func (s Series) Describe() {
 	valid := fmt.Sprint(valids)
 	null := fmt.Sprint(nulls)
 	// type-specific data
-	switch s.Kind {
+	switch s.kind {
 	case kinds.Float, kinds.Int:
 		precision := options.DisplayFloatPrecision
 		mean := fmt.Sprintf("%.*f", precision, s.Mean())
@@ -75,7 +75,7 @@ func (s Series) Describe() {
 		return
 	}
 	// reset to pre-transformation Kind
-	s.Kind = origKind
+	s.kind = origKind
 	fmt.Println(s)
 	return
 }
@@ -110,7 +110,7 @@ func (s Series) UniqueVals() []string {
 func (s Series) Earliest() time.Time {
 	earliest := time.Time{}
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {
@@ -131,7 +131,7 @@ func (s Series) Earliest() time.Time {
 func (s Series) Latest() time.Time {
 	latest := time.Time{}
 	vals := s.validVals()
-	switch s.Kind {
+	switch s.kind {
 	case kinds.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {

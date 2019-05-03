@@ -1,6 +1,8 @@
 package series
 
 import (
+	"fmt"
+
 	"github.com/ptiger10/pd/kinds"
 )
 
@@ -11,19 +13,19 @@ func (s Series) As(kind kinds.Kind) Series {
 	switch kind {
 	case kinds.Float:
 		s.values = s.values.ToFloat()
-		s.Kind = kinds.Float
+		s.kind = kinds.Float
 	case kinds.Int:
 		s.values = s.values.ToInt()
-		s.Kind = kinds.Int
+		s.kind = kinds.Int
 	case kinds.String:
 		s.values = s.values.ToString()
-		s.Kind = kinds.String
+		s.kind = kinds.String
 	case kinds.Bool:
 		s.values = s.values.ToBool()
-		s.Kind = kinds.Bool
+		s.kind = kinds.Bool
 	case kinds.DateTime:
 		s.values = s.values.ToDateTime()
-		s.Kind = kinds.DateTime
+		s.kind = kinds.DateTime
 	default:
 		return s
 	}
@@ -44,15 +46,15 @@ func (s Series) IndexAs(kind kinds.Kind) Series {
 
 // IndexLevelAs converts the specific integer level of the series index to the kind supplied
 //
-// Applies to All. If unsupported Kind or invalid level is supplied, returns original Series.
-func (s Series) IndexLevelAs(level int, kind kinds.Kind) Series {
+// Applies to All. If unsupported Kind, returns original Series. If invalid invalid level is supplied, returns error.
+func (s Series) IndexLevelAs(level int, kind kinds.Kind) (Series, error) {
 	if level >= len(s.index.Levels) {
-		return s
+		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range", level)
 	}
 	lvl, err := s.index.Levels[level].Convert(kind)
 	if err != nil {
-		return s
+		return s, nil
 	}
 	s.index.Levels[level] = lvl
-	return s
+	return s, nil
 }
