@@ -28,6 +28,20 @@ func ExampleSeries_string_customIndex() {
 	// kind: string
 }
 
+func ExampleSeries_string_customIndex2() {
+	s, _ := New(
+		[]string{"Joe", "Jamy", "", "Jenny"},
+		Index([]int{0, 10, 11, 12}))
+	fmt.Println(s)
+
+	// Output:
+	//  0    Joe
+	// 10    Jamy
+	// 11
+	// 12    Jenny
+	// kind: string
+}
+
 func ExampleSeries_string_multiIndex() {
 	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Index([]int{0, 1, 2, 3}), Index([]int{100, 101, 102, 103}))
 	fmt.Println(s)

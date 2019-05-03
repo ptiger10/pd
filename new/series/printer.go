@@ -38,9 +38,9 @@ func (s Series) print() string {
 	}
 	// omit header line if empty
 	if strings.TrimSpace((header)) != "" {
-		header = fmt.Sprintln(header)
+		printer += header + "\n"
 	}
-	printer += header
+
 	// [END header row]
 
 	// [START rows]

@@ -32,6 +32,7 @@ func Name(n string) Option {
 	return func(c *seriesConfig) {
 		c.name = n
 	}
+
 }
 
 // Index returns a Option for use in the Series constructor New(),
@@ -149,6 +150,7 @@ func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error)
 		if miniIdx.kind != kinds.None {
 			level.Convert(miniIdx.kind)
 		}
+
 		levels = append(levels, level)
 	}
 	idx := constructIdx.New(levels...)
