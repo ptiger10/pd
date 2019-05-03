@@ -1,13 +1,11 @@
 package values
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/ptiger10/pd/new/options"
 )
 
 // [START Definitions]
@@ -46,7 +44,7 @@ func (vals StringValues) ToFloat() Values {
 
 func stringToFloat(s string) FloatValue {
 	v, err := strconv.ParseFloat(s, 64)
-	if err != nil {
+	if math.IsNaN(v) || err != nil {
 		return Float(math.NaN(), true)
 	}
 	return Float(v, false)
@@ -219,13 +217,5 @@ func stringToDateTime(s string) DateTimeValue {
 // [END Converters]
 
 // [START Methods]
-
-// Describe the values in the collection
-func (vals StringValues) Describe() string {
-	offset := options.DisplayValuesWhitespaceBuffer
-	l := len(vals)
-	len := fmt.Sprintf("%-*s%d\n", offset, "len", l)
-	return fmt.Sprint(len)
-}
 
 // [END Methods]

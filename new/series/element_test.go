@@ -18,7 +18,7 @@ func TestElement(t *testing.T) {
 		wantNull bool
 		wantIdx  []interface{}
 	}{
-		{0, "", true, []interface{}{"A", int64(1)}},
+		{0, "NaN", true, []interface{}{"A", int64(1)}},
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
 	wantKind := kinds.String

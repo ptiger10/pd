@@ -3,6 +3,8 @@ package constructors
 import (
 	"strings"
 
+	"github.com/ptiger10/pd/new/options"
+
 	"github.com/ptiger10/pd/new/internal/values"
 )
 
@@ -27,7 +29,7 @@ func SliceString(vals []string) values.StringValues {
 	var v values.StringValues
 	for _, val := range vals {
 		if isNullString(val) {
-			v = append(v, values.String("", true))
+			v = append(v, values.String(options.StringNullFiller, true))
 		} else {
 			v = append(v, values.String(val, false))
 		}

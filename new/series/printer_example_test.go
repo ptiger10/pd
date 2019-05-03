@@ -11,7 +11,7 @@ func ExampleSeries_string_defaultIndex() {
 	// Output:
 	// 0    Joe
 	// 1    Jamy
-	// 2
+	// 2    NaN
 	// 3    Jenny
 	// kind: string
 }
@@ -23,7 +23,7 @@ func ExampleSeries_string_customIndex() {
 	// Output:
 	// 100    Joe
 	// 101    Jamy
-	// 102
+	// 102    NaN
 	// 103    Jenny
 	// kind: string
 }
@@ -37,7 +37,7 @@ func ExampleSeries_string_customIndex2() {
 	// Output:
 	//  0    Joe
 	// 10    Jamy
-	// 11
+	// 11    NaN
 	// 12    Jenny
 	// kind: string
 }
@@ -49,7 +49,7 @@ func ExampleSeries_string_multiIndex() {
 	// Output:
 	// 0 100    Joe
 	// 1 101    Jamy
-	// 2 102
+	// 2 102    NaN
 	// 3 103    Jenny
 	// kind: string
 }
@@ -66,7 +66,7 @@ func ExampleSeries_string_namedindex_1() {
 	// id  code
 	//  0 10000    Joe
 	//    10100    Jamy
-	//  1 10200
+	//  1 10200    NaN
 	//    10300    Jenny
 	// kind: string
 	// name: student
@@ -84,7 +84,7 @@ func ExampleSeries_string_namedindex_2() {
 	//  id code
 	// 100   10    Joe
 	//       20    Jamy
-	// 101   30
+	// 101   30    NaN
 	//       40    Jenny
 	// kind: string
 	// name: student
@@ -102,7 +102,7 @@ func ExampleSeries_string_named_index_nonsequential() {
 	// id  code
 	//  0 10000    Joe
 	//    10100    Jamy
-	//  1 10200
+	//  1 10200    NaN
 	//    10300    Jenny
 	//  0 10400    Jeremiah
 	//    10500    Jemma
@@ -122,7 +122,7 @@ func ExampleSeries_string_partial_named_index() {
 	//    code
 	// 0 10000    Joe
 	//   10100    Jamy
-	// 1 10200
+	// 1 10200    NaN
 	//   10300    Jenny
 	// kind: string
 	// name: student

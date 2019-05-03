@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/ptiger10/pd/new/options"
 )
 
 // [START FloatValues]
@@ -73,7 +75,7 @@ func (vals FloatValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}
@@ -150,7 +152,7 @@ func (vals IntValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}
@@ -227,7 +229,7 @@ func (vals StringValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}
@@ -304,7 +306,7 @@ func (vals BoolValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}
@@ -381,7 +383,7 @@ func (vals DateTimeValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}
@@ -458,7 +460,7 @@ func (vals InterfaceValues) ToString() Values {
 	var ret StringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, String("", true))
+			ret = append(ret, String(options.StringNullFiller, true))
 		} else {
 			ret = append(ret, String(fmt.Sprint(val.v), false))
 		}

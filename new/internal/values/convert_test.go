@@ -30,7 +30,7 @@ func TestConvert(t *testing.T) {
 		{constructVal.SliceFloat([]float64{math.NaN()}), kinds.Int, int64(0), true},
 		{constructVal.SliceFloat([]float64{1.5}), kinds.Int, int64(1), false},
 
-		{constructVal.SliceFloat([]float64{math.NaN()}), kinds.String, "", true},
+		{constructVal.SliceFloat([]float64{math.NaN()}), kinds.String, "NaN", true},
 		{constructVal.SliceFloat([]float64{1.5}), kinds.String, "1.5", false},
 
 		{constructVal.SliceFloat([]float64{math.NaN()}), kinds.Bool, false, true},
@@ -59,10 +59,10 @@ func TestConvert(t *testing.T) {
 		{constructVal.SliceString([]string{"1.0"}), kinds.Int, int64(1), false},
 		{constructVal.SliceString([]string{"1"}), kinds.Int, int64(1), false},
 
-		{constructVal.SliceString([]string{""}), kinds.String, "", true},
-		{constructVal.SliceString([]string{"NaN"}), kinds.String, "", true},
-		{constructVal.SliceString([]string{"n/a"}), kinds.String, "", true},
-		{constructVal.SliceString([]string{"N/A"}), kinds.String, "", true},
+		{constructVal.SliceString([]string{""}), kinds.String, "NaN", true},
+		{constructVal.SliceString([]string{"NaN"}), kinds.String, "NaN", true},
+		{constructVal.SliceString([]string{"n/a"}), kinds.String, "NaN", true},
+		{constructVal.SliceString([]string{"N/A"}), kinds.String, "NaN", true},
 		{constructVal.SliceString([]string{"1.5"}), kinds.String, "1.5", false},
 		{constructVal.SliceString([]string{"foo"}), kinds.String, "foo", false},
 
@@ -97,7 +97,7 @@ func TestConvert(t *testing.T) {
 		{constructVal.SliceDateTime([]time.Time{time.Time{}}), kinds.Int, int64(0), true},
 
 		{constructVal.SliceDateTime([]time.Time{testDate}), kinds.String, "2019-05-01 00:00:00 +0000 UTC", false},
-		{constructVal.SliceDateTime([]time.Time{time.Time{}}), kinds.String, "", true},
+		{constructVal.SliceDateTime([]time.Time{time.Time{}}), kinds.String, "NaN", true},
 
 		{constructVal.SliceDateTime([]time.Time{testDate}), kinds.Bool, true, false},
 		{constructVal.SliceDateTime([]time.Time{time.Time{}}), kinds.Bool, false, true},
@@ -111,10 +111,10 @@ func TestConvert(t *testing.T) {
 
 		{constructVal.SliceInterface([]interface{}{1}), kinds.Int, int64(1), false},
 
-		{constructVal.SliceInterface([]interface{}{""}), kinds.String, "", true},
-		{constructVal.SliceInterface([]interface{}{"NaN"}), kinds.String, "", true},
-		{constructVal.SliceInterface([]interface{}{"n/a"}), kinds.String, "", true},
-		{constructVal.SliceInterface([]interface{}{"N/A"}), kinds.String, "", true},
+		{constructVal.SliceInterface([]interface{}{""}), kinds.String, "NaN", true},
+		{constructVal.SliceInterface([]interface{}{"NaN"}), kinds.String, "NaN", true},
+		{constructVal.SliceInterface([]interface{}{"n/a"}), kinds.String, "NaN", true},
+		{constructVal.SliceInterface([]interface{}{"N/A"}), kinds.String, "NaN", true},
 		{constructVal.SliceInterface([]interface{}{"1.5"}), kinds.String, "1.5", false},
 		{constructVal.SliceInterface([]interface{}{"foo"}), kinds.String, "foo", false},
 
