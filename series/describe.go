@@ -47,7 +47,7 @@ func (s Series) Describe() {
 		s, err = New(values, idx, Name("description"))
 
 	case kinds.String:
-		unique := fmt.Sprint(len(s.Unique()))
+		unique := fmt.Sprint(len(s.UniqueVals()))
 		values := []string{length, valid, null, unique}
 		idx := Index([]string{"len", "valid", "null", "unique"})
 		s, err = New(values, idx, Name("description"))
@@ -59,7 +59,7 @@ func (s Series) Describe() {
 		idx := Index([]string{"len", "valid", "null", "sum", "mean"})
 		s, err = New(values, idx, Name("description"))
 	case kinds.DateTime:
-		unique := fmt.Sprint(len(s.Unique()))
+		unique := fmt.Sprint(len(s.UniqueVals()))
 		earliest := fmt.Sprint(s.Earliest())
 		latest := fmt.Sprint(s.Latest())
 		values := []string{length, valid, null, unique, earliest, latest}
@@ -92,10 +92,10 @@ func (s Series) ValueCounts() map[string]int {
 	return counter
 }
 
-// Unique returns a de-duplicated list all element values (as strings) that appear in the Series.
+// UniqueVals returns a de-duplicated list all element values (as strings) that appear in the Series.
 //
 // Applies to: All
-func (s Series) Unique() []string {
+func (s Series) UniqueVals() []string {
 	var ret []string
 	counter := s.ValueCounts()
 	for k := range counter {
