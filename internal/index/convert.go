@@ -6,7 +6,7 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-// Convert an index level from one kind to another
+// Convert an index level from one kind to another, then refresh the LabelMap
 func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	var convertedLvl Level
 	switch kind {

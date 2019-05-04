@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ptiger10/pd/internal/index"
+
+	"github.com/jinzhu/copier"
 	"github.com/ptiger10/pd/kinds"
 )
 
@@ -34,31 +37,49 @@ func (s Series) As(kind kinds.Kind) Series {
 	return s
 }
 
-// IndexAs converts the first level of the series index to the kind supplied
-//
-// Applies to All. If unsupported Kind is supplied, returns original Series.
-func (s Series) IndexAs(kind kinds.Kind) Series {
-	lvl, err := s.index.Levels[0].Convert(kind)
-	if err != nil {
-		log.Print("Unsupported kind - returning original Series")
-		return s
+func (s Series) copySeries() Series {
+	idx := index.Index{}
+	copier.Copy(&idx, &s.index)
+	idx.Levels = make([]index.Level, len(s.index.Levels))
+	for i := 0; i < len(s.index.Levels); i++ {
+		copier.Copy(&idx.Levels[i], &s.index.Levels[i])
 	}
-	s.index.Levels[0] = lvl
-	return s
+
+	copyS := Series{
+		values: s.values,
+		index:  idx,
+		kind:   s.kind,
+		Name:   s.Name,
+	}
+	return copyS
 }
+
+// IndexAs converts the first level of the series index to the kind supplied.
+//
+// Applies to All. If unsupported Kind is supplied, returns error.
+func (s Series) IndexAs(kind kinds.Kind) (Series, error) {
+	return s.IndexLevelAs(0, kind)
+}
+
+// SetLevel sets the index level at position with the supplied level.
+//
+//
+// func (s Series) SetLevel(position int, level index.Level) (Series, error) {
+
+// }
 
 // IndexLevelAs converts the specific integer level of the series index to the kind supplied
 //
-// Applies to All. If unsupported Kind, returns original Series. If invalid invalid level is supplied, returns error.
-func (s Series) IndexLevelAs(level int, kind kinds.Kind) (Series, error) {
-	if level >= len(s.index.Levels) {
-		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range (Series has %d levels)", level, len(s.index.Levels))
+// Applies to All. If unsupported Kind or invalid level value is supplied, returns error.
+func (s Series) IndexLevelAs(position int, kind kinds.Kind) (Series, error) {
+	copyS := s.copySeries()
+	if position >= len(s.index.Levels) {
+		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range (Series has %d levels)", position, len(s.index.Levels))
 	}
-	lvl, err := s.index.Levels[level].Convert(kind)
+	lvl, err := copyS.index.Levels[position].Convert(kind)
 	if err != nil {
-		log.Print("Unsupported kind - returning original Series")
-		return s, nil
+		return Series{}, fmt.Errorf("Unable to convert index to kind %v: unsupported kind", kind)
 	}
-	s.index.Levels[level] = lvl
-	return s, nil
+	copyS.index.Levels[position] = lvl
+	return copyS, nil
 }

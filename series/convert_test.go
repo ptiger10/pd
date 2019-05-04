@@ -22,9 +22,12 @@ func TestConvert(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		s = s.As(test.convertTo)
-		if s.kind != test.convertTo {
-			t.Errorf("Conversion of Series' []interface values to %v returned %v, want %v", test.convertTo, s.kind, test.convertTo)
+		newS := s.As(test.convertTo)
+		if newS.kind != test.convertTo {
+			t.Errorf("Conversion of Series with []interface values to %v returned %v, want %v", test.convertTo, s.kind, test.convertTo)
+		}
+		if newS.Kind() == s.Kind() {
+			t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
 		}
 	}
 }
@@ -44,9 +47,17 @@ func TestConvertIndexDefault(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		s = s.IndexAs(test.convertTo)
-		if s.index.Levels[0].Kind != test.convertTo {
-			t.Errorf("Conversion of Series' default []int64 index to %v returned %v, want %v", test.convertTo, s.index.Levels[0].Kind, test.convertTo)
+		newS, err := s.IndexAs(test.convertTo)
+		if err != nil {
+			t.Error(err)
+		}
+		if newS.index.Levels[0].Kind != test.convertTo {
+			t.Errorf("Conversion of Series with default []int64 index to %v returned %v, want %v", test.convertTo, s.index.Levels[0].Kind, test.convertTo)
+		}
+		if test.convertTo != kinds.Int {
+			if s.index.Levels[0].Kind == newS.index.Levels[0].Kind {
+				t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
+			}
 		}
 	}
 }
@@ -72,12 +83,18 @@ func TestConvertIndexMulti(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		s, err = s.IndexLevelAs(test.lvl, test.convertTo)
+		newS, err := s.IndexLevelAs(test.lvl, test.convertTo)
 		if err != nil {
 			t.Error(err)
 		}
-		if s.index.Levels[test.lvl].Kind != test.convertTo {
-			t.Errorf("Conversion of Series' multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, s.index.Levels[test.lvl].Kind, test.convertTo)
+		if newS.index.Levels[test.lvl].Kind != test.convertTo {
+			t.Errorf("Conversion of Series with multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, newS.index.Levels[test.lvl].Kind, test.convertTo)
+		}
+		// excludes Int because the original test Index is int
+		if test.convertTo != kinds.Int {
+			if s.index.Levels[test.lvl].Kind == newS.index.Levels[test.lvl].Kind {
+				t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
+			}
 		}
 	}
 }
@@ -98,9 +115,9 @@ func TestConvertUnsupportedIndex(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexAs(kinds.Unsupported)
-	if !reflect.DeepEqual(s, newS) {
-		t.Errorf("Unsupported conversion returned %v, want %v", newS, s)
+	_, err = s.IndexAs(kinds.Unsupported)
+	if err == nil {
+		t.Errorf("Returned nil error, expected error due to unsupported conversion")
 	}
 }
 
@@ -109,11 +126,11 @@ func TestConvertUnsupportedIndexLevel(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS, err := s.IndexLevelAs(0, kinds.Unsupported)
-	if !reflect.DeepEqual(s, newS) {
-		t.Errorf("Unsupported conversion returned %v, want %v", newS, s)
+	_, err = s.IndexLevelAs(0, kinds.Unsupported)
+	if err == nil {
+		t.Errorf("Returned nil error, expected error due to unsupported conversion")
 	}
-	newS, err = s.IndexLevelAs(5, kinds.Float)
+	_, err = s.IndexLevelAs(5, kinds.Float)
 	if err == nil {
 		t.Errorf("Returned nil error, expected error due to out-of-range conversion")
 	}
