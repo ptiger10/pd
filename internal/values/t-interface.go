@@ -4,55 +4,70 @@ import (
 	"math"
 	"reflect"
 	"time"
+
+	"github.com/ptiger10/pd/kinds"
 )
 
-// [START Definitions]
+// [START Convenience Functions]
 
-// InterfaceValues is a slice of interface-typed Value/Null structs
-type InterfaceValues []InterfaceValue
-
-// An InterfaceValue is one interface-typed Value/Null struct
-type InterfaceValue struct {
-	v    interface{}
-	null bool
-}
-
-// Interface constructs an InterfaceValue
-func Interface(v interface{}, null bool) InterfaceValue {
-	return InterfaceValue{
-		v:    v,
-		null: null,
+func isNullInterface(i interface{}) bool {
+	switch i.(type) {
+	case string:
+		s := i.(string)
+		if isNullString(s) {
+			return true
+		}
+	case float32, float64:
+		f := reflect.ValueOf(i).Float()
+		if math.IsNaN(f) {
+			return true
+		}
 	}
+	return false
 }
 
-// [END Definitions]
+// [END Convenience Functions]
+
+// SliceInterface converts []interface -> Factory with interfaceValues
+func SliceInterface(vals []interface{}) Factory {
+	var v interfaceValues
+	for _, val := range vals {
+		if isNullInterface(val) {
+			v = append(v, interfaceVal(val, true))
+		} else {
+			v = append(v, interfaceVal(val, false))
+		}
+
+	}
+	return Factory{v, kinds.Interface}
+}
 
 // [START Converters]
 
-// ToFloat converts InterfaceValues to FloatValues
+// ToFloat converts interfaceValues to float64Values
 // First checks for numerics, then tries to parse as a string
 // If those fail, returns nil
 //
-func (vals InterfaceValues) ToFloat() Values {
-	var ret FloatValues
+func (vals interfaceValues) ToFloat() Values {
+	var ret float64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Float(math.NaN(), true))
+			ret = append(ret, float64Val(math.NaN(), true))
 		} else {
 			switch val.v.(type) {
 			case float32, float64:
 				v := reflect.ValueOf(val.v).Float()
-				ret = append(ret, Float(v, false))
+				ret = append(ret, float64Val(v, false))
 			case int, int8, int16, int32, int64:
 				v := reflect.ValueOf(val.v).Int()
-				ret = append(ret, Float(float64(v), false))
+				ret = append(ret, float64Val(float64(v), false))
 			case uint, uint8, uint16, uint32, uint64:
 				v := reflect.ValueOf(val.v).Uint()
-				ret = append(ret, Float(float64(v), false))
+				ret = append(ret, float64Val(float64(v), false))
 			default:
 				vStr, ok := val.v.(string)
 				if !ok {
-					ret = append(ret, Float(math.NaN(), true))
+					ret = append(ret, float64Val(math.NaN(), true))
 					continue
 				}
 				ret = append(ret, stringToFloat(vStr))
@@ -62,30 +77,30 @@ func (vals InterfaceValues) ToFloat() Values {
 	return ret
 }
 
-// ToInt converts InterfaceValues to IntValues
+// ToInt converts interfaceValues to int64Values
 // First checks for numerics, then tries to parse as a string
 // If those fail, returns nil
 //
-func (vals InterfaceValues) ToInt() Values {
-	var ret IntValues
+func (vals interfaceValues) ToInt() Values {
+	var ret int64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Int(0, true))
+			ret = append(ret, int64Val(0, true))
 		} else {
 			switch val.v.(type) {
 			case float32, float64:
 				v := reflect.ValueOf(val.v).Float()
-				ret = append(ret, Int(int64(v), false))
+				ret = append(ret, int64Val(int64(v), false))
 			case int, int8, int16, int32, int64:
 				v := reflect.ValueOf(val.v).Int()
-				ret = append(ret, Int(v, false))
+				ret = append(ret, int64Val(v, false))
 			case uint, uint8, uint16, uint32, uint64:
 				v := reflect.ValueOf(val.v).Uint()
-				ret = append(ret, Int(int64(v), false))
+				ret = append(ret, int64Val(int64(v), false))
 			default:
 				vStr, ok := val.v.(string)
 				if !ok {
-					ret = append(ret, Int(0, true))
+					ret = append(ret, int64Val(0, true))
 					continue
 				}
 				ret = append(ret, stringToInt(vStr))
@@ -95,21 +110,21 @@ func (vals InterfaceValues) ToInt() Values {
 	return ret
 }
 
-// ToBool converts InterfaceValues to BoolValues
+// ToBool converts interfaceValues to boolValues
 //
 // null: false; notnull: true
-func (vals InterfaceValues) ToBool() Values {
-	var ret BoolValues
+func (vals interfaceValues) ToBool() Values {
+	var ret boolValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Bool(false, true))
+			ret = append(ret, boolVal(false, true))
 		} else {
 			switch val.v.(type) {
 			case bool:
 				v := val.v.(bool)
-				ret = append(ret, Bool(v, false))
+				ret = append(ret, boolVal(v, false))
 			default:
-				ret = append(ret, Bool(false, true))
+				ret = append(ret, boolVal(false, true))
 			}
 
 		}
@@ -117,14 +132,14 @@ func (vals InterfaceValues) ToBool() Values {
 	return ret
 }
 
-// ToDateTime converts InterfaceValues to DateTimeValues
+// ToDateTime converts interfaceValues to dateTimeValues
 //
 // null: false; notnull: true
-func (vals InterfaceValues) ToDateTime() Values {
-	var ret DateTimeValues
+func (vals interfaceValues) ToDateTime() Values {
+	var ret dateTimeValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, DateTime(time.Time{}, true))
+			ret = append(ret, dateTimeVal(time.Time{}, true))
 		} else {
 			switch val.v.(type) {
 			case float32, float64:
@@ -139,15 +154,15 @@ func (vals InterfaceValues) ToDateTime() Values {
 			case time.Time:
 				t := val.v.(time.Time)
 				if t == (time.Time{}) {
-					ret = append(ret, DateTime(time.Time{}, true))
+					ret = append(ret, dateTimeVal(time.Time{}, true))
 				} else {
-					ret = append(ret, DateTime(t, false))
+					ret = append(ret, dateTimeVal(t, false))
 				}
 
 			default:
 				vStr, ok := val.v.(string)
 				if !ok {
-					ret = append(ret, DateTime(time.Time{}, true))
+					ret = append(ret, dateTimeVal(time.Time{}, true))
 					continue
 				}
 				ret = append(ret, stringToDateTime(vStr))
@@ -158,9 +173,3 @@ func (vals InterfaceValues) ToDateTime() Values {
 }
 
 // [END Converters]
-
-// [START Methods]
-
-// Describe the values in the collection
-
-// [END Methods]

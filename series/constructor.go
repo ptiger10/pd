@@ -7,9 +7,7 @@ import (
 	"github.com/ptiger10/pd/kinds"
 
 	"github.com/ptiger10/pd/internal/index"
-	constructIdx "github.com/ptiger10/pd/internal/index/constructors"
 	"github.com/ptiger10/pd/internal/values"
-	constructVal "github.com/ptiger10/pd/internal/values/constructors"
 )
 
 // An Option is an optional parameter in the Series constructor
@@ -54,7 +52,7 @@ func Index(data interface{}, options ...Option) Option {
 
 // New Series constructor
 // Optional
-// - Index(): If no index is supplied, defaults to a single index of IntValues (0, 1, 2, ...n)
+// - Index(): If no index is supplied, defaults to a single index of int64Values (0, 1, 2, ...n)
 // - Name(): If no name is supplied, no name will appear when Series is printed
 // - Kind(): Convert the Series values to the specified kind
 // If passing []interface{}, must supply a type expectation for the Series.
@@ -70,7 +68,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	var kind kinds.Kind
 	name := config.name
 
-	var factory constructVal.ValuesFactory
+	var factory values.Factory
 	var v values.Values
 	var idx index.Index
 	var err error
@@ -78,7 +76,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	// Values
 	switch reflect.ValueOf(data).Kind() {
 	case reflect.Slice:
-		factory, err = constructVal.ValuesFromSlice(data)
+		factory, err = values.SliceFactory(data)
 
 	default:
 		return Series{}, fmt.Errorf("Unable to construct new Series: type not supported: %T", data)
@@ -100,9 +98,9 @@ func New(data interface{}, options ...Option) (Series, error) {
 	}
 	// Index
 	// Default case: no client-supplied Index
-	requiredLen := len(v.All())
+	requiredLen := v.Len()
 	if config.indices == nil {
-		idx = constructIdx.Default(requiredLen)
+		idx = index.Default(requiredLen)
 	} else {
 		idx, err = indexFromMiniIndex(config.indices, requiredLen)
 		if err != nil {
@@ -140,11 +138,11 @@ func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error)
 		if reflect.ValueOf(miniIdx.data).Kind() != reflect.Slice {
 			return index.Index{}, fmt.Errorf("Unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.data)
 		}
-		level, err := constructIdx.LevelFromSlice(miniIdx.data, miniIdx.name)
+		level, err := index.NewLevelFromSlice(miniIdx.data, miniIdx.name)
 		if err != nil {
 			return index.Index{}, fmt.Errorf("Unable to construct index: %v", err)
 		}
-		labelLen := len(level.Labels.All())
+		labelLen := level.Labels.Len()
 		if labelLen != requiredLen {
 			return index.Index{}, fmt.Errorf("Unable to construct index %v:"+
 				"mismatch between supplied index length (%v) and expected length (%v)",
@@ -156,7 +154,7 @@ func indexFromMiniIndex(minis []miniIndex, requiredLen int) (index.Index, error)
 
 		levels = append(levels, level)
 	}
-	idx := constructIdx.New(levels...)
+	idx := index.New(levels...)
 	return idx, nil
 
 }

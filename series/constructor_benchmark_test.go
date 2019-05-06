@@ -51,7 +51,7 @@ func benchmarkNewFloat64(i int, b *testing.B) {
 // func BenchmarkNewFloat64_2(b *testing.B) { benchmarkNewFloat64(100000, b) }
 // func BenchmarkNewFloat32_3(b *testing.B) { benchmarkNewFloat32(1000000, b) }
 
-func BenchmarkNewFloat64_3(b *testing.B) { benchmarkNewFloat64(1000000, b) }
+// func BenchmarkNewFloat64_3(b *testing.B) { benchmarkNewFloat64(1000000, b) }
 
 // func BenchmarkNewFloat32_4(b *testing.B) { benchmarkNewFloat32(10000000, b) }
-// func BenchmarkNewFloat64_4(b *testing.B) { benchmarkNewFloat64(10000000, b) }
+func BenchmarkNewFloat64_4(b *testing.B) { benchmarkNewFloat64(10000000, b) }

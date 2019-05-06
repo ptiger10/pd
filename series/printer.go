@@ -21,7 +21,7 @@ func (s Series) String() string {
 	}
 }
 
-// expects to receive a slice of typed value structs (eg values.FloatValues)
+// expects to receive a slice of typed value structs (eg values.float64Values)
 func (s Series) print() string {
 	numLevels := len(s.index.Levels)
 	var header string

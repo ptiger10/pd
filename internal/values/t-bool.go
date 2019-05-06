@@ -3,90 +3,78 @@ package values
 import (
 	"math"
 	"time"
+
+	"github.com/ptiger10/pd/kinds"
 )
 
-// [START Definitions]
+// [START Constructor Functions]
 
-// BoolValues is a slice of bool-typed Value/Null structs
-type BoolValues []BoolValue
-
-// A BoolValue is one bool-typed Value/Null struct
-type BoolValue struct {
-	v    bool
-	null bool
-}
-
-// Bool constructs a BoolValue
-func Bool(v bool, null bool) BoolValue {
-	return BoolValue{
-		v:    v,
-		null: null,
+// SliceBool converts []bool -> Factory with boolValues
+func SliceBool(vals []bool) Factory {
+	var v boolValues
+	for _, val := range vals {
+		v = append(v, boolVal(val, false))
 	}
+	return Factory{v, kinds.Bool}
 }
 
-// [END Definitions]
+// [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat converts BoolValues to FloatValues
+// ToFloat converts boolValues to float64Values
 //
 // true: 1.0, false: 0.0, null: NaN
-func (vals BoolValues) ToFloat() Values {
-	var ret FloatValues
+func (vals boolValues) ToFloat() Values {
+	var ret float64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Float(math.NaN(), true))
+			ret = append(ret, float64Val(math.NaN(), true))
 		} else if val.v {
-			ret = append(ret, Float(1, false))
+			ret = append(ret, float64Val(1, false))
 		} else {
-			ret = append(ret, Float(0, false))
+			ret = append(ret, float64Val(0, false))
 		}
 	}
 	return ret
 }
 
-// ToInt converts BoolValues to IntValues
+// ToInt converts boolValues to int64Values
 //
 // true: 1, false: 0, null: 0
-func (vals BoolValues) ToInt() Values {
-	var ret IntValues
+func (vals boolValues) ToInt() Values {
+	var ret int64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Int(0, true))
+			ret = append(ret, int64Val(0, true))
 		} else if val.v {
-			ret = append(ret, Int(1, false))
+			ret = append(ret, int64Val(1, false))
 		} else {
-			ret = append(ret, Int(0, false))
+			ret = append(ret, int64Val(0, false))
 		}
 	}
 	return ret
 }
 
 // ToBool returns itself
-func (vals BoolValues) ToBool() Values {
+func (vals boolValues) ToBool() Values {
 	return vals
 }
 
-// ToDateTime converts BoolValues to DateTimeValues
+// ToDateTime converts boolValues to dateTimeValues
 //
 // notnull: time.Date(1970,1,1,0,0,0,0,time.UTC)
-func (vals BoolValues) ToDateTime() Values {
+func (vals boolValues) ToDateTime() Values {
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-	var ret DateTimeValues
+	var ret dateTimeValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, DateTime(time.Time{}, true))
+			ret = append(ret, dateTimeVal(time.Time{}, true))
 		} else {
-			ret = append(ret, DateTime(epochDate, false))
+			ret = append(ret, dateTimeVal(epochDate, false))
 		}
 	}
 	return ret
 }
 
 // [END Converters]
-
-// [START Methods]
-
-// Describe the values in the collection
-
-// [END Methods]

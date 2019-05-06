@@ -3,61 +3,75 @@ package values
 import (
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/araddon/dateparse"
+	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/options"
 )
 
-// [START Definitions]
+// [START Convenience Functions]
 
-// StringValues is a slice of string-typed Value/Null structs
-type StringValues []StringValue
-
-// A StringValue is one string-typed Value/Null struct
-type StringValue struct {
-	v    string
-	null bool
-}
-
-// String constructs a StringValue
-func String(v string, null bool) StringValue {
-	return StringValue{
-		v:    v,
-		null: null,
+func isNullString(s string) bool {
+	nullStrings := options.StringNullValues
+	for _, ns := range nullStrings {
+		if strings.TrimSpace(s) == ns {
+			return true
+		}
 	}
+	return false
 }
 
-// [END Definitions]
+// [END Convenience Functions]
+
+// [START Constructor Functions]
+
+// SliceString converts []string -> Factory with stringValues
+func SliceString(vals []string) Factory {
+	var v stringValues
+	for _, val := range vals {
+		if isNullString(val) {
+			v = append(v, stringVal(options.DisplayStringNullFiller, true))
+		} else {
+			v = append(v, stringVal(val, false))
+		}
+
+	}
+	return Factory{v, kinds.String}
+}
+
+// [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat converts StringValues to FloatValues
+// ToFloat converts stringValues to float64Values
 //
 // "1": 1.0, Null: NaN
-func (vals StringValues) ToFloat() Values {
-	var ret FloatValues
+func (vals stringValues) ToFloat() Values {
+	var ret float64Values
 	for _, val := range vals {
 		ret = append(ret, stringToFloat(val.v))
 	}
 	return ret
 }
 
-func stringToFloat(s string) FloatValue {
+func stringToFloat(s string) float64Value {
 	v, err := strconv.ParseFloat(s, 64)
 	if math.IsNaN(v) || err != nil {
-		return Float(math.NaN(), true)
+		return float64Val(math.NaN(), true)
 	}
-	return Float(v, false)
+	return float64Val(v, false)
 }
 
-// ToInt converts StringValues to IntValues
+// ToInt converts stringValues to int64Values
 //
 // "1": 1, null: NaN
-func (vals StringValues) ToInt() Values {
-	var ret IntValues
+func (vals stringValues) ToInt() Values {
+	var ret int64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Int(0, true))
+			ret = append(ret, int64Val(0, true))
 		} else {
 			ret = append(ret, stringToInt(val.v))
 		}
@@ -65,30 +79,30 @@ func (vals StringValues) ToInt() Values {
 	return ret
 }
 
-func stringToInt(s string) IntValue {
+func stringToInt(s string) int64Value {
 	v, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		return Int(0, true)
+		return int64Val(0, true)
 	}
-	return Int(int64(v), false)
+	return int64Val(int64(v), false)
 }
 
-// ToBool converts StringValues to BoolValues
+// ToBool converts stringValues to boolValues
 //
 // null: false; notnull: true
-func (vals StringValues) ToBool() Values {
-	var ret BoolValues
+func (vals stringValues) ToBool() Values {
+	var ret boolValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Bool(false, true))
+			ret = append(ret, boolVal(false, true))
 		} else {
-			ret = append(ret, Bool(true, false))
+			ret = append(ret, boolVal(true, false))
 		}
 	}
 	return ret
 }
 
-// ToDateTime converts StringValues to DateTimeValues using an external parse library
+// ToDateTime converts stringValues to dateTimeValues using an external parse library
 //
 // Jan 1 2019: 2019-01-01 00:00:00
 //
@@ -193,11 +207,11 @@ func (vals StringValues) ToBool() Values {
    	"1384216367111222333",
    }
 */
-func (vals StringValues) ToDateTime() Values {
-	var ret DateTimeValues
+func (vals stringValues) ToDateTime() Values {
+	var ret dateTimeValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, DateTime(time.Time{}, true))
+			ret = append(ret, dateTimeVal(time.Time{}, true))
 		} else {
 			v := stringToDateTime(val.v)
 			ret = append(ret, v)
@@ -206,16 +220,12 @@ func (vals StringValues) ToDateTime() Values {
 	return ret
 }
 
-func stringToDateTime(s string) DateTimeValue {
+func stringToDateTime(s string) dateTimeValue {
 	val, err := dateparse.ParseAny(s)
 	if err != nil {
-		return DateTime(time.Time{}, true)
+		return dateTimeVal(time.Time{}, true)
 	}
-	return DateTime(val, false)
+	return dateTimeVal(val, false)
 }
 
 // [END Converters]
-
-// [START Methods]
-
-// [END Methods]

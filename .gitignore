@@ -1,2 +1,5 @@
 .vscode/
 *.out
+*.test
+*.sh
+Makefile

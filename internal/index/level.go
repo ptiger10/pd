@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	"github.com/ptiger10/pd/internal/values"
-	constructVal "github.com/ptiger10/pd/internal/values/constructors"
 	"github.com/ptiger10/pd/kinds"
 )
 
 // NewLevelFromSlice creates an Index Level from a Slice interface{}
 // data MUST be reflect.Kind = Slice
 func NewLevelFromSlice(data interface{}, name string) (Level, error) {
-	vf, err := constructVal.ValuesFromSlice(data)
+	vf, err := values.SliceFactory(data)
 	if err != nil {
 		return Level{}, fmt.Errorf("Unable to create level from Slice: data type not supported: %T", data)
 	}
 	return newLevel(vf.V, vf.Kind, name), nil
+
 }
 
 // newLevel returns an Index level with updated label map and longest value computed.

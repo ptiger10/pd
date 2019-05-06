@@ -1,79 +1,78 @@
 package values
 
 import (
+	"math"
 	"time"
+
+	"github.com/ptiger10/pd/kinds"
 )
 
-// [START Definitions]
+// [START Constructor Functions]
 
-// FloatValues is a slice of Float64-typed Value/Null structs
-type FloatValues []FloatValue
-
-// A FloatValue is one Float64-typed Value/Null struct
-type FloatValue struct {
-	v    float64
-	null bool
-}
-
-// Float constructs a FloatValue
-func Float(v float64, null bool) FloatValue {
-	return FloatValue{
-		v:    v,
-		null: null,
+// SliceFloat converts []float64  -> Factory with float64Values
+func SliceFloat(vals []float64) Factory {
+	var v float64Values
+	for _, val := range vals {
+		if math.IsNaN(val) {
+			v = append(v, float64Val(val, true))
+			continue
+		}
+		v = append(v, float64Val(val, false))
 	}
+	return Factory{v, kinds.Float}
 }
 
-// [END Definitions]
+// [END Constructor Functions]
 
 // [START Converters]
 
 // ToFloat returns itself
-func (vals FloatValues) ToFloat() Values {
+func (vals float64Values) ToFloat() Values {
 	return vals
 }
 
-// ToInt converts FloatValues to IntValues
+// ToInt converts float64Values to int64Values
 //
 // 1.9: 1, 1.5: 1, null: 0
-func (vals FloatValues) ToInt() Values {
-	var ret IntValues
+func (vals float64Values) ToInt() Values {
+	var ret int64Values
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Int(0, true))
+			ret = append(ret, int64Val(0, true))
 		} else {
 			v := int64(val.v)
-			ret = append(ret, Int(v, false))
+			ret = append(ret, int64Val(v, false))
 		}
 	}
 	return ret
 }
 
-// ToBool converts FloatValues to BoolValues
+// ToBool converts float64Values to boolValues
 //
 // x != 0: true; x == 0: false; null: false
-func (vals FloatValues) ToBool() Values {
-	var ret BoolValues
+func (vals float64Values) ToBool() Values {
+	var ret boolValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, Bool(false, true))
+			ret = append(ret, boolVal(false, true))
 		} else {
 			if val.v == 0 {
-				ret = append(ret, Bool(false, false))
+				ret = append(ret, boolVal(false, false))
 			} else {
-				ret = append(ret, Bool(true, false))
+				ret = append(ret, boolVal(true, false))
 			}
 		}
 	}
 	return ret
 }
 
-// ToDateTime converts FloatValues to DateTimeValues.
+// ToDateTime converts float64Values to dateTimeValues.
 // Tries to convert from Unix EPOCH time, otherwise returns null
-func (vals FloatValues) ToDateTime() Values {
-	var ret DateTimeValues
+func (vals float64Values) ToDateTime() Values {
+	var ret dateTimeValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, DateTime(time.Time{}, true))
+			ret = append(ret, dateTimeVal(time.Time{}, true))
 		} else {
 			ret = append(ret, floatToDateTime(val.v))
 		}
@@ -81,7 +80,7 @@ func (vals FloatValues) ToDateTime() Values {
 	return ret
 }
 
-func floatToDateTime(f float64) DateTimeValue {
+func floatToDateTime(f float64) dateTimeValue {
 	return intToDateTime(int64(f))
 }
 

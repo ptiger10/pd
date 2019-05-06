@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	constructIdx "github.com/ptiger10/pd/internal/index/constructors"
+	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/kinds"
 )
 
@@ -103,9 +103,11 @@ func TestMini_single(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	want := constructIdx.New(
-		constructIdx.SliceInt([]int64{1, 2, 3}, "test"),
-	)
+	lvl, err := index.NewLevelFromSlice([]int64{1, 2, 3}, "test")
+	want := index.New(lvl)
+	if err != nil {
+		t.Error(err)
+	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("MiniIndex returned %v, want %v", got, want)
 	}
