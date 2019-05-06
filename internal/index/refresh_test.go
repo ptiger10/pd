@@ -1,28 +1,24 @@
-package index_test
+package index
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/internal/index"
-	constructIdx "github.com/ptiger10/pd/internal/index/constructors"
-
 	"github.com/ptiger10/pd/internal/values"
-	constructVal "github.com/ptiger10/pd/internal/values/constructors"
 )
 
 func Test_RefreshLevel(t *testing.T) {
 	var tests = []struct {
 		newLabels    values.Values
-		wantLabelMap index.LabelMap
+		wantLabelMap LabelMap
 		wantLongest  int
 	}{
-		{constructVal.SliceInt([]int64{3, 4}), index.LabelMap{"3": []int{0}, "4": []int{1}}, 1},
-		{constructVal.SliceInt([]int64{10, 20}), index.LabelMap{"10": []int{0}, "20": []int{1}}, 2},
+		{mustCreateNewLevelFromSlice([]int64{3, 4}).Labels, LabelMap{"3": []int{0}, "4": []int{1}}, 1},
+		{mustCreateNewLevelFromSlice([]int64{10, 20}).Labels, LabelMap{"10": []int{0}, "20": []int{1}}, 2},
 	}
 	for _, test := range tests {
-		lvl := constructIdx.SliceInt([]int64{1, 2}, "")
-		origLabelMap := index.LabelMap{"1": []int{0}, "2": []int{1}}
+		lvl := mustCreateNewLevelFromSlice([]int64{1, 2})
+		origLabelMap := LabelMap{"1": []int{0}, "2": []int{1}}
 		if !reflect.DeepEqual(lvl.LabelMap, origLabelMap) {
 			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, origLabelMap)
 		}
@@ -39,23 +35,26 @@ func Test_RefreshLevel(t *testing.T) {
 }
 
 func Test_RefreshIndex(t *testing.T) {
-	var tests = []struct {
-		newLevel    index.Level
-		wantNameMap index.LabelMap
-		wantName    string
-	}{
-		{constructIdx.SliceInt([]int64{1, 2}, "ints"), index.LabelMap{"ints": []int{0}}, "ints"},
+	origLvl, err := NewLevelFromSlice([]int64{1, 2}, "")
+	if err != nil {
+		t.Error(err)
 	}
-	for _, test := range tests {
-		orig := constructIdx.SliceInt([]int64{1, 2}, "")
-		idx := constructIdx.New(orig)
-		idx.Levels[0] = test.newLevel
-		idx.Refresh()
-		if !reflect.DeepEqual(idx.NameMap, test.wantNameMap) {
-			t.Errorf("Returned nameMap %v, want %v", idx.NameMap, test.wantNameMap)
-		}
-		if idx.Levels[0].Name != test.wantName {
-			t.Errorf("Returned name %v, want %v", idx.Levels[0].Name, test.wantName)
-		}
+	idx := New(origLvl)
+	if idx.Levels[0].Name != "" {
+		t.Error("Expecting no name")
+	}
+	newLvl, err := NewLevelFromSlice([]int64{1, 2}, "ints")
+	if err != nil {
+		t.Error(err)
+	}
+	idx.Levels[0] = newLvl
+	idx.Refresh()
+	wantNameMap := LabelMap{"ints": []int{0}}
+	wantName := "ints"
+	if !reflect.DeepEqual(idx.NameMap, wantNameMap) {
+		t.Errorf("Returned nameMap %v, want %v", idx.NameMap, wantNameMap)
+	}
+	if idx.Levels[0].Name != wantName {
+		t.Errorf("Returned name %v, want %v", idx.Levels[0].Name, wantName)
 	}
 }

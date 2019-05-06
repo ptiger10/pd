@@ -70,7 +70,7 @@ func New(data interface{}, options ...Option) (Series, error) {
 	var kind kinds.Kind
 	name := config.name
 
-	var extendedVals constructVal.ExtendedValues
+	var factory constructVal.ValuesFactory
 	var v values.Values
 	var idx index.Index
 	var err error
@@ -78,15 +78,15 @@ func New(data interface{}, options ...Option) (Series, error) {
 	// Values
 	switch reflect.ValueOf(data).Kind() {
 	case reflect.Slice:
-		extendedVals, err = constructVal.ValuesFromSlice(data)
+		factory, err = constructVal.ValuesFromSlice(data)
 
 	default:
 		return Series{}, fmt.Errorf("Unable to construct new Series: type not supported: %T", data)
 	}
 
 	// Sets values and kind based on the Values switch
-	v = extendedVals.V
-	kind = extendedVals.Kind
+	v = factory.V
+	kind = factory.Kind
 	if err != nil {
 		return Series{}, fmt.Errorf("Unable to construct new Series: unable to construct values: %v", err)
 	}

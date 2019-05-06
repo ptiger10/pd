@@ -8,8 +8,9 @@ import (
 
 // UpdateLabelMap updates a single level's map of {label values: [label positions]}
 func (lvl *Level) UpdateLabelMap() {
-	labelMap := make(LabelMap)
-	for i, val := range lvl.Labels.All() {
+	labels := lvl.Labels.All()
+	labelMap := make(LabelMap, len(labels))
+	for i, val := range labels {
 		key := fmt.Sprint(val)
 		labelMap[key] = append(labelMap[key], i)
 	}
