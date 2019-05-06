@@ -18,7 +18,7 @@ func TestConvert(t *testing.T) {
 
 	nan := math.NaN()
 	var tests = []struct {
-		input     values.Values
+		input     constructVal.ValuesFactory
 		convertTo kinds.Kind
 		wantVal   interface{}
 		wantNull  bool
@@ -126,7 +126,7 @@ func TestConvert(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		converted, err := values.Convert(test.input, test.convertTo)
+		converted, err := values.Convert(test.input.V, test.convertTo)
 		if err != nil {
 			t.Errorf("Unable to convert to string: %v", err)
 		}
@@ -157,7 +157,7 @@ func TestConvert_Unsupported(t *testing.T) {
 	}
 	for _, test := range tests {
 		vals := constructVal.SliceFloat([]float64{1.5})
-		_, err := values.Convert(vals, test.kind)
+		_, err := values.Convert(vals.V, test.kind)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.kind)
 		}
