@@ -37,8 +37,8 @@ func (lvl *Level) UpdateLongest() {
 	if len(lvl.Name) > max {
 		max = len(lvl.Name)
 	}
-	if max > options.DisplayIndexMaxWidth {
-		max = options.DisplayIndexMaxWidth
+	if max > options.GetDisplayIndexMaxWidth() {
+		max = options.GetDisplayIndexMaxWidth()
 	}
 	lvl.Longest = max
 }

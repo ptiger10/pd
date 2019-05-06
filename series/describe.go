@@ -34,7 +34,7 @@ func (s Series) Describe() {
 	// type-specific data
 	switch s.kind {
 	case kinds.Float, kinds.Int:
-		precision := options.DisplayFloatPrecision
+		precision := options.GetDisplayFloatPrecision()
 		mean := fmt.Sprintf("%.*f", precision, s.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Min())
 		q1 := fmt.Sprintf("%.*f", precision, s.Quartile(1))
@@ -52,7 +52,7 @@ func (s Series) Describe() {
 		idx := Index([]string{"len", "valid", "null", "unique"})
 		s, err = New(values, idx, Name("description"))
 	case kinds.Bool:
-		precision := options.DisplayFloatPrecision
+		precision := options.GetDisplayFloatPrecision()
 		sum := fmt.Sprintf("%.*f", precision, s.Sum())
 		mean := fmt.Sprintf("%.*f", precision, s.Mean())
 		values := []string{length, valid, null, sum, mean}

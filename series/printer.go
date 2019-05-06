@@ -33,7 +33,7 @@ func (s Series) print() string {
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
-			header += strings.Repeat(" ", options.DisplayIndexWhitespaceBuffer)
+			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 		}
 	}
 	// omit header line if empty
@@ -57,7 +57,7 @@ func (s Series) print() string {
 			idx := fmt.Sprint(elem.Index[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
-				buffer = strings.Repeat(" ", options.DisplayIndexWhitespaceBuffer)
+				buffer = strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 				// skip repeated label values if this is not the last index level
 				if prior[j] == idx {
 					skip = true
@@ -67,7 +67,7 @@ func (s Series) print() string {
 
 			printStr := fmt.Sprintf("%*v", padding, idx)
 			// elide index string if longer than the max allowable width
-			if padding == options.DisplayIndexMaxWidth {
+			if padding == options.GetDisplayIndexMaxWidth() {
 				printStr = printStr[:len(printStr)-4] + "..."
 			}
 
@@ -83,7 +83,7 @@ func (s Series) print() string {
 		// [START value printer]
 		valStr := fmt.Sprint(elem.Value)
 		// add buffer at beginning
-		val := strings.Repeat(" ", options.DisplayValuesWhitespaceBuffer) + valStr
+		val := strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()) + valStr
 		// null string values must not return any trailing whitespace
 		if valStr == "" {
 			val = strings.TrimSpace(val)

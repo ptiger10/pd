@@ -15,10 +15,10 @@ import (
 // valueType is the generic ValueType that will be replaced by specific types on `make generate`
 type valueType generic.Type
 
-// valueTypeValues is a slice of ValueType-typed value/null structs
+// valueTypeValues is a slice of valueType-typed value/null structs
 type valueTypeValues []valueTypeValue
 
-// valueTypeValue is a ValueType-typed value/null struct
+// valueTypeValue is a valueType-typed value/null struct
 type valueTypeValue struct {
 	v    valueType
 	null bool
@@ -102,7 +102,7 @@ func (vals valueTypeValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -110,7 +110,7 @@ func (vals valueTypeValues) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals valueTypeValues) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -124,4 +124,7 @@ func (vals valueTypeValues) ToInterface() Values {
 }
 
 // [END] valueTypeValues
+// ---------------------------------------------------------------------------
 var placeholder = true
+
+// the placeholder and this comment are overwritten on `make generate`, but the [END] comment remains

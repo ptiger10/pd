@@ -14,10 +14,10 @@ import (
 
 // [START] float64Values
 
-// float64Values is a slice of ValueType-typed value/null structs
+// float64Values is a slice of float64-typed value/null structs
 type float64Values []float64Value
 
-// float64Value is a ValueType-typed value/null struct
+// float64Value is a float64-typed value/null struct
 type float64Value struct {
 	v    float64
 	null bool
@@ -101,7 +101,7 @@ func (vals float64Values) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -109,7 +109,7 @@ func (vals float64Values) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals float64Values) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -123,14 +123,15 @@ func (vals float64Values) ToInterface() Values {
 }
 
 // [END] float64Values
+// ---------------------------------------------------------------------------
 
 
 // [START] int64Values
 
-// int64Values is a slice of ValueType-typed value/null structs
+// int64Values is a slice of int64-typed value/null structs
 type int64Values []int64Value
 
-// int64Value is a ValueType-typed value/null struct
+// int64Value is a int64-typed value/null struct
 type int64Value struct {
 	v    int64
 	null bool
@@ -214,7 +215,7 @@ func (vals int64Values) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -222,7 +223,7 @@ func (vals int64Values) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals int64Values) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -236,14 +237,15 @@ func (vals int64Values) ToInterface() Values {
 }
 
 // [END] int64Values
+// ---------------------------------------------------------------------------
 
 
 // [START] stringValues
 
-// stringValues is a slice of ValueType-typed value/null structs
+// stringValues is a slice of string-typed value/null structs
 type stringValues []stringValue
 
-// stringValue is a ValueType-typed value/null struct
+// stringValue is a string-typed value/null struct
 type stringValue struct {
 	v    string
 	null bool
@@ -327,7 +329,7 @@ func (vals stringValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -335,7 +337,7 @@ func (vals stringValues) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals stringValues) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -349,14 +351,15 @@ func (vals stringValues) ToInterface() Values {
 }
 
 // [END] stringValues
+// ---------------------------------------------------------------------------
 
 
 // [START] boolValues
 
-// boolValues is a slice of ValueType-typed value/null structs
+// boolValues is a slice of bool-typed value/null structs
 type boolValues []boolValue
 
-// boolValue is a ValueType-typed value/null struct
+// boolValue is a bool-typed value/null struct
 type boolValue struct {
 	v    bool
 	null bool
@@ -440,7 +443,7 @@ func (vals boolValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -448,7 +451,7 @@ func (vals boolValues) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals boolValues) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -462,14 +465,15 @@ func (vals boolValues) ToInterface() Values {
 }
 
 // [END] boolValues
+// ---------------------------------------------------------------------------
 
 
 // [START] dateTimeValues
 
-// dateTimeValues is a slice of ValueType-typed value/null structs
+// dateTimeValues is a slice of dateTime-typed value/null structs
 type dateTimeValues []dateTimeValue
 
-// dateTimeValue is a ValueType-typed value/null struct
+// dateTimeValue is a dateTime-typed value/null struct
 type dateTimeValue struct {
 	v    time.Time
 	null bool
@@ -553,7 +557,7 @@ func (vals dateTimeValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -561,7 +565,7 @@ func (vals dateTimeValues) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals dateTimeValues) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -575,14 +579,15 @@ func (vals dateTimeValues) ToInterface() Values {
 }
 
 // [END] dateTimeValues
+// ---------------------------------------------------------------------------
 
 
 // [START] interfaceValues
 
-// interfaceValues is a slice of ValueType-typed value/null structs
+// interfaceValues is a slice of interface-typed value/null structs
 type interfaceValues []interfaceValue
 
-// interfaceValue is a ValueType-typed value/null struct
+// interfaceValue is a interface-typed value/null struct
 type interfaceValue struct {
 	v    interface{}
 	null bool
@@ -666,7 +671,7 @@ func (vals interfaceValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.DisplayStringNullFiller, true))
+			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -674,7 +679,7 @@ func (vals interfaceValues) ToString() Values {
 	return ret
 }
 
-// ToInterface converts teh values to interfaceValues
+// ToInterface converts the values to interfaceValues
 func (vals interfaceValues) ToInterface() Values {
 	var ret interfaceValues
 	for _, val := range vals {
@@ -688,4 +693,5 @@ func (vals interfaceValues) ToInterface() Values {
 }
 
 // [END] interfaceValues
+// ---------------------------------------------------------------------------
 

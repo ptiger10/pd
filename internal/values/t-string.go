@@ -14,7 +14,7 @@ import (
 // [START Convenience Functions]
 
 func isNullString(s string) bool {
-	nullStrings := options.StringNullValues
+	nullStrings := options.GetStringNullValues()
 	for _, ns := range nullStrings {
 		if strings.TrimSpace(s) == ns {
 			return true
@@ -32,7 +32,7 @@ func SliceString(vals []string) Factory {
 	var v stringValues
 	for _, val := range vals {
 		if isNullString(val) {
-			v = append(v, stringVal(options.DisplayStringNullFiller, true))
+			v = append(v, stringVal(options.GetDisplayStringNullFiller(), true))
 		} else {
 			v = append(v, stringVal(val, false))
 		}

@@ -7,42 +7,42 @@ import (
 
 func TestSetting(t *testing.T) {
 	SetDisplayIndexMaxWidth(15)
-	if DisplayIndexMaxWidth != 15 {
-		t.Error("Unable to set DisplayIndexMaxWidth")
+	if GetDisplayIndexMaxWidth() != 15 {
+		t.Error("Unable to set/get DisplayIndexMaxWidth")
 	}
 	SetDisplayIndexWhitespaceBuffer(5)
-	if DisplayIndexWhitespaceBuffer != 5 {
-		t.Error("Unable to set DisplayIndexWhitespaceBuffer")
+	if GetDisplayIndexWhitespaceBuffer() != 5 {
+		t.Error("Unable to set/get DisplayIndexWhitespaceBuffer")
 	}
 	SetDisplayValuesWhitespaceBuffer(10)
-	if DisplayValuesWhitespaceBuffer != 10 {
-		t.Error("Unable to set DisplayValuesWhitespaceBuffer")
+	if GetDisplayValuesWhitespaceBuffer() != 10 {
+		t.Error("Unable to set/get DisplayValuesWhitespaceBuffer")
 	}
 	SetDisplayFloatPrecision(10)
-	if DisplayFloatPrecision != 10 {
-		t.Error("Unable to set DisplayFloatPrecision")
+	if GetDisplayFloatPrecision() != 10 {
+		t.Error("Unable to set/get DisplayFloatPrecision")
 	}
 
 	SetDisplayRepeatedIndexLabels(true)
-	if DisplayRepeatedIndexLabels != true {
-		t.Error("Unable to set DisplayRepeatedIndexLabels")
+	if GetDisplayRepeatedIndexLabels() != true {
+		t.Error("Unable to set/get DisplayRepeatedIndexLabels")
 	}
 
 	SetDisplayStringNullFiller("Nothing")
-	if DisplayStringNullFiller != "Nothing" {
-		t.Error("Unable to set DisplayStringNullFiller")
+	if GetDisplayStringNullFiller() != "Nothing" {
+		t.Error("Unable to set/get DisplayStringNullFiller")
 	}
 
 	SetStringNullValues([]string{"Nada", "Nothing"})
-	if !reflect.DeepEqual(StringNullValues, []string{"Nada", "Nothing"}) {
-		t.Error("Unable to set StringNullValues")
+	if !reflect.DeepEqual(GetStringNullValues(), []string{"Nada", "Nothing"}) {
+		t.Error("Unable to set/get StringNullValues")
 	}
 	SetLogWarnings(false)
-	if LogWarnings != false {
-		t.Error("Unable to set LogWarnings")
+	if GetLogWarnings() != false {
+		t.Error("Unable to set/get LogWarnings")
 	}
 	RestoreDefaults()
-	if DisplayIndexMaxWidth != 25 {
+	if GetDisplayIndexMaxWidth() != 25 {
 		t.Error("Unable to restore default for DisplayIndexMaxWidth")
 	}
 

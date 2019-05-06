@@ -6,7 +6,7 @@ import "github.com/ptiger10/pd/kinds"
 // Thes same interface and value types are used for both Series values and Index labels
 type Values interface {
 	Len() int                  // number of value/null structs
-	All() []interface{}        // all value elements regardless of null status, as interface slice
+	All() []interface{}        // all value elements regardless of null status as interface slice, ready for indexing
 	Vals() interface{}         // a slice of values elements in their native form, ready for type assertion
 	In([]int) Values           // Value/Null elements at one or more integer positions
 	Valid() []int              // integer positions of non-null values
