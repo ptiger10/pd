@@ -41,7 +41,7 @@ func (vals valueTypeValues) In(rowPositions []int) (Values, error) {
 	var ret valueTypeValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing valueTypeValues values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}

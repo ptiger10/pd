@@ -11,7 +11,7 @@ import (
 func (s Series) At(label string) Series {
 	sNew, err := s.atLevelLabel(0, label)
 	if err != nil {
-		values.Warn(err, "Original Series")
+		values.Warn(err, "original Series")
 		return s
 	}
 	sNew.index.Refresh()
@@ -19,20 +19,18 @@ func (s Series) At(label string) Series {
 }
 
 func (s Series) atLevelLabel(level int, label string) (Series, error) {
-	var err error
 	positions, ok := s.index.Levels[level].LabelMap[label]
 	if !ok {
-		return Series{}, fmt.Errorf("Label not in index level %v: %v", level, label)
+		return Series{}, fmt.Errorf("Label %q not in index level %v", level, label)
 	}
-	s.values, err = s.values.In(positions)
+	values, err := s.values.In(positions)
 	if err != nil {
-		return Series{}, fmt.Errorf("Unable to get Series values at positions %v: %v", positions, err)
+		return Series{}, fmt.Errorf("Internal error: bad index label map: unable to get Series values at label %v: %v", label, err)
 	}
+	s.values = values
 	for i, level := range s.index.Levels {
-		s.index.Levels[i].Labels, err = level.Labels.In(positions)
-		if err != nil {
-			return Series{}, fmt.Errorf("Unable to get Series index labels at level %v and positions %v: %v", level, positions, err)
-		}
+		// Ducks error because positional alignment is assumed between values and all index levels
+		s.index.Levels[i].Labels, _ = level.Labels.In(positions)
 	}
 	return s, nil
 }
@@ -244,7 +242,7 @@ func (sel Selection) get() Series {
 			s.index.Levels[i].Labels, _ = s.index.Levels[i].Labels.In(sel.rowPositions)
 		}
 	default:
-		values.Warn(fmt.Errorf("Unable to categorize intention of caller"), "Original Series")
+		values.Warn(fmt.Errorf("Unable to categorize intention of caller"), "original Series")
 		return s
 	}
 	return s

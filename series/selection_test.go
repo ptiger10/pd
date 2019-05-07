@@ -1,6 +1,7 @@
 package series
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -39,6 +40,7 @@ func TestAt_fail(t *testing.T) {
 	if !reflect.DeepEqual(got, s) {
 		t.Errorf("Returned %v, want original series", got)
 	}
+	fmt.Println(got)
 }
 
 func TestAt_multiindex(t *testing.T) {

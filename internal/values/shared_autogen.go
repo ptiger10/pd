@@ -40,7 +40,7 @@ func (vals float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing Float64Values values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}
@@ -156,7 +156,7 @@ func (vals int64Values) In(rowPositions []int) (Values, error) {
 	var ret int64Values
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing Int64Values values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}
@@ -272,7 +272,7 @@ func (vals stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing StringValues values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}
@@ -388,7 +388,7 @@ func (vals boolValues) In(rowPositions []int) (Values, error) {
 	var ret boolValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing BoolValues values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}
@@ -504,7 +504,7 @@ func (vals dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing TimeTimeValues values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}
@@ -620,7 +620,7 @@ func (vals interfaceValues) In(rowPositions []int) (Values, error) {
 	var ret interfaceValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("Error indexing InterfaceValues values: rowPosition is out of range: %d", position)
+			return nil, fmt.Errorf("%d is not a valid integer position", position)
 		}
 		ret = append(ret, vals[position])
 	}

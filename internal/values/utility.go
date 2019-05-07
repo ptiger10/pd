@@ -7,7 +7,7 @@ import (
 )
 
 // warning is the standardized part of any warning message shown to a caller due to bad parameters.
-var warning = "Warning: caller has triggered a fatal error: %v. Returning %v instead."
+var warning = "Warning! %v. Returning %v instead."
 
 // Warn prints a warning to the caller when they have triggered a fatal error,
 // and a description of what is being returned instead of what they expected.
