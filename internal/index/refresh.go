@@ -3,7 +3,7 @@ package index
 import (
 	"fmt"
 
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 // UpdateLabelMap updates a single level's map of {label values: [label positions]}
@@ -37,8 +37,8 @@ func (lvl *Level) UpdateLongest() {
 	if len(lvl.Name) > max {
 		max = len(lvl.Name)
 	}
-	if max > options.GetDisplayIndexMaxWidth() {
-		max = options.GetDisplayIndexMaxWidth()
+	if max > opt.GetDisplayIndexMaxWidth() {
+		max = opt.GetDisplayIndexMaxWidth()
 	}
 	lvl.Longest = max
 }

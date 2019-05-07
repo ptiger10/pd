@@ -32,7 +32,7 @@ func (s Series) As(kind kinds.Kind) Series {
 		s.kind = kinds.Interface
 
 	default:
-		values.Warn(fmt.Errorf("Unsupported conversion kind"), "original Series")
+		values.Warn(fmt.Errorf("unsupported conversion kind"), "original Series")
 		return s
 	}
 	return s
@@ -69,11 +69,11 @@ func (s Series) IndexAs(kind kinds.Kind) (Series, error) {
 func (s Series) IndexLevelAs(position int, kind kinds.Kind) (Series, error) {
 	copyS := s.copy()
 	if position >= len(s.index.Levels) {
-		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range (Series has %d levels)", position, len(s.index.Levels))
+		return Series{}, fmt.Errorf("unable to convert index at level %d: index out of range (Series has %d levels)", position, len(s.index.Levels))
 	}
 	lvl, err := copyS.index.Levels[position].Convert(kind)
 	if err != nil {
-		return Series{}, fmt.Errorf("Unable to convert index to kind %v: unsupported kind", kind)
+		return Series{}, fmt.Errorf("unable to convert index to kind %v: unsupported kind", kind)
 	}
 	copyS.index.Levels[position] = lvl
 	return copyS, nil

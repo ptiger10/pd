@@ -3,16 +3,16 @@ package values
 import (
 	"log"
 
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 // warning is the standardized part of any warning message shown to a caller due to bad parameters.
-var warning = "Warning! %v. Returning %v instead."
+var warning = "Warning! %v. Returning %v."
 
 // Warn prints a warning to the caller when they have triggered a fatal error,
 // and a description of what is being returned instead of what they expected.
 func Warn(err error, returnDesc string) {
-	if options.GetLogWarnings() {
+	if opt.GetLogWarnings() {
 		log.Printf(warning, err, returnDesc)
 		return
 	}

@@ -12,7 +12,7 @@ import (
 func NewLevelFromSlice(data interface{}, name string) (Level, error) {
 	vf, err := values.SliceFactory(data)
 	if err != nil {
-		return Level{}, fmt.Errorf("Unable to create level from Slice: data type not supported: %T", data)
+		return Level{}, fmt.Errorf("unable to create level from Slice: data type not supported: %T", data)
 	}
 	return newLevel(vf.V, vf.Kind, name), nil
 

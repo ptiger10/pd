@@ -27,14 +27,14 @@ type Level struct {
 type LabelMap map[string][]int
 
 // In returns an index with only those levels located at specified integer positions
-func (idx Index) In(levelPositions []int) (Index, error) {
+func (idx Index) In(positions []int) (Index, error) {
 	idx = idx.Copy()
 	var lvls []Level
-	for _, position := range levelPositions {
-		if position >= len(idx.Levels) {
-			return Index{}, fmt.Errorf("Error indexing index levels: level %d is out of range", position)
+	for _, pos := range positions {
+		if pos >= len(idx.Levels) {
+			return Index{}, fmt.Errorf("error indexing index levels: level %d is out of range", pos)
 		}
-		lvls = append(lvls, idx.Levels[position])
+		lvls = append(lvls, idx.Levels[pos])
 	}
 	newIdx := New(lvls...)
 	return newIdx, nil
@@ -49,4 +49,20 @@ func (idx Index) Copy() Index {
 		copier.Copy(&idxCopy.Levels[i], &idx.Levels[i])
 	}
 	return idxCopy
+}
+
+// Len returns the length of the first level of the index
+func (idx Index) Len() int {
+	return idx.Levels[0].Labels.Len()
+}
+
+// Aligned ensures that all index levels have the same length
+func (idx Index) Aligned() bool {
+	lvl0 := idx.Levels[0].Labels.Len()
+	for i := 1; i < len(idx.Levels); i++ {
+		if lvl0 != idx.Levels[i].Labels.Len() {
+			return false
+		}
+	}
+	return true
 }

@@ -20,3 +20,20 @@ type Series struct {
 func (s Series) Kind() string {
 	return fmt.Sprint(s.kind)
 }
+
+func (s Series) in(positions []int) (Series, error) {
+	if ok := s.ensureAlignment(); !ok {
+		return s, fmt.Errorf("fatal error: Series values and index labels out of alignment: report issue and create new series")
+	}
+	values, err := s.values.In(positions)
+	if err != nil {
+		return Series{}, fmt.Errorf("unable to get Series values at positions: %v", err)
+	}
+	s.values = values
+	for i, level := range s.index.Levels {
+		// Ducks error because positional alignment is ensured between values and all index levels
+		s.index.Levels[i].Labels, _ = level.Labels.In(positions)
+	}
+	s.index.Refresh()
+	return s, nil
+}

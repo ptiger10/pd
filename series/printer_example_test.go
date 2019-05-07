@@ -2,6 +2,8 @@ package series
 
 import (
 	"fmt"
+
+	"github.com/ptiger10/pd/opt"
 )
 
 func ExampleSeries_string_defaultIndex() {
@@ -56,9 +58,9 @@ func ExampleSeries_string_multiIndex() {
 
 func ExampleSeries_string_namedindex_1() {
 	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, Name("student"),
-		Index([]int{0, 0, 1, 1}, Name("id")),
-		Index([]int{10000, 10100, 10200, 10300}, Name("code")),
+		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
+		Index([]int{0, 0, 1, 1}, opt.Name("id")),
+		Index([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -74,9 +76,9 @@ func ExampleSeries_string_namedindex_1() {
 
 func ExampleSeries_string_namedindex_2() {
 	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, Name("student"),
-		Index([]int{100, 100, 101, 101}, Name("id")),
-		Index([]int{10, 20, 30, 40}, Name("code")),
+		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
+		Index([]int{100, 100, 101, 101}, opt.Name("id")),
+		Index([]int{10, 20, 30, 40}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -92,9 +94,9 @@ func ExampleSeries_string_namedindex_2() {
 
 func ExampleSeries_string_named_index_nonsequential() {
 	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, Name("student"),
-		Index([]int{0, 0, 1, 1, 0, 0}, Name("id")),
-		Index([]int{10000, 10100, 10200, 10300, 10400, 10500}, Name("code")),
+		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
+		Index([]int{0, 0, 1, 1, 0, 0}, opt.Name("id")),
+		Index([]int{10000, 10100, 10200, 10300, 10400, 10500}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -112,9 +114,9 @@ func ExampleSeries_string_named_index_nonsequential() {
 
 func ExampleSeries_string_partial_named_index() {
 	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, Name("student"),
+		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
 		Index([]int{0, 0, 1, 1}),
-		Index([]int{10000, 10100, 10200, 10300}, Name("code")),
+		Index([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -130,8 +132,8 @@ func ExampleSeries_string_partial_named_index() {
 
 // func TestPrinter(t *testing.T) {
 // 	s, _ := New(
-// 		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, Name("student"),
-// 		Index([]int{0, 0, 1, 1, 0, 0}, Name("code")),
+// 		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
+// 		Index([]int{0, 0, 1, 1, 0, 0}, opt.Name("code")),
 // 		Index([]int{10000, 10100, 10200, 10300, 10400, 10500}),
 // 	)
 // 	fmt.Println(s.print())

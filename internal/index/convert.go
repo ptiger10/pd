@@ -11,7 +11,7 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	var convertedLvl Level
 	switch kind {
 	case kinds.None:
-		return Level{}, fmt.Errorf("Unable to convert index level: must supply a valid Kind")
+		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
 	case kinds.Float:
 		convertedLvl = lvl.toFloat()
 	case kinds.Int:
@@ -25,7 +25,7 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	case kinds.Interface:
 		convertedLvl = lvl.toInterface()
 	default:
-		return Level{}, fmt.Errorf("Unable to convert level: kind not supported: %v", kind)
+		return Level{}, fmt.Errorf("unable to convert level: kind not supported: %v", kind)
 	}
 	convertedLvl.Refresh()
 	return convertedLvl, nil

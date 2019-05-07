@@ -1,4 +1,4 @@
-package options
+package opt
 
 var defaultOptions = struct {
 	displayIndexMaxWidth          int

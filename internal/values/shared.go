@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cheekybits/genny/generic"
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 //go:generate genny -in=$GOFILE -out=shared_autogen.go gen "valueType=float64,int64,string,bool,time.Time,interface{}"
@@ -41,7 +41,7 @@ func (vals valueTypeValues) In(rowPositions []int) (Values, error) {
 	var ret valueTypeValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -103,7 +103,7 @@ func (vals valueTypeValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}

@@ -8,13 +8,13 @@ import (
 
 	"github.com/araddon/dateparse"
 	"github.com/ptiger10/pd/kinds"
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 // [START Convenience Functions]
 
 func isNullString(s string) bool {
-	nullStrings := options.GetStringNullValues()
+	nullStrings := opt.GetStringNullValues()
 	for _, ns := range nullStrings {
 		if strings.TrimSpace(s) == ns {
 			return true
@@ -32,7 +32,7 @@ func SliceString(vals []string) Factory {
 	var v stringValues
 	for _, val := range vals {
 		if isNullString(val) {
-			v = append(v, stringVal(options.GetDisplayStringNullFiller(), true))
+			v = append(v, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			v = append(v, stringVal(val, false))
 		}

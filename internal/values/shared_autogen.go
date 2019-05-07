@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 // [START] float64Values
@@ -40,7 +40,7 @@ func (vals float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -102,7 +102,7 @@ func (vals float64Values) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -156,7 +156,7 @@ func (vals int64Values) In(rowPositions []int) (Values, error) {
 	var ret int64Values
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -218,7 +218,7 @@ func (vals int64Values) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -272,7 +272,7 @@ func (vals stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -334,7 +334,7 @@ func (vals stringValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -388,7 +388,7 @@ func (vals boolValues) In(rowPositions []int) (Values, error) {
 	var ret boolValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -450,7 +450,7 @@ func (vals boolValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -504,7 +504,7 @@ func (vals dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -566,7 +566,7 @@ func (vals dateTimeValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}
@@ -620,7 +620,7 @@ func (vals interfaceValues) In(rowPositions []int) (Values, error) {
 	var ret interfaceValues
 	for _, position := range rowPositions {
 		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position", position)
+			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
 		}
 		ret = append(ret, vals[position])
 	}
@@ -682,7 +682,7 @@ func (vals interfaceValues) ToString() Values {
 	var ret stringValues
 	for _, val := range vals {
 		if val.null {
-			ret = append(ret, stringVal(options.GetDisplayStringNullFiller(), true))
+			ret = append(ret, stringVal(opt.GetDisplayStringNullFiller(), true))
 		} else {
 			ret = append(ret, stringVal(fmt.Sprint(val.v), false))
 		}

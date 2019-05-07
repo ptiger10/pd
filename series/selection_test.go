@@ -1,29 +1,28 @@
 package series
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/opt"
 )
 
 func TestMain(m *testing.M) {
-	options.SetLogWarnings(false)
+	opt.SetLogWarnings(false)
 	exitCode := m.Run()
-	options.RestoreDefaults()
+	opt.RestoreDefaults()
 	os.Exit(exitCode)
 }
 
 func TestAt_singleindex(t *testing.T) {
 	var tests = []struct {
-		input string
+		input int
 		want  Series
 	}{
-		{"10", mustNew([]string{"hot"}, Index([]int{10}))},
-		{"100", mustNew([]string{"dog"}, Index([]int{100}))},
-		{"1000", mustNew([]string{"log"}, Index([]int{1000}))},
+		{0, mustNew([]string{"hot"}, Index([]int{10}))},
+		{1, mustNew([]string{"dog"}, Index([]int{100}))},
+		{2, mustNew([]string{"log"}, Index([]int{1000}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
@@ -34,23 +33,48 @@ func TestAt_singleindex(t *testing.T) {
 	}
 }
 
-func TestAt_fail(t *testing.T) {
-	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-	got := s.At("NotPresent")
-	if !reflect.DeepEqual(got, s) {
-		t.Errorf("Returned %v, want original series", got)
-	}
-	fmt.Println(got)
-}
-
-func TestAt_multiindex(t *testing.T) {
+func TestAtLabel_singleindex(t *testing.T) {
 	var tests = []struct {
 		input string
 		want  Series
 	}{
-		{"10", mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
-		{"100", mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
-		{"1000", mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
+		{"10", mustNew([]string{"hot"}, Index([]int{10}))},
+		{"100", mustNew([]string{"dog"}, Index([]int{100}))},
+		{"1000", mustNew([]string{"log"}, Index([]int{1000}))},
+	}
+	for _, test := range tests {
+		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+		got := s.AtLabel(test.input)
+		if !reflect.DeepEqual(got, test.want) {
+			t.Errorf("Returned Series %v, want %v", got, test.want)
+		}
+	}
+}
+
+func TestAt_fail(t *testing.T) {
+	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+	got := s.At(3)
+	if !reflect.DeepEqual(got, s) {
+		t.Errorf("Returned %v, want original series", got)
+	}
+}
+
+func TestAtLabel_fail(t *testing.T) {
+	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+	got := s.AtLabel("NotPresent")
+	if !reflect.DeepEqual(got, s) {
+		t.Errorf("Returned %v, want original series", got)
+	}
+}
+
+func TestAt_multiindex(t *testing.T) {
+	var tests = []struct {
+		input int
+		want  Series
+	}{
+		{0, mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
+		{1, mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
+		{2, mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
 	}
 	for _, test := range tests {
 		s, _ := New(
@@ -65,51 +89,125 @@ func TestAt_multiindex(t *testing.T) {
 	}
 }
 
-func TestSelect_Failures(t *testing.T) {
+func TestAtLabel_multiindex(t *testing.T) {
 	var tests = []struct {
-		options  []SelectionOption
-		errorMsg string
+		input string
+		want  Series
 	}{
-		{[]SelectionOption{ByRows([]int{0, 3})}, "row indexing out range"},
-		{[]SelectionOption{ByLabels([]string{"0", "3"})}, "label indexing out range"},
-		{[]SelectionOption{ByIndexLevels([]int{0, 2})}, "index level out range"},
-		{[]SelectionOption{ByIndexNames([]string{"foo", "baz"})}, "index name not in index"},
-		{[]SelectionOption{ByLabels([]string{"0"}), ByRows([]int{0})}, "multiple row selectors supplied"},
-		{[]SelectionOption{ByIndexNames([]string{"foo"}), ByIndexLevels([]int{0})}, "multiple index level selectors supplied"},
-		{[]SelectionOption{ByIndexLevels([]int{0, 1}), ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
+		{"10", mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
+		{"100", mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
+		{"1000", mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
 	}
 	for _, test := range tests {
-		s, _ := New([]int{1, 5, 10}, Index([]int{0, 1, 2}, Name("foo")), Index([]string{"A", "B", "C"}, Name("bar")))
-		_, err := s.Select(test.options...)
-		if err == nil {
-			t.Errorf("Returned nil error, expected error due to %v", test.errorMsg)
+		s, _ := New(
+			[]string{"hot", "dog", "log"},
+			Index([]int{10, 100, 1000}),
+			Index([]string{"A", "B", "C"}),
+		)
+		got := s.AtLabel(test.input)
+		if !reflect.DeepEqual(got, test.want) {
+			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
 }
 
-func TestSelect_Success(t *testing.T) {
+func TestSelect_Failures(t *testing.T) {
 	var tests = []struct {
-		options []SelectionOption
-		desc    string
+		options  []opt.SelectionOption
+		errorMsg string
 	}{
-		{[]SelectionOption{ByRows([]int{0})}, "row only"},
-		{[]SelectionOption{ByRows([]int{0, 2})}, "rows only"},
-		{[]SelectionOption{ByLabels([]string{"0"})}, "label only"},
-		{[]SelectionOption{ByLabels([]string{"0", "2"})}, "labels only"},
-		{[]SelectionOption{ByIndexLevels([]int{0})}, "index level only"},
-		{[]SelectionOption{ByIndexLevels([]int{0, 1})}, "index levels only"},
-		{[]SelectionOption{ByIndexNames([]string{"foo"})}, "index name only"},
-		{[]SelectionOption{ByIndexNames([]string{"foo", "bar"})}, "index names only"},
-		{[]SelectionOption{ByRows([]int{0}), ByIndexLevels([]int{0})}, "rows and one index level"},
-		{[]SelectionOption{ByRows([]int{0}), ByIndexLevels([]int{0, 1})}, "rows and multiple index levels"},
-		{[]SelectionOption{ByRows([]int{0}), ByIndexNames([]string{"foo"})}, "rows and one index name"},
-		{[]SelectionOption{ByRows([]int{0}), ByIndexNames([]string{"foo", "bar"})}, "rows and multiple index names"},
+		{[]opt.SelectionOption{opt.ByRows([]int{0, 3})}, "row indexing out range"},
+		{[]opt.SelectionOption{opt.ByLabels([]string{"0", "3"})}, "label indexing out range"},
+		{[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 2})}, "index level out range"},
+		{[]opt.SelectionOption{opt.ByIndexNames([]string{"foo", "baz"})}, "index name not in index"},
+		{[]opt.SelectionOption{opt.ByLabels([]string{"0"}), opt.ByRows([]int{0})}, "multiple row selectors supplied"},
+		{[]opt.SelectionOption{opt.ByIndexNames([]string{"foo"}), opt.ByIndexLevels([]int{0})}, "multiple index level selectors supplied"},
+		{[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 1}), opt.ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
 	}
 	for _, test := range tests {
-		s, _ := New([]int{1, 5, 10}, Index([]int{0, 1, 2}, Name("foo")), Index([]string{"A", "B", "C"}, Name("bar")))
-		_, err := s.Select(test.options...)
+		s, _ := New([]int{1, 5, 10}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+		sel := s.Select(test.options...)
+		if !reflect.DeepEqual(sel.s, s) {
+			t.Errorf("Select() returned %v, want return of underlying series due to %v", sel.s, test.errorMsg)
+		}
+	}
+}
+
+func TestSelect_Get(t *testing.T) {
+	var tests = []struct {
+		options    []opt.SelectionOption
+		wantSeries Series
+		desc       string
+	}{
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0})},
+			mustNew([]int{0}, Index([]int{0}, opt.Name("foo")), Index([]string{"A"}, opt.Name("bar"))),
+			"one row only",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 2})},
+			mustNew([]int{0, 2}, Index([]int{0, 2}, opt.Name("foo")), Index([]string{"A", "C"}, opt.Name("bar"))),
+			"multiple rows",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLabels([]string{"0"})},
+			mustNew([]int{0}, Index([]int{0}, opt.Name("foo")), Index([]string{"A"}, opt.Name("bar"))),
+			"one label only",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLabels([]string{"0", "2"})},
+			mustNew([]int{0, 2}, Index([]int{0, 2}, opt.Name("foo")), Index([]string{"A", "C"}, opt.Name("bar"))),
+			"multiple labels"},
+		{
+			[]opt.SelectionOption{opt.ByIndexLevels([]int{0})},
+			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"one index level only",
+		},
+		{
+			[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 1})},
+			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar"))),
+			"multiple index levels",
+		},
+		{
+			[]opt.SelectionOption{opt.ByIndexNames([]string{"foo"})},
+			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"index name only",
+		},
+		{
+			[]opt.SelectionOption{opt.ByIndexNames([]string{"foo", "bar"})},
+			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar"))),
+			"multiple index names",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexLevels([]int{0})},
+			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo"))),
+			"rows and one index level",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexLevels([]int{0, 1})},
+			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo")), Index([]string{"A", "B"}, opt.Name("bar"))),
+			"rows and multiple index levels",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexNames([]string{"foo"})},
+			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo"))),
+			"rows and one index name",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexNames([]string{"foo", "bar"})},
+			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo")), Index([]string{"A", "B"}, opt.Name("bar"))),
+			"rows and multiple index names",
+		},
+	}
+	for _, test := range tests {
+		s, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+		sel := s.Select(test.options...)
+		newS, err := sel.Get()
 		if err != nil {
-			t.Errorf("Returned error when supplying %v, want no error", test.desc)
+			t.Errorf("selection.Get() returned %v when selecting %s", err, test.desc)
+		}
+		if !reflect.DeepEqual(newS, test.wantSeries) {
+			t.Errorf("selection.Get() returned \n%v when selecting %s, want \n%v", newS, test.desc, test.wantSeries)
 		}
 	}
 }

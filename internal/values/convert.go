@@ -11,7 +11,7 @@ func Convert(currentVals Values, kind kinds.Kind) (Values, error) {
 	var vals Values
 	switch kind {
 	case kinds.None:
-		return nil, fmt.Errorf("Unable to convert values: must supply a valid Kind")
+		return nil, fmt.Errorf("unable to convert values: must supply a valid Kind")
 	case kinds.Float:
 		vals = currentVals.ToFloat()
 	case kinds.Int:
@@ -25,7 +25,7 @@ func Convert(currentVals Values, kind kinds.Kind) (Values, error) {
 	case kinds.Interface:
 		vals = currentVals.ToInterface()
 	default:
-		return nil, fmt.Errorf("Unable to convert values: kind not supported: %v", kind)
+		return nil, fmt.Errorf("unable to convert values: kind not supported: %v", kind)
 	}
 	return vals, nil
 }
