@@ -10,7 +10,7 @@ import (
 )
 
 // Calls New and panics if error. For use in testing
-func mustNew(data interface{}, options ...Option) Series {
+func mustNew(data interface{}, options ...ConstructorOption) Series {
 	s, err := New(data, options...)
 	if err != nil {
 		log.Panicf("mustNew returned an error: %v", err)

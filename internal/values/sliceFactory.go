@@ -53,7 +53,7 @@ func SliceFactory(data interface{}) (Factory, error) {
 		ret = SliceInterface(vals)
 
 	default:
-		ret = Factory{nil, kinds.Invalid}
+		ret = Factory{nil, kinds.None}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 

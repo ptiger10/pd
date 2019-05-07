@@ -6,7 +6,6 @@ package values
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/ptiger10/pd/options"
@@ -37,18 +36,20 @@ func (vals float64Values) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals float64Values) In(positions []int) Values {
+func (vals float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing Float64Values values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals float64Values) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -57,7 +58,7 @@ func (vals float64Values) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals float64Values) Vals() interface{} {
@@ -151,18 +152,20 @@ func (vals int64Values) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals int64Values) In(positions []int) Values {
+func (vals int64Values) In(rowPositions []int) (Values, error) {
 	var ret int64Values
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing Int64Values values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals int64Values) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -171,7 +174,7 @@ func (vals int64Values) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals int64Values) Vals() interface{} {
@@ -265,18 +268,20 @@ func (vals stringValues) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals stringValues) In(positions []int) Values {
+func (vals stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing StringValues values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals stringValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -285,7 +290,7 @@ func (vals stringValues) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals stringValues) Vals() interface{} {
@@ -379,18 +384,20 @@ func (vals boolValues) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals boolValues) In(positions []int) Values {
+func (vals boolValues) In(rowPositions []int) (Values, error) {
 	var ret boolValues
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing BoolValues values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals boolValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -399,7 +406,7 @@ func (vals boolValues) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals boolValues) Vals() interface{} {
@@ -493,18 +500,20 @@ func (vals dateTimeValues) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals dateTimeValues) In(positions []int) Values {
+func (vals dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing TimeTimeValues values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals dateTimeValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -513,7 +522,7 @@ func (vals dateTimeValues) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals dateTimeValues) Vals() interface{} {
@@ -607,18 +616,20 @@ func (vals interfaceValues) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals interfaceValues) In(positions []int) Values {
+func (vals interfaceValues) In(rowPositions []int) (Values, error) {
 	var ret interfaceValues
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing InterfaceValues values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals interfaceValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -627,7 +638,7 @@ func (vals interfaceValues) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals interfaceValues) Vals() interface{} {

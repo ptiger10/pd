@@ -10,7 +10,7 @@ import (
 func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	var convertedLvl Level
 	switch kind {
-	case kinds.Invalid:
+	case kinds.None:
 		return Level{}, fmt.Errorf("Unable to convert index level: must supply a valid Kind")
 	case kinds.Float:
 		convertedLvl = lvl.toFloat()
@@ -22,6 +22,8 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 		convertedLvl = lvl.toBool()
 	case kinds.DateTime:
 		convertedLvl = lvl.toDateTime()
+	case kinds.Interface:
+		convertedLvl = lvl.toInterface()
 	default:
 		return Level{}, fmt.Errorf("Unable to convert level: kind not supported: %v", kind)
 	}
@@ -56,5 +58,11 @@ func (lvl Level) toBool() Level {
 func (lvl Level) toDateTime() Level {
 	lvl.Labels = lvl.Labels.ToDateTime()
 	lvl.Kind = kinds.DateTime
+	return lvl
+}
+
+func (lvl Level) toInterface() Level {
+	lvl.Labels = lvl.Labels.ToInterface()
+	lvl.Kind = kinds.Interface
 	return lvl
 }

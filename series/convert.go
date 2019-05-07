@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ptiger10/pd/internal/index"
-
-	"github.com/jinzhu/copier"
 	"github.com/ptiger10/pd/kinds"
 )
 
@@ -30,6 +27,10 @@ func (s Series) As(kind kinds.Kind) Series {
 	case kinds.DateTime:
 		s.values = s.values.ToDateTime()
 		s.kind = kinds.DateTime
+	case kinds.Interface:
+		s.values = s.values.ToInterface()
+		s.kind = kinds.Interface
+
 	default:
 		log.Print("Unsupported kind - returning original Series")
 		return s
@@ -37,14 +38,8 @@ func (s Series) As(kind kinds.Kind) Series {
 	return s
 }
 
-func (s Series) copySeries() Series {
-	idx := index.Index{}
-	copier.Copy(&idx, &s.index)
-	idx.Levels = make([]index.Level, len(s.index.Levels))
-	for i := 0; i < len(s.index.Levels); i++ {
-		copier.Copy(&idx.Levels[i], &s.index.Levels[i])
-	}
-
+func (s Series) copy() Series {
+	idx := s.index.Copy()
 	copyS := Series{
 		values: s.values,
 		index:  idx,
@@ -72,7 +67,7 @@ func (s Series) IndexAs(kind kinds.Kind) (Series, error) {
 //
 // Applies to All. If unsupported Kind or invalid level value is supplied, returns error.
 func (s Series) IndexLevelAs(position int, kind kinds.Kind) (Series, error) {
-	copyS := s.copySeries()
+	copyS := s.copy()
 	if position >= len(s.index.Levels) {
 		return Series{}, fmt.Errorf("Unable to convert index at level %d: index out of range (Series has %d levels)", position, len(s.index.Levels))
 	}

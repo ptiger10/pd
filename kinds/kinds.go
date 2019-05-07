@@ -5,7 +5,7 @@ type Kind int
 
 // Kind convenience options
 const (
-	Invalid Kind = iota
+	None Kind = iota
 	Float
 	Int
 	String
@@ -17,7 +17,7 @@ const (
 
 func (kind Kind) String() string {
 	kinds := []string{
-		"invalid",
+		"none",
 		"float64",
 		"int64",
 		"string",
@@ -27,7 +27,7 @@ func (kind Kind) String() string {
 		"unsupported",
 	}
 
-	if kind < Invalid || kind > Unsupported {
+	if kind < None || kind > Unsupported {
 		return "unknown"
 	}
 	return kinds[kind]

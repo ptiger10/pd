@@ -9,6 +9,18 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
+// an interface of valid (non-null) values; appropriate for type assertion
+func (s Series) validVals() interface{} {
+	valid, _ := s.values.In(s.values.Valid())
+	return valid.Vals()
+}
+
+// a []interface of valid (non-null) values; appropriate for counting and indexing
+func (s Series) validAll() []interface{} {
+	valid, _ := s.values.In(s.values.Valid())
+	return valid.All()
+}
+
 // Sum of non-null series elements. For bool values, sum of true values.
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
@@ -46,7 +58,8 @@ func (s Series) Mean() float64 {
 		}
 		return sum / float64(len(data))
 	case kinds.Bool:
-		l := len(s.validAll())
+		data := ensureBools(vals)
+		l := len(data)
 		return s.Sum() / float64(l)
 	default:
 		return math.NaN()

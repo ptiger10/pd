@@ -10,7 +10,7 @@ func TestKind(t *testing.T) {
 		expected string
 	}{
 
-		{Invalid, "invalid"},
+		{None, "none"},
 		{Float, "float64"},
 		{Int, "int64"},
 		{String, "string"},

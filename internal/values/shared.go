@@ -2,7 +2,6 @@ package values
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/cheekybits/genny/generic"
 	"github.com/ptiger10/pd/options"
@@ -38,18 +37,20 @@ func (vals valueTypeValues) Len() int {
 }
 
 // In returns the values located at specific index positions
-func (vals valueTypeValues) In(positions []int) Values {
+func (vals valueTypeValues) In(rowPositions []int) (Values, error) {
 	var ret valueTypeValues
-	for _, position := range positions {
+	for _, position := range rowPositions {
 		if position >= len(vals) {
-			log.Panicf("Unable to get value: index out of range: %d", position)
+			return nil, fmt.Errorf("Error indexing valueTypeValues values: rowPosition is out of range: %d", position)
 		}
 		ret = append(ret, vals[position])
 	}
-	return ret
+	return ret, nil
 }
 
-// All returns all of the values in the collection (including null values) as an interface slice
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
 func (vals valueTypeValues) All() []interface{} {
 	var ret []interface{}
 	for _, val := range vals {
@@ -58,7 +59,7 @@ func (vals valueTypeValues) All() []interface{} {
 	return ret
 }
 
-// Vals returns only the Value fields for the collection of Value/Null structs.
+// Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals valueTypeValues) Vals() interface{} {
@@ -127,4 +128,4 @@ func (vals valueTypeValues) ToInterface() Values {
 // ---------------------------------------------------------------------------
 var placeholder = true
 
-// the placeholder and this comment are overwritten on `make generate`, but the [END] comment remains
+// the placeholder and this comment are overwritten on `make generate`, but are included so that the [END] comment survives

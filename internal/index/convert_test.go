@@ -89,7 +89,7 @@ func TestConvert_Unsupported(t *testing.T) {
 	var tests = []struct {
 		kind kinds.Kind
 	}{
-		{kinds.Invalid},
+		{kinds.None},
 		{kinds.Unsupported},
 	}
 	for _, test := range tests {
