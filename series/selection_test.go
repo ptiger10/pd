@@ -65,46 +65,6 @@ func TestAt_multiindex(t *testing.T) {
 	}
 }
 
-func TestSelect_ByLabel_fail(t *testing.T) {
-	s, _ := New([]int{1, 5, 10, 15}, Index([]int{0, 1, 0, 1}))
-	_, err := s.Select(ByLabels([]string{"0, 2"}))
-	if err == nil {
-		t.Errorf("Returned nil error, expected error due to label indexing out range")
-	}
-}
-
-func TestSelect_ByRows_fail(t *testing.T) {
-	s, _ := New([]int{1, 5, 10, 15})
-	_, err := s.Select(ByRows([]int{0, 4}))
-	if err == nil {
-		t.Errorf("Returned nil error, expected error due to row indexing out range")
-	}
-}
-
-func TestSelect_ByLevels_fail(t *testing.T) {
-	s, _ := New([]int{1, 5, 10, 15})
-	_, err := s.Select(ByIndexLevels([]int{1}))
-	if err == nil {
-		t.Errorf("Returned nil error, expected error due to level indexing out range")
-	}
-}
-
-func TestSelect_ByNames_fail(t *testing.T) {
-	s, _ := New([]int{1, 5, 10, 15}, Index([]int{0, 1, 2, 3}, Name("foo")))
-	_, err := s.Select(ByIndexNames([]string{"bar"}))
-	if err == nil {
-		t.Errorf("Returned nil error, expected error due to level indexing out range")
-	}
-}
-
-// func TestSelect_ByNames_fail(t *testing.T) {
-// 	s, _ := New([]int{1, 5, 10, 15}, Index([]int{0, 1, 2, 3}, Name("foo")))
-// 	_, err := s.Select(ByIndexNames([]string{"bar"}))
-// 	if err == nil {
-// 		t.Errorf("Returned nil error, expected error due to level indexing out range")
-// 	}
-// }
-
 func TestSelect_Failures(t *testing.T) {
 	var tests = []struct {
 		options  []SelectionOption

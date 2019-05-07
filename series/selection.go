@@ -21,7 +21,7 @@ func (s Series) At(label string) Series {
 func (s Series) atLevelLabel(level int, label string) (Series, error) {
 	positions, ok := s.index.Levels[level].LabelMap[label]
 	if !ok {
-		return Series{}, fmt.Errorf("Label %q not in index level %v", level, label)
+		return Series{}, fmt.Errorf("Label %q not in index (level %v)", label, level)
 	}
 	values, err := s.values.In(positions)
 	if err != nil {
