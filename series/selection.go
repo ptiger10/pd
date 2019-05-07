@@ -85,9 +85,24 @@ type Selection struct {
 	s              Series
 	levelPositions []int
 	rowPositions   []int
-	category       string
+	category       derivedIntent
 	swappable      bool
 	err            error
+}
+
+type derivedIntent string
+
+const (
+	catAll        derivedIntent = "Select All"
+	catLevelsOnly derivedIntent = "Select Levels"
+	catRowsOnly   derivedIntent = "Select Rows"
+	catXS         derivedIntent = "Select Cross-Section"
+)
+
+func (sel Selection) String() string {
+	return fmt.Sprintf(
+		"Selection Object. To print underlying Series, call .Get()\nDerivedIntent: %v\nRows: %v\nLevels: %v\nError: %v",
+		sel.category, sel.rowPositions, sel.levelPositions, sel.err != nil)
 }
 
 // Unpack the supplied options and try to categorize the caller's intention.
@@ -104,7 +119,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 	if noSelection {
 		// return all row positions
 		sel.rowPositions = values.MakeIntRange(0, s.Len())
-		sel.category = "all"
+		sel.category = catAll
 		return sel
 	}
 
@@ -195,19 +210,19 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 	}
 
 	if levelsOnly {
-		sel.category = "levelsOnly"
+		sel.category = catLevelsOnly
 		if len(sel.levelPositions) == 2 {
 			sel.swappable = true
 		}
 	}
 	if rowsOnly {
-		sel.category = "rowsOnly"
+		sel.category = catRowsOnly
 		if len(sel.rowPositions) == 2 {
 			sel.swappable = true
 		}
 	}
 	if crossSection {
-		sel.category = "xs"
+		sel.category = catXS
 	}
 
 	if !noSelection && !levelsOnly && !rowsOnly && !crossSection {
