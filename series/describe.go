@@ -2,9 +2,9 @@ package series
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 
 	"github.com/ptiger10/pd/kinds"
@@ -71,7 +71,7 @@ func (s Series) Describe() {
 		s, err = New(values, idx, Name("description"))
 	}
 	if err != nil {
-		log.Printf("Internal error: s.Describe() could not construct Series: %v\nPlease open a Github issue.\n", err)
+		values.Warn(err, "nil (internal error)")
 		return
 	}
 	// reset to pre-transformation Kind

@@ -2,8 +2,8 @@ package series
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
 )
 
@@ -32,7 +32,7 @@ func (s Series) As(kind kinds.Kind) Series {
 		s.kind = kinds.Interface
 
 	default:
-		log.Print("Unsupported kind - returning original Series")
+		values.Warn(fmt.Errorf("Unsupported conversion kind"), "original Series")
 		return s
 	}
 	return s

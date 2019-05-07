@@ -1,8 +1,7 @@
 package pd
 
 import (
-	"log"
-
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -11,7 +10,7 @@ import (
 func Series(data interface{}) series.Series {
 	s, err := series.New(data)
 	if err != nil {
-		log.Printf("Unable to create series: %v", err)
+		values.Warn(err, "nil Series")
 	}
 	return s
 }

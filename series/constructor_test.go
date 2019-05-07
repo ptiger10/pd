@@ -88,9 +88,14 @@ func TestConstructor_Kind_Slice_Float(t *testing.T) {
 		t.Error(err)
 	}
 	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Interface))
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = New([]float32{-1.5, 0, 1.5}, Kind(kinds.Unsupported))
 	if err == nil {
 		t.Error("Returned nil error, want error due to unsupported conversion type")
 	}
+
 }
 
 func TestMini_single(t *testing.T) {
