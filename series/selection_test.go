@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-func TestAt_singleindex(t *testing.T) {
+func TestAt_singleIndex(t *testing.T) {
 	var tests = []struct {
 		input int
 		want  Series
@@ -30,6 +30,15 @@ func TestAt_singleindex(t *testing.T) {
 		if !reflect.DeepEqual(got, test.want) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
+	}
+}
+func TestAt_singleIndex_multipleCalls(t *testing.T) {
+	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+	_ = s.At(0)
+	want := mustNew([]string{"dog"}, Index([]int{100}))
+	got := s.At(1)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Returned Series %v, want %v", got, want)
 	}
 }
 
@@ -67,7 +76,7 @@ func TestAtLabel_fail(t *testing.T) {
 	}
 }
 
-func TestAt_multiindex(t *testing.T) {
+func TestAt_multiIndex(t *testing.T) {
 	var tests = []struct {
 		input int
 		want  Series
@@ -89,7 +98,7 @@ func TestAt_multiindex(t *testing.T) {
 	}
 }
 
-func TestAtLabel_multiindex(t *testing.T) {
+func TestAtLabel_multiIndex(t *testing.T) {
 	var tests = []struct {
 		input string
 		want  Series

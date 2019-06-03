@@ -11,6 +11,8 @@ import (
 )
 
 // [START utility methods]
+// returns an error if any index levels have different lengths
+// or if there is a mismatch between the number of values and index items
 func (s Series) ensureAlignment() bool {
 	if s.index.Aligned() && s.values.Len() == s.index.Len() {
 		return true
@@ -18,6 +20,7 @@ func (s Series) ensureAlignment() bool {
 	return false
 }
 
+// returns an error if any row position does not exist
 func (s Series) ensureRowPositions(positions []int) error {
 	_, err := s.values.In(positions)
 	if err != nil {
@@ -26,6 +29,7 @@ func (s Series) ensureRowPositions(positions []int) error {
 	return nil
 }
 
+// returns an error if any level position does not exist
 func (s Series) ensureLevelPositions(positions []int) error {
 	_, err := s.index.In(positions)
 	if err != nil {
@@ -275,13 +279,13 @@ func (sel Selection) Get() (Series, error) {
 func (sel Selection) get() Series {
 	s := sel.s.copy()
 	switch sel.category {
-	case "all":
+	case "Select All":
 		return s
-	case "levelsOnly":
+	case "Select Levels":
 		s.index, _ = s.index.In(sel.levelPositions)
-	case "rowsOnly":
+	case "Select Rows":
 		s, _ = s.in(sel.rowPositions)
-	case "xs":
+	case "Select Cross-Section":
 		s.index, _ = s.index.In(sel.levelPositions)
 		s, _ = s.in(sel.rowPositions)
 	default:
