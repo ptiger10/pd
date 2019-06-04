@@ -8,7 +8,7 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-// SliceFactory creates values from an interface{} that has been determined elsewhere to be a Slice.
+// SliceFactory creates a Factory from an interface{} that has been determined elsewhere to be a Slice.
 // Be careful modifying this constructor and its children,
 // as reflection is inherently unsafe and each function expects to receive specific types only.
 func SliceFactory(data interface{}) (Factory, error) {
@@ -16,41 +16,40 @@ func SliceFactory(data interface{}) (Factory, error) {
 
 	switch data.(type) {
 	case []float32:
-		vals := InterfaceToSliceFloat(data)
-		ret = SliceFloat(vals)
+		vals := sliceFloatToSliceFloat64(data)
+		ret = newSliceFloat(vals)
 
 	case []float64:
 		vals := data.([]float64)
-		ret = SliceFloat(vals)
+		ret = newSliceFloat(vals)
 
 	case []int, []int8, []int16, []int32:
-		vals := InterfaceToSliceInt(data)
-		ret = SliceInt(vals)
-
+		vals := sliceIntToSliceInt64(data)
+		ret = NewSliceInt(vals)
 	case []int64:
 		vals := data.([]int64)
-		ret = SliceInt(vals)
+		ret = NewSliceInt(vals)
 
 	case []uint, []uint8, []uint16, []uint32, []uint64:
-		// returns []int64 so it can be passed into SliceInt
+		// converts into []int64 so it can be passed into SliceInt
 		vals := InterfaceToSliceUint(data)
-		ret = SliceInt(vals)
+		ret = NewSliceInt(vals)
 
 	case []string:
 		vals := data.([]string)
-		ret = SliceString(vals)
+		ret = newSliceString(vals)
 
 	case []bool:
 		vals := data.([]bool)
-		ret = SliceBool(vals)
+		ret = newSliceBool(vals)
 
 	case []time.Time:
 		vals := data.([]time.Time)
-		ret = SliceDateTime(vals)
+		ret = newSliceDateTime(vals)
 
 	case []interface{}:
 		vals := data.([]interface{})
-		ret = SliceInterface(vals)
+		ret = newSliceInterface(vals)
 
 	default:
 		ret = Factory{nil, kinds.None}
@@ -62,32 +61,35 @@ func SliceFactory(data interface{}) (Factory, error) {
 
 // [START interface converters]
 
-// InterfaceToSliceFloat converts interface{} -> []float64
-func InterfaceToSliceFloat(data interface{}) []float64 {
+// sliceFloatToSliceFloat64 converts known []float interface{} -> []float64
+func sliceFloatToSliceFloat64(data interface{}) []float64 {
 	var vals []float64
 	d := reflect.ValueOf(data)
 	for i := 0; i < d.Len(); i++ {
-		vals = append(vals, d.Index(i).Float())
+		v := d.Index(i).Float()
+		vals = append(vals, v)
 	}
 	return vals
 }
 
-// InterfaceToSliceInt converts interface{} -> []int64
-func InterfaceToSliceInt(data interface{}) []int64 {
+// sliceIntToSliceInt64 converts known []int interface{} -> []int64
+func sliceIntToSliceInt64(data interface{}) []int64 {
 	var vals []int64
 	d := reflect.ValueOf(data)
 	for i := 0; i < d.Len(); i++ {
-		vals = append(vals, int64(d.Index(i).Int()))
+		v := d.Index(i).Int()
+		vals = append(vals, v)
 	}
 	return vals
 }
 
-// InterfaceToSliceUint converts interface{} -> []int64
+// InterfaceToSliceUint converts knonw []uint interface{} -> []int64
 func InterfaceToSliceUint(data interface{}) []int64 {
 	var vals []int64
 	d := reflect.ValueOf(data)
 	for i := 0; i < d.Len(); i++ {
-		vals = append(vals, int64(d.Index(i).Uint()))
+		v := d.Index(i).Uint()
+		vals = append(vals, int64(v))
 	}
 	return vals
 }

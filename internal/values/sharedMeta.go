@@ -1,23 +1,23 @@
 package values
 
-// Generic methods necessary to satisfy Values interface
+// Generic methods for valueTypeValue type converters
 
-// ToFloat is generic ToFloat
-func (vals valueTypeValues) ToFloat() Values {
-	return vals
+func (val valueTypeValue) toFloat64() float64Value {
+	return float64Value{}
 }
 
-// ToInt is generic ToFloat
-func (vals valueTypeValues) ToInt() Values {
-	return vals
+func (val valueTypeValue) toInt64() int64Value {
+	return int64Value{}
 }
 
-// ToBool is generic ToFloat
-func (vals valueTypeValues) ToBool() Values {
-	return vals
+func (val valueTypeValue) toBool() boolValue {
+	return boolValue{}
 }
 
-// ToDateTime is generic ToFloat
-func (vals valueTypeValues) ToDateTime() Values {
-	return vals
+func (val valueTypeValue) toDateTime() dateTimeValue {
+	return dateTimeValue{}
+}
+
+func (val interfaceValue) tovalueType() valueTypeValue {
+	return valueTypeValue{}
 }

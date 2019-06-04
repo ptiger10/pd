@@ -8,6 +8,31 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
+// func TestConvertAtomic(t *testing.T) {
+// 	// testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+// 	// testEpoch := 1556668800000000000
+// 	// epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+// 	nan := math.NaN()
+// 	var test = []struct {
+// 		input        interface{}
+// 		originalType kinds.Kind
+// 		convertTo    kinds.Kind
+// 		wantVal      interface{}
+// 		wantNull     bool
+// 	}{
+// 		{math.NaN(), kinds.Float, kinds.Float, nan, true},
+// 		{1.5, kinds.Float, kinds.Float, 1.5, false},
+// 	}
+// 	for _, test := range tests {
+// 		converted, err := Convert(test.input.V, test.convertTo)
+// 		if err != nil {
+// 			t.Errorf("Unable to convert to string: %v", err)
+// 		}
+// 		elem := converted.Element(0)
+// 	}
+
+// }
+
 func TestConvert(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	testEpoch := 1556668800000000000
@@ -21,105 +46,108 @@ func TestConvert(t *testing.T) {
 		wantNull  bool
 	}{
 		// Float
-		{SliceFloat([]float64{math.NaN()}), kinds.Float, nan, true},
-		{SliceFloat([]float64{1.5}), kinds.Float, 1.5, false},
+		{newSliceFloat([]float64{math.NaN()}), kinds.Float, nan, true},
+		{newSliceFloat([]float64{1.5}), kinds.Float, 1.5, false},
 
-		{SliceFloat([]float64{math.NaN()}), kinds.Int, int64(0), true},
-		{SliceFloat([]float64{1.5}), kinds.Int, int64(1), false},
+		{newSliceFloat([]float64{math.NaN()}), kinds.Int, int64(0), true},
+		{newSliceFloat([]float64{1.5}), kinds.Int, int64(1), false},
 
-		{SliceFloat([]float64{math.NaN()}), kinds.String, "NaN", true},
-		{SliceFloat([]float64{1.5}), kinds.String, "1.5", false},
+		{newSliceFloat([]float64{math.NaN()}), kinds.String, "NaN", true},
+		{newSliceFloat([]float64{1.5}), kinds.String, "1.5", false},
 
-		{SliceFloat([]float64{math.NaN()}), kinds.Bool, false, true},
-		{SliceFloat([]float64{1.5}), kinds.Bool, true, false},
+		{newSliceFloat([]float64{math.NaN()}), kinds.Bool, false, true},
+		{newSliceFloat([]float64{1.5}), kinds.Bool, true, false},
 
-		{SliceFloat([]float64{math.NaN()}), kinds.DateTime, time.Time{}, true},
-		{SliceFloat([]float64{float64(testEpoch)}), kinds.DateTime, testDate, false},
+		{newSliceFloat([]float64{math.NaN()}), kinds.DateTime, time.Time{}, true},
+		{newSliceFloat([]float64{float64(testEpoch)}), kinds.DateTime, testDate, false},
+
+		{newSliceFloat([]float64{math.NaN()}), kinds.Interface, nan, true},
+		{newSliceFloat([]float64{1.5}), kinds.Interface, 1.5, false},
 
 		// Int
-		{SliceInt([]int64{1}), kinds.Float, 1.0, false},
-		{SliceInt([]int64{1}), kinds.Int, int64(1), false},
-		{SliceInt([]int64{1}), kinds.String, "1", false},
-		{SliceInt([]int64{1}), kinds.Bool, true, false},
+		{NewSliceInt([]int64{1}), kinds.Float, 1.0, false},
+		{NewSliceInt([]int64{1}), kinds.Int, int64(1), false},
+		{NewSliceInt([]int64{1}), kinds.String, "1", false},
+		{NewSliceInt([]int64{1}), kinds.Bool, true, false},
 
-		{SliceInt([]int64{1}), kinds.DateTime, epochDate, false},
-		{SliceInt([]int64{int64(testEpoch)}), kinds.DateTime, testDate, false},
+		{NewSliceInt([]int64{1}), kinds.DateTime, epochDate, false},
+		{NewSliceInt([]int64{int64(testEpoch)}), kinds.DateTime, testDate, false},
 
 		// String
-		{SliceString([]string{""}), kinds.Float, nan, true},
-		{SliceString([]string{"foo"}), kinds.Float, nan, true},
-		{SliceString([]string{"1.5"}), kinds.Float, 1.5, false},
+		{newSliceString([]string{""}), kinds.Float, nan, true},
+		{newSliceString([]string{"foo"}), kinds.Float, nan, true},
+		{newSliceString([]string{"1.5"}), kinds.Float, 1.5, false},
 
-		{SliceString([]string{""}), kinds.Int, int64(0), true},
-		{SliceString([]string{"foo"}), kinds.Int, int64(0), true},
-		{SliceString([]string{"1.5"}), kinds.Int, int64(1), false},
-		{SliceString([]string{"1.0"}), kinds.Int, int64(1), false},
-		{SliceString([]string{"1"}), kinds.Int, int64(1), false},
+		{newSliceString([]string{""}), kinds.Int, int64(0), true},
+		{newSliceString([]string{"foo"}), kinds.Int, int64(0), true},
+		{newSliceString([]string{"1.5"}), kinds.Int, int64(1), false},
+		{newSliceString([]string{"1.0"}), kinds.Int, int64(1), false},
+		{newSliceString([]string{"1"}), kinds.Int, int64(1), false},
 
-		{SliceString([]string{""}), kinds.String, "NaN", true},
-		{SliceString([]string{"NaN"}), kinds.String, "NaN", true},
-		{SliceString([]string{"n/a"}), kinds.String, "NaN", true},
-		{SliceString([]string{"N/A"}), kinds.String, "NaN", true},
-		{SliceString([]string{"1.5"}), kinds.String, "1.5", false},
-		{SliceString([]string{"foo"}), kinds.String, "foo", false},
+		{newSliceString([]string{""}), kinds.String, "NaN", true},
+		{newSliceString([]string{"NaN"}), kinds.String, "NaN", true},
+		{newSliceString([]string{"n/a"}), kinds.String, "NaN", true},
+		{newSliceString([]string{"N/A"}), kinds.String, "NaN", true},
+		{newSliceString([]string{"1.5"}), kinds.String, "1.5", false},
+		{newSliceString([]string{"foo"}), kinds.String, "foo", false},
 
-		{SliceString([]string{""}), kinds.Bool, false, true},
-		{SliceString([]string{"foo"}), kinds.Bool, true, false},
+		{newSliceString([]string{""}), kinds.Bool, false, true},
+		{newSliceString([]string{"foo"}), kinds.Bool, true, false},
 
-		{SliceString([]string{"May 1, 2019"}), kinds.DateTime, testDate, false},
-		{SliceString([]string{"5/1/2019"}), kinds.DateTime, testDate, false},
-		{SliceString([]string{"2019-05-01"}), kinds.DateTime, testDate, false},
+		{newSliceString([]string{"May 1, 2019"}), kinds.DateTime, testDate, false},
+		{newSliceString([]string{"5/1/2019"}), kinds.DateTime, testDate, false},
+		{newSliceString([]string{"2019-05-01"}), kinds.DateTime, testDate, false},
 
 		// Bool
-		{SliceBool([]bool{true}), kinds.Float, 1.0, false},
-		{SliceBool([]bool{false}), kinds.Float, 0.0, false},
+		{newSliceBool([]bool{true}), kinds.Float, 1.0, false},
+		{newSliceBool([]bool{false}), kinds.Float, 0.0, false},
 
-		{SliceBool([]bool{true}), kinds.Int, int64(1), false},
-		{SliceBool([]bool{false}), kinds.Int, int64(0), false},
+		{newSliceBool([]bool{true}), kinds.Int, int64(1), false},
+		{newSliceBool([]bool{false}), kinds.Int, int64(0), false},
 
-		{SliceBool([]bool{true}), kinds.String, "true", false},
-		{SliceBool([]bool{false}), kinds.String, "false", false},
+		{newSliceBool([]bool{true}), kinds.String, "true", false},
+		{newSliceBool([]bool{false}), kinds.String, "false", false},
 
-		{SliceBool([]bool{true}), kinds.Bool, true, false},
-		{SliceBool([]bool{false}), kinds.Bool, false, false},
+		{newSliceBool([]bool{true}), kinds.Bool, true, false},
+		{newSliceBool([]bool{false}), kinds.Bool, false, false},
 
-		{SliceBool([]bool{true}), kinds.DateTime, epochDate, false},
-		{SliceBool([]bool{false}), kinds.DateTime, epochDate, false},
+		{newSliceBool([]bool{true}), kinds.DateTime, epochDate, false},
+		{newSliceBool([]bool{false}), kinds.DateTime, epochDate, false},
 
 		// DateTime
-		{SliceDateTime([]time.Time{testDate}), kinds.Float, float64(testEpoch), false},
-		{SliceDateTime([]time.Time{time.Time{}}), kinds.Float, nan, true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.Float, float64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Float, nan, true},
 
-		{SliceDateTime([]time.Time{testDate}), kinds.Int, int64(testEpoch), false},
-		{SliceDateTime([]time.Time{time.Time{}}), kinds.Int, int64(0), true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.Int, int64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Int, int64(0), true},
 
-		{SliceDateTime([]time.Time{testDate}), kinds.String, "2019-05-01 00:00:00 +0000 UTC", false},
-		{SliceDateTime([]time.Time{time.Time{}}), kinds.String, "NaN", true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.String, "2019-05-01 00:00:00 +0000 UTC", false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.String, "NaN", true},
 
-		{SliceDateTime([]time.Time{testDate}), kinds.Bool, true, false},
-		{SliceDateTime([]time.Time{time.Time{}}), kinds.Bool, false, true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.Bool, true, false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Bool, false, true},
 
-		{SliceDateTime([]time.Time{testDate}), kinds.DateTime, testDate, false},
-		{SliceDateTime([]time.Time{time.Time{}}), kinds.DateTime, time.Time{}, true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.DateTime, testDate, false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.DateTime, time.Time{}, true},
 
 		// Interface
-		{SliceInterface([]interface{}{math.NaN()}), kinds.Float, nan, true},
-		{SliceInterface([]interface{}{1.5}), kinds.Float, 1.5, false},
+		{newSliceInterface([]interface{}{math.NaN()}), kinds.Float, nan, true},
+		{newSliceInterface([]interface{}{1.5}), kinds.Float, 1.5, false},
 
-		{SliceInterface([]interface{}{1}), kinds.Int, int64(1), false},
+		{newSliceInterface([]interface{}{1}), kinds.Int, int64(1), false},
 
-		{SliceInterface([]interface{}{""}), kinds.String, "NaN", true},
-		{SliceInterface([]interface{}{"NaN"}), kinds.String, "NaN", true},
-		{SliceInterface([]interface{}{"n/a"}), kinds.String, "NaN", true},
-		{SliceInterface([]interface{}{"N/A"}), kinds.String, "NaN", true},
-		{SliceInterface([]interface{}{"1.5"}), kinds.String, "1.5", false},
-		{SliceInterface([]interface{}{"foo"}), kinds.String, "foo", false},
+		{newSliceInterface([]interface{}{""}), kinds.String, "NaN", true},
+		{newSliceInterface([]interface{}{"NaN"}), kinds.String, "NaN", true},
+		{newSliceInterface([]interface{}{"n/a"}), kinds.String, "NaN", true},
+		{newSliceInterface([]interface{}{"N/A"}), kinds.String, "NaN", true},
+		{newSliceInterface([]interface{}{"1.5"}), kinds.String, "1.5", false},
+		{newSliceInterface([]interface{}{"foo"}), kinds.String, "foo", false},
 
-		{SliceInterface([]interface{}{true}), kinds.Bool, true, false},
-		{SliceInterface([]interface{}{false}), kinds.Bool, false, false},
+		{newSliceInterface([]interface{}{true}), kinds.Bool, true, false},
+		{newSliceInterface([]interface{}{false}), kinds.Bool, false, false},
 
-		{SliceInterface([]interface{}{testDate}), kinds.DateTime, testDate, false},
-		{SliceInterface([]interface{}{time.Time{}}), kinds.DateTime, time.Time{}, true},
+		{newSliceInterface([]interface{}{testDate}), kinds.DateTime, testDate, false},
+		{newSliceInterface([]interface{}{time.Time{}}), kinds.DateTime, time.Time{}, true},
 	}
 
 	for _, test := range tests {
@@ -153,7 +181,7 @@ func TestConvert_Unsupported(t *testing.T) {
 		{kinds.Unsupported},
 	}
 	for _, test := range tests {
-		vals := SliceFloat([]float64{1.5})
+		vals := newSliceFloat([]float64{1.5})
 		_, err := Convert(vals.V, test.kind)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.kind)

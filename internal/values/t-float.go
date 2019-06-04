@@ -9,75 +9,64 @@ import (
 
 // [START Constructor Functions]
 
-// SliceFloat converts []float64  -> Factory with float64Values
-func SliceFloat(vals []float64) Factory {
-	var v float64Values
-	for _, val := range vals {
-		if math.IsNaN(val) {
-			v = append(v, float64Val(val, true))
-			continue
-		}
-		v = append(v, float64Val(val, false))
+// newFloat creates a float64Value from atomic float64 value
+func newFloat(val float64) float64Value {
+	if math.IsNaN(val) {
+		return float64Value{val, true}
 	}
-	return Factory{v, kinds.Float}
+	return float64Value{val, false}
+}
+
+// newSliceFloat converts []float64  -> Factory with float64Values
+func newSliceFloat(vals []float64) Factory {
+	var ret float64Values
+	for _, val := range vals {
+		ret = append(ret, newFloat(val))
+	}
+	return Factory{ret, kinds.Float}
 }
 
 // [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat returns itself
-func (vals float64Values) ToFloat() Values {
-	return vals
+// toFloat returns itself
+func (val float64Value) toFloat64() float64Value {
+	return val
 }
 
-// ToInt converts float64Values to int64Values
+// toInt converts a float64Value to int64Value
 //
 // 1.9: 1, 1.5: 1, null: 0
-func (vals float64Values) ToInt() Values {
-	var ret int64Values
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, int64Val(0, true))
-		} else {
-			v := int64(val.v)
-			ret = append(ret, int64Val(v, false))
-		}
+func (val float64Value) toInt64() int64Value {
+	if val.null {
+		return int64Value{0, true}
 	}
-	return ret
+	v := int64(val.v)
+	return int64Value{v, false}
+
 }
 
-// ToBool converts float64Values to boolValues
+// toBool converts float64Value to boolValue
 //
 // x != 0: true; x == 0: false; null: false
-func (vals float64Values) ToBool() Values {
-	var ret boolValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, boolVal(false, true))
-		} else {
-			if val.v == 0 {
-				ret = append(ret, boolVal(false, false))
-			} else {
-				ret = append(ret, boolVal(true, false))
-			}
-		}
+func (val float64Value) toBool() boolValue {
+	if val.null {
+		return boolValue{false, true}
 	}
-	return ret
+	if val.v == 0 {
+		return boolValue{false, false}
+	}
+	return boolValue{true, false}
 }
 
-// ToDateTime converts float64Values to dateTimeValues.
+// toDateTime converts float64Value to dateTimeValue.
 // Tries to convert from Unix EPOCH time, otherwise returns null
-func (vals float64Values) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, dateTimeVal(time.Time{}, true))
-		} else {
-			ret = append(ret, floatToDateTime(val.v))
-		}
+func (val float64Value) toDateTime() dateTimeValue {
+	if val.null {
+		return dateTimeValue{time.Time{}, true}
 	}
-	return ret
+	return floatToDateTime(val.v)
 }
 
 func floatToDateTime(f float64) dateTimeValue {

@@ -78,7 +78,7 @@ func TestConvert_Numeric_Datetime(t *testing.T) {
 	for _, test := range tests {
 		lvl, _ := test.lvl.Convert(kinds.DateTime)
 		elem := lvl.Labels.Element(0)
-		gotVal := elem[0].(time.Time)
+		gotVal := elem.Value.(time.Time)
 		if gotVal != wantVal {
 			t.Errorf("Error converting %v to datetime: returned %v, want %v", test.lvl, gotVal, wantVal)
 		}

@@ -18,77 +18,77 @@ func TestSliceConstructor(t *testing.T) {
 	}{
 		{
 			data:     []float32{0, 1, 2},
-			wantVals: SliceFloat([]float64{0, 1, 2}),
+			wantVals: newSliceFloat([]float64{0, 1, 2}),
 			wantKind: kinds.Float,
 		},
 		{
 			data:     []float64{0, 1, 2},
-			wantVals: SliceFloat([]float64{0, 1, 2}),
+			wantVals: newSliceFloat([]float64{0, 1, 2}),
 			wantKind: kinds.Float,
 		},
 		{
 			data:     []float64{},
-			wantVals: SliceFloat([]float64{}),
+			wantVals: newSliceFloat([]float64{}),
 			wantKind: kinds.Float,
 		},
 		{
 			data:     []int{0, 1, 2},
-			wantVals: SliceInt([]int64{0, 1, 2}),
+			wantVals: NewSliceInt([]int64{0, 1, 2}),
 			wantKind: kinds.Int,
 		},
 		{
 			data:     []int64{0, 1, 2},
-			wantVals: SliceInt([]int64{0, 1, 2}),
+			wantVals: NewSliceInt([]int64{0, 1, 2}),
 			wantKind: kinds.Int,
 		},
 		{
 			data:     []int{},
-			wantVals: SliceInt([]int64{}),
+			wantVals: NewSliceInt([]int64{}),
 			wantKind: kinds.Int,
 		},
 		{
 			data:     []uint{0, 1, 2},
-			wantVals: SliceInt([]int64{0, 1, 2}),
+			wantVals: NewSliceInt([]int64{0, 1, 2}),
 			wantKind: kinds.Int,
 		},
 		{
 			data:     []string{"0", "1", ""},
-			wantVals: SliceString([]string{"0", "1", "NaN"}),
+			wantVals: newSliceString([]string{"0", "1", "NaN"}),
 			wantKind: kinds.String,
 		},
 		{
 			data:     []string{},
-			wantVals: SliceString([]string{}),
+			wantVals: newSliceString([]string{}),
 			wantKind: kinds.String,
 		},
 		{
 			data:     []bool{true, true, false},
-			wantVals: SliceBool([]bool{true, true, false}),
+			wantVals: newSliceBool([]bool{true, true, false}),
 			wantKind: kinds.Bool,
 		},
 		{
 			data:     []bool{},
-			wantVals: SliceBool([]bool{}),
+			wantVals: newSliceBool([]bool{}),
 			wantKind: kinds.Bool,
 		},
 		{
 			data:     []time.Time{testDate, time.Time{}},
-			wantVals: SliceDateTime([]time.Time{testDate, time.Time{}}),
+			wantVals: newSliceDateTime([]time.Time{testDate, time.Time{}}),
 			wantKind: kinds.DateTime,
 		},
 		{
 			data:     []time.Time{},
-			wantVals: SliceDateTime([]time.Time{}),
+			wantVals: newSliceDateTime([]time.Time{}),
 			wantKind: kinds.DateTime,
 		},
 		{
 			data:     []interface{}{1.5, 1, "", false, testDate},
-			wantVals: SliceInterface([]interface{}{1.5, 1, "", false, testDate}),
+			wantVals: newSliceInterface([]interface{}{1.5, 1, "", false, testDate}),
 			wantKind: kinds.Interface,
 		},
 		{
 			data:     []interface{}{},
-			wantVals: SliceInterface([]interface{}{}),
+			wantVals: newSliceInterface([]interface{}{}),
 			wantKind: kinds.Interface,
 		},
 	}
