@@ -21,19 +21,33 @@ func (s Series) Kind() string {
 	return fmt.Sprint(s.kind)
 }
 
+func (s Series) copy() Series {
+	idx := s.index.Copy()
+	copyS := Series{
+		values: s.values,
+		index:  idx,
+		kind:   s.kind,
+		Name:   s.Name,
+	}
+	return copyS
+}
+
+// in subsets a Series to include only index items and values at the positions supplied,
+// then returns as a new Series
 func (s Series) in(positions []int) (Series, error) {
 	if ok := s.ensureAlignment(); !ok {
 		return s, fmt.Errorf("fatal error: Series values and index labels out of alignment: report issue and create new series")
 	}
-	values, err := s.values.In(positions)
+	newS := s.copy()
+	values, err := newS.values.In(positions)
 	if err != nil {
 		return Series{}, fmt.Errorf("unable to get Series values at positions: %v", err)
 	}
-	s.values = values
-	for i, level := range s.index.Levels {
+	newS.values = values
+	for i, level := range newS.index.Levels {
 		// Ducks error because positional alignment is ensured between values and all index levels
-		s.index.Levels[i].Labels, _ = level.Labels.In(positions)
+		newS.index.Levels[i].Labels, _ = level.Labels.In(positions)
 	}
-	s.index.Refresh()
-	return s, nil
+	newS.index.Refresh()
+	return newS, nil
 }

@@ -127,11 +127,11 @@ func TestSelect_Failures(t *testing.T) {
 	}{
 		{[]opt.SelectionOption{opt.ByRows([]int{0, 3})}, "row indexing out range"},
 		{[]opt.SelectionOption{opt.ByLabels([]string{"0", "3"})}, "label indexing out range"},
-		{[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 2})}, "index level out range"},
-		{[]opt.SelectionOption{opt.ByIndexNames([]string{"foo", "baz"})}, "index name not in index"},
+		{[]opt.SelectionOption{opt.ByLevels([]int{0, 2})}, "index level out range"},
+		{[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "baz"})}, "index name not in index"},
 		{[]opt.SelectionOption{opt.ByLabels([]string{"0"}), opt.ByRows([]int{0})}, "multiple row selectors supplied"},
-		{[]opt.SelectionOption{opt.ByIndexNames([]string{"foo"}), opt.ByIndexLevels([]int{0})}, "multiple index level selectors supplied"},
-		{[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 1}), opt.ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
+		{[]opt.SelectionOption{opt.ByLevelNames([]string{"foo"}), opt.ByLevels([]int{0})}, "multiple index level selectors supplied"},
+		{[]opt.SelectionOption{opt.ByLevels([]int{0, 1}), opt.ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
 	}
 	for _, test := range tests {
 		s, _ := New([]int{1, 5, 10}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
@@ -166,44 +166,45 @@ func TestSelect_Get(t *testing.T) {
 		{
 			[]opt.SelectionOption{opt.ByLabels([]string{"0", "2"})},
 			mustNew([]int{0, 2}, Index([]int{0, 2}, opt.Name("foo")), Index([]string{"A", "C"}, opt.Name("bar"))),
-			"multiple labels"},
+			"multiple labels",
+		},
 		{
-			[]opt.SelectionOption{opt.ByIndexLevels([]int{0})},
+			[]opt.SelectionOption{opt.ByLevels([]int{0})},
 			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo"))),
 			"one index level only",
 		},
 		{
-			[]opt.SelectionOption{opt.ByIndexLevels([]int{0, 1})},
+			[]opt.SelectionOption{opt.ByLevels([]int{0, 1})},
 			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar"))),
 			"multiple index levels",
 		},
 		{
-			[]opt.SelectionOption{opt.ByIndexNames([]string{"foo"})},
+			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo"})},
 			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo"))),
 			"index name only",
 		},
 		{
-			[]opt.SelectionOption{opt.ByIndexNames([]string{"foo", "bar"})},
+			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "bar"})},
 			mustNew([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar"))),
 			"multiple index names",
 		},
 		{
-			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexLevels([]int{0})},
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevels([]int{0})},
 			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo"))),
 			"rows and one index level",
 		},
 		{
-			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexLevels([]int{0, 1})},
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevels([]int{0, 1})},
 			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo")), Index([]string{"A", "B"}, opt.Name("bar"))),
 			"rows and multiple index levels",
 		},
 		{
-			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexNames([]string{"foo"})},
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevelNames([]string{"foo"})},
 			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo"))),
 			"rows and one index name",
 		},
 		{
-			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByIndexNames([]string{"foo", "bar"})},
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevelNames([]string{"foo", "bar"})},
 			mustNew([]int{0, 1}, Index([]int{0, 1}, opt.Name("foo")), Index([]string{"A", "B"}, opt.Name("bar"))),
 			"rows and multiple index names",
 		},
@@ -217,6 +218,66 @@ func TestSelect_Get(t *testing.T) {
 		}
 		if !reflect.DeepEqual(newS, test.wantSeries) {
 			t.Errorf("selection.Get() returned \n%v when selecting %s, want \n%v", newS, test.desc, test.wantSeries)
+		}
+	}
+}
+
+func TestSelect_Swap(t *testing.T) {
+	var tests = []struct {
+		options    []opt.SelectionOption
+		wantSeries Series
+		desc       string
+	}{
+		// {
+		// 	[]opt.SelectionOption{opt.ByRows([]int{0, 1})},
+		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
+		// 	"swap two rows by position",
+		// },
+		// {
+		// 	[]opt.SelectionOption{opt.ByRows([]int{1, 0})},
+		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
+		// 	"swap two rows by position - reverse arguments",
+		// },
+		// {
+		// 	[]opt.SelectionOption{opt.ByLabels([]string{"0", "1"})},
+		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
+		// 	"swap two rows by label",
+		// },
+		// {
+		// 	[]opt.SelectionOption{opt.ByLabels([]string{"1", "0"})},
+		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
+		// 	"swap two rows by label - reverse arguments",
+		// },
+		{
+			[]opt.SelectionOption{opt.ByLevels([]int{0, 1})},
+			mustNew([]int{0, 1, 2}, Index([]string{"A", "B", "C"}, opt.Name("bar")), Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"swap two levels by position",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLevels([]int{1, 0})},
+			mustNew([]int{0, 1, 2}, Index([]string{"A", "B", "C"}, opt.Name("bar")), Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"swap two levels by position - reverse arguments",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "bar"})},
+			mustNew([]int{0, 1, 2}, Index([]string{"A", "B", "C"}, opt.Name("bar")), Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"swap two levels by name",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLevelNames([]string{"bar", "foo"})},
+			mustNew([]int{0, 1, 2}, Index([]string{"A", "B", "C"}, opt.Name("bar")), Index([]int{0, 1, 2}, opt.Name("foo"))),
+			"swap two levels by name - reverse arguments",
+		},
+	}
+	for _, test := range tests {
+		s, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+		sel := s.Select(test.options...)
+		newS, err := sel.Swap()
+		if err != nil {
+			t.Errorf("selection.Swap() returned %v when selecting %s", err, test.desc)
+		}
+		if !reflect.DeepEqual(newS, test.wantSeries) {
+			t.Errorf("selection.Swap() returned \n%#v when selecting %s, want \n%#v", newS, test.desc, test.wantSeries)
 		}
 	}
 }

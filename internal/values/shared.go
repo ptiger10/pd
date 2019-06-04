@@ -94,8 +94,8 @@ func (vals valueTypeValues) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals valueTypeValues) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals valueTypeValues) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues

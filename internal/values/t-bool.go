@@ -21,8 +21,9 @@ func SliceBool(vals []bool) Factory {
 // [END Constructor Functions]
 
 // [START Converters]
+// Set overwrites the
 
-// ToFloat converts boolValues to float64Values
+// ToFloat converts boolValues to float64Values.
 //
 // true: 1.0, false: 0.0, null: NaN
 func (vals boolValues) ToFloat() Values {
@@ -39,7 +40,7 @@ func (vals boolValues) ToFloat() Values {
 	return ret
 }
 
-// ToInt converts boolValues to int64Values
+// ToInt converts boolValues to int64Values.
 //
 // true: 1, false: 0, null: 0
 func (vals boolValues) ToInt() Values {
@@ -56,12 +57,12 @@ func (vals boolValues) ToInt() Values {
 	return ret
 }
 
-// ToBool returns itself
+// ToBool returns itself.
 func (vals boolValues) ToBool() Values {
 	return vals
 }
 
-// ToDateTime converts boolValues to dateTimeValues
+// ToDateTime converts boolValues to dateTimeValues.
 //
 // notnull: time.Date(1970,1,1,0,0,0,0,time.UTC)
 func (vals boolValues) ToDateTime() Values {

@@ -12,7 +12,7 @@ import (
 )
 
 // Index returns a opt.ConstructorOption for use in the Series constructor New(),
-// and takes an optioanl Name.
+// and takes an optional Name.
 func Index(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOption {
 	cfg := config.ConstructorConfig{}
 	for _, option := range options {

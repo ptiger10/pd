@@ -49,7 +49,9 @@ func SetDisplayIndexMaxWidth(n int) {
 	displayIndexMaxWidth = n
 }
 
-//GetDisplayIndexMaxWidth returns DisplayIndexMaxWidth.
+// GetDisplayIndexMaxWidth returns DisplayIndexMaxWidth.
+//
+// This is a test. This is a test. This is a test. This is a test. This is a test.
 func GetDisplayIndexMaxWidth() int {
 	return displayIndexMaxWidth
 }

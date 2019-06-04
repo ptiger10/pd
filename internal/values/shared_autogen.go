@@ -93,8 +93,8 @@ func (vals float64Values) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals float64Values) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals float64Values) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues
@@ -209,8 +209,8 @@ func (vals int64Values) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals int64Values) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals int64Values) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues
@@ -325,8 +325,8 @@ func (vals stringValues) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals stringValues) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals stringValues) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues
@@ -441,8 +441,8 @@ func (vals boolValues) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals boolValues) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals boolValues) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues
@@ -557,8 +557,8 @@ func (vals dateTimeValues) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals dateTimeValues) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals dateTimeValues) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues
@@ -673,8 +673,8 @@ func (vals interfaceValues) Null() []int {
 
 // Element returns a value element at an integer position in form
 // []interface{val, null}
-func (vals interfaceValues) Element(position int) []interface{} {
-	return []interface{}{vals[position].v, vals[position].null}
+func (vals interfaceValues) Element(position int) Elem {
+	return Elem{vals[position].v, vals[position].null}
 }
 
 // ToString converts the values to stringValues

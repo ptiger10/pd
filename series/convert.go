@@ -7,10 +7,10 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-// As converts the series values to the kind supplied
+// To converts the series values to the kind supplied
 //
 // Applies to All. If unsupported Kind is supplied, returns original Series.
-func (s Series) As(kind kinds.Kind) Series {
+func (s Series) To(kind kinds.Kind) Series {
 	switch kind {
 	case kinds.Float:
 		s.values = s.values.ToFloat()
@@ -38,22 +38,11 @@ func (s Series) As(kind kinds.Kind) Series {
 	return s
 }
 
-func (s Series) copy() Series {
-	idx := s.index.Copy()
-	copyS := Series{
-		values: s.values,
-		index:  idx,
-		kind:   s.kind,
-		Name:   s.Name,
-	}
-	return copyS
-}
-
-// IndexAs converts the first level of the series index to the kind supplied.
+// IndexTo converts the first level of the series index to the kind supplied.
 //
 // Applies to All. If unsupported Kind is supplied, returns error.
-func (s Series) IndexAs(kind kinds.Kind) (Series, error) {
-	return s.IndexLevelAs(0, kind)
+func (s Series) IndexTo(kind kinds.Kind) (Series, error) {
+	return s.IndexLevelTo(0, kind)
 }
 
 // SetLevel sets the index level at position with the supplied level.
@@ -63,10 +52,10 @@ func (s Series) IndexAs(kind kinds.Kind) (Series, error) {
 
 // }
 
-// IndexLevelAs converts the specific integer level of the series index to the kind supplied
+// IndexLevelTo converts the specific integer level of the series index to the kind supplied
 //
 // Applies to All. If unsupported Kind or invalid level value is supplied, returns error.
-func (s Series) IndexLevelAs(position int, kind kinds.Kind) (Series, error) {
+func (s Series) IndexLevelTo(position int, kind kinds.Kind) (Series, error) {
 	copyS := s.copy()
 	if position >= len(s.index.Levels) {
 		return Series{}, fmt.Errorf("unable to convert index at level %d: index out of range (Series has %d levels)", position, len(s.index.Levels))

@@ -112,6 +112,7 @@ func (sel Selection) String() string {
 // Unpack the supplied options and try to categorize the caller's intention.
 func (s Series) unpack(cfg config.SelectionConfig) Selection {
 	var sel = Selection{s: s}
+	// [START check input for errors]
 	noSelection := (cfg.LevelPositions == nil && cfg.LevelNames == nil && cfg.RowPositions == nil && cfg.RowLabels == nil)
 	multipleLevelIdentifiers := (cfg.LevelPositions != nil && cfg.LevelNames != nil)
 	multipleRowIdentifiers := (cfg.RowPositions != nil && cfg.RowLabels != nil)
@@ -144,7 +145,9 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		sel.err = err
 		return sel
 	}
+	// [END check input for errors]
 
+	// Handling ByLevels
 	if cfg.LevelPositions != nil {
 		err := s.ensureLevelPositions(cfg.LevelPositions)
 		if err != nil {
@@ -156,6 +159,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 		sel.levelPositions = cfg.LevelPositions
 	} else {
+		// Handling ByLevelNames
 		for _, name := range cfg.LevelNames {
 			val, ok := s.index.NameMap[name]
 			if !ok {
@@ -169,7 +173,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 			sel.levelPositions = append(sel.levelPositions, val...)
 		}
 	}
-
+	// Handling ByRows
 	if cfg.RowPositions != nil {
 		err := s.ensureRowPositions(cfg.RowPositions)
 		if err != nil {
@@ -181,6 +185,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 		sel.rowPositions = cfg.RowPositions
 	} else {
+		// Handling ByLabels
 		var lvl int
 		// no index level provided; defaults to first level
 		if rowsOnly {
@@ -213,6 +218,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 	}
 
+	// Infer category and swappable
 	if levelsOnly {
 		sel.category = catLevelsOnly
 		if len(sel.levelPositions) == 2 {
@@ -230,7 +236,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 	}
 
 	if !noSelection && !levelsOnly && !rowsOnly && !crossSection {
-		sel.category = "unknown"
+		sel.category = "Unknown"
 		return sel
 	}
 
@@ -266,33 +272,58 @@ func (s Series) Select(options ...opt.SelectionOption) Selection {
 	return sel
 }
 
-// Get returns the Series underpinning this Selection
+// Get returns the Series specified in this Selection.
+//
+// Always returns a new Series.
 func (sel Selection) Get() (Series, error) {
 	if sel.err != nil {
 		return sel.s, sel.err
 	}
-	return sel.get(), nil
+	return sel.get()
 }
 
-// Create a new Series based on the Selection.
-// Ducks .In() errors because those are checked by the unpacker on calls to s.Select().
-func (sel Selection) get() Series {
-	s := sel.s.copy()
+// returns the rows or index levels specified in the Selection and
+// ducks .In() errors because those are checked by the unpacker on calls to s.Select().
+func (sel Selection) get() (Series, error) {
 	switch sel.category {
 	case "Select All":
-		return s
+		return sel.s.copy(), nil
 	case "Select Levels":
+		s := sel.s.copy()
 		s.index, _ = s.index.In(sel.levelPositions)
+		return s, nil
 	case "Select Rows":
-		s, _ = s.in(sel.rowPositions)
+		s, _ := sel.s.in(sel.rowPositions)
+		return s, nil
 	case "Select Cross-Section":
+		s, _ := sel.s.in(sel.rowPositions)
 		s.index, _ = s.index.In(sel.levelPositions)
-		s, _ = s.in(sel.rowPositions)
+		return s, nil
 	default:
-		values.Warn(fmt.Errorf("unable to categorize intention of caller"), "original Series")
-		return s
+		return sel.s.copy(), fmt.Errorf("unable to categorize intention of caller")
 	}
-	return s
+}
+
+// Swap swaps the selected rows or index levels. If Selection is not swappable, returns error.
+//
+// Always returns a new Series.
+func (sel Selection) Swap() (Series, error) {
+	if !sel.swappable {
+		return sel.s.copy(), fmt.Errorf("selection is not swappable - must select exactly two of either rows or levels")
+	}
+	switch sel.category {
+	case "Select Levels":
+		s := sel.s.copy()
+		lvl := s.index.Levels
+		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
+		s.index.UpdateNameMap()
+		return s, nil
+	case "Select Rows":
+		s := sel.s.copy()
+		return s, nil
+	default:
+		return sel.s.copy(), fmt.Errorf("")
+	}
 }
 
 // [END Selection]

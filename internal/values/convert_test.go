@@ -128,8 +128,8 @@ func TestConvert(t *testing.T) {
 			t.Errorf("Unable to convert to string: %v", err)
 		}
 		elem := converted.Element(0)
-		val := elem[0]
-		null := elem[1].(bool)
+		val := elem.Value
+		null := elem.Null
 		if val != test.wantVal {
 			// special case to check for two floats equaling NaN
 			f1, ok1 := val.(float64)
