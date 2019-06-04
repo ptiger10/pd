@@ -97,8 +97,8 @@ func TestSliceConstructor(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unable to construct values from %v: %v", test.data, err)
 		}
-		if !reflect.DeepEqual(vals.V, test.wantVals.V) {
-			t.Errorf("%T test returned values %#v, want %#v", test.data, vals, test.wantVals.V)
+		if !reflect.DeepEqual(vals.Values, test.wantVals.Values) {
+			t.Errorf("%T test returned values %#v, want %#v", test.data, vals, test.wantVals.Values)
 		}
 		if vals.Kind != test.wantKind {
 			t.Errorf("%T test returned value %v, want %v", test.data, vals.Kind, test.wantKind)
@@ -111,7 +111,7 @@ func TestSliceConstructor_NullFloat(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to construct values from null float: %v", err)
 	}
-	val := vals.V.Element(0).Value.(float64)
+	val := vals.Values.Element(0).Value.(float64)
 	if !math.IsNaN(val) {
 		t.Errorf("Returned %v, want NaN", val)
 	}
@@ -122,7 +122,7 @@ func TestSliceConstructor_NullFloatInterface(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to construct values from null float: %v", err)
 	}
-	val := vals.V.Element(0).Value.(float64)
+	val := vals.Values.Element(0).Value.(float64)
 	if !math.IsNaN(val) {
 		t.Errorf("Returned %v, want NaN", val)
 	}

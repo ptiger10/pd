@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+func ExampleSeries_Describe_scalarString() {
+	s, _ := New("foo")
+	s.Describe()
+	// Output:
+	//    len    1
+	//  valid    1
+	//   null    0
+	// unique    1
+	//kind: string
+	//name: description
+}
+
 func ExampleSeries_Describe_float() {
 	s, _ := New([]float64{1, math.NaN(), 2, 3, 4, 5, math.NaN(), 6, 7, 8, 9})
 	s.Describe()

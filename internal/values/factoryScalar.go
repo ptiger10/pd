@@ -4,48 +4,49 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+
+	"github.com/ptiger10/pd/kinds"
 )
 
-// ScalarFactory creates an Elem from an interface{} that has been determined elsewhere to be a scalar.
+// ScalarFactory creates a Factory from an interface{} that has been determined elsewhere to be a scalar.
 // Be careful modifying this constructor and its children,
 // as reflection is inherently unsafe and each function expects to receive specific types only.
-func ScalarFactory(data interface{}) (Elem, error) {
-	var ret Elem
+func ScalarFactory(data interface{}) (Factory, error) {
+	var ret Factory
 	switch data.(type) {
 	case float32, float64:
 		val := scalarFloatToFloat64(data)
 		f := newFloat(val)
-		ret = Elem{f.v, f.null}
+		ret = Factory{float64Values{f}, kinds.Float}
 
 	case int, int8, int16, int32, int64:
 		val := scalarIntToInt64(data)
 		i := newInt(val)
-		ret = Elem{i.v, i.null}
+		ret = Factory{int64Values{i}, kinds.Int}
 
 	case uint, uint8, uint16, uint32, uint64:
-		// converts into int64 so it can be passed into SliceInt
 		val := scalarUIntToInt64(data)
 		i := newInt(val)
-		ret = Elem{i.v, i.null}
+		ret = Factory{int64Values{i}, kinds.Int}
 
 	case string:
 		val := newString(data.(string))
-		ret = Elem{val.v, val.null}
+		ret = Factory{stringValues{val}, kinds.String}
 
 	case bool:
 		val := newBool(data.(bool))
-		ret = Elem{val.v, val.null}
+		ret = Factory{boolValues{val}, kinds.Bool}
 
 	case time.Time:
 		val := newDateTime(data.(time.Time))
-		ret = Elem{val.v, val.null}
+		ret = Factory{dateTimeValues{val}, kinds.DateTime}
 
 	case interface{}:
 		val := newInterface(data.(interface{}))
-		ret = Elem{val.v, val.null}
+		ret = Factory{interfaceValues{val}, kinds.Interface}
 
 	default:
-		ret = Elem{}
+		ret = Factory{}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 

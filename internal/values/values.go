@@ -24,8 +24,8 @@ type Values interface {
 
 // Factory contains Values (a list of Value/Null pairs satisfying the Values interface) and Kind.
 type Factory struct {
-	V    Values
-	Kind kinds.Kind
+	Values Values
+	Kind   kinds.Kind
 }
 
 // An Elem is a single Value/Null pair.

@@ -61,6 +61,14 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Values
 	switch reflect.ValueOf(data).Kind() {
+	case reflect.Float32, reflect.Float64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.String,
+		reflect.Bool,
+		reflect.Struct:
+		factory, err = values.ScalarFactory(data)
+
 	case reflect.Slice:
 		factory, err = values.SliceFactory(data)
 
@@ -69,7 +77,7 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	}
 
 	// Sets values and kind based on the Values switch
-	v = factory.V
+	v = factory.Values
 	kind = factory.Kind
 	if err != nil {
 		return Series{}, fmt.Errorf("unable to construct new Series: unable to construct values: %v", err)

@@ -151,7 +151,7 @@ func TestConvert(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		converted, err := Convert(test.input.V, test.convertTo)
+		converted, err := Convert(test.input.Values, test.convertTo)
 		if err != nil {
 			t.Errorf("Unable to convert to string: %v", err)
 		}
@@ -182,7 +182,7 @@ func TestConvert_Unsupported(t *testing.T) {
 	}
 	for _, test := range tests {
 		vals := newSliceFloat([]float64{1.5})
-		_, err := Convert(vals.V, test.kind)
+		_, err := Convert(vals.Values, test.kind)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.kind)
 		}

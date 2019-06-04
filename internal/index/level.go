@@ -14,7 +14,7 @@ func NewLevelFromSlice(data interface{}, name string) (Level, error) {
 	if err != nil {
 		return Level{}, fmt.Errorf("unable to create level from Slice: data type not supported: %T", data)
 	}
-	return newLevel(vf.V, vf.Kind, name), nil
+	return newLevel(vf.Values, vf.Kind, name), nil
 
 }
 
