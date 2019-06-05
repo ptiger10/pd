@@ -46,12 +46,7 @@ func (idx Index) Copy() Index {
 		idxCopy.NameMap[k] = v
 	}
 	for i := 0; i < len(idx.Levels); i++ {
-		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i])
-		idxCopy.Levels[i].Labels = idx.Levels[i].Labels.Copy()
-		idxCopy.Levels[i].LabelMap = make(LabelMap)
-		for k, v := range idx.Levels[i].LabelMap {
-			idxCopy.Levels[i].LabelMap[k] = v
-		}
+		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i].Copy())
 	}
 	return idxCopy
 }

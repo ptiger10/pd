@@ -28,17 +28,6 @@ func NewLevel(data interface{}, name string) (Level, error) {
 	return newLevel(vf.Values, vf.Kind, name), nil
 }
 
-// NewLevel creates an Index Level from a Slice interface{};
-// data must be reflect.Kind = Slice.
-// func NewLevel(data interface{}, name string) (Level, error) {
-// 	vf, err := values.SliceFactory(data)
-// 	if err != nil {
-// 		return Level{}, fmt.Errorf("unable to create level from Slice: data type not supported: %T", data)
-// 	}
-// 	return newLevel(vf.Values, vf.Kind, name), nil
-
-// }
-
 // newLevel returns an Index level with updated label map and longest value computed.
 // NB: Create labels using the values.constructors factory methods
 func newLevel(labels values.Values, kind kinds.Kind, name string) Level {
@@ -49,4 +38,16 @@ func newLevel(labels values.Values, kind kinds.Kind, name string) Level {
 	}
 	lvl.Refresh()
 	return lvl
+}
+
+// Copy copies an Index Level
+func (lvl Level) Copy() Level {
+	lvlCopy := Level{}
+	lvlCopy = lvl
+	lvlCopy.Labels = lvlCopy.Labels.Copy()
+	lvlCopy.LabelMap = make(LabelMap)
+	for k, v := range lvlCopy.LabelMap {
+		lvlCopy.LabelMap[k] = v
+	}
+	return lvlCopy
 }

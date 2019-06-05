@@ -186,13 +186,14 @@ func TestIndexTo_String(t *testing.T) {
 }
 
 func TestIndexTo_Bool(t *testing.T) {
-	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	// testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+	s, err := New([]int{0, 1, 2, 3}, Index([]interface{}{1.5, 1, "1", false}))
 	if err != nil {
 		t.Error(err)
 	}
+
 	newS := s.IndexTo.Bool()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]bool{true, true, true, false, true}))
+	wantS, _ := New([]int{0, 1, 2, 3}, Index([]bool{true, true, true, false}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Bool() returned %v, want %v", newS, wantS)
 	}
@@ -237,7 +238,7 @@ func TestIndexTo_Interface(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Interface() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.String
+	wantKind := kinds.Interface
 	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
 		t.Errorf("s.IndexTo.Interface() returned kind %v, want %v", gotKind, wantKind)
 	}

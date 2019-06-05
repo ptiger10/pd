@@ -93,3 +93,24 @@ func TestLevel_Unsupported(t *testing.T) {
 		t.Errorf("Returned nil error, expected error due to unsupported type %T", data)
 	}
 }
+
+func Test_LevelCopy(t *testing.T) {
+	idxLvl := mustCreateNewLevel([]int{1, 2, 3})
+	idxLvl.Name = "foo"
+	copyLvl := idxLvl.Copy()
+	if copyLvl.Name != "foo" {
+		t.Error("Level.Copy() did not copy Name")
+	}
+	if copyLvl.Kind != kinds.Int {
+		t.Error("Level.Copy() did not copy Kind")
+	}
+	if copyLvl.Longest != 1 {
+		t.Error("Level.Copy() did not copy Kind")
+	}
+	if reflect.ValueOf(idxLvl.Labels).Pointer() == reflect.ValueOf(copyLvl.Labels).Pointer() {
+		t.Error("Level.Copy() returned original labels, want fresh copy")
+	}
+	if reflect.ValueOf(idxLvl.LabelMap).Pointer() == reflect.ValueOf(copyLvl.LabelMap).Pointer() {
+		t.Error("Level.Copy() returned original map, want fresh copy")
+	}
+}

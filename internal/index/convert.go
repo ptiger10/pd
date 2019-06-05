@@ -13,56 +13,61 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	case kinds.None:
 		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
 	case kinds.Float:
-		convertedLvl = lvl.toFloat()
+		convertedLvl = lvl.ToFloat()
 	case kinds.Int:
-		convertedLvl = lvl.toInt()
+		convertedLvl = lvl.ToInt()
 	case kinds.String:
-		convertedLvl = lvl.toString()
+		convertedLvl = lvl.ToString()
 	case kinds.Bool:
-		convertedLvl = lvl.toBool()
+		convertedLvl = lvl.ToBool()
 	case kinds.DateTime:
-		convertedLvl = lvl.toDateTime()
+		convertedLvl = lvl.ToDateTime()
 	case kinds.Interface:
-		convertedLvl = lvl.toInterface()
+		convertedLvl = lvl.ToInterface()
 	default:
 		return Level{}, fmt.Errorf("unable to convert level: kind not supported: %v", kind)
 	}
-	convertedLvl.Refresh()
 	return convertedLvl, nil
 }
 
-func (lvl Level) toFloat() Level {
+func (lvl Level) ToFloat() Level {
 	lvl.Labels = lvl.Labels.ToFloat()
 	lvl.Kind = kinds.Float
+	lvl.Refresh()
 	return lvl
 }
 
-func (lvl Level) toInt() Level {
+func (lvl Level) ToInt() Level {
 	lvl.Labels = lvl.Labels.ToInt()
 	lvl.Kind = kinds.Int
+	lvl.Refresh()
 	return lvl
 }
 
-func (lvl Level) toString() Level {
+func (lvl Level) ToString() Level {
 	lvl.Labels = lvl.Labels.ToString()
 	lvl.Kind = kinds.String
+	lvl.Refresh()
 	return lvl
 }
 
-func (lvl Level) toBool() Level {
+func (lvl Level) ToBool() Level {
 	lvl.Labels = lvl.Labels.ToBool()
 	lvl.Kind = kinds.Bool
+	lvl.Refresh()
 	return lvl
 }
 
-func (lvl Level) toDateTime() Level {
+func (lvl Level) ToDateTime() Level {
 	lvl.Labels = lvl.Labels.ToDateTime()
 	lvl.Kind = kinds.DateTime
+	lvl.Refresh()
 	return lvl
 }
 
-func (lvl Level) toInterface() Level {
+func (lvl Level) ToInterface() Level {
 	lvl.Labels = lvl.Labels.ToInterface()
 	lvl.Kind = kinds.Interface
+	lvl.Refresh()
 	return lvl
 }
