@@ -7,6 +7,7 @@ import (
 
 func ExampleSeries_Describe_scalarString() {
 	s, _ := New("foo")
+	s.Name = "bar"
 	s.Describe()
 	// Output:
 	//    len    1
@@ -14,7 +15,7 @@ func ExampleSeries_Describe_scalarString() {
 	//   null    0
 	// unique    1
 	//kind: string
-	//name: description
+	//name: bar
 }
 
 func ExampleSeries_Describe_float() {
@@ -31,7 +32,6 @@ func ExampleSeries_Describe_float() {
 	//   75%    7.50
 	//   max    9.00
 	//kind: float64
-	//name: description
 }
 
 func ExampleSeries_Describe_float_empty() {
@@ -48,7 +48,6 @@ func ExampleSeries_Describe_float_empty() {
 	//   75%    NaN
 	//   max    NaN
 	//kind: float64
-	//name: description
 }
 
 func ExampleSeries_Describe_int() {
@@ -65,7 +64,6 @@ func ExampleSeries_Describe_int() {
 	//   75%    7.50
 	//   max    9.00
 	//kind: int64
-	//name: description
 }
 
 func ExampleSeries_Describe_string() {
@@ -77,7 +75,6 @@ func ExampleSeries_Describe_string() {
 	//   null    1
 	// unique    2
 	//kind: string
-	//name: description
 }
 
 func ExampleSeries_Describe_string_empty() {
@@ -89,7 +86,6 @@ func ExampleSeries_Describe_string_empty() {
 	//   null    2
 	// unique    0
 	//kind: string
-	//name: description
 }
 
 func ExampleSeries_Describe_bool() {
@@ -102,7 +98,6 @@ func ExampleSeries_Describe_bool() {
 	//   sum    1.00
 	//  mean    0.33
 	//kind: bool
-	//name: description
 }
 
 func ExampleSeries_Describe_datetime() {
@@ -119,7 +114,6 @@ func ExampleSeries_Describe_datetime() {
 	// earliest    2019-04-18 15:00:00 +0000 UTC
 	//   latest    2019-04-19 15:00:00 +0000 UTC
 	//kind: time.Time
-	//name: description
 }
 
 func ExampleSeries_Describe_datetime_empty() {
@@ -133,7 +127,6 @@ func ExampleSeries_Describe_datetime_empty() {
 	// earliest    0001-01-01 00:00:00 +0000 UTC
 	//   latest    0001-01-01 00:00:00 +0000 UTC
 	//kind: time.Time
-	//name: description
 }
 
 func ExampleSeries_Describe_interface() {
@@ -144,5 +137,4 @@ func ExampleSeries_Describe_interface() {
 	// valid    3
 	//  null    1
 	//kind: interface
-	//name: description
 }

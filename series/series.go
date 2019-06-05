@@ -26,7 +26,6 @@ type Series struct {
 type Element struct {
 	Value      interface{}
 	Null       bool
-	Kind       kinds.Kind
 	Labels     []interface{}
 	LabelKinds []kinds.Kind
 }
@@ -36,7 +35,6 @@ func (el Element) String() string {
 	for _, pair := range [][]interface{}{
 		[]interface{}{"Value", el.Value},
 		[]interface{}{"Null", el.Null},
-		[]interface{}{"Kind", el.Kind},
 		[]interface{}{"Labels", el.Labels},
 		[]interface{}{"LabelKinds", el.LabelKinds},
 	} {
@@ -46,10 +44,9 @@ func (el Element) String() string {
 	return printStr
 }
 
-// Element returns the Series Element at position
+// Element returns information about the value and index labels at this position.
 func (s Series) Element(position int) Element {
 	elem := s.values.Element(position)
-	kind := s.kind
 
 	var idx []interface{}
 	var idxKinds []kinds.Kind
@@ -59,10 +56,10 @@ func (s Series) Element(position int) Element {
 		idx = append(idx, idxVal)
 		idxKinds = append(idxKinds, lvl.Kind)
 	}
-	return Element{elem.Value, elem.Null, kind, idx, idxKinds}
+	return Element{elem.Value, elem.Null, idx, idxKinds}
 }
 
-// Kind is the data kind of the Series' values. Mimics reflect.Kind with the addition of time.Time
+// Kind is the data kind of the Series' values. Mimics reflect.Kind with the addition of time.Time as DateTime.
 func (s Series) Kind() string {
 	return fmt.Sprint(s.kind)
 }

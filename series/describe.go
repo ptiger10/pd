@@ -44,31 +44,31 @@ func (s Series) Describe() {
 
 		values := []string{length, valid, null, mean, min, q1, q2, q3, max}
 		idx := Index([]string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"})
-		s, err = New(values, idx, opt.Name("description"))
+		s, err = New(values, idx, opt.Name(s.Name))
 
 	case kinds.String:
 		unique := fmt.Sprint(len(s.UniqueVals()))
 		values := []string{length, valid, null, unique}
 		idx := Index([]string{"len", "valid", "null", "unique"})
-		s, err = New(values, idx, opt.Name("description"))
+		s, err = New(values, idx, opt.Name(s.Name))
 	case kinds.Bool:
 		precision := opt.GetDisplayFloatPrecision()
 		sum := fmt.Sprintf("%.*f", precision, s.Math.Sum())
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		values := []string{length, valid, null, sum, mean}
 		idx := Index([]string{"len", "valid", "null", "sum", "mean"})
-		s, err = New(values, idx, opt.Name("description"))
+		s, err = New(values, idx, opt.Name(s.Name))
 	case kinds.DateTime:
 		unique := fmt.Sprint(len(s.UniqueVals()))
 		earliest := fmt.Sprint(s.Earliest())
 		latest := fmt.Sprint(s.Latest())
 		values := []string{length, valid, null, unique, earliest, latest}
 		idx := Index([]string{"len", "valid", "null", "unique", "earliest", "latest"})
-		s, err = New(values, idx, opt.Name("description"))
+		s, err = New(values, idx, opt.Name(s.Name))
 	default:
 		values := []string{length, valid, null}
 		idx := Index([]string{"len", "valid", "null"})
-		s, err = New(values, idx, opt.Name("description"))
+		s, err = New(values, idx, opt.Name(s.Name))
 	}
 	if err != nil {
 		values.Warn(err, "nil (internal error)")
