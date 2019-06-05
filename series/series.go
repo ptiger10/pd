@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
@@ -14,6 +15,7 @@ type Series struct {
 	values values.Values
 	kind   kinds.Kind
 	Name   string
+	Math   Math
 }
 
 // Kind is the data kind of the Series' values. Mimics reflect.Kind with the addition of time.Time
@@ -30,6 +32,7 @@ func (s Series) copy() Series {
 		kind:   s.kind,
 		Name:   s.Name,
 	}
+	copyS.Math = Math{s: copyS}
 	return *copyS
 }
 
@@ -51,4 +54,15 @@ func (s Series) in(positions []int) (Series, error) {
 	}
 	newS.index.Refresh()
 	return newS, nil
+}
+
+func seriesEquals(s1, s2 Series) bool {
+	sameIndex := reflect.DeepEqual(s1.index, s2.index)
+	sameValues := reflect.DeepEqual(s1.values, s2.values)
+	sameName := s1.Name == s2.Name
+	sameKind := s1.kind == s2.kind
+	if sameIndex && sameValues && sameName && sameKind {
+		return true
+	}
+	return false
 }

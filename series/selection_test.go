@@ -2,7 +2,6 @@ package series
 
 import (
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/ptiger10/pd/opt"
@@ -27,7 +26,7 @@ func TestAt_singleIndex(t *testing.T) {
 	for _, test := range tests {
 		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
 		got := s.At(test.input)
-		if !reflect.DeepEqual(got, test.want) {
+		if !seriesEquals(got, test.want) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
@@ -37,7 +36,7 @@ func TestAt_singleIndex_multipleCalls(t *testing.T) {
 	_ = s.At(0)
 	want := mustNew([]string{"dog"}, Index([]int{100}))
 	got := s.At(1)
-	if !reflect.DeepEqual(got, want) {
+	if !seriesEquals(got, want) {
 		t.Errorf("Returned Series %v, want %v", got, want)
 	}
 }
@@ -54,7 +53,7 @@ func TestAtLabel_singleindex(t *testing.T) {
 	for _, test := range tests {
 		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
 		got := s.AtLabel(test.input)
-		if !reflect.DeepEqual(got, test.want) {
+		if !seriesEquals(got, test.want) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
@@ -63,7 +62,7 @@ func TestAtLabel_singleindex(t *testing.T) {
 func TestAt_fail(t *testing.T) {
 	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
 	got := s.At(3)
-	if !reflect.DeepEqual(got, s) {
+	if !seriesEquals(got, s) {
 		t.Errorf("Returned %v, want original series", got)
 	}
 }
@@ -71,7 +70,7 @@ func TestAt_fail(t *testing.T) {
 func TestAtLabel_fail(t *testing.T) {
 	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
 	got := s.AtLabel("NotPresent")
-	if !reflect.DeepEqual(got, s) {
+	if !seriesEquals(got, s) {
 		t.Errorf("Returned %v, want original series", got)
 	}
 }
@@ -92,7 +91,7 @@ func TestAt_multiIndex(t *testing.T) {
 			Index([]string{"A", "B", "C"}),
 		)
 		got := s.At(test.input)
-		if !reflect.DeepEqual(got, test.want) {
+		if !seriesEquals(got, test.want) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
@@ -114,7 +113,7 @@ func TestAtLabel_multiIndex(t *testing.T) {
 			Index([]string{"A", "B", "C"}),
 		)
 		got := s.AtLabel(test.input)
-		if !reflect.DeepEqual(got, test.want) {
+		if !seriesEquals(got, test.want) {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
 	}
@@ -136,7 +135,7 @@ func TestSelect_Failures(t *testing.T) {
 	for _, test := range tests {
 		s, _ := New([]int{1, 5, 10}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
 		sel := s.Select(test.options...)
-		if !reflect.DeepEqual(sel.s, s) {
+		if !seriesEquals(sel.s, s) {
 			t.Errorf("Select() returned %v, want return of underlying series due to %v", sel.s, test.errorMsg)
 		}
 	}
@@ -216,7 +215,7 @@ func TestSelect_Get(t *testing.T) {
 		if err != nil {
 			t.Errorf("selection.Get() returned %v when selecting %s", err, test.desc)
 		}
-		if !reflect.DeepEqual(newS, test.wantSeries) {
+		if !seriesEquals(newS, test.wantSeries) {
 			t.Errorf("selection.Get() returned \n%v when selecting %s, want \n%v", newS, test.desc, test.wantSeries)
 		}
 	}
@@ -277,11 +276,27 @@ func TestSelect_Swap(t *testing.T) {
 		if err != nil {
 			t.Errorf("selection.Swap() returned %v when selecting %s", err, test.desc)
 		}
-		if !reflect.DeepEqual(newS, test.wantSeries) {
+		if !seriesEquals(newS, test.wantSeries) {
 			t.Errorf("selection.Swap() returned \n%#v when selecting %s, want \n%#v", newS, test.desc, test.wantSeries)
 		}
-		if !reflect.DeepEqual(origS, s) {
+		if !seriesEquals(origS, s) {
 			t.Errorf("selection.Swap() modifying Series in place instead of returning new")
 		}
+	}
+}
+
+func TestSelect_Set(t *testing.T) {
+	s, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+	origS, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+	sel := s.Select(opt.ByRows([]int{0, 1, 2}))
+	newS, err := sel.Set(5)
+	if err != nil {
+		t.Errorf("selection.Set() %v", err)
+	}
+	if !seriesEquals(origS, s) {
+		t.Errorf("selection.Set() modifying Series in place instead of returning new")
+	}
+	if newS.Elem(0).Value != int64(5) || newS.Elem(1).Value != int64(5) || newS.Elem(2).Value != int64(5) {
+		t.Errorf("selection.Set() did not set all values")
 	}
 }

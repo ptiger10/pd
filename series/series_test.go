@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/opt"
 )
 
 func TestKind(t *testing.T) {
@@ -45,5 +46,33 @@ func Test_Copy(t *testing.T) {
 	copyS.kind = kinds.Bool
 	if !reflect.DeepEqual(s, origS) {
 		t.Errorf("s.copy() returned original, want fresh copy")
+	}
+}
+
+func Test_Equals(t *testing.T) {
+	s, err := New("foo", Index("bar"), opt.Name("baz"))
+	if err != nil {
+		t.Error(err)
+	}
+	s2, _ := New("foo", Index("bar"), opt.Name("baz"))
+	if !seriesEquals(s, s2) {
+		t.Errorf("seriesEquals() returned false, want true")
+	}
+	s2.kind = kinds.Bool
+	if seriesEquals(s, s2) {
+		t.Errorf("seriesEquals() returned true for different kind, want false")
+	}
+
+	s2, _ = New("quux", Index("bar"), opt.Name("baz"))
+	if seriesEquals(s, s2) {
+		t.Errorf("seriesEquals() returned true for different values, want false")
+	}
+	s2, _ = New("foo", Index("corge"), opt.Name("baz"))
+	if seriesEquals(s, s2) {
+		t.Errorf("seriesEquals() returned true for different index, want false")
+	}
+	s2, _ = New("foo", Index("bar"), opt.Name("qux"))
+	if seriesEquals(s, s2) {
+		t.Errorf("seriesEquals() returned true for different name, want false")
 	}
 }

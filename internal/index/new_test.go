@@ -7,7 +7,7 @@ import (
 
 func Test_Default(t *testing.T) {
 	got := Default(3)
-	lvl, err := NewLevelFromSlice([]int64{0, 1, 2}, "")
+	lvl, err := NewLevel([]int64{0, 1, 2}, "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,11 +23,11 @@ func Test_Default(t *testing.T) {
 }
 
 func Test_NewMulti(t *testing.T) {
-	lvl1, err := NewLevelFromSlice([]int64{0, 1, 2}, "")
+	lvl1, err := NewLevel([]int64{0, 1, 2}, "")
 	if err != nil {
 		t.Error(err)
 	}
-	lvl2, err := NewLevelFromSlice([]int64{100, 101, 102}, "")
+	lvl2, err := NewLevel([]int64{100, 101, 102}, "")
 	if err != nil {
 		t.Error(err)
 	}

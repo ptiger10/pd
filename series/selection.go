@@ -338,14 +338,18 @@ func (sel Selection) Swap() (Series, error) {
 	}
 }
 
-// func (sel Selection) Set(val interface{}) (Series, error) {
-// 	switch sel.category {
-// 	case "Select Rows":
-// 		for _, row := sel.rowPositions {
-// 			sel.s
-// 		}
-// 	}
-
-// }
+// Set sets all the value in a Selection to val
+func (sel Selection) Set(val interface{}) (Series, error) {
+	switch sel.category {
+	case "Select Rows":
+		for _, row := range sel.rowPositions {
+			err := sel.s.values.Set(row, val)
+			if err != nil {
+				return Series{}, fmt.Errorf("Selection.Set(): %v", err)
+			}
+		}
+	}
+	return sel.s, nil
+}
 
 // [END Selection]
