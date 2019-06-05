@@ -7,8 +7,8 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-// NewLevelFromSlice creates an Index Level from a Slice interface{}
-// data MUST be reflect.Kind = Slice
+// NewLevelFromSlice creates an Index Level from a Slice interface{};
+// data must be reflect.Kind = Slice.
 func NewLevelFromSlice(data interface{}, name string) (Level, error) {
 	vf, err := values.SliceFactory(data)
 	if err != nil {

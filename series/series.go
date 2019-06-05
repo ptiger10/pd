@@ -23,13 +23,14 @@ func (s Series) Kind() string {
 
 func (s Series) copy() Series {
 	idx := s.index.Copy()
-	copyS := Series{
-		values: s.values,
+	valsCopy := s.values.Copy()
+	copyS := &Series{
+		values: valsCopy,
 		index:  idx,
 		kind:   s.kind,
 		Name:   s.Name,
 	}
-	return copyS
+	return *copyS
 }
 
 // in subsets a Series to include only index items and values at the positions supplied,

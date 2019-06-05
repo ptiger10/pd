@@ -228,26 +228,26 @@ func TestSelect_Swap(t *testing.T) {
 		wantSeries Series
 		desc       string
 	}{
-		// {
-		// 	[]opt.SelectionOption{opt.ByRows([]int{0, 1})},
-		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
-		// 	"swap two rows by position",
-		// },
-		// {
-		// 	[]opt.SelectionOption{opt.ByRows([]int{1, 0})},
-		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
-		// 	"swap two rows by position - reverse arguments",
-		// },
-		// {
-		// 	[]opt.SelectionOption{opt.ByLabels([]string{"0", "1"})},
-		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
-		// 	"swap two rows by label",
-		// },
-		// {
-		// 	[]opt.SelectionOption{opt.ByLabels([]string{"1", "0"})},
-		// 	mustNew([]int{1, 0}, Index([]int{1, 0}, opt.Name("foo")), Index([]string{"B", "A"}), opt.Name("bar")),
-		// 	"swap two rows by label - reverse arguments",
-		// },
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{0, 1})},
+			mustNew([]int{1, 0, 2}, Index([]int{1, 0, 2}, opt.Name("foo")), Index([]string{"B", "A", "C"}, opt.Name("bar"))),
+			"swap two rows by position",
+		},
+		{
+			[]opt.SelectionOption{opt.ByRows([]int{1, 0})},
+			mustNew([]int{1, 0, 2}, Index([]int{1, 0, 2}, opt.Name("foo")), Index([]string{"B", "A", "C"}, opt.Name("bar"))),
+			"swap two rows by position - reverse arguments",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLabels([]string{"0", "1"})},
+			mustNew([]int{1, 0, 2}, Index([]int{1, 0, 2}, opt.Name("foo")), Index([]string{"B", "A", "C"}, opt.Name("bar"))),
+			"swap two rows by label",
+		},
+		{
+			[]opt.SelectionOption{opt.ByLabels([]string{"1", "0"})},
+			mustNew([]int{1, 0, 2}, Index([]int{1, 0, 2}, opt.Name("foo")), Index([]string{"B", "A", "C"}, opt.Name("bar"))),
+			"swap two rows by label - reverse arguments",
+		},
 		{
 			[]opt.SelectionOption{opt.ByLevels([]int{0, 1})},
 			mustNew([]int{0, 1, 2}, Index([]string{"A", "B", "C"}, opt.Name("bar")), Index([]int{0, 1, 2}, opt.Name("foo"))),
@@ -271,6 +271,7 @@ func TestSelect_Swap(t *testing.T) {
 	}
 	for _, test := range tests {
 		s, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
+		origS, _ := New([]int{0, 1, 2}, Index([]int{0, 1, 2}, opt.Name("foo")), Index([]string{"A", "B", "C"}, opt.Name("bar")))
 		sel := s.Select(test.options...)
 		newS, err := sel.Swap()
 		if err != nil {
@@ -278,6 +279,9 @@ func TestSelect_Swap(t *testing.T) {
 		}
 		if !reflect.DeepEqual(newS, test.wantSeries) {
 			t.Errorf("selection.Swap() returned \n%#v when selecting %s, want \n%#v", newS, test.desc, test.wantSeries)
+		}
+		if !reflect.DeepEqual(origS, s) {
+			t.Errorf("selection.Swap() modifying Series in place instead of returning new")
 		}
 	}
 }

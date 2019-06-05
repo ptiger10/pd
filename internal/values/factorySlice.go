@@ -32,7 +32,7 @@ func SliceFactory(data interface{}) (Factory, error) {
 
 	case []uint, []uint8, []uint16, []uint32, []uint64:
 		// converts into []int64 so it can be passed into SliceInt
-		vals := InterfaceToSliceUint(data)
+		vals := sliceUIntToSliceInt64(data)
 		ret = NewSliceInt(vals)
 
 	case []string:
@@ -83,8 +83,8 @@ func sliceIntToSliceInt64(data interface{}) []int64 {
 	return vals
 }
 
-// InterfaceToSliceUint converts knonw []uint interface{} -> []int64
-func InterfaceToSliceUint(data interface{}) []int64 {
+// sliceUIntToSliceInt64 converts knonw []uint interface{} -> []int64
+func sliceUIntToSliceInt64(data interface{}) []int64 {
 	var vals []int64
 	d := reflect.ValueOf(data)
 	for i := 0; i < d.Len(); i++ {

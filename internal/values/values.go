@@ -1,6 +1,8 @@
 package values
 
-import "github.com/ptiger10/pd/kinds"
+import (
+	"github.com/ptiger10/pd/kinds"
+)
 
 // The Values interface is the primary means of handling a collection of values
 // Thes same interface and value types are used for both Series values and Index labels
@@ -13,6 +15,7 @@ type Values interface {
 	Null() []int                // integer positions of null values
 	Element(int) Elem           // Value/Null pair at an integer position
 	Set(int, interface{}) error // overwrite the value/null struct at an integer position
+	Copy() Values               // clone the Values
 
 	ToFloat() float64Values
 	ToInt() int64Values

@@ -27,7 +27,7 @@ func (vals float64Values) Len() int {
 	return len(vals)
 }
 
-// In returns the values located at specific index positions.
+// In returns a copy of the values located at specific index positions.
 func (vals float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
@@ -88,9 +88,18 @@ func (vals float64Values) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current float64Values container into a new Values container
+func (vals float64Values) Copy() Values {
+	newValues := float64Values{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals float64Values) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals float64Values) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -165,7 +174,6 @@ func (vals float64Values) ToInterface() interfaceValues {
 
 // [END] float64Values
 // ---------------------------------------------------------------------------
-
 
 // [START] int64Values
 
@@ -244,9 +252,18 @@ func (vals int64Values) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current int64Values container into a new Values container
+func (vals int64Values) Copy() Values {
+	newValues := int64Values{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals int64Values) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals int64Values) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -321,7 +338,6 @@ func (vals int64Values) ToInterface() interfaceValues {
 
 // [END] int64Values
 // ---------------------------------------------------------------------------
-
 
 // [START] stringValues
 
@@ -400,9 +416,18 @@ func (vals stringValues) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current stringValues container into a new Values container
+func (vals stringValues) Copy() Values {
+	newValues := stringValues{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals stringValues) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals stringValues) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -477,7 +502,6 @@ func (vals stringValues) ToInterface() interfaceValues {
 
 // [END] stringValues
 // ---------------------------------------------------------------------------
-
 
 // [START] boolValues
 
@@ -556,9 +580,18 @@ func (vals boolValues) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current boolValues container into a new Values container
+func (vals boolValues) Copy() Values {
+	newValues := boolValues{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals boolValues) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals boolValues) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -633,7 +666,6 @@ func (vals boolValues) ToInterface() interfaceValues {
 
 // [END] boolValues
 // ---------------------------------------------------------------------------
-
 
 // [START] dateTimeValues
 
@@ -712,9 +744,18 @@ func (vals dateTimeValues) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current dateTimeValues container into a new Values container
+func (vals dateTimeValues) Copy() Values {
+	newValues := dateTimeValues{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals dateTimeValues) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals dateTimeValues) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -789,7 +830,6 @@ func (vals dateTimeValues) ToInterface() interfaceValues {
 
 // [END] dateTimeValues
 // ---------------------------------------------------------------------------
-
 
 // [START] interfaceValues
 
@@ -868,9 +908,18 @@ func (vals interfaceValues) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current interfaceValues container into a new Values container
+func (vals interfaceValues) Copy() Values {
+	newValues := interfaceValues{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals interfaceValues) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals interfaceValues) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
@@ -945,4 +994,3 @@ func (vals interfaceValues) ToInterface() interfaceValues {
 
 // [END] interfaceValues
 // ---------------------------------------------------------------------------
-

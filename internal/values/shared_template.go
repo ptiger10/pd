@@ -89,9 +89,18 @@ func (vals valueTypeValues) Element(position int) Elem {
 	return Elem{vals[position].v, vals[position].null}
 }
 
+// Copy transfers every value from the current valueTypeValues container into a new Values container
+func (vals valueTypeValues) Copy() Values {
+	newValues := valueTypeValues{}
+	for _, val := range vals {
+		newValues = append(newValues, val)
+	}
+	return newValues
+}
+
 // Set overwrites a Value/Null pair at an integer position.
-func (vals valueTypeValues) Set(position int, val interface{}) error {
-	v := interfaceValue{val, false}
+func (vals valueTypeValues) Set(position int, newVal interface{}) error {
+	v := interfaceValue{newVal, false}
 	if position >= vals.Len() {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}

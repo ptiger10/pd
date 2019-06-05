@@ -111,7 +111,7 @@ func (sel Selection) String() string {
 
 // Unpack the supplied options and try to categorize the caller's intention.
 func (s Series) unpack(cfg config.SelectionConfig) Selection {
-	var sel = Selection{s: s}
+	var sel = Selection{s: s.copy()}
 	// [START check input for errors]
 	noSelection := (cfg.LevelPositions == nil && cfg.LevelNames == nil && cfg.RowPositions == nil && cfg.RowLabels == nil)
 	multipleLevelIdentifiers := (cfg.LevelPositions != nil && cfg.LevelNames != nil)
@@ -287,20 +287,19 @@ func (sel Selection) Get() (Series, error) {
 func (sel Selection) get() (Series, error) {
 	switch sel.category {
 	case "Select All":
-		return sel.s.copy(), nil
+		return sel.s, nil
 	case "Select Levels":
-		s := sel.s.copy()
-		s.index, _ = s.index.In(sel.levelPositions)
-		return s, nil
+		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
+		return sel.s, nil
 	case "Select Rows":
-		s, _ := sel.s.in(sel.rowPositions)
-		return s, nil
+		sel.s, _ = sel.s.in(sel.rowPositions)
+		return sel.s, nil
 	case "Select Cross-Section":
-		s, _ := sel.s.in(sel.rowPositions)
-		s.index, _ = s.index.In(sel.levelPositions)
-		return s, nil
+		sel.s, _ = sel.s.in(sel.rowPositions)
+		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
+		return sel.s, nil
 	default:
-		return sel.s.copy(), fmt.Errorf("unable to categorize intention of caller")
+		return sel.s, fmt.Errorf("unable to categorize intention of caller")
 	}
 }
 
@@ -309,21 +308,44 @@ func (sel Selection) get() (Series, error) {
 // Always returns a new Series.
 func (sel Selection) Swap() (Series, error) {
 	if !sel.swappable {
-		return sel.s.copy(), fmt.Errorf("selection is not swappable - must select exactly two of either rows or levels")
+		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two of either rows or levels")
 	}
+	s := sel.s
 	switch sel.category {
 	case "Select Levels":
-		s := sel.s.copy()
 		lvl := s.index.Levels
 		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
 		s.index.UpdateNameMap()
 		return s, nil
 	case "Select Rows":
-		s := sel.s.copy()
+		r1 := sel.rowPositions[0]
+		r2 := sel.rowPositions[1]
+
+		for i := 0; i < len(s.index.Levels); i++ {
+			r1v := s.index.Levels[i].Labels.Element(r1).Value
+			r2v := s.index.Levels[i].Labels.Element(r2).Value
+			s.index.Levels[i].Labels.Set(r1, r2v)
+			s.index.Levels[i].Labels.Set(r2, r1v)
+			s.index.Levels[i].Refresh()
+		}
+		r1v := s.values.Element(r1).Value
+		r2v := s.values.Element(r2).Value
+		s.values.Set(r1, r2v)
+		s.values.Set(r2, r1v)
 		return s, nil
 	default:
-		return sel.s.copy(), fmt.Errorf("")
+		return sel.s, fmt.Errorf("")
 	}
 }
+
+// func (sel Selection) Set(val interface{}) (Series, error) {
+// 	switch sel.category {
+// 	case "Select Rows":
+// 		for _, row := sel.rowPositions {
+// 			sel.s
+// 		}
+// 	}
+
+// }
 
 // [END Selection]

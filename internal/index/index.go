@@ -3,7 +3,6 @@ package index
 import (
 	"fmt"
 
-	"github.com/jinzhu/copier"
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
 )
@@ -26,7 +25,7 @@ type Level struct {
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
 type LabelMap map[string][]int
 
-// In returns an index with only those levels located at specified integer positions
+// In returns a copy of the index with only those levels located at specified integer positions
 func (idx Index) In(positions []int) (Index, error) {
 	idx = idx.Copy()
 	var lvls []Level
@@ -42,11 +41,17 @@ func (idx Index) In(positions []int) (Index, error) {
 
 // Copy returns a deep copy of each index level
 func (idx Index) Copy() Index {
-	idxCopy := Index{}
-	copier.Copy(&idxCopy, &idx)
-	idxCopy.Levels = make([]Level, len(idx.Levels))
+	idxCopy := Index{NameMap: LabelMap{}}
+	for k, v := range idx.NameMap {
+		idxCopy.NameMap[k] = v
+	}
 	for i := 0; i < len(idx.Levels); i++ {
-		copier.Copy(&idxCopy.Levels[i], &idx.Levels[i])
+		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i])
+		idxCopy.Levels[i].Labels = idx.Levels[i].Labels.Copy()
+		idxCopy.Levels[i].LabelMap = make(LabelMap)
+		for k, v := range idx.Levels[i].LabelMap {
+			idxCopy.Levels[i].LabelMap[k] = v
+		}
 	}
 	return idxCopy
 }
