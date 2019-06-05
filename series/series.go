@@ -13,13 +13,13 @@ import (
 
 // A Series is a 1-D data container with a labeled index, static type, and the ability to handle null values
 type Series struct {
-	index  index.Index
-	values values.Values
-	kind   kinds.Kind
-	Name   string
-	Math
-	To
-	IndexTo
+	index   index.Index
+	values  values.Values
+	kind    kinds.Kind
+	Name    string
+	Math    Math
+	To      To
+	IndexTo IndexTo
 }
 
 // An Element is a single item in a Series
@@ -90,7 +90,7 @@ func (s Series) in(positions []int) (Series, error) {
 	newS := s.copy()
 	values, err := newS.values.In(positions)
 	if err != nil {
-		return Series{}, fmt.Errorf("unable to get Series values at positions: %v", err)
+		return Series{}, fmt.Errorf("unable to get Series value(s) at position(s): %v", err)
 	}
 	newS.values = values
 	for i, level := range newS.index.Levels {

@@ -284,7 +284,7 @@ func (sel Selection) Swap() (Series, error) {
 	case "Select Levels":
 		lvl := s.index.Levels
 		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
-		s.index.UpdateNameMap()
+		s.index.Refresh()
 		return s, nil
 	case "Select Rows":
 		r1 := sel.rowPositions[0]

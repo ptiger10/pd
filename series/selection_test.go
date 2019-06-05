@@ -281,7 +281,7 @@ func TestSelect_Swap(t *testing.T) {
 			t.Errorf("selection.Swap() returned %v when selecting %s", err, test.desc)
 		}
 		if !seriesEquals(newS, test.wantSeries) {
-			t.Errorf("selection.Swap() returned \n%#v when selecting %s, want \n%#v", newS, test.desc, test.wantSeries)
+			t.Errorf("selection.Swap() returned \n%v when selecting %s, want \n%v", newS.index, test.desc, test.wantSeries.index)
 		}
 		if !seriesEquals(origS, s) {
 			t.Errorf("selection.Swap() modifying Series in place instead of returning new")
