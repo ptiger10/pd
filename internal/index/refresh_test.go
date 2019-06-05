@@ -13,11 +13,11 @@ func Test_RefreshLevel(t *testing.T) {
 		wantLabelMap LabelMap
 		wantLongest  int
 	}{
-		{mustCreateNewLevelFromSlice([]int64{3, 4}).Labels, LabelMap{"3": []int{0}, "4": []int{1}}, 1},
-		{mustCreateNewLevelFromSlice([]int64{10, 20}).Labels, LabelMap{"10": []int{0}, "20": []int{1}}, 2},
+		{mustCreateNewLevel([]int64{3, 4}).Labels, LabelMap{"3": []int{0}, "4": []int{1}}, 1},
+		{mustCreateNewLevel([]int64{10, 20}).Labels, LabelMap{"10": []int{0}, "20": []int{1}}, 2},
 	}
 	for _, test := range tests {
-		lvl := mustCreateNewLevelFromSlice([]int64{1, 2})
+		lvl := mustCreateNewLevel([]int64{1, 2})
 		origLabelMap := LabelMap{"1": []int{0}, "2": []int{1}}
 		if !reflect.DeepEqual(lvl.LabelMap, origLabelMap) {
 			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, origLabelMap)
@@ -35,7 +35,7 @@ func Test_RefreshLevel(t *testing.T) {
 }
 
 func Test_RefreshIndex(t *testing.T) {
-	origLvl, err := NewLevelFromSlice([]int64{1, 2}, "")
+	origLvl, err := NewLevel([]int64{1, 2}, "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,7 +43,7 @@ func Test_RefreshIndex(t *testing.T) {
 	if idx.Levels[0].Name != "" {
 		t.Error("Expecting no name")
 	}
-	newLvl, err := NewLevelFromSlice([]int64{1, 2}, "ints")
+	newLvl, err := NewLevel([]int64{1, 2}, "ints")
 	if err != nil {
 		t.Error(err)
 	}

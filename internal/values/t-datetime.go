@@ -9,85 +9,67 @@ import (
 
 // [START Constructor Functions]
 
-// SliceDateTime converts []time.Time{} -> Factory with dateTimeValues
-func SliceDateTime(vals []time.Time) Factory {
-	var v dateTimeValues
-	for _, val := range vals {
-		if (time.Time{}) == val {
-			v = append(v, dateTimeVal(val, true))
-		} else {
-			v = append(v, dateTimeVal(val, false))
-		}
-
+// newDateTime creates a dateTimeValue from atomic time.Time value
+func newDateTime(val time.Time) dateTimeValue {
+	if (time.Time{}) == val {
+		return dateTimeValue{val, true}
 	}
+	return dateTimeValue{val, false}
+}
 
-	return Factory{v, kinds.DateTime}
+// newSliceDateTime converts []time.Time{} -> Factory with dateTimeValues
+func newSliceDateTime(vals []time.Time) Factory {
+	var ret dateTimeValues
+	for _, val := range vals {
+		ret = append(ret, newDateTime(val))
+	}
+	return Factory{ret, kinds.DateTime}
 }
 
 // [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat converts dateTimeValues to float64Values of the Unix EPOCH timestamp
+// toFloat converts dateTimeValues to float64Values of the Unix EPOCH timestamp
 // (seconds since midnight January 1, 1970)
 // 2019-05-01 00:00:00 +0000 UTC: 1556757505
-func (vals dateTimeValues) ToFloat() Values {
-	var ret float64Values
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, float64Val(math.NaN(), true))
-		} else {
-			v := val.v.UnixNano()
-			ret = append(ret, float64Val(float64(v), false))
-		}
+func (val dateTimeValue) toFloat64() float64Value {
+	if val.null {
+		return float64Value{math.NaN(), true}
 	}
-	return ret
+	v := val.v.UnixNano()
+	return float64Value{float64(v), false}
 }
 
 // ToInt converts dateTimeValues to int64Values of the Unix EPOCH timestamp
 // (seconds since midnight January 1, 1970)
 //
 // 2019-05-01 00:00:00 +0000 UTC: 1556757505
-func (vals dateTimeValues) ToInt() Values {
-	var ret int64Values
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, int64Val(0, true))
-		} else {
-			v := val.v.UnixNano()
-			ret = append(ret, int64Val(v, false))
-		}
+func (val dateTimeValue) toInt64() int64Value {
+	if val.null {
+		return int64Value{0, true}
 	}
-	return ret
+	v := val.v.UnixNano()
+	return int64Value{v, false}
 }
 
 // ToBool converts dateTimeValues to boolValues
 //
 // x != time.Time{}: true; x == time.Time{}: false; null: false
-func (vals dateTimeValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, boolVal(false, true))
-		} else {
-			if val.v == (time.Time{}) {
-				ret = append(ret, boolVal(false, false))
-			} else {
-				ret = append(ret, boolVal(true, false))
-			}
-		}
+func (val dateTimeValue) toBool() boolValue {
+	if val.null {
+		return boolValue{false, true}
 	}
-	return ret
+	if val.v == (time.Time{}) {
+		return boolValue{false, false}
+	}
+	return boolValue{true, false}
+
 }
 
 // ToDateTime returns itself
-func (vals dateTimeValues) ToDateTime() Values {
-	return vals
+func (val dateTimeValue) toDateTime() dateTimeValue {
+	return val
 }
 
 // [END Converters]
-
-// [START Methods]
-
-// Describe the values in the collection
-// [END Methods]

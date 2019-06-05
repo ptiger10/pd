@@ -15,7 +15,7 @@ func New(levels ...Level) Index {
 // Default creates an unnamed index level with range labels (0, 1, 2, ...n)
 func Default(length int) Index {
 	defaultRange := values.MakeRange(0, length)
-	factory := values.SliceInt(defaultRange)
-	level := newLevel(factory.V, factory.Kind, "")
+	factory := values.NewSliceInt(defaultRange)
+	level := newLevel(factory.Values, factory.Kind, "")
 	return New(level)
 }

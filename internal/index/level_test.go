@@ -10,10 +10,10 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-func mustCreateNewLevelFromSlice(data interface{}) Level {
-	lvl, err := NewLevelFromSlice(data, "")
+func mustCreateNewLevel(data interface{}) Level {
+	lvl, err := NewLevel(data, "")
 	if err != nil {
-		log.Fatalf("mustCreateNewLevelFromSlice returned an error: %v", err)
+		log.Fatalf("mustCreateNewLevel returned an error: %v", err)
 	}
 	return lvl
 }
@@ -28,49 +28,49 @@ func TestLevel(t *testing.T) {
 	}{
 		{
 			data:       []float64{0, 1, 2},
-			wantLabels: mustCreateNewLevelFromSlice([]float64{0, 1, 2}).Labels,
+			wantLabels: mustCreateNewLevel([]float64{0, 1, 2}).Labels,
 			wantKind:   kinds.Float,
 			wantName:   "test",
 		},
 		{
 			data:       []int{0, 1, 2},
-			wantLabels: mustCreateNewLevelFromSlice([]int64{0, 1, 2}).Labels,
+			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
 			wantKind:   kinds.Int,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
-			wantLabels: mustCreateNewLevelFromSlice([]int64{0, 1, 2}).Labels,
+			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
 			wantKind:   kinds.Int,
 			wantName:   "test",
 		},
 		{
 			data:       []string{"0", "1", "2"},
-			wantLabels: mustCreateNewLevelFromSlice([]string{"0", "1", "2"}).Labels,
+			wantLabels: mustCreateNewLevel([]string{"0", "1", "2"}).Labels,
 			wantKind:   kinds.String,
 			wantName:   "test",
 		},
 		{
 			data:       []bool{true, true, false},
-			wantLabels: mustCreateNewLevelFromSlice([]bool{true, true, false}).Labels,
+			wantLabels: mustCreateNewLevel([]bool{true, true, false}).Labels,
 			wantKind:   kinds.Bool,
 			wantName:   "test",
 		},
 		{
 			data:       []time.Time{testDate},
-			wantLabels: mustCreateNewLevelFromSlice([]time.Time{testDate}).Labels,
+			wantLabels: mustCreateNewLevel([]time.Time{testDate}).Labels,
 			wantKind:   kinds.DateTime,
 			wantName:   "test",
 		},
 		{
 			data:       []interface{}{1.5, 1, "", false, testDate},
-			wantLabels: mustCreateNewLevelFromSlice([]interface{}{1.5, 1, "", false, testDate}).Labels,
+			wantLabels: mustCreateNewLevel([]interface{}{1.5, 1, "", false, testDate}).Labels,
 			wantKind:   kinds.Interface,
 			wantName:   "test",
 		},
 	}
 	for _, test := range tests {
-		lvl, err := NewLevelFromSlice(test.data, "test")
+		lvl, err := NewLevel(test.data, "test")
 		if err != nil {
 			t.Errorf("Unable to construct level from %v: %v", test.data, err)
 		}
@@ -88,7 +88,7 @@ func TestLevel(t *testing.T) {
 
 func TestLevel_Unsupported(t *testing.T) {
 	data := []complex64{1, 2, 3}
-	_, err := NewLevelFromSlice(data, "")
+	_, err := NewLevel(data, "")
 	if err == nil {
 		t.Errorf("Returned nil error, expected error due to unsupported type %T", data)
 	}

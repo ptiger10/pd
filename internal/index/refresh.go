@@ -6,8 +6,9 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
-// UpdateLabelMap updates a single level's map of {label values: [label positions]}
-func (lvl *Level) UpdateLabelMap() {
+// updateLabelMap updates a single level's map of {label values: [label positions]}.
+// A level's label map is agnostic of the actual values in those positions.
+func (lvl *Level) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Labels.Len())
 	for i, val := range lvl.Labels.All() {
 		key := fmt.Sprint(val)
@@ -25,9 +26,9 @@ func (idx *Index) UpdateNameMap() {
 	idx.NameMap = nameMap
 }
 
-// UpdateLongest finds the max length of either the level name or the longest string in the LabelMap,
+// updateLongest finds the max length of either the level name or the longest string in the LabelMap,
 // for use in printing a Series or DataFrame
-func (lvl *Level) UpdateLongest() {
+func (lvl *Level) updateLongest() {
 	var max int
 	for k := range lvl.LabelMap {
 		if len(k) > max {
@@ -43,7 +44,7 @@ func (lvl *Level) UpdateLongest() {
 	lvl.Longest = max
 }
 
-// Refresh updates all the label mappings and metadata within the index.
+// Refresh updates the global name map and the label mappings and longest value at every level.
 // Should be called after Series selection or index modification
 func (idx *Index) Refresh() {
 	idx.UpdateNameMap()
@@ -52,8 +53,8 @@ func (idx *Index) Refresh() {
 	}
 }
 
-// Refresh updates all the label mappings and metadata within a level.
+// Refresh updates all the label mappings and longest value within a level.
 func (lvl *Level) Refresh() {
-	lvl.UpdateLabelMap()
-	lvl.UpdateLongest()
+	lvl.updateLabelMap()
+	lvl.updateLongest()
 }

@@ -2,21 +2,42 @@ package index
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
 )
 
-// NewLevelFromSlice creates an Index Level from a Slice interface{}
-// data MUST be reflect.Kind = Slice
-func NewLevelFromSlice(data interface{}, name string) (Level, error) {
-	vf, err := values.SliceFactory(data)
-	if err != nil {
-		return Level{}, fmt.Errorf("unable to create level from Slice: data type not supported: %T", data)
-	}
-	return newLevel(vf.V, vf.Kind, name), nil
+// NewLevel creates an Index Level from a Scalar or Slice interface{}
+func NewLevel(data interface{}, name string) (Level, error) {
+	var vf values.Factory
+	var err error
 
+	switch reflect.ValueOf(data).Kind() {
+	case reflect.Slice:
+		vf, err = values.SliceFactory(data)
+		if err != nil {
+			return Level{}, fmt.Errorf("unable to create level from Slice: %v", data)
+		}
+	default:
+		vf, err = values.ScalarFactory(data)
+		if err != nil {
+			return Level{}, fmt.Errorf("unable to create level from Scalar: %v", data)
+		}
+	}
+	return newLevel(vf.Values, vf.Kind, name), nil
 }
+
+// NewLevel creates an Index Level from a Slice interface{};
+// data must be reflect.Kind = Slice.
+// func NewLevel(data interface{}, name string) (Level, error) {
+// 	vf, err := values.SliceFactory(data)
+// 	if err != nil {
+// 		return Level{}, fmt.Errorf("unable to create level from Slice: data type not supported: %T", data)
+// 	}
+// 	return newLevel(vf.Values, vf.Kind, name), nil
+
+// }
 
 // newLevel returns an Index level with updated label map and longest value computed.
 // NB: Create labels using the values.constructors factory methods

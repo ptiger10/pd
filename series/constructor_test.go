@@ -110,7 +110,7 @@ func TestMini_single(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lvl, err := index.NewLevelFromSlice([]int64{1, 2, 3}, "test")
+	lvl, err := index.NewLevel([]int64{1, 2, 3}, "test")
 	want := index.New(lvl)
 	if err != nil {
 		t.Error(err)

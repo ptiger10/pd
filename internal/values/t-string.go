@@ -11,7 +11,7 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
-// [START Convenience Functions]
+// [START Constructor Functions]
 
 func isNullString(s string) bool {
 	nullStrings := opt.GetStringNullValues()
@@ -23,86 +23,63 @@ func isNullString(s string) bool {
 	return false
 }
 
-// [END Convenience Functions]
-
-// [START Constructor Functions]
-
-// SliceString converts []string -> Factory with stringValues
-func SliceString(vals []string) Factory {
-	var v stringValues
-	for _, val := range vals {
-		if isNullString(val) {
-			v = append(v, stringVal(opt.GetDisplayStringNullFiller(), true))
-		} else {
-			v = append(v, stringVal(val, false))
-		}
-
+// newString creates an stringValue from atomic string value
+func newString(val string) stringValue {
+	if isNullString(val) {
+		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
-	return Factory{v, kinds.String}
+	return stringValue{val, false}
+}
+
+// newSliceString converts []string -> Factory with stringValues
+func newSliceString(vals []string) Factory {
+	var ret stringValues
+	for _, val := range vals {
+		ret = append(ret, newString(val))
+	}
+	return Factory{ret, kinds.String}
 }
 
 // [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat converts stringValues to float64Values
+// toFloat converts stringValue to float64Value
 //
 // "1": 1.0, Null: NaN
-func (vals stringValues) ToFloat() Values {
-	var ret float64Values
-	for _, val := range vals {
-		ret = append(ret, stringToFloat(val.v))
+func (val stringValue) toFloat64() float64Value {
+	f, err := strconv.ParseFloat(val.v, 64)
+	if math.IsNaN(f) || err != nil {
+		return float64Value{math.NaN(), true}
 	}
-	return ret
+	return float64Value{f, false}
 }
 
-func stringToFloat(s string) float64Value {
-	v, err := strconv.ParseFloat(s, 64)
-	if math.IsNaN(v) || err != nil {
-		return float64Val(math.NaN(), true)
-	}
-	return float64Val(v, false)
-}
-
-// ToInt converts stringValues to int64Values
+// toInt converts stringValue to int64Value
 //
 // "1": 1, null: NaN
-func (vals stringValues) ToInt() Values {
-	var ret int64Values
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, int64Val(0, true))
-		} else {
-			ret = append(ret, stringToInt(val.v))
-		}
+func (val stringValue) toInt64() int64Value {
+	if val.null {
+		return int64Value{0, true}
 	}
-	return ret
-}
-
-func stringToInt(s string) int64Value {
-	v, err := strconv.ParseFloat(s, 64)
+	f, err := strconv.ParseFloat(val.v, 64)
 	if err != nil {
-		return int64Val(0, true)
+		return int64Value{0, true}
 	}
-	return int64Val(int64(v), false)
+	return int64Value{int64(f), false}
 }
 
-// ToBool converts stringValues to boolValues
+// toBool converts stringValue to boolValue
 //
 // null: false; notnull: true
-func (vals stringValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, boolVal(false, true))
-		} else {
-			ret = append(ret, boolVal(true, false))
-		}
+func (val stringValue) toBool() boolValue {
+	if val.null {
+		return boolValue{false, true}
 	}
-	return ret
+	return boolValue{true, false}
 }
 
-// ToDateTime converts stringValues to dateTimeValues using an external parse library
+// toDateTime converts stringValue to dateTimeValue using an external parse library
 //
 // Jan 1 2019: 2019-01-01 00:00:00
 //
@@ -207,25 +184,15 @@ func (vals stringValues) ToBool() Values {
    	"1384216367111222333",
    }
 */
-func (vals stringValues) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, dateTimeVal(time.Time{}, true))
-		} else {
-			v := stringToDateTime(val.v)
-			ret = append(ret, v)
-		}
+func (val stringValue) toDateTime() dateTimeValue {
+	if val.null {
+		return dateTimeValue{time.Time{}, true}
 	}
-	return ret
-}
-
-func stringToDateTime(s string) dateTimeValue {
-	val, err := dateparse.ParseAny(s)
+	t, err := dateparse.ParseAny(val.v)
 	if err != nil {
-		return dateTimeVal(time.Time{}, true)
+		return dateTimeValue{time.Time{}, true}
 	}
-	return dateTimeVal(val, false)
+	return dateTimeValue{t, false}
 }
 
 // [END Converters]

@@ -35,12 +35,12 @@ func (s Series) Describe() {
 	switch s.kind {
 	case kinds.Float, kinds.Int:
 		precision := opt.GetDisplayFloatPrecision()
-		mean := fmt.Sprintf("%.*f", precision, s.Mean())
-		min := fmt.Sprintf("%.*f", precision, s.Min())
-		q1 := fmt.Sprintf("%.*f", precision, s.Quartile(1))
-		q2 := fmt.Sprintf("%.*f", precision, s.Quartile(2))
-		q3 := fmt.Sprintf("%.*f", precision, s.Quartile(3))
-		max := fmt.Sprintf("%.*f", precision, s.Max())
+		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
+		min := fmt.Sprintf("%.*f", precision, s.Math.Min())
+		q1 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(1))
+		q2 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(2))
+		q3 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(3))
+		max := fmt.Sprintf("%.*f", precision, s.Math.Max())
 
 		values := []string{length, valid, null, mean, min, q1, q2, q3, max}
 		idx := Index([]string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"})
@@ -53,8 +53,8 @@ func (s Series) Describe() {
 		s, err = New(values, idx, opt.Name("description"))
 	case kinds.Bool:
 		precision := opt.GetDisplayFloatPrecision()
-		sum := fmt.Sprintf("%.*f", precision, s.Sum())
-		mean := fmt.Sprintf("%.*f", precision, s.Mean())
+		sum := fmt.Sprintf("%.*f", precision, s.Math.Sum())
+		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		values := []string{length, valid, null, sum, mean}
 		idx := Index([]string{"len", "valid", "null", "sum", "mean"})
 		s, err = New(values, idx, opt.Name("description"))

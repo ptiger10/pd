@@ -31,15 +31,15 @@ func Name(n string) ConstructorOption {
 // A SelectionOption is an optional parameter in a Series selector.
 type SelectionOption func(*config.SelectionConfig)
 
-// ByIndexLevels selects one or more index levels by their integer positions
-func ByIndexLevels(positions []int) SelectionOption {
+// ByLevels selects one or more index levels by their integer positions
+func ByLevels(positions []int) SelectionOption {
 	return func(c *config.SelectionConfig) {
 		c.LevelPositions = positions
 	}
 }
 
-// ByIndexNames selects one or more index levels by their names
-func ByIndexNames(names []string) SelectionOption {
+// ByLevelNames selects one or more index levels by their names
+func ByLevelNames(names []string) SelectionOption {
 	return func(c *config.SelectionConfig) {
 		c.LevelNames = names
 	}

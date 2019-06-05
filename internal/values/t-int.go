@@ -9,79 +9,70 @@ import (
 
 // [START Constructor Functions]
 
-// SliceInt converts []int (of any variety) -> Factory with int64Values
-func SliceInt(vals []int64) Factory {
-	var v int64Values
+// newInt creates an int64Value from atomic int64 value
+func newInt(val int64) int64Value {
+	return int64Value{val, false}
+}
+
+// NewSliceInt converts []int -> Factory with int64Values
+// Exported for use in internal index package
+func NewSliceInt(vals []int64) Factory {
+	var ret int64Values
 	for _, val := range vals {
-		v = append(v, int64Val(val, false))
+		ret = append(ret, newInt(val))
 	}
-	return Factory{v, kinds.Int}
+	return Factory{ret, kinds.Int}
 }
 
 // [END Constructor Functions]
 
 // [START Converters]
 
-// ToFloat converts int64Values to float64Values
+// toFloat converts int64Value to float64Value
 //
 // 1: 1.0
-func (vals int64Values) ToFloat() Values {
-	var ret float64Values
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, float64Val(math.NaN(), true))
-		} else {
-			v := float64(val.v)
-			ret = append(ret, float64Val(v, false))
-		}
+func (val int64Value) toFloat64() float64Value {
+	if val.null {
+		return float64Value{math.NaN(), true}
 	}
-	return ret
+	v := float64(val.v)
+	return float64Value{v, false}
+
 }
 
-// ToInt returns itself
-func (vals int64Values) ToInt() Values {
-	return vals
+// toInt returns itself
+func (val int64Value) toInt64() int64Value {
+	return val
 }
 
-// ToBool converts int64Values to boolValues
+// toBool converts int64Value to boolValue
 //
 // x != 0: true; x == 0: false; null: false
-func (vals int64Values) ToBool() Values {
-	var ret boolValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, boolVal(false, true))
-		} else {
-			if val.v == 0 {
-				ret = append(ret, boolVal(false, false))
-			} else {
-				ret = append(ret, boolVal(true, false))
-			}
-		}
+func (val int64Value) toBool() boolValue {
+	if val.null {
+		return boolValue{false, true}
 	}
-	return ret
+	if val.v == 0 {
+		return boolValue{false, false}
+	}
+	return boolValue{true, false}
 }
 
-// ToDateTime converts int64Values to dateTimeValues.
+// toDateTime converts int64Value to dateTimeValue.
 // Tries to convert from Unix EPOCH timestamp.
 // Defaults to 1970-01-01 00:00:00 +0000 UTC.
-func (vals int64Values) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range vals {
-		if val.null {
-			ret = append(ret, dateTimeVal(time.Time{}, true))
-		} else {
-			ret = append(ret, intToDateTime(val.v))
-		}
+func (val int64Value) toDateTime() dateTimeValue {
+	if val.null {
+		return dateTimeValue{time.Time{}, true}
 	}
-	return ret
+	return intToDateTime(val.v)
 }
 
 func intToDateTime(i int64) dateTimeValue {
 	// convert from nanoseconds to seconds
 	i /= 1000000000
 	v := time.Unix(i, 0).UTC()
-	return dateTimeVal(v, false)
+	return dateTimeValue{v, false}
 }
 
 // [END Converters]

@@ -11,6 +11,8 @@ import (
 )
 
 // [START utility methods]
+// returns an error if any index levels have different lengths
+// or if there is a mismatch between the number of values and index items
 func (s Series) ensureAlignment() bool {
 	if s.index.Aligned() && s.values.Len() == s.index.Len() {
 		return true
@@ -18,6 +20,7 @@ func (s Series) ensureAlignment() bool {
 	return false
 }
 
+// returns an error if any row position does not exist
 func (s Series) ensureRowPositions(positions []int) error {
 	_, err := s.values.In(positions)
 	if err != nil {
@@ -26,6 +29,7 @@ func (s Series) ensureRowPositions(positions []int) error {
 	return nil
 }
 
+// returns an error if any level position does not exist
 func (s Series) ensureLevelPositions(positions []int) error {
 	_, err := s.index.In(positions)
 	if err != nil {
@@ -107,7 +111,8 @@ func (sel Selection) String() string {
 
 // Unpack the supplied options and try to categorize the caller's intention.
 func (s Series) unpack(cfg config.SelectionConfig) Selection {
-	var sel = Selection{s: s}
+	var sel = Selection{s: s.copy()}
+	// [START check input for errors]
 	noSelection := (cfg.LevelPositions == nil && cfg.LevelNames == nil && cfg.RowPositions == nil && cfg.RowLabels == nil)
 	multipleLevelIdentifiers := (cfg.LevelPositions != nil && cfg.LevelNames != nil)
 	multipleRowIdentifiers := (cfg.RowPositions != nil && cfg.RowLabels != nil)
@@ -140,7 +145,9 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		sel.err = err
 		return sel
 	}
+	// [END check input for errors]
 
+	// Handling ByLevels
 	if cfg.LevelPositions != nil {
 		err := s.ensureLevelPositions(cfg.LevelPositions)
 		if err != nil {
@@ -152,6 +159,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 		sel.levelPositions = cfg.LevelPositions
 	} else {
+		// Handling ByLevelNames
 		for _, name := range cfg.LevelNames {
 			val, ok := s.index.NameMap[name]
 			if !ok {
@@ -165,7 +173,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 			sel.levelPositions = append(sel.levelPositions, val...)
 		}
 	}
-
+	// Handling ByRows
 	if cfg.RowPositions != nil {
 		err := s.ensureRowPositions(cfg.RowPositions)
 		if err != nil {
@@ -177,6 +185,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 		sel.rowPositions = cfg.RowPositions
 	} else {
+		// Handling ByLabels
 		var lvl int
 		// no index level provided; defaults to first level
 		if rowsOnly {
@@ -209,6 +218,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 		}
 	}
 
+	// Infer category and swappable
 	if levelsOnly {
 		sel.category = catLevelsOnly
 		if len(sel.levelPositions) == 2 {
@@ -226,7 +236,7 @@ func (s Series) unpack(cfg config.SelectionConfig) Selection {
 	}
 
 	if !noSelection && !levelsOnly && !rowsOnly && !crossSection {
-		sel.category = "unknown"
+		sel.category = "Unknown"
 		return sel
 	}
 
@@ -262,33 +272,84 @@ func (s Series) Select(options ...opt.SelectionOption) Selection {
 	return sel
 }
 
-// Get returns the Series underpinning this Selection
+// Get returns the Series specified in this Selection.
+//
+// Always returns a new Series.
 func (sel Selection) Get() (Series, error) {
 	if sel.err != nil {
 		return sel.s, sel.err
 	}
-	return sel.get(), nil
+	return sel.get()
 }
 
-// Create a new Series based on the Selection.
-// Ducks .In() errors because those are checked by the unpacker on calls to s.Select().
-func (sel Selection) get() Series {
-	s := sel.s.copy()
+// returns the rows or index levels specified in the Selection and
+// ducks .In() errors because those are checked by the unpacker on calls to s.Select().
+func (sel Selection) get() (Series, error) {
 	switch sel.category {
-	case "all":
-		return s
-	case "levelsOnly":
-		s.index, _ = s.index.In(sel.levelPositions)
-	case "rowsOnly":
-		s, _ = s.in(sel.rowPositions)
-	case "xs":
-		s.index, _ = s.index.In(sel.levelPositions)
-		s, _ = s.in(sel.rowPositions)
+	case "Select All":
+		return sel.s, nil
+	case "Select Levels":
+		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
+		return sel.s, nil
+	case "Select Rows":
+		sel.s, _ = sel.s.in(sel.rowPositions)
+		return sel.s, nil
+	case "Select Cross-Section":
+		sel.s, _ = sel.s.in(sel.rowPositions)
+		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
+		return sel.s, nil
 	default:
-		values.Warn(fmt.Errorf("unable to categorize intention of caller"), "original Series")
-		return s
+		return sel.s, fmt.Errorf("unable to categorize intention of caller")
 	}
-	return s
+}
+
+// Swap swaps the selected rows or index levels. If Selection is not swappable, returns error.
+//
+// Always returns a new Series.
+func (sel Selection) Swap() (Series, error) {
+	if !sel.swappable {
+		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two of either rows or levels")
+	}
+	s := sel.s
+	switch sel.category {
+	case "Select Levels":
+		lvl := s.index.Levels
+		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
+		s.index.UpdateNameMap()
+		return s, nil
+	case "Select Rows":
+		r1 := sel.rowPositions[0]
+		r2 := sel.rowPositions[1]
+
+		for i := 0; i < len(s.index.Levels); i++ {
+			r1v := s.index.Levels[i].Labels.Element(r1).Value
+			r2v := s.index.Levels[i].Labels.Element(r2).Value
+			s.index.Levels[i].Labels.Set(r1, r2v)
+			s.index.Levels[i].Labels.Set(r2, r1v)
+			s.index.Levels[i].Refresh()
+		}
+		r1v := s.values.Element(r1).Value
+		r2v := s.values.Element(r2).Value
+		s.values.Set(r1, r2v)
+		s.values.Set(r2, r1v)
+		return s, nil
+	default:
+		return sel.s, fmt.Errorf("")
+	}
+}
+
+// Set sets all the value in a Selection to val
+func (sel Selection) Set(val interface{}) (Series, error) {
+	switch sel.category {
+	case "Select Rows":
+		for _, row := range sel.rowPositions {
+			err := sel.s.values.Set(row, val)
+			if err != nil {
+				return Series{}, fmt.Errorf("Selection.Set(): %v", err)
+			}
+		}
+	}
+	return sel.s, nil
 }
 
 // [END Selection]

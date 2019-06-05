@@ -12,7 +12,7 @@ import (
 )
 
 // Index returns a opt.ConstructorOption for use in the Series constructor New(),
-// and takes an optioanl Name.
+// and takes an optional Name.
 func Index(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOption {
 	cfg := config.ConstructorConfig{}
 	for _, option := range options {
@@ -61,6 +61,14 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Values
 	switch reflect.ValueOf(data).Kind() {
+	case reflect.Float32, reflect.Float64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.String,
+		reflect.Bool,
+		reflect.Struct:
+		factory, err = values.ScalarFactory(data)
+
 	case reflect.Slice:
 		factory, err = values.SliceFactory(data)
 
@@ -69,7 +77,7 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	}
 
 	// Sets values and kind based on the Values switch
-	v = factory.V
+	v = factory.Values
 	kind = factory.Kind
 	if err != nil {
 		return Series{}, fmt.Errorf("unable to construct new Series: unable to construct values: %v", err)
@@ -98,6 +106,7 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Construct Series
 	s := new(idx, v, kind, name)
+	s.Math = Math{s: &s}
 	return s, err
 }
 
@@ -118,10 +127,7 @@ func new(idx index.Index, values values.Values, kind kinds.Kind, name string) Se
 func indexFromMiniIndex(minis []config.MiniIndex, requiredLen int) (index.Index, error) {
 	var levels []index.Level
 	for _, miniIdx := range minis {
-		if reflect.ValueOf(miniIdx.Data).Kind() != reflect.Slice {
-			return index.Index{}, fmt.Errorf("unable to construct index: custom index must be a Slice: unsupported index type: %T", miniIdx.Data)
-		}
-		level, err := index.NewLevelFromSlice(miniIdx.Data, miniIdx.Name)
+		level, err := index.NewLevel(miniIdx.Data, miniIdx.Name)
 		if err != nil {
 			return index.Index{}, fmt.Errorf("unable to construct index: %v", err)
 		}

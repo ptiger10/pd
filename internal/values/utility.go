@@ -19,7 +19,7 @@ func Warn(err error, returnDesc string) {
 	return
 }
 
-// MakeRange returns a sequential series of numbers, for use in default constructors
+// MakeRange returns a sequential series of numbers, for use in the default Series index constructor
 func MakeRange(min, max int) []int64 {
 	a := make([]int64, max-min)
 	for i := range a {
@@ -28,7 +28,7 @@ func MakeRange(min, max int) []int64 {
 	return a
 }
 
-// MakeIntRange returns a sequential series of numbers, for use in position trackers
+// MakeIntRange returns a sequential series of numbers, for use in creating a list of integer positions
 func MakeIntRange(min, max int) []int {
 	a := make([]int, max-min)
 	for i := range a {
