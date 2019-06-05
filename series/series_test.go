@@ -1,6 +1,7 @@
 package series
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -8,6 +9,41 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
+func TestElement(t *testing.T) {
+	s, err := New([]string{"", "valid"}, Index([]string{"A", "B"}), Index([]int{1, 2}))
+	if err != nil {
+		t.Error(err)
+	}
+	var tests = []struct {
+		position int
+		wantVal  interface{}
+		wantNull bool
+		wantIdx  []interface{}
+	}{
+		{0, "NaN", true, []interface{}{"A", int64(1)}},
+		{1, "valid", false, []interface{}{"B", int64(2)}},
+	}
+	wantKind := kinds.String
+	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int}
+	for _, test := range tests {
+		got := s.Elem(test.position)
+		if got.Value != test.wantVal {
+			t.Errorf("Element returned value %v, want %v", got.Value, test.wantVal)
+		}
+		if got.Null != test.wantNull {
+			t.Errorf("Element returned bool %v, want %v", got.Null, test.wantNull)
+		}
+		if !reflect.DeepEqual(got.Index, test.wantIdx) {
+			t.Errorf("Element returned index %#v, want %#v", got.Index, test.wantIdx)
+		}
+		if got.Kind != wantKind {
+			t.Errorf("Element returned kind %v, want %v", got.Kind, wantKind)
+		}
+		if !reflect.DeepEqual(got.IndexKinds, wantIdxKinds) {
+			t.Errorf("Element returned kind %v, want %v", got.IndexKinds, wantIdxKinds)
+		}
+	}
+}
 func TestKind(t *testing.T) {
 	var tests = []struct {
 		kind     kinds.Kind
@@ -44,8 +80,17 @@ func Test_Copy(t *testing.T) {
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"
 	copyS.kind = kinds.Bool
-	if !reflect.DeepEqual(s, origS) {
-		t.Errorf("s.copy() returned original, want fresh copy")
+	MathPtr := fmt.Sprintf("%p", copyS.Math.s)
+	ToPtr := fmt.Sprintf("%p", copyS.To.s)
+	IndexToPtr := fmt.Sprintf("%p", copyS.IndexTo.s)
+	if !seriesEquals(s, origS) || seriesEquals(s, copyS) || fmt.Sprintf("%p", &s) == MathPtr {
+		t.Errorf("s.copy() retained references to original, want fresh copy")
+	}
+	if copyS.Math.s == nil || copyS.To.s == nil || copyS.IndexTo.s == nil {
+		t.Errorf("s.copy() did not instantiate new pointers for embedded structs")
+	}
+	if MathPtr != ToPtr || MathPtr != IndexToPtr {
+		t.Errorf("s.copy() did not instantiate pointers for embedded structs correctly")
 	}
 }
 

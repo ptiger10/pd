@@ -107,6 +107,8 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	// Construct Series
 	s := new(idx, v, kind, name)
 	s.Math = Math{s: &s}
+	s.To = To{s: &s}
+	s.IndexTo = IndexTo{s: &s}
 	return s, err
 }
 
