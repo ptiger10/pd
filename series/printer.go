@@ -46,7 +46,7 @@ func (s Series) print() string {
 	// [START rows]
 	prior := make(map[int]string)
 	for i := 0; i < s.Len(); i++ {
-		elem := s.Elem(i)
+		elem := s.Element(i)
 		var newLine string
 
 		// [START index printer]
@@ -54,7 +54,7 @@ func (s Series) print() string {
 			var skip bool
 			var buffer string
 			padding := s.index.Levels[j].Longest
-			idx := fmt.Sprint(elem.Index[j])
+			idx := fmt.Sprint(elem.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
 				buffer = strings.Repeat(" ", opt.GetDisplayIndexWhitespaceBuffer())
@@ -78,6 +78,7 @@ func (s Series) print() string {
 				prior[j] = idx
 			}
 		}
+
 		// [END index printer]
 
 		// [START value printer]

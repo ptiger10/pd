@@ -17,107 +17,111 @@ func TestMain(m *testing.M) {
 func TestAt_singleIndex(t *testing.T) {
 	var tests = []struct {
 		input int
-		want  Series
+		want  interface{}
 	}{
-		{0, mustNew([]string{"hot"}, Index([]int{10}))},
-		{1, mustNew([]string{"dog"}, Index([]int{100}))},
-		{2, mustNew([]string{"log"}, Index([]int{1000}))},
+		{0, "hot"},
+		{1, "dog"},
+		{2, "log"},
 	}
+	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
 	for _, test := range tests {
-		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-		got := s.At(test.input)
-		if !seriesEquals(got, test.want) {
+		got, err := s.At(test.input)
+		if err != nil {
+			t.Errorf("Returned %v want nil", err)
+		}
+		if got != test.want {
 			t.Errorf("Returned Series %v, want %v", got, test.want)
 		}
-	}
-}
-func TestAt_singleIndex_multipleCalls(t *testing.T) {
-	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-	_ = s.At(0)
-	want := mustNew([]string{"dog"}, Index([]int{100}))
-	got := s.At(1)
-	if !seriesEquals(got, want) {
-		t.Errorf("Returned Series %v, want %v", got, want)
 	}
 }
 
-func TestAtLabel_singleindex(t *testing.T) {
-	var tests = []struct {
-		input string
-		want  Series
-	}{
-		{"10", mustNew([]string{"hot"}, Index([]int{10}))},
-		{"100", mustNew([]string{"dog"}, Index([]int{100}))},
-		{"1000", mustNew([]string{"log"}, Index([]int{1000}))},
-	}
-	for _, test := range tests {
-		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-		got := s.AtLabel(test.input)
-		if !seriesEquals(got, test.want) {
-			t.Errorf("Returned Series %v, want %v", got, test.want)
-		}
-	}
-}
+// func TestAt_singleIndex_multipleCalls(t *testing.T) {
+// 	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+// 	_ = s.At(0)
+// 	want := mustNew([]string{"dog"}, Index([]int{100}))
+// 	got := s.At(1)
+// 	if !seriesEquals(got, want) {
+// 		t.Errorf("Returned Series %v, want %v", got, want)
+// 	}
+// }
+
+// func TestAtLabel_singleindex(t *testing.T) {
+// 	var tests = []struct {
+// 		input string
+// 		want  Series
+// 	}{
+// 		{"10", mustNew([]string{"hot"}, Index([]int{10}))},
+// 		{"100", mustNew([]string{"dog"}, Index([]int{100}))},
+// 		{"1000", mustNew([]string{"log"}, Index([]int{1000}))},
+// 	}
+// 	for _, test := range tests {
+// 		s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+// 		got := s.AtLabel(test.input)
+// 		if !seriesEquals(got, test.want) {
+// 			t.Errorf("Returned Series %v, want %v", got, test.want)
+// 		}
+// 	}
+// }
 
 func TestAt_fail(t *testing.T) {
 	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-	got := s.At(3)
-	if !seriesEquals(got, s) {
-		t.Errorf("Returned %v, want original series", got)
+	_, err := s.At(3)
+	if err == nil {
+		t.Error("Returned nil err, want out-of-range fail", err)
 	}
 }
 
-func TestAtLabel_fail(t *testing.T) {
-	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
-	got := s.AtLabel("NotPresent")
-	if !seriesEquals(got, s) {
-		t.Errorf("Returned %v, want original series", got)
-	}
-}
+// func TestAtLabel_fail(t *testing.T) {
+// 	s, _ := New([]string{"hot", "dog", "log"}, Index([]int{10, 100, 1000}))
+// 	got := s.AtLabel("NotPresent")
+// 	if !seriesEquals(got, s) {
+// 		t.Errorf("Returned %v, want original series", got)
+// 	}
+// }
 
-func TestAt_multiIndex(t *testing.T) {
-	var tests = []struct {
-		input int
-		want  Series
-	}{
-		{0, mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
-		{1, mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
-		{2, mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
-	}
-	for _, test := range tests {
-		s, _ := New(
-			[]string{"hot", "dog", "log"},
-			Index([]int{10, 100, 1000}),
-			Index([]string{"A", "B", "C"}),
-		)
-		got := s.At(test.input)
-		if !seriesEquals(got, test.want) {
-			t.Errorf("Returned Series %v, want %v", got, test.want)
-		}
-	}
-}
+// func TestAt_multiIndex(t *testing.T) {
+// 	var tests = []struct {
+// 		input int
+// 		want  Series
+// 	}{
+// 		{0, mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
+// 		{1, mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
+// 		{2, mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
+// 	}
+// 	for _, test := range tests {
+// 		s, _ := New(
+// 			[]string{"hot", "dog", "log"},
+// 			Index([]int{10, 100, 1000}),
+// 			Index([]string{"A", "B", "C"}),
+// 		)
+// 		got := s.At(test.input)
+// 		if !seriesEquals(got, test.want) {
+// 			t.Errorf("Returned Series %v, want %v", got, test.want)
+// 		}
+// 	}
+// }
 
-func TestAtLabel_multiIndex(t *testing.T) {
-	var tests = []struct {
-		input string
-		want  Series
-	}{
-		{"10", mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
-		{"100", mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
-		{"1000", mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
-	}
-	for _, test := range tests {
-		s, _ := New(
-			[]string{"hot", "dog", "log"},
-			Index([]int{10, 100, 1000}),
-			Index([]string{"A", "B", "C"}),
-		)
-		got := s.AtLabel(test.input)
-		if !seriesEquals(got, test.want) {
-			t.Errorf("Returned Series %v, want %v", got, test.want)
-		}
-	}
-}
+// func TestAtLabel_multiIndex(t *testing.T) {
+// 	var tests = []struct {
+// 		input string
+// 		want  Series
+// 	}{
+// 		{"10", mustNew([]string{"hot"}, Index([]int{10}), Index([]string{"A"}))},
+// 		{"100", mustNew([]string{"dog"}, Index([]int{100}), Index([]string{"B"}))},
+// 		{"1000", mustNew([]string{"log"}, Index([]int{1000}), Index([]string{"C"}))},
+// 	}
+// 	for _, test := range tests {
+// 		s, _ := New(
+// 			[]string{"hot", "dog", "log"},
+// 			Index([]int{10, 100, 1000}),
+// 			Index([]string{"A", "B", "C"}),
+// 		)
+// 		got := s.AtLabel(test.input)
+// 		if !seriesEquals(got, test.want) {
+// 			t.Errorf("Returned Series %v, want %v", got, test.want)
+// 		}
+// 	}
+// }
 
 func TestSelect_Failures(t *testing.T) {
 	var tests = []struct {
@@ -296,7 +300,7 @@ func TestSelect_Set(t *testing.T) {
 	if !seriesEquals(origS, s) {
 		t.Errorf("selection.Set() modifying Series in place instead of returning new")
 	}
-	if newS.Elem(0).Value != int64(5) || newS.Elem(1).Value != int64(5) || newS.Elem(2).Value != int64(5) {
+	if newS.Element(0).Value != int64(5) || newS.Element(1).Value != int64(5) || newS.Element(2).Value != int64(5) {
 		t.Errorf("selection.Set() did not set all values")
 	}
 }

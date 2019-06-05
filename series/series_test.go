@@ -26,21 +26,21 @@ func TestElement(t *testing.T) {
 	wantKind := kinds.String
 	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int}
 	for _, test := range tests {
-		got := s.Elem(test.position)
+		got := s.Element(test.position)
 		if got.Value != test.wantVal {
 			t.Errorf("Element returned value %v, want %v", got.Value, test.wantVal)
 		}
 		if got.Null != test.wantNull {
 			t.Errorf("Element returned bool %v, want %v", got.Null, test.wantNull)
 		}
-		if !reflect.DeepEqual(got.Index, test.wantIdx) {
-			t.Errorf("Element returned index %#v, want %#v", got.Index, test.wantIdx)
+		if !reflect.DeepEqual(got.Labels, test.wantIdx) {
+			t.Errorf("Element returned index %#v, want %#v", got.Labels, test.wantIdx)
 		}
 		if got.Kind != wantKind {
 			t.Errorf("Element returned kind %v, want %v", got.Kind, wantKind)
 		}
-		if !reflect.DeepEqual(got.IndexKinds, wantIdxKinds) {
-			t.Errorf("Element returned kind %v, want %v", got.IndexKinds, wantIdxKinds)
+		if !reflect.DeepEqual(got.LabelKinds, wantIdxKinds) {
+			t.Errorf("Element returned kind %v, want %v", got.LabelKinds, wantIdxKinds)
 		}
 	}
 }

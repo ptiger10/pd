@@ -1,17 +1,19 @@
 package opt
 
 var defaultOptions = struct {
-	displayIndexMaxWidth          int
-	displayValuesWhitespaceBuffer int
-	displayIndexWhitespaceBuffer  int
-	displayFloatPrecision         int
-	displayRepeatedIndexLabels    bool
-	displayStringNullFiller       string
-	stringNullValues              []string
-	logWarnings                   bool
+	displayIndexMaxWidth           int
+	displayValuesWhitespaceBuffer  int
+	displayElementWhitespaceBuffer int
+	displayIndexWhitespaceBuffer   int
+	displayFloatPrecision          int
+	displayRepeatedIndexLabels     bool
+	displayStringNullFiller        string
+	stringNullValues               []string
+	logWarnings                    bool
 }{
 	displayIndexMaxWidth,
 	displayValuesWhitespaceBuffer,
+	displayElementWhitespaceBuffer,
 	displayIndexWhitespaceBuffer,
 	displayFloatPrecision,
 	displayRepeatedIndexLabels,
@@ -24,6 +26,7 @@ var defaultOptions = struct {
 func RestoreDefaults() {
 	SetDisplayIndexMaxWidth(defaultOptions.displayIndexMaxWidth)
 	SetDisplayValuesWhitespaceBuffer(defaultOptions.displayValuesWhitespaceBuffer)
+	SetDisplayElementWhitespaceBuffer(defaultOptions.displayElementWhitespaceBuffer)
 	SetDisplayIndexWhitespaceBuffer(defaultOptions.displayIndexWhitespaceBuffer)
 	SetDisplayFloatPrecision(defaultOptions.displayFloatPrecision)
 	SetDisplayRepeatedIndexLabels(defaultOptions.displayRepeatedIndexLabels)
@@ -34,6 +37,7 @@ func RestoreDefaults() {
 
 var displayIndexMaxWidth = 25
 var displayValuesWhitespaceBuffer = 4
+var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
 var displayFloatPrecision = 2
 var displayRepeatedIndexLabels = false
@@ -50,14 +54,12 @@ func SetDisplayIndexMaxWidth(n int) {
 }
 
 // GetDisplayIndexMaxWidth returns DisplayIndexMaxWidth.
-//
-// This is a test. This is a test. This is a test. This is a test. This is a test.
 func GetDisplayIndexMaxWidth() int {
 	return displayIndexMaxWidth
 }
 
 // SetDisplayValuesWhitespaceBuffer sets DisplayValuesWhitespaceBuffer to n spaces.
-// DisplayValuesWhitespaceBuffer is an option when printing a Series.
+// DisplayValuesWhitespaceBuffer is an option when printing a Series or DataFrame.
 // It is the number of spaces between the last level of index labels
 // and the first collection of values. In a Series, there is only one collection of values.
 // In a DataFrame, the first collection of values is the first Series.
@@ -68,6 +70,18 @@ func SetDisplayValuesWhitespaceBuffer(n int) {
 // GetDisplayValuesWhitespaceBuffer returns DisplayValuesWhitespaceBuffer.
 func GetDisplayValuesWhitespaceBuffer() int {
 	return displayValuesWhitespaceBuffer
+}
+
+// SetDisplayElementWhitespaceBuffer sets DisplayElementWhitespaceBuffer to n spaces.
+// DisplayElementWhitespaceBuffer is an option when printing an Element.
+// It is the number of spaces between the last level of index labels and the first value.
+func SetDisplayElementWhitespaceBuffer(n int) {
+	displayElementWhitespaceBuffer = n
+}
+
+// GetDisplayElementWhitespaceBuffer returns DisplayElementWhitespaceBuffer.
+func GetDisplayElementWhitespaceBuffer() int {
+	return displayElementWhitespaceBuffer
 }
 
 // SetDisplayIndexWhitespaceBuffer sets DisplayIndexWhitespaceBuffer to n spaces.

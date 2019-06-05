@@ -138,3 +138,15 @@ func ExampleSeries_string_partial_named_index() {
 // 	)
 // 	fmt.Println(s.print())
 // }
+
+func ExampleElem() {
+	s, _ := New("foo")
+	fmt.Println(s.Element(0))
+
+	// Output:
+	//      Value: foo
+	//       Null: false
+	//       Kind: string
+	//     Labels: [0]
+	// LabelKinds: [int64]
+}

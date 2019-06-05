@@ -10,76 +10,45 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
-// [START utility methods]
-// returns an error if any index levels have different lengths
-// or if there is a mismatch between the number of values and index items
-func (s Series) ensureAlignment() bool {
-	if s.index.Aligned() && s.values.Len() == s.index.Len() {
-		return true
-	}
-	return false
-}
+// [START Series methods]
 
-// returns an error if any row position does not exist
-func (s Series) ensureRowPositions(positions []int) error {
-	_, err := s.values.In(positions)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// returns an error if any level position does not exist
-func (s Series) ensureLevelPositions(positions []int) error {
-	_, err := s.index.In(positions)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// [END utility methods]
-
-// [START direct Series methods]
-
-// At returns, as a Series, the row at a single integer position. If position is out of range, logs a warning.
+// At returns the value at a single integer position, or an error if position is out of range.
 //
-// To return rows at multiple positions, use s.Select(opt.ByRows([]int{n1,n2, ...}).Get())
-func (s Series) At(pos int) Series {
+// To return rows at one or more positions, use s.Select().Get())
+func (s Series) At(pos int) (interface{}, error) {
 	sNew, err := s.in([]int{pos})
 	if err != nil {
-		values.Warn(err, "original Series")
-		return s
+		return nil, fmt.Errorf("At(): %v", err)
 	}
-	return sNew
+	return sNew.Element(0).Value, nil
 }
 
-// AtLabel returns, as a Series, all rows with the supplied stringified index label (at index level 0). If label is not present, logs a warning.
-//
-// To return rows at multiple labels, use s.Select(opt.ByLabels([]string{"a", "b", ...}).Get())
-//
-// To specify an index level other than 0 and one or more labels, use s.Select() and supply either level position or level name.
-//
-// Level position: s.Select(opt.ByIndexLevels(int{0}), opt.ByLabels([]string{"a", ...})).Get()
-//
-// Level name: s.Select(opt.ByIndexNames(string{"a"}), opt.ByLabels([]string{"a", ...})).Get()
-func (s Series) AtLabel(label string) Series {
-	positions, ok := s.index.Levels[0].LabelMap[label]
-	if !ok {
-		values.Warn(fmt.Errorf("label %q not in index (level 0)", label), "original Series")
-		return s
-	}
-	sNew, err := s.in(positions)
-	if err != nil {
-		values.Warn(err, "original Series")
-		return s
-	}
+// // AtLabel returns, as a Series, all rows with the supplied stringified index label (at index level 0). If label is not present, logs a warning.
+// //
+// // To return rows at multiple labels, use s.Select(opt.ByLabels([]string{"a", "b", ...}).Get())
+// //
+// // To specify an index level other than 0 and one or more labels, use s.Select() and supply either level position or level name.
+// //
+// // Level position: s.Select(opt.ByIndexLevels(int{0}), opt.ByLabels([]string{"a", ...})).Get()
+// //
+// // Level name: s.Select(opt.ByIndexNames(string{"a"}), opt.ByLabels([]string{"a", ...})).Get()
+// func (s Series) AtLabel(label string) Series {
+// 	positions, ok := s.index.Levels[0].LabelMap[label]
+// 	if !ok {
+// 		values.Warn(fmt.Errorf("label %q not in index (level 0)", label), "original Series")
+// 		return s
+// 	}
+// 	sNew, err := s.in(positions)
+// 	if err != nil {
+// 		values.Warn(err, "original Series")
+// 		return s
+// 	}
 
-	sNew.index.Refresh()
-	return sNew
-}
+// 	sNew.index.Refresh()
+// 	return sNew
+// }
 
-// [END direct Series methods]
+// [END Series methods]
 
 // [START Selection]
 
