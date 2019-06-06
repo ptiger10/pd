@@ -4,8 +4,6 @@ import (
 	"math"
 	"reflect"
 	"time"
-
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Convenience Functions]
@@ -36,15 +34,6 @@ func newInterface(val interface{}) interfaceValue {
 	return interfaceValue{val, false}
 }
 
-// newSliceInterface converts []interface -> Factory with interfaceValues
-func newSliceInterface(vals []interface{}) Factory {
-	var v interfaceValues
-	for _, val := range vals {
-		v = append(v, newInterface(val))
-	}
-	return Factory{v, kinds.Interface}
-}
-
 // [START Converters]
 func (val interfaceValue) toFloat64() float64Value {
 	if val.null {
@@ -53,13 +42,13 @@ func (val interfaceValue) toFloat64() float64Value {
 	switch val.v.(type) {
 	case float32, float64:
 		v := reflect.ValueOf(val.v).Float()
-		return newFloat(v)
+		return newFloat64(v)
 	case int, int8, int16, int32, int64:
 		v := reflect.ValueOf(val.v).Int()
-		return newInt(v).toFloat64()
+		return newInt64(v).toFloat64()
 	case uint, uint8, uint16, uint32, uint64:
 		v := reflect.ValueOf(val.v).Uint()
-		return newInt(int64(v)).toFloat64()
+		return newInt64(int64(v)).toFloat64()
 	case string:
 		return newString(val.v.(string)).toFloat64()
 	case bool:
@@ -77,10 +66,10 @@ func (val interfaceValue) toInt64() int64Value {
 	switch val.v.(type) {
 	case float32, float64:
 		v := reflect.ValueOf(val.v).Float()
-		return newFloat(v).toInt64()
+		return newFloat64(v).toInt64()
 	case int, int8, int16, int32, int64:
 		v := reflect.ValueOf(val.v).Int()
-		return newInt(v)
+		return newInt64(v)
 	case uint, uint8, uint16, uint32, uint64:
 		v := reflect.ValueOf(val.v).Uint()
 		return int64Value{int64(v), false}
@@ -101,13 +90,13 @@ func (val interfaceValue) toBool() boolValue {
 	switch val.v.(type) {
 	case float32, float64:
 		v := reflect.ValueOf(val.v).Float()
-		return newFloat(v).toBool()
+		return newFloat64(v).toBool()
 	case int, int8, int16, int32, int64:
 		v := reflect.ValueOf(val.v).Int()
-		return newInt(v).toBool()
+		return newInt64(v).toBool()
 	case uint, uint8, uint16, uint32, uint64:
 		v := reflect.ValueOf(val.v).Uint()
-		return newInt(int64(v)).toBool()
+		return newInt64(int64(v)).toBool()
 	case string:
 		return newString(val.v.(string)).toBool()
 	case bool:
@@ -125,13 +114,13 @@ func (val interfaceValue) toDateTime() dateTimeValue {
 	switch val.v.(type) {
 	case float32, float64:
 		v := reflect.ValueOf(val.v).Float()
-		return newFloat(v).toDateTime()
+		return newFloat64(v).toDateTime()
 	case int, int8, int16, int32, int64:
 		v := reflect.ValueOf(val.v).Int()
-		return newInt(v).toDateTime()
+		return newInt64(v).toDateTime()
 	case uint, uint8, uint16, uint32, uint64:
 		v := reflect.ValueOf(val.v).Uint()
-		return newInt(int64(v)).toDateTime()
+		return newInt64(int64(v)).toDateTime()
 	case string:
 		return newString(val.v.(string)).toDateTime()
 	case bool:

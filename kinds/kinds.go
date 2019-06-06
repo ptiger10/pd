@@ -6,12 +6,13 @@ type Kind int
 // Kind convenience options
 const (
 	None Kind = iota
-	Float
-	Int
+	Float64
+	Int64
 	String
 	Bool
 	DateTime
 	Interface
+	PlaceholdervalueType
 	Unsupported
 )
 
@@ -24,6 +25,7 @@ func (kind Kind) String() string {
 		"bool",
 		"time.Time",
 		"interface",
+		"placeholder",
 		"unsupported",
 	}
 

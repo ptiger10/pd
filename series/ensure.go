@@ -68,7 +68,7 @@ func (s Series) ensureAlignment() error {
 func (s Series) ensureRowPositions(positions []int) error {
 	_, err := s.values.In(positions)
 	if err != nil {
-		return fmt.Errorf("ensureRowPositions: %v", err)
+		return fmt.Errorf("ensureRowPositions(): %v", err)
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func (s Series) ensureRowPositions(positions []int) error {
 func (s Series) ensureLevelPositions(positions []int) error {
 	_, err := s.index.In(positions)
 	if err != nil {
-		return fmt.Errorf("ensureLevelPositions: %v", err)
+		return fmt.Errorf("ensureLevelPositions(): %v", err)
 	}
 	return nil
 }

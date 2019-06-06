@@ -12,9 +12,9 @@ func Convert(currentVals Values, kind kinds.Kind) (Values, error) {
 	switch kind {
 	case kinds.None:
 		return nil, fmt.Errorf("unable to convert values: must supply a valid Kind")
-	case kinds.Float:
+	case kinds.Float64:
 		vals = currentVals.ToFloat()
-	case kinds.Int:
+	case kinds.Int64:
 		vals = currentVals.ToInt()
 	case kinds.String:
 		vals = currentVals.ToString()

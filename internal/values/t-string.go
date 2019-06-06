@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -29,15 +28,6 @@ func newString(val string) stringValue {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{val, false}
-}
-
-// newSliceString converts []string -> Factory with stringValues
-func newSliceString(vals []string) Factory {
-	var ret stringValues
-	for _, val := range vals {
-		ret = append(ret, newString(val))
-	}
-	return Factory{ret, kinds.String}
 }
 
 // [END Constructor Functions]

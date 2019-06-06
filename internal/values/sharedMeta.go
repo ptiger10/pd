@@ -21,3 +21,7 @@ func (val valueTypeValue) toDateTime() dateTimeValue {
 func (val interfaceValue) tovalueType() valueTypeValue {
 	return valueTypeValue{}
 }
+
+func newvalueType(vals valueType) valueTypeValue {
+	return valueTypeValue{}
+}

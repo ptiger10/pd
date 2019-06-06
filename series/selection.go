@@ -138,45 +138,51 @@ func (sel Selection) series() (Series, error) {
 	return sel.s, nil
 }
 
-// SwapLevels swaps the selected index levels. If Selection is not swappable, returns error.
-func (sel Selection) SwapLevels() (Series, error) {
+// Swap swaps the selected rows or index levels. If Selection is not swappable, returns error.
+func (sel Selection) Swap() (Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.SwapLevels(): %v", err)
+		return Series{}, fmt.Errorf("Selection.Swap(): %v", err)
 	}
-	if !sel.swappableLevels {
-		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two levels")
+	if !sel.swappableLevels && !sel.swappableRows {
+		return sel.s, fmt.Errorf("selection is not swappable: must select exactly two of either rows or levels")
 	}
-	lvl := sel.s.index.Levels
-	lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
-	sel.s.index.Refresh()
+	if sel.swappableRows {
+		// swap Rows
+		s := sel.s
+		r1 := sel.rowPositions[0]
+		r2 := sel.rowPositions[1]
+
+		for i := 0; i < len(s.index.Levels); i++ {
+			r1v := s.index.Levels[i].Labels.Element(r1).Value
+			r2v := s.index.Levels[i].Labels.Element(r2).Value
+			s.index.Levels[i].Labels.Set(r1, r2v)
+			s.index.Levels[i].Labels.Set(r2, r1v)
+			s.index.Levels[i].Refresh()
+		}
+		r1v := s.values.Element(r1).Value
+		r2v := s.values.Element(r2).Value
+		s.values.Set(r1, r2v)
+		s.values.Set(r2, r1v)
+	} else {
+		// swap Levels
+		lvl := sel.s.index.Levels
+		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
+		sel.s.index.Refresh()
+	}
 	return sel.s, nil
 }
 
-// SwapRows swaps the selected rows. If Selection is not swappable, returns error.
-func (sel Selection) SwapRows() (Series, error) {
-	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.SwapLevels(): %v", err)
-	}
-	if !sel.swappableRows {
-		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two rows")
-	}
-	s := sel.s
-	r1 := sel.rowPositions[0]
-	r2 := sel.rowPositions[1]
+// // SwapRows swaps the selected rows. If Selection is not swappable, returns error.
+// func (sel Selection) SwapRows() (Series, error) {
+// 	if err := sel.ensure(); err != nil {
+// 		return Series{}, fmt.Errorf("Selection.SwapLevels(): %v", err)
+// 	}
+// 	if !sel.swappableRows {
+// 		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two rows")
+// 	}
 
-	for i := 0; i < len(s.index.Levels); i++ {
-		r1v := s.index.Levels[i].Labels.Element(r1).Value
-		r2v := s.index.Levels[i].Labels.Element(r2).Value
-		s.index.Levels[i].Labels.Set(r1, r2v)
-		s.index.Levels[i].Labels.Set(r2, r1v)
-		s.index.Levels[i].Refresh()
-	}
-	r1v := s.values.Element(r1).Value
-	r2v := s.values.Element(r2).Value
-	s.values.Set(r1, r2v)
-	s.values.Set(r2, r1v)
-	return s, nil
-}
+// 	return s, nil
+// }
 
 // A Selection is a portion of a Series for use as an intermediate step in transforming data,
 // such as getting, setting, swapping, or dropping.

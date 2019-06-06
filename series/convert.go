@@ -23,7 +23,7 @@ func (t To) Float() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToFloat()
 	} else {
 		t.s.values = t.s.values.ToFloat()
-		t.s.kind = kinds.Float
+		t.s.kind = kinds.Float64
 	}
 	return *t.s
 }
@@ -35,7 +35,7 @@ func (t To) Int() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToInt()
 	} else {
 		t.s.values = t.s.values.ToInt()
-		t.s.kind = kinds.Int
+		t.s.kind = kinds.Int64
 	}
 	return *t.s
 }

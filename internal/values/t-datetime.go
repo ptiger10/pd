@@ -3,8 +3,6 @@ package values
 import (
 	"math"
 	"time"
-
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Constructor Functions]
@@ -15,15 +13,6 @@ func newDateTime(val time.Time) dateTimeValue {
 		return dateTimeValue{val, true}
 	}
 	return dateTimeValue{val, false}
-}
-
-// newSliceDateTime converts []time.Time{} -> Factory with dateTimeValues
-func newSliceDateTime(vals []time.Time) Factory {
-	var ret dateTimeValues
-	for _, val := range vals {
-		ret = append(ret, newDateTime(val))
-	}
-	return Factory{ret, kinds.DateTime}
 }
 
 // [END Constructor Functions]

@@ -46,7 +46,7 @@ func (s Series) Mean() float64 {
 func (m Math) Sum() float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		return gonum.Sum(data)
 	case kinds.Bool:
@@ -70,7 +70,7 @@ func (m Math) Mean() float64 {
 	var sum float64
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		for _, d := range data {
 			sum += d
@@ -91,7 +91,7 @@ func (m Math) Mean() float64 {
 func (m Math) Median() float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -113,7 +113,7 @@ func (m Math) Median() float64 {
 func (m Math) Min() float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -130,7 +130,7 @@ func (m Math) Min() float64 {
 func (m Math) Max() float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -147,7 +147,7 @@ func (m Math) Max() float64 {
 func (m Math) Quartile(i int) float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		val, err := stats.Quartile(data)
 		if err != nil {
@@ -174,7 +174,7 @@ func (m Math) Quartile(i int) float64 {
 func (m Math) Std() float64 {
 	vals := m.s.validVals()
 	switch m.s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()

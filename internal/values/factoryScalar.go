@@ -16,34 +16,34 @@ func ScalarFactory(data interface{}) (Factory, error) {
 	switch data.(type) {
 	case float32, float64:
 		val := scalarFloatToFloat64(data)
-		f := newFloat(val)
-		ret = Factory{float64Values{f}, kinds.Float}
+		f := newFloat64(val)
+		ret = Factory{&float64Values{f}, kinds.Float64}
 
 	case int, int8, int16, int32, int64:
 		val := scalarIntToInt64(data)
-		i := newInt(val)
-		ret = Factory{int64Values{i}, kinds.Int}
+		i := newInt64(val)
+		ret = Factory{&int64Values{i}, kinds.Int64}
 
 	case uint, uint8, uint16, uint32, uint64:
 		val := scalarUIntToInt64(data)
-		i := newInt(val)
-		ret = Factory{int64Values{i}, kinds.Int}
+		i := newInt64(val)
+		ret = Factory{&int64Values{i}, kinds.Int64}
 
 	case string:
 		val := newString(data.(string))
-		ret = Factory{stringValues{val}, kinds.String}
+		ret = Factory{&stringValues{val}, kinds.String}
 
 	case bool:
 		val := newBool(data.(bool))
-		ret = Factory{boolValues{val}, kinds.Bool}
+		ret = Factory{&boolValues{val}, kinds.Bool}
 
 	case time.Time:
 		val := newDateTime(data.(time.Time))
-		ret = Factory{dateTimeValues{val}, kinds.DateTime}
+		ret = Factory{&dateTimeValues{val}, kinds.DateTime}
 
 	case interface{}:
 		val := newInterface(data.(interface{}))
-		ret = Factory{interfaceValues{val}, kinds.Interface}
+		ret = Factory{&interfaceValues{val}, kinds.Interface}
 
 	default:
 		ret = Factory{}

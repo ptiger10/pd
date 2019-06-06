@@ -3,27 +3,16 @@ package values
 import (
 	"math"
 	"time"
-
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Constructor Functions]
 
-// newFloat creates a float64Value from atomic float64 value
-func newFloat(val float64) float64Value {
+// newFloat64 creates a float64Value from atomic float64 value
+func newFloat64(val float64) float64Value {
 	if math.IsNaN(val) {
 		return float64Value{val, true}
 	}
 	return float64Value{val, false}
-}
-
-// newSliceFloat converts []float64  -> Factory with float64Values
-func newSliceFloat(vals []float64) Factory {
-	var ret float64Values
-	for _, val := range vals {
-		ret = append(ret, newFloat(val))
-	}
-	return Factory{ret, kinds.Float}
 }
 
 // [END Constructor Functions]

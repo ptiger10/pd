@@ -23,7 +23,7 @@ func TestElement(t *testing.T) {
 		{0, "NaN", true, []interface{}{"A", int64(1)}},
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
-	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int}
+	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int64}
 	for _, test := range tests {
 		got := s.Element(test.position)
 		if got.Value != test.wantVal {
@@ -47,8 +47,8 @@ func TestKind(t *testing.T) {
 	}{
 
 		{kinds.None, "none"},
-		{kinds.Float, "float64"},
-		{kinds.Int, "int64"},
+		{kinds.Float64, "float64"},
+		{kinds.Int64, "int64"},
 		{kinds.String, "string"},
 		{kinds.Bool, "bool"},
 		{kinds.DateTime, "time.Time"},
@@ -117,3 +117,11 @@ func Test_Equals(t *testing.T) {
 		t.Errorf("seriesEquals() returned true for different name, want false")
 	}
 }
+
+// func TestValid(t *testing.T) {
+// 	vals := float64Values([]float64Value{
+// 		float64Value{1, false}, float64Value{math.NaN(), true},
+// 	})
+// 	at, _ := vals.In(vals.Valid())
+// 	fmt.Println(at.Vals().([]float64))
+// }

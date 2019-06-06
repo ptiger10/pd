@@ -20,8 +20,8 @@ import (
 // 		wantVal      interface{}
 // 		wantNull     bool
 // 	}{
-// 		{math.NaN(), kinds.Float, kinds.Float, nan, true},
-// 		{1.5, kinds.Float, kinds.Float, 1.5, false},
+// 		{math.NaN(), kinds.Float64, kinds.Float64, nan, true},
+// 		{1.5, kinds.Float64, kinds.Float64, 1.5, false},
 // 	}
 // 	for _, test := range tests {
 // 		converted, err := Convert(test.input.V, test.convertTo)
@@ -46,27 +46,27 @@ func TestConvert(t *testing.T) {
 		wantNull  bool
 	}{
 		// Float
-		{newSliceFloat([]float64{math.NaN()}), kinds.Float, nan, true},
-		{newSliceFloat([]float64{1.5}), kinds.Float, 1.5, false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.Float64, nan, true},
+		{newSliceFloat64([]float64{1.5}), kinds.Float64, 1.5, false},
 
-		{newSliceFloat([]float64{math.NaN()}), kinds.Int, int64(0), true},
-		{newSliceFloat([]float64{1.5}), kinds.Int, int64(1), false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.Int64, int64(0), true},
+		{newSliceFloat64([]float64{1.5}), kinds.Int64, int64(1), false},
 
-		{newSliceFloat([]float64{math.NaN()}), kinds.String, "NaN", true},
-		{newSliceFloat([]float64{1.5}), kinds.String, "1.5", false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.String, "NaN", true},
+		{newSliceFloat64([]float64{1.5}), kinds.String, "1.5", false},
 
-		{newSliceFloat([]float64{math.NaN()}), kinds.Bool, false, true},
-		{newSliceFloat([]float64{1.5}), kinds.Bool, true, false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.Bool, false, true},
+		{newSliceFloat64([]float64{1.5}), kinds.Bool, true, false},
 
-		{newSliceFloat([]float64{math.NaN()}), kinds.DateTime, time.Time{}, true},
-		{newSliceFloat([]float64{float64(testEpoch)}), kinds.DateTime, testDate, false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.DateTime, time.Time{}, true},
+		{newSliceFloat64([]float64{float64(testEpoch)}), kinds.DateTime, testDate, false},
 
-		{newSliceFloat([]float64{math.NaN()}), kinds.Interface, nan, true},
-		{newSliceFloat([]float64{1.5}), kinds.Interface, 1.5, false},
+		{newSliceFloat64([]float64{math.NaN()}), kinds.Interface, nan, true},
+		{newSliceFloat64([]float64{1.5}), kinds.Interface, 1.5, false},
 
 		// Int
-		{NewSliceInt([]int64{1}), kinds.Float, 1.0, false},
-		{NewSliceInt([]int64{1}), kinds.Int, int64(1), false},
+		{NewSliceInt([]int64{1}), kinds.Float64, 1.0, false},
+		{NewSliceInt([]int64{1}), kinds.Int64, int64(1), false},
 		{NewSliceInt([]int64{1}), kinds.String, "1", false},
 		{NewSliceInt([]int64{1}), kinds.Bool, true, false},
 
@@ -74,15 +74,15 @@ func TestConvert(t *testing.T) {
 		{NewSliceInt([]int64{int64(testEpoch)}), kinds.DateTime, testDate, false},
 
 		// String
-		{newSliceString([]string{""}), kinds.Float, nan, true},
-		{newSliceString([]string{"foo"}), kinds.Float, nan, true},
-		{newSliceString([]string{"1.5"}), kinds.Float, 1.5, false},
+		{newSliceString([]string{""}), kinds.Float64, nan, true},
+		{newSliceString([]string{"foo"}), kinds.Float64, nan, true},
+		{newSliceString([]string{"1.5"}), kinds.Float64, 1.5, false},
 
-		{newSliceString([]string{""}), kinds.Int, int64(0), true},
-		{newSliceString([]string{"foo"}), kinds.Int, int64(0), true},
-		{newSliceString([]string{"1.5"}), kinds.Int, int64(1), false},
-		{newSliceString([]string{"1.0"}), kinds.Int, int64(1), false},
-		{newSliceString([]string{"1"}), kinds.Int, int64(1), false},
+		{newSliceString([]string{""}), kinds.Int64, int64(0), true},
+		{newSliceString([]string{"foo"}), kinds.Int64, int64(0), true},
+		{newSliceString([]string{"1.5"}), kinds.Int64, int64(1), false},
+		{newSliceString([]string{"1.0"}), kinds.Int64, int64(1), false},
+		{newSliceString([]string{"1"}), kinds.Int64, int64(1), false},
 
 		{newSliceString([]string{""}), kinds.String, "NaN", true},
 		{newSliceString([]string{"NaN"}), kinds.String, "NaN", true},
@@ -99,11 +99,11 @@ func TestConvert(t *testing.T) {
 		{newSliceString([]string{"2019-05-01"}), kinds.DateTime, testDate, false},
 
 		// Bool
-		{newSliceBool([]bool{true}), kinds.Float, 1.0, false},
-		{newSliceBool([]bool{false}), kinds.Float, 0.0, false},
+		{newSliceBool([]bool{true}), kinds.Float64, 1.0, false},
+		{newSliceBool([]bool{false}), kinds.Float64, 0.0, false},
 
-		{newSliceBool([]bool{true}), kinds.Int, int64(1), false},
-		{newSliceBool([]bool{false}), kinds.Int, int64(0), false},
+		{newSliceBool([]bool{true}), kinds.Int64, int64(1), false},
+		{newSliceBool([]bool{false}), kinds.Int64, int64(0), false},
 
 		{newSliceBool([]bool{true}), kinds.String, "true", false},
 		{newSliceBool([]bool{false}), kinds.String, "false", false},
@@ -115,11 +115,11 @@ func TestConvert(t *testing.T) {
 		{newSliceBool([]bool{false}), kinds.DateTime, epochDate, false},
 
 		// DateTime
-		{newSliceDateTime([]time.Time{testDate}), kinds.Float, float64(testEpoch), false},
-		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Float, nan, true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.Float64, float64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Float64, nan, true},
 
-		{newSliceDateTime([]time.Time{testDate}), kinds.Int, int64(testEpoch), false},
-		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Int, int64(0), true},
+		{newSliceDateTime([]time.Time{testDate}), kinds.Int64, int64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), kinds.Int64, int64(0), true},
 
 		{newSliceDateTime([]time.Time{testDate}), kinds.String, "2019-05-01 00:00:00 +0000 UTC", false},
 		{newSliceDateTime([]time.Time{time.Time{}}), kinds.String, "NaN", true},
@@ -131,10 +131,10 @@ func TestConvert(t *testing.T) {
 		{newSliceDateTime([]time.Time{time.Time{}}), kinds.DateTime, time.Time{}, true},
 
 		// Interface
-		{newSliceInterface([]interface{}{math.NaN()}), kinds.Float, nan, true},
-		{newSliceInterface([]interface{}{1.5}), kinds.Float, 1.5, false},
+		{newSliceInterface([]interface{}{math.NaN()}), kinds.Float64, nan, true},
+		{newSliceInterface([]interface{}{1.5}), kinds.Float64, 1.5, false},
 
-		{newSliceInterface([]interface{}{1}), kinds.Int, int64(1), false},
+		{newSliceInterface([]interface{}{1}), kinds.Int64, int64(1), false},
 
 		{newSliceInterface([]interface{}{""}), kinds.String, "NaN", true},
 		{newSliceInterface([]interface{}{"NaN"}), kinds.String, "NaN", true},
@@ -181,7 +181,7 @@ func TestConvert_Unsupported(t *testing.T) {
 		{kinds.Unsupported},
 	}
 	for _, test := range tests {
-		vals := newSliceFloat([]float64{1.5})
+		vals := newSliceFloat64([]float64{1.5})
 		_, err := Convert(vals.Values, test.kind)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.kind)

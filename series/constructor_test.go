@@ -69,11 +69,11 @@ func TestConstructor_Index_Slice_Float(t *testing.T) {
 func TestConstructor_Kind_Slice_Float(t *testing.T) {
 	var err error
 
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Float))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Float64))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Int))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Int64))
 	if err != nil {
 		t.Error(err)
 	}
@@ -103,7 +103,7 @@ func TestConstructor_Kind_Slice_Float(t *testing.T) {
 func TestMini_single(t *testing.T) {
 	mini := config.MiniIndex{
 		Data: []int{1, 2, 3},
-		Kind: kinds.Int,
+		Kind: kinds.Int64,
 		Name: "test",
 	}
 	got, err := indexFromMiniIndex([]config.MiniIndex{mini}, 3)

@@ -18,38 +18,38 @@ func TestSliceConstructor(t *testing.T) {
 	}{
 		{
 			data:     []float32{0, 1, 2},
-			wantVals: newSliceFloat([]float64{0, 1, 2}),
-			wantKind: kinds.Float,
+			wantVals: newSliceFloat64([]float64{0, 1, 2}),
+			wantKind: kinds.Float64,
 		},
 		{
 			data:     []float64{0, 1, 2},
-			wantVals: newSliceFloat([]float64{0, 1, 2}),
-			wantKind: kinds.Float,
+			wantVals: newSliceFloat64([]float64{0, 1, 2}),
+			wantKind: kinds.Float64,
 		},
 		{
 			data:     []float64{},
-			wantVals: newSliceFloat([]float64{}),
-			wantKind: kinds.Float,
+			wantVals: newSliceFloat64([]float64{}),
+			wantKind: kinds.Float64,
 		},
 		{
 			data:     []int{0, 1, 2},
-			wantVals: NewSliceInt([]int64{0, 1, 2}),
-			wantKind: kinds.Int,
+			wantVals: newSliceInt64([]int64{0, 1, 2}),
+			wantKind: kinds.Int64,
 		},
 		{
 			data:     []int64{0, 1, 2},
-			wantVals: NewSliceInt([]int64{0, 1, 2}),
-			wantKind: kinds.Int,
+			wantVals: newSliceInt64([]int64{0, 1, 2}),
+			wantKind: kinds.Int64,
 		},
 		{
 			data:     []int{},
-			wantVals: NewSliceInt([]int64{}),
-			wantKind: kinds.Int,
+			wantVals: newSliceInt64([]int64{}),
+			wantKind: kinds.Int64,
 		},
 		{
 			data:     []uint{0, 1, 2},
-			wantVals: NewSliceInt([]int64{0, 1, 2}),
-			wantKind: kinds.Int,
+			wantVals: newSliceInt64([]int64{0, 1, 2}),
+			wantKind: kinds.Int64,
 		},
 		{
 			data:     []string{"0", "1", ""},

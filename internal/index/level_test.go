@@ -29,19 +29,19 @@ func TestLevel(t *testing.T) {
 		{
 			data:       []float64{0, 1, 2},
 			wantLabels: mustCreateNewLevel([]float64{0, 1, 2}).Labels,
-			wantKind:   kinds.Float,
+			wantKind:   kinds.Float64,
 			wantName:   "test",
 		},
 		{
 			data:       []int{0, 1, 2},
 			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
-			wantKind:   kinds.Int,
+			wantKind:   kinds.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
 			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
-			wantKind:   kinds.Int,
+			wantKind:   kinds.Int64,
 			wantName:   "test",
 		},
 		{
@@ -101,7 +101,7 @@ func Test_LevelCopy(t *testing.T) {
 	if copyLvl.Name != "foo" {
 		t.Error("Level.Copy() did not copy Name")
 	}
-	if copyLvl.Kind != kinds.Int {
+	if copyLvl.Kind != kinds.Int64 {
 		t.Error("Level.Copy() did not copy Kind")
 	}
 	if copyLvl.Longest != 1 {

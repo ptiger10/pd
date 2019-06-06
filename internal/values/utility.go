@@ -36,3 +36,8 @@ func MakeIntRange(min, max int) []int {
 	}
 	return a
 }
+
+// NewSliceInt returns a factory for use in the default index
+func NewSliceInt(v []int64) Factory {
+	return newSliceInt64(v)
+}

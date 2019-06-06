@@ -14,43 +14,43 @@ func TestConvertIndex_int(t *testing.T) {
 		convertTo kinds.Kind
 	}{
 		// Float
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Float},
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Int},
+		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Float64},
+		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Int64},
 		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.String},
 		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Bool},
 		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.DateTime},
 
 		// Int
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Float},
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Int},
+		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Float64},
+		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Int64},
 		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.String},
 		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Bool},
 		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.DateTime},
 
 		// String
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Float},
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Int},
+		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Float64},
+		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Int64},
 		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.String},
 		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Bool},
 		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.DateTime},
 
 		// Bool
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.Float},
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.Int},
+		{mustCreateNewLevel([]bool{true, false, false}), kinds.Float64},
+		{mustCreateNewLevel([]bool{true, false, false}), kinds.Int64},
 		{mustCreateNewLevel([]bool{true, false, false}), kinds.String},
 		{mustCreateNewLevel([]bool{true, false, false}), kinds.Bool},
 		{mustCreateNewLevel([]bool{true, false, false}), kinds.DateTime},
 
 		// DateTime
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.Float},
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.Int},
+		{mustCreateNewLevel([]time.Time{testDate}), kinds.Float64},
+		{mustCreateNewLevel([]time.Time{testDate}), kinds.Int64},
 		{mustCreateNewLevel([]time.Time{testDate}), kinds.String},
 		{mustCreateNewLevel([]time.Time{testDate}), kinds.Bool},
 		{mustCreateNewLevel([]time.Time{testDate}), kinds.DateTime},
 
 		// Interface
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Float},
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Int},
+		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Float64},
+		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Int64},
 		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.String},
 		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Bool},
 		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.DateTime},

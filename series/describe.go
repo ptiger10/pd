@@ -23,7 +23,7 @@ func (s Series) Describe() {
 	null := fmt.Sprint(nulls)
 	// type-specific data
 	switch s.kind {
-	case kinds.Float, kinds.Int:
+	case kinds.Float64, kinds.Int64:
 		precision := opt.GetDisplayFloatPrecision()
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Math.Min())

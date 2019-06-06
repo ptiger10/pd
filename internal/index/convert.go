@@ -12,9 +12,9 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	switch kind {
 	case kinds.None:
 		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
-	case kinds.Float:
+	case kinds.Float64:
 		convertedLvl = lvl.ToFloat()
-	case kinds.Int:
+	case kinds.Int64:
 		convertedLvl = lvl.ToInt()
 	case kinds.String:
 		convertedLvl = lvl.ToString()
@@ -33,7 +33,7 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 // ToFloat converts an index level to Float
 func (lvl Level) ToFloat() Level {
 	lvl.Labels = lvl.Labels.ToFloat()
-	lvl.Kind = kinds.Float
+	lvl.Kind = kinds.Float64
 	lvl.Refresh()
 	return lvl
 }
@@ -41,7 +41,7 @@ func (lvl Level) ToFloat() Level {
 // ToInt converts an index level to Int
 func (lvl Level) ToInt() Level {
 	lvl.Labels = lvl.Labels.ToInt()
-	lvl.Kind = kinds.Int
+	lvl.Kind = kinds.Int64
 	lvl.Refresh()
 	return lvl
 }

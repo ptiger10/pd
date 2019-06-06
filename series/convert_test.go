@@ -18,7 +18,7 @@ func TestTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Float
+	wantKind := kinds.Float64
 	if gotKind := newS.kind; gotKind != wantKind {
 		t.Errorf("s.To.Float() returned kind %v, want %v", gotKind, wantKind)
 	}
@@ -38,7 +38,7 @@ func TestTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Int() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Int
+	wantKind := kinds.Int64
 	if gotKind := newS.kind; gotKind != wantKind {
 		t.Errorf("s.To.Int() returned kind %v, want %v", gotKind, wantKind)
 	}
@@ -136,7 +136,7 @@ func TestIndexTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Float
+	wantKind := kinds.Float64
 	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
 		t.Errorf("s.To.Float() returned kind %v, want %v", gotKind, wantKind)
 	}
@@ -156,7 +156,7 @@ func TestIndexTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Int() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Int
+	wantKind := kinds.Int64
 	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
 		t.Errorf("s.IndexTo.Int() returned kind %v, want %v", gotKind, wantKind)
 	}
@@ -249,8 +249,8 @@ func TestIndexTo_Interface(t *testing.T) {
 // 		convertTo kinds.Kind
 // 		lvl       int
 // 	}{
-// 		{kinds.Float, 0},
-// 		{kinds.Float, 1},
+// 		{kinds.Float64, 0},
+// 		{kinds.Float64, 1},
 // 		{kinds.Int, 0},
 // 		{kinds.Int, 1},
 // 		{kinds.String, 0},

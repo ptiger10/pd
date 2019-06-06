@@ -17,23 +17,23 @@ func SliceFactory(data interface{}) (Factory, error) {
 	switch data.(type) {
 	case []float32:
 		vals := sliceFloatToSliceFloat64(data)
-		ret = newSliceFloat(vals)
+		ret = newSliceFloat64(vals)
 
 	case []float64:
 		vals := data.([]float64)
-		ret = newSliceFloat(vals)
+		ret = newSliceFloat64(vals)
 
 	case []int, []int8, []int16, []int32:
 		vals := sliceIntToSliceInt64(data)
-		ret = NewSliceInt(vals)
+		ret = newSliceInt64(vals)
 	case []int64:
 		vals := data.([]int64)
-		ret = NewSliceInt(vals)
+		ret = newSliceInt64(vals)
 
 	case []uint, []uint8, []uint16, []uint32, []uint64:
 		// converts into []int64 so it can be passed into SliceInt
 		vals := sliceUIntToSliceInt64(data)
-		ret = NewSliceInt(vals)
+		ret = newSliceInt64(vals)
 
 	case []string:
 		vals := data.([]string)

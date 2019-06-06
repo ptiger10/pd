@@ -3,25 +3,13 @@ package values
 import (
 	"math"
 	"time"
-
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Constructor Functions]
 
-// newInt creates an int64Value from atomic int64 value
-func newInt(val int64) int64Value {
+// newInt64 creates an int64Value from atomic int64 value
+func newInt64(val int64) int64Value {
 	return int64Value{val, false}
-}
-
-// NewSliceInt converts []int -> Factory with int64Values
-// Exported for use in internal index package
-func NewSliceInt(vals []int64) Factory {
-	var ret int64Values
-	for _, val := range vals {
-		ret = append(ret, newInt(val))
-	}
-	return Factory{ret, kinds.Int}
 }
 
 // [END Constructor Functions]

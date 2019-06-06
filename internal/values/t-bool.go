@@ -3,8 +3,6 @@ package values
 import (
 	"math"
 	"time"
-
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Constructor Functions]
@@ -12,15 +10,6 @@ import (
 // newBool creates a boolValue from atomic bool value
 func newBool(val bool) boolValue {
 	return boolValue{val, false}
-}
-
-// newSliceBool converts []bool -> Factory with boolValues
-func newSliceBool(vals []bool) Factory {
-	var ret boolValues
-	for _, val := range vals {
-		ret = append(ret, newBool(val))
-	}
-	return Factory{ret, kinds.Bool}
 }
 
 // [END Constructor Functions]

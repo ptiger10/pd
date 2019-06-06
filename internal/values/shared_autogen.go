@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -22,77 +23,105 @@ type float64Value struct {
 	null bool
 }
 
+// newSliceFloat64 converts []Float64 -> Factory with float64Values
+func newSliceFloat64(vals []float64) Factory {
+	var ret float64Values
+	for _, val := range vals {
+		ret = append(ret, newFloat64(val))
+	}
+	return Factory{&ret, kinds.Float64}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals float64Values) Len() int {
-	return len(vals)
+func (vals *float64Values) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals float64Values) In(rowPositions []int) (Values, error) {
+func (vals *float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals float64Values) Vals() interface{} {
+func (vals *float64Values) Vals() interface{} {
 	var ret []float64
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals float64Values) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *float64Values) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current float64Values container into a new Values container
-func (vals float64Values) Copy() Values {
+func (vals *float64Values) Copy() Values {
 	newValues := float64Values{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals float64Values) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *float64Values) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toFloat64()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toFloat64()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *float64Values) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *float64Values) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]float64Value{v.toFloat64()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts float64Values to floatValues.
-func (vals float64Values) ToFloat() float64Values {
+func (vals *float64Values) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts float64Values to intValues.
-func (vals float64Values) ToInt() int64Values {
+func (vals *float64Values) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val float64Value) toString() stringValue {
+func (val *float64Value) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -100,48 +129,47 @@ func (val float64Value) toString() stringValue {
 }
 
 // ToString converts float64Values to stringValues.
-func (vals float64Values) ToString() stringValues {
+func (vals *float64Values) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts float64Values to boolValues.
-func (vals float64Values) ToBool() boolValues {
+func (vals *float64Values) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts float64Values to dateTimeValues.
-func (vals float64Values) ToDateTime() dateTimeValues {
+func (vals *float64Values) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts float64Values to interfaceValues.
-func (vals float64Values) ToInterface() interfaceValues {
+func (vals *float64Values) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] float64Values
 // ---------------------------------------------------------------------------
-
 
 // [START] int64Values
 
@@ -154,77 +182,105 @@ type int64Value struct {
 	null bool
 }
 
+// newSliceInt64 converts []Int64 -> Factory with int64Values
+func newSliceInt64(vals []int64) Factory {
+	var ret int64Values
+	for _, val := range vals {
+		ret = append(ret, newInt64(val))
+	}
+	return Factory{&ret, kinds.Int64}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals int64Values) Len() int {
-	return len(vals)
+func (vals *int64Values) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals int64Values) In(rowPositions []int) (Values, error) {
+func (vals *int64Values) In(rowPositions []int) (Values, error) {
 	var ret int64Values
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals int64Values) Vals() interface{} {
+func (vals *int64Values) Vals() interface{} {
 	var ret []int64
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals int64Values) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *int64Values) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current int64Values container into a new Values container
-func (vals int64Values) Copy() Values {
+func (vals *int64Values) Copy() Values {
 	newValues := int64Values{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals int64Values) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *int64Values) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toInt64()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toInt64()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *int64Values) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *int64Values) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]int64Value{v.toInt64()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts int64Values to floatValues.
-func (vals int64Values) ToFloat() float64Values {
+func (vals *int64Values) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts int64Values to intValues.
-func (vals int64Values) ToInt() int64Values {
+func (vals *int64Values) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val int64Value) toString() stringValue {
+func (val *int64Value) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -232,48 +288,47 @@ func (val int64Value) toString() stringValue {
 }
 
 // ToString converts int64Values to stringValues.
-func (vals int64Values) ToString() stringValues {
+func (vals *int64Values) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts int64Values to boolValues.
-func (vals int64Values) ToBool() boolValues {
+func (vals *int64Values) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts int64Values to dateTimeValues.
-func (vals int64Values) ToDateTime() dateTimeValues {
+func (vals *int64Values) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts int64Values to interfaceValues.
-func (vals int64Values) ToInterface() interfaceValues {
+func (vals *int64Values) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] int64Values
 // ---------------------------------------------------------------------------
-
 
 // [START] stringValues
 
@@ -286,77 +341,105 @@ type stringValue struct {
 	null bool
 }
 
+// newSliceString converts []String -> Factory with stringValues
+func newSliceString(vals []string) Factory {
+	var ret stringValues
+	for _, val := range vals {
+		ret = append(ret, newString(val))
+	}
+	return Factory{&ret, kinds.String}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals stringValues) Len() int {
-	return len(vals)
+func (vals *stringValues) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals stringValues) In(rowPositions []int) (Values, error) {
+func (vals *stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals stringValues) Vals() interface{} {
+func (vals *stringValues) Vals() interface{} {
 	var ret []string
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals stringValues) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *stringValues) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current stringValues container into a new Values container
-func (vals stringValues) Copy() Values {
+func (vals *stringValues) Copy() Values {
 	newValues := stringValues{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals stringValues) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *stringValues) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toString()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toString()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *stringValues) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *stringValues) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]stringValue{v.toString()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts stringValues to floatValues.
-func (vals stringValues) ToFloat() float64Values {
+func (vals *stringValues) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts stringValues to intValues.
-func (vals stringValues) ToInt() int64Values {
+func (vals *stringValues) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val stringValue) toString() stringValue {
+func (val *stringValue) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -364,48 +447,47 @@ func (val stringValue) toString() stringValue {
 }
 
 // ToString converts stringValues to stringValues.
-func (vals stringValues) ToString() stringValues {
+func (vals *stringValues) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts stringValues to boolValues.
-func (vals stringValues) ToBool() boolValues {
+func (vals *stringValues) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts stringValues to dateTimeValues.
-func (vals stringValues) ToDateTime() dateTimeValues {
+func (vals *stringValues) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts stringValues to interfaceValues.
-func (vals stringValues) ToInterface() interfaceValues {
+func (vals *stringValues) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] stringValues
 // ---------------------------------------------------------------------------
-
 
 // [START] boolValues
 
@@ -418,77 +500,105 @@ type boolValue struct {
 	null bool
 }
 
+// newSliceBool converts []Bool -> Factory with boolValues
+func newSliceBool(vals []bool) Factory {
+	var ret boolValues
+	for _, val := range vals {
+		ret = append(ret, newBool(val))
+	}
+	return Factory{&ret, kinds.Bool}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals boolValues) Len() int {
-	return len(vals)
+func (vals *boolValues) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals boolValues) In(rowPositions []int) (Values, error) {
+func (vals *boolValues) In(rowPositions []int) (Values, error) {
 	var ret boolValues
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals boolValues) Vals() interface{} {
+func (vals *boolValues) Vals() interface{} {
 	var ret []bool
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals boolValues) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *boolValues) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current boolValues container into a new Values container
-func (vals boolValues) Copy() Values {
+func (vals *boolValues) Copy() Values {
 	newValues := boolValues{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals boolValues) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *boolValues) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toBool()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toBool()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *boolValues) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *boolValues) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]boolValue{v.toBool()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts boolValues to floatValues.
-func (vals boolValues) ToFloat() float64Values {
+func (vals *boolValues) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts boolValues to intValues.
-func (vals boolValues) ToInt() int64Values {
+func (vals *boolValues) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val boolValue) toString() stringValue {
+func (val *boolValue) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -496,48 +606,47 @@ func (val boolValue) toString() stringValue {
 }
 
 // ToString converts boolValues to stringValues.
-func (vals boolValues) ToString() stringValues {
+func (vals *boolValues) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts boolValues to boolValues.
-func (vals boolValues) ToBool() boolValues {
+func (vals *boolValues) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts boolValues to dateTimeValues.
-func (vals boolValues) ToDateTime() dateTimeValues {
+func (vals *boolValues) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts boolValues to interfaceValues.
-func (vals boolValues) ToInterface() interfaceValues {
+func (vals *boolValues) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] boolValues
 // ---------------------------------------------------------------------------
-
 
 // [START] dateTimeValues
 
@@ -550,77 +659,105 @@ type dateTimeValue struct {
 	null bool
 }
 
+// newSliceDateTime converts []DateTime -> Factory with dateTimeValues
+func newSliceDateTime(vals []time.Time) Factory {
+	var ret dateTimeValues
+	for _, val := range vals {
+		ret = append(ret, newDateTime(val))
+	}
+	return Factory{&ret, kinds.DateTime}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals dateTimeValues) Len() int {
-	return len(vals)
+func (vals *dateTimeValues) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals dateTimeValues) In(rowPositions []int) (Values, error) {
+func (vals *dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals dateTimeValues) Vals() interface{} {
+func (vals *dateTimeValues) Vals() interface{} {
 	var ret []time.Time
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals dateTimeValues) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *dateTimeValues) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current dateTimeValues container into a new Values container
-func (vals dateTimeValues) Copy() Values {
+func (vals *dateTimeValues) Copy() Values {
 	newValues := dateTimeValues{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals dateTimeValues) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *dateTimeValues) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toDateTime()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toDateTime()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *dateTimeValues) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]dateTimeValue{v.toDateTime()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts dateTimeValues to floatValues.
-func (vals dateTimeValues) ToFloat() float64Values {
+func (vals *dateTimeValues) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts dateTimeValues to intValues.
-func (vals dateTimeValues) ToInt() int64Values {
+func (vals *dateTimeValues) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val dateTimeValue) toString() stringValue {
+func (val *dateTimeValue) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -628,48 +765,47 @@ func (val dateTimeValue) toString() stringValue {
 }
 
 // ToString converts dateTimeValues to stringValues.
-func (vals dateTimeValues) ToString() stringValues {
+func (vals *dateTimeValues) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts dateTimeValues to boolValues.
-func (vals dateTimeValues) ToBool() boolValues {
+func (vals *dateTimeValues) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts dateTimeValues to dateTimeValues.
-func (vals dateTimeValues) ToDateTime() dateTimeValues {
+func (vals *dateTimeValues) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts dateTimeValues to interfaceValues.
-func (vals dateTimeValues) ToInterface() interfaceValues {
+func (vals *dateTimeValues) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] dateTimeValues
 // ---------------------------------------------------------------------------
-
 
 // [START] interfaceValues
 
@@ -682,77 +818,105 @@ type interfaceValue struct {
 	null bool
 }
 
+// newSliceInterface converts []Interface -> Factory with interfaceValues
+func newSliceInterface(vals []interface{}) Factory {
+	var ret interfaceValues
+	for _, val := range vals {
+		ret = append(ret, newInterface(val))
+	}
+	return Factory{&ret, kinds.Interface}
+}
+
 // Len returns the number of value/null structs in the container.
-func (vals interfaceValues) Len() int {
-	return len(vals)
+func (vals *interfaceValues) Len() int {
+	return len(*vals)
 }
 
 // In returns the values located at specific index positions.
-func (vals interfaceValues) In(rowPositions []int) (Values, error) {
+func (vals *interfaceValues) In(rowPositions []int) (Values, error) {
 	var ret interfaceValues
 	for _, position := range rowPositions {
-		if position >= len(vals) {
-			return nil, fmt.Errorf("%d is not a valid integer position (len: %v)", position, len(vals))
+		if position >= len(*vals) {
+			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
 		}
-		ret = append(ret, vals[position])
+		ret = append(ret, (*vals)[position])
 	}
-	return ret, nil
+	return &ret, nil
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
-func (vals interfaceValues) Vals() interface{} {
+func (vals *interfaceValues) Vals() interface{} {
 	var ret []interface{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.v)
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
-func (vals interfaceValues) Element(position int) Elem {
-	return Elem{vals[position].v, vals[position].null}
+func (vals *interfaceValues) Element(position int) Elem {
+	return Elem{(*vals)[position].v, (*vals)[position].null}
 }
 
 // Copy transfers every value from the current interfaceValues container into a new Values container
-func (vals interfaceValues) Copy() Values {
+func (vals *interfaceValues) Copy() Values {
 	newValues := interfaceValues{}
-	for _, val := range vals {
+	for _, val := range *vals {
 		newValues = append(newValues, val)
 	}
-	return newValues
+	return &newValues
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals interfaceValues) Set(position int, newVal interface{}) error {
-	v := interfaceValue{newVal, false}
-	if position >= vals.Len() {
+func (vals *interfaceValues) Set(position int, newVal interface{}) error {
+	if position >= len(*vals) {
 		return fmt.Errorf("unable to set value at position %v: index out of range", position)
 	}
-	vals[position] = v.toInterface()
+	v := interfaceValue{newVal, false}
+	(*vals)[position] = v.toInterface()
+	return nil
+}
+
+// Drop drops the Value/Null pair at an integer position.
+func (vals *interfaceValues) Drop(pos int) error {
+	if pos >= len(*vals) {
+		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
+	}
+	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
+	return nil
+}
+
+// Insert inserts a new Value/Null pair at an integer position.
+func (vals *interfaceValues) Insert(pos int, val interface{}) error {
+	if pos > len(*vals) {
+		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
+	}
+	v := interfaceValue{val, false}
+	*vals = append((*vals)[:pos], append([]interfaceValue{v.toInterface()}, (*vals)[pos:]...)...)
 	return nil
 }
 
 // ToFloat converts interfaceValues to floatValues.
-func (vals interfaceValues) ToFloat() float64Values {
+func (vals *interfaceValues) ToFloat() Values {
 	var ret float64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
 	}
-	return ret
+	return &ret
 }
 
 // ToInt converts interfaceValues to intValues.
-func (vals interfaceValues) ToInt() int64Values {
+func (vals *interfaceValues) ToInt() Values {
 	var ret int64Values
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
 	}
-	return ret
+	return &ret
 }
 
-func (val interfaceValue) toString() stringValue {
+func (val *interfaceValue) toString() stringValue {
 	if val.null {
 		return stringValue{opt.GetDisplayStringNullFiller(), true}
 	}
@@ -760,45 +924,44 @@ func (val interfaceValue) toString() stringValue {
 }
 
 // ToString converts interfaceValues to stringValues.
-func (vals interfaceValues) ToString() stringValues {
+func (vals *interfaceValues) ToString() Values {
 	var ret stringValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toString())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts interfaceValues to boolValues.
-func (vals interfaceValues) ToBool() boolValues {
+func (vals *interfaceValues) ToBool() Values {
 	var ret boolValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toBool())
 	}
-	return ret
+	return &ret
 }
 
 // ToBool converts interfaceValues to dateTimeValues.
-func (vals interfaceValues) ToDateTime() dateTimeValues {
+func (vals *interfaceValues) ToDateTime() Values {
 	var ret dateTimeValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		ret = append(ret, val.toDateTime())
 	}
-	return ret
+	return &ret
 }
 
 // ToInterface converts interfaceValues to interfaceValues.
-func (vals interfaceValues) ToInterface() interfaceValues {
+func (vals *interfaceValues) ToInterface() Values {
 	var ret interfaceValues
-	for _, val := range vals {
+	for _, val := range *vals {
 		if val.null {
 			ret = append(ret, interfaceValue{val.v, true})
 		} else {
 			ret = append(ret, interfaceValue{val.v, false})
 		}
 	}
-	return ret
+	return &ret
 }
 
 // [END] interfaceValues
 // ---------------------------------------------------------------------------
-

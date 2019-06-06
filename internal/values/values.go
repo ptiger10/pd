@@ -14,12 +14,12 @@ type Values interface {
 	Set(int, interface{}) error // overwrite the value/null struct at an integer position
 	Copy() Values               // clone the Values
 
-	ToFloat() float64Values
-	ToInt() int64Values
-	ToString() stringValues
-	ToBool() boolValues
-	ToDateTime() dateTimeValues
-	ToInterface() interfaceValues
+	ToFloat() Values
+	ToInt() Values
+	ToString() Values
+	ToBool() Values
+	ToDateTime() Values
+	ToInterface() Values
 }
 
 // Factory contains Values (a list of Value/Null pairs satisfying the Values interface) and Kind.
