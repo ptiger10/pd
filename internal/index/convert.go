@@ -30,6 +30,7 @@ func (lvl Level) Convert(kind kinds.Kind) (Level, error) {
 	return convertedLvl, nil
 }
 
+// ToFloat converts an index level to Float
 func (lvl Level) ToFloat() Level {
 	lvl.Labels = lvl.Labels.ToFloat()
 	lvl.Kind = kinds.Float
@@ -37,6 +38,7 @@ func (lvl Level) ToFloat() Level {
 	return lvl
 }
 
+// ToInt converts an index level to Int
 func (lvl Level) ToInt() Level {
 	lvl.Labels = lvl.Labels.ToInt()
 	lvl.Kind = kinds.Int
@@ -44,6 +46,7 @@ func (lvl Level) ToInt() Level {
 	return lvl
 }
 
+// ToString converts an index level to String
 func (lvl Level) ToString() Level {
 	lvl.Labels = lvl.Labels.ToString()
 	lvl.Kind = kinds.String
@@ -51,6 +54,7 @@ func (lvl Level) ToString() Level {
 	return lvl
 }
 
+// ToBool converts an index level to Bool
 func (lvl Level) ToBool() Level {
 	lvl.Labels = lvl.Labels.ToBool()
 	lvl.Kind = kinds.Bool
@@ -58,6 +62,7 @@ func (lvl Level) ToBool() Level {
 	return lvl
 }
 
+// ToDateTime converts an index level to DateTime
 func (lvl Level) ToDateTime() Level {
 	lvl.Labels = lvl.Labels.ToDateTime()
 	lvl.Kind = kinds.DateTime
@@ -65,6 +70,7 @@ func (lvl Level) ToDateTime() Level {
 	return lvl
 }
 
+// ToInterface converts an index level to Interface
 func (lvl Level) ToInterface() Level {
 	lvl.Labels = lvl.Labels.ToInterface()
 	lvl.Kind = kinds.Interface

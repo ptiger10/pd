@@ -16,14 +16,14 @@ type Math struct {
 
 // an interface of valid (non-null) values; appropriate for type assertion
 func (s Series) validVals() interface{} {
-	valid, _ := s.values.In(s.values.Valid())
+	valid, _ := s.values.In(s.valid())
 	return valid.Vals()
 }
 
 // a []interface of valid (non-null) values; appropriate for counting and indexing
 func (s Series) validAll() []interface{} {
-	valid, _ := s.values.In(s.values.Valid())
-	return valid.All()
+	valid, _ := s.in(s.valid())
+	return valid.all()
 }
 
 // Sum is shorthand for series.Math.Sum()

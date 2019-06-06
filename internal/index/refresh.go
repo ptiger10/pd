@@ -10,8 +10,8 @@ import (
 // A level's label map is agnostic of the actual values in those positions.
 func (lvl *Level) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Labels.Len())
-	for i, val := range lvl.Labels.All() {
-		key := fmt.Sprint(val)
+	for i := 0; i < lvl.Labels.Len(); i++ {
+		key := fmt.Sprint(lvl.Labels.Element(i).Value)
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap

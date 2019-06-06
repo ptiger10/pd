@@ -27,7 +27,7 @@ func (vals float64Values) Len() int {
 	return len(vals)
 }
 
-// In returns a copy of the values located at specific index positions.
+// In returns the values located at specific index positions.
 func (vals float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
@@ -39,17 +39,6 @@ func (vals float64Values) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals float64Values) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -57,28 +46,6 @@ func (vals float64Values) Vals() interface{} {
 	var ret []float64
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals float64Values) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals float64Values) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -175,6 +142,7 @@ func (vals float64Values) ToInterface() interfaceValues {
 // [END] float64Values
 // ---------------------------------------------------------------------------
 
+
 // [START] int64Values
 
 // int64Values is a slice of int64-typed value/null structs.
@@ -203,17 +171,6 @@ func (vals int64Values) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals int64Values) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -221,28 +178,6 @@ func (vals int64Values) Vals() interface{} {
 	var ret []int64
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals int64Values) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals int64Values) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -339,6 +274,7 @@ func (vals int64Values) ToInterface() interfaceValues {
 // [END] int64Values
 // ---------------------------------------------------------------------------
 
+
 // [START] stringValues
 
 // stringValues is a slice of string-typed value/null structs.
@@ -367,17 +303,6 @@ func (vals stringValues) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals stringValues) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -385,28 +310,6 @@ func (vals stringValues) Vals() interface{} {
 	var ret []string
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals stringValues) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals stringValues) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -503,6 +406,7 @@ func (vals stringValues) ToInterface() interfaceValues {
 // [END] stringValues
 // ---------------------------------------------------------------------------
 
+
 // [START] boolValues
 
 // boolValues is a slice of bool-typed value/null structs.
@@ -531,17 +435,6 @@ func (vals boolValues) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals boolValues) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -549,28 +442,6 @@ func (vals boolValues) Vals() interface{} {
 	var ret []bool
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals boolValues) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals boolValues) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -667,6 +538,7 @@ func (vals boolValues) ToInterface() interfaceValues {
 // [END] boolValues
 // ---------------------------------------------------------------------------
 
+
 // [START] dateTimeValues
 
 // dateTimeValues is a slice of dateTime-typed value/null structs.
@@ -695,17 +567,6 @@ func (vals dateTimeValues) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals dateTimeValues) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -713,28 +574,6 @@ func (vals dateTimeValues) Vals() interface{} {
 	var ret []time.Time
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals dateTimeValues) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals dateTimeValues) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -831,6 +670,7 @@ func (vals dateTimeValues) ToInterface() interfaceValues {
 // [END] dateTimeValues
 // ---------------------------------------------------------------------------
 
+
 // [START] interfaceValues
 
 // interfaceValues is a slice of interface-typed value/null structs.
@@ -859,17 +699,6 @@ func (vals interfaceValues) In(rowPositions []int) (Values, error) {
 	return ret, nil
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (vals interfaceValues) All() []interface{} {
-	var ret []interface{}
-	for _, val := range vals {
-		ret = append(ret, val.v)
-	}
-	return ret
-}
-
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.
@@ -877,28 +706,6 @@ func (vals interfaceValues) Vals() interface{} {
 	var ret []interface{}
 	for _, val := range vals {
 		ret = append(ret, val.v)
-	}
-	return ret
-}
-
-// Valid returns the integer position of all valid (i.e., non-null) values in the collection.
-func (vals interfaceValues) Valid() []int {
-	var ret []int
-	for i, val := range vals {
-		if !val.null {
-			ret = append(ret, i)
-		}
-	}
-	return ret
-}
-
-// Null returns the integer position of all null values in the collection.
-func (vals interfaceValues) Null() []int {
-	var ret []int
-	for i, val := range vals {
-		if val.null {
-			ret = append(ret, i)
-		}
 	}
 	return ret
 }
@@ -994,3 +801,4 @@ func (vals interfaceValues) ToInterface() interfaceValues {
 
 // [END] interfaceValues
 // ---------------------------------------------------------------------------
+

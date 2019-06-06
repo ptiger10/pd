@@ -10,24 +10,14 @@ import (
 	"github.com/ptiger10/pd/kinds"
 )
 
-// Len returns the length of the Series (including null values)
-//
-// Applies to: All
-func (s Series) Len() int {
-	all := s.values.All()
-	return len(all)
-}
-
-// Describe the key details of the Series
-//
-// Applies to: All
+// Describe the key details of the Series.
 func (s Series) Describe() {
 	var err error
 	// shared data
 	origKind := s.kind
 	l := s.Len()
-	valids := len(s.values.Valid())
-	nulls := len(s.values.Null())
+	valids := len(s.valid())
+	nulls := len(s.null())
 	length := fmt.Sprint(l)
 	valid := fmt.Sprint(valids)
 	null := fmt.Sprint(nulls)

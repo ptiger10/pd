@@ -19,11 +19,10 @@ type Series struct {
 	Name   string
 	Math   Math
 	To     To
-	// IndexTo IndexTo
-	Index Index
+	Index  Index
 }
 
-// An Element is a single item in a Series
+// An Element is a single item in a Series.
 type Element struct {
 	Value      interface{}
 	Null       bool
@@ -109,4 +108,42 @@ func seriesEquals(s1, s2 Series) bool {
 		return true
 	}
 	return false
+}
+
+// Len returns the number of Elements (i.e., Value/Null pairs) in the Series.
+func (s Series) Len() int {
+	return s.values.Len()
+}
+
+// valid returns integer positions of valid (i.e., non-null) values in the series.
+func (s Series) valid() []int {
+	var ret []int
+	for i := 0; i < s.Len(); i++ {
+		if !s.values.Element(i).Null {
+			ret = append(ret, i)
+		}
+	}
+	return ret
+}
+
+// null returns the integer position of all null values in the collection.
+func (s Series) null() []int {
+	var ret []int
+	for i := 0; i < s.Len(); i++ {
+		if s.values.Element(i).Null {
+			ret = append(ret, i)
+		}
+	}
+	return ret
+}
+
+// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+//
+// Caution: This operation excludes the Null field but retains any null values.
+func (s Series) all() []interface{} {
+	var ret []interface{}
+	for i := 0; i < s.Len(); i++ {
+		ret = append(ret, s.values.Element(i).Value)
+	}
+	return ret
 }
