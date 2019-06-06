@@ -20,6 +20,7 @@ type Series struct {
 	Math   Math
 	To     To
 	Index  Index
+	Select Select
 }
 
 // An Element is a single item in a Series.
@@ -76,24 +77,26 @@ func (s Series) copy() Series {
 	copyS.Math = Math{s: copyS}
 	copyS.To = To{s: copyS}
 	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
-	// copyS.IndexTo = IndexTo{s: copyS}
+	copyS.Select = Select{s: copyS}
 	return *copyS
 }
 
 // in copies a Series then subsets it to include only index items and values at the positions supplied
 func (s Series) in(positions []int) (Series, error) {
-	if ok := s.ensureAlignment(); !ok {
-		return s, fmt.Errorf("fatal error: Series values and index labels out of alignment: report issue and create new series")
+	if err := s.ensureAlignment(); err != nil {
+		return s, fmt.Errorf("Series.in(): %v", err)
 	}
 	newS := s.copy()
 	values, err := newS.values.In(positions)
 	if err != nil {
-		return Series{}, fmt.Errorf("unable to get Series value(s) at position(s): %v", err)
+		return Series{}, fmt.Errorf("Series.in() values: %v", err)
 	}
 	newS.values = values
 	for i, level := range newS.index.Levels {
-		// Ducks error because positional alignment is ensured between values and all index levels
-		newS.index.Levels[i].Labels, _ = level.Labels.In(positions)
+		newS.index.Levels[i].Labels, err = level.Labels.In(positions)
+		if err != nil {
+			return Series{}, fmt.Errorf("Series.in() index: %v", err)
+		}
 	}
 	newS.index.Refresh()
 	return newS, nil

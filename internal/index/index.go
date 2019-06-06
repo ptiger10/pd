@@ -51,15 +51,15 @@ func (idx Index) Copy() Index {
 	return idxCopy
 }
 
-// Len returns the length of the first level of the index
+// Len returns the number of levels in the index.
 func (idx Index) Len() int {
-	return idx.Levels[0].Labels.Len()
+	return len(idx.Levels)
 }
 
-// Aligned ensures that all index levels have the same length
+// Aligned ensures that all index levels have the same length.
 func (idx Index) Aligned() bool {
 	lvl0 := idx.Levels[0].Labels.Len()
-	for i := 1; i < len(idx.Levels); i++ {
+	for i := 1; i < idx.Len(); i++ {
 		if lvl0 != idx.Levels[i].Labels.Len() {
 			return false
 		}

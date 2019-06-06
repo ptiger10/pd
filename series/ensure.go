@@ -1,6 +1,7 @@
 package series
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -53,18 +54,21 @@ func ensureDateTime(vals interface{}) []time.Time {
 
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
-func (s Series) ensureAlignment() bool {
-	if s.index.Aligned() && s.values.Len() == s.index.Len() {
-		return true
+func (s Series) ensureAlignment() error {
+	if !s.index.Aligned() {
+		return fmt.Errorf("index out of alignment: not all levels have same number of values")
 	}
-	return false
+	if labels := s.index.Levels[0].Labels.Len(); s.values.Len() != labels {
+		return fmt.Errorf("series out of alignment: %v values and %v index labels", s.values.Len(), labels)
+	}
+	return nil
 }
 
 // returns an error if any row position does not exist
 func (s Series) ensureRowPositions(positions []int) error {
 	_, err := s.values.In(positions)
 	if err != nil {
-		return err
+		return fmt.Errorf("ensureRowPositions: %v", err)
 	}
 	return nil
 }
@@ -73,7 +77,7 @@ func (s Series) ensureRowPositions(positions []int) error {
 func (s Series) ensureLevelPositions(positions []int) error {
 	_, err := s.index.In(positions)
 	if err != nil {
-		return err
+		return fmt.Errorf("ensureLevelPositions: %v", err)
 	}
 	return nil
 }

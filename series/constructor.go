@@ -109,6 +109,7 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	s.Math = Math{s: &s}
 	s.To = To{s: &s}
 	s.Index = Index{s: &s, To: To{s: &s, idx: true}}
+	s.Select = Select{s: &s}
 	// s.IndexTo = IndexTo{s: &s}
 	return s, err
 }
