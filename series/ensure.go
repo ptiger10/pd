@@ -58,8 +58,8 @@ func (s Series) ensureAlignment() error {
 	if !s.index.Aligned() {
 		return fmt.Errorf("index out of alignment: not all levels have same number of values")
 	}
-	if labels := s.index.Levels[0].Labels.Len(); s.values.Len() != labels {
-		return fmt.Errorf("series out of alignment: %v values and %v index labels", s.values.Len(), labels)
+	if labels := s.index.Levels[0].Len(); s.Len() != labels {
+		return fmt.Errorf("series out of alignment: %v values and %v index labels", s.Len(), labels)
 	}
 	return nil
 }

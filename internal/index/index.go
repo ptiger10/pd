@@ -51,6 +51,16 @@ func (idx Index) Copy() Index {
 	return idxCopy
 }
 
+// Drop drops an index level and modifies the Index in-place. If there one or fewer levels, does nothing.
+func (idx *Index) Drop(level int) Index {
+	if idx.Len() <= 1 {
+		return *idx
+	}
+	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
+	idx.Refresh()
+	return *idx
+}
+
 // Len returns the number of levels in the index.
 func (idx Index) Len() int {
 	return len(idx.Levels)
@@ -58,9 +68,9 @@ func (idx Index) Len() int {
 
 // Aligned ensures that all index levels have the same length.
 func (idx Index) Aligned() bool {
-	lvl0 := idx.Levels[0].Labels.Len()
+	lvl0 := idx.Levels[0].Len()
 	for i := 1; i < idx.Len(); i++ {
-		if lvl0 != idx.Levels[i].Labels.Len() {
+		if lvl0 != idx.Levels[i].Len() {
 			return false
 		}
 	}

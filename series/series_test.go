@@ -118,10 +118,60 @@ func Test_Equals(t *testing.T) {
 	}
 }
 
-// func TestValid(t *testing.T) {
-// 	vals := float64Values([]float64Value{
-// 		float64Value{1, false}, float64Value{math.NaN(), true},
-// 	})
-// 	at, _ := vals.In(vals.Valid())
-// 	fmt.Println(at.Vals().([]float64))
-// }
+func TestInsert(t *testing.T) {
+	var tests = []struct {
+		pos  int
+		val  interface{}
+		idx  []interface{}
+		want Series
+	}{
+		{0, "baz", []interface{}{"C", 3},
+			mustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
+		{1, "baz", []interface{}{"C", 3},
+			mustNew([]string{"foo", "baz", "bar"}, Idx([]string{"A", "C", "B"}), Idx([]int{1, 3, 2}))},
+		{2, "baz", []interface{}{"C", 3},
+			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+	}
+	for _, test := range tests {
+		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s.Insert(test.pos, test.val, test.idx)
+		if !seriesEquals(s, test.want) {
+			t.Errorf("s.insert() returned %v, want %v", s, test.want)
+		}
+	}
+}
+
+func TestAppend(t *testing.T) {
+	var tests = []struct {
+		val  interface{}
+		idx  []interface{}
+		want Series
+	}{
+		{"baz", []interface{}{"C", 3},
+			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+	}
+	for _, test := range tests {
+		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s.Append(test.val, test.idx)
+		if !seriesEquals(s, test.want) {
+			t.Errorf("s.Append() returned %v, want %v", s, test.want)
+		}
+	}
+}
+
+func TestDrop(t *testing.T) {
+	var tests = []struct {
+		pos  int
+		want Series
+	}{
+		{0, mustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
+		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
+	}
+	for _, test := range tests {
+		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s.Drop(test.pos)
+		if !seriesEquals(s, test.want) {
+			t.Errorf("s.insert() returned %v, want %v", s, test.want)
+		}
+	}
+}

@@ -2,13 +2,14 @@ package index
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
 )
 
-// NewLevel creates an Index Level from a Scalar or Slice interface{}
+// NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
 	var vf values.Factory
 	var err error
@@ -28,8 +29,17 @@ func NewLevel(data interface{}, name string) (Level, error) {
 	return newLevel(vf.Values, vf.Kind, name), nil
 }
 
-// newLevel returns an Index level with updated label map and longest value computed.
-// NB: Create labels using the values.constructors factory methods
+// MustCreateNewLevel returns a new level from an interface, but panics on error
+func MustCreateNewLevel(data interface{}, name string) Level {
+	lvl, err := NewLevel(data, name)
+	if err != nil {
+		log.Fatalf("MustCreateNewLevel returned an error: %v", err)
+	}
+	return lvl
+}
+
+// newLevel returns an Index level with updated label map and longest value computed. Never returns an error.
+// NB: Create labels using the values.constructors factory methods, as in NewLevel().
 func newLevel(labels values.Values, kind kinds.Kind, name string) Level {
 	lvl := Level{
 		Labels: labels,
@@ -50,4 +60,9 @@ func (lvl Level) Copy() Level {
 		lvlCopy.LabelMap[k] = v
 	}
 	return lvlCopy
+}
+
+// Len returns the number of labels in the level
+func (lvl Level) Len() int {
+	return lvl.Labels.Len()
 }

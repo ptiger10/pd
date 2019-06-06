@@ -1,7 +1,6 @@
 package index
 
 import (
-	"log"
 	"reflect"
 	"testing"
 	"time"
@@ -9,14 +8,6 @@ import (
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
 )
-
-func mustCreateNewLevel(data interface{}) Level {
-	lvl, err := NewLevel(data, "")
-	if err != nil {
-		log.Fatalf("mustCreateNewLevel returned an error: %v", err)
-	}
-	return lvl
-}
 
 func TestLevel(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
@@ -28,43 +19,43 @@ func TestLevel(t *testing.T) {
 	}{
 		{
 			data:       []float64{0, 1, 2},
-			wantLabels: mustCreateNewLevel([]float64{0, 1, 2}).Labels,
+			wantLabels: MustCreateNewLevel([]float64{0, 1, 2}, "").Labels,
 			wantKind:   kinds.Float64,
 			wantName:   "test",
 		},
 		{
 			data:       []int{0, 1, 2},
-			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
+			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
 			wantKind:   kinds.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
-			wantLabels: mustCreateNewLevel([]int64{0, 1, 2}).Labels,
+			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
 			wantKind:   kinds.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []string{"0", "1", "2"},
-			wantLabels: mustCreateNewLevel([]string{"0", "1", "2"}).Labels,
+			wantLabels: MustCreateNewLevel([]string{"0", "1", "2"}, "").Labels,
 			wantKind:   kinds.String,
 			wantName:   "test",
 		},
 		{
 			data:       []bool{true, true, false},
-			wantLabels: mustCreateNewLevel([]bool{true, true, false}).Labels,
+			wantLabels: MustCreateNewLevel([]bool{true, true, false}, "").Labels,
 			wantKind:   kinds.Bool,
 			wantName:   "test",
 		},
 		{
 			data:       []time.Time{testDate},
-			wantLabels: mustCreateNewLevel([]time.Time{testDate}).Labels,
+			wantLabels: MustCreateNewLevel([]time.Time{testDate}, "").Labels,
 			wantKind:   kinds.DateTime,
 			wantName:   "test",
 		},
 		{
 			data:       []interface{}{1.5, 1, "", false, testDate},
-			wantLabels: mustCreateNewLevel([]interface{}{1.5, 1, "", false, testDate}).Labels,
+			wantLabels: MustCreateNewLevel([]interface{}{1.5, 1, "", false, testDate}, "").Labels,
 			wantKind:   kinds.Interface,
 			wantName:   "test",
 		},
@@ -95,7 +86,7 @@ func TestLevel_Unsupported(t *testing.T) {
 }
 
 func Test_LevelCopy(t *testing.T) {
-	idxLvl := mustCreateNewLevel([]int{1, 2, 3})
+	idxLvl := MustCreateNewLevel([]int{1, 2, 3}, "")
 	idxLvl.Name = "foo"
 	copyLvl := idxLvl.Copy()
 	if copyLvl.Name != "foo" {

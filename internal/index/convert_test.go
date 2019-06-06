@@ -14,46 +14,46 @@ func TestConvertIndex_int(t *testing.T) {
 		convertTo kinds.Kind
 	}{
 		// Float
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Float64},
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Int64},
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.String},
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.Bool},
-		{mustCreateNewLevel([]float64{1, 2, 3}), kinds.DateTime},
+		{MustCreateNewLevel([]float64{1, 2, 3}, ""), kinds.Float64},
+		{MustCreateNewLevel([]float64{1, 2, 3}, ""), kinds.Int64},
+		{MustCreateNewLevel([]float64{1, 2, 3}, ""), kinds.String},
+		{MustCreateNewLevel([]float64{1, 2, 3}, ""), kinds.Bool},
+		{MustCreateNewLevel([]float64{1, 2, 3}, ""), kinds.DateTime},
 
 		// Int
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Float64},
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Int64},
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.String},
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.Bool},
-		{mustCreateNewLevel([]int64{1, 2, 3}), kinds.DateTime},
+		{MustCreateNewLevel([]int64{1, 2, 3}, ""), kinds.Float64},
+		{MustCreateNewLevel([]int64{1, 2, 3}, ""), kinds.Int64},
+		{MustCreateNewLevel([]int64{1, 2, 3}, ""), kinds.String},
+		{MustCreateNewLevel([]int64{1, 2, 3}, ""), kinds.Bool},
+		{MustCreateNewLevel([]int64{1, 2, 3}, ""), kinds.DateTime},
 
 		// String
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Float64},
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Int64},
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.String},
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.Bool},
-		{mustCreateNewLevel([]string{"1", "2", "3"}), kinds.DateTime},
+		{MustCreateNewLevel([]string{"1", "2", "3"}, ""), kinds.Float64},
+		{MustCreateNewLevel([]string{"1", "2", "3"}, ""), kinds.Int64},
+		{MustCreateNewLevel([]string{"1", "2", "3"}, ""), kinds.String},
+		{MustCreateNewLevel([]string{"1", "2", "3"}, ""), kinds.Bool},
+		{MustCreateNewLevel([]string{"1", "2", "3"}, ""), kinds.DateTime},
 
 		// Bool
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.Float64},
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.Int64},
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.String},
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.Bool},
-		{mustCreateNewLevel([]bool{true, false, false}), kinds.DateTime},
+		{MustCreateNewLevel([]bool{true, false, false}, ""), kinds.Float64},
+		{MustCreateNewLevel([]bool{true, false, false}, ""), kinds.Int64},
+		{MustCreateNewLevel([]bool{true, false, false}, ""), kinds.String},
+		{MustCreateNewLevel([]bool{true, false, false}, ""), kinds.Bool},
+		{MustCreateNewLevel([]bool{true, false, false}, ""), kinds.DateTime},
 
 		// DateTime
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.Float64},
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.Int64},
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.String},
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.Bool},
-		{mustCreateNewLevel([]time.Time{testDate}), kinds.DateTime},
+		{MustCreateNewLevel([]time.Time{testDate}, ""), kinds.Float64},
+		{MustCreateNewLevel([]time.Time{testDate}, ""), kinds.Int64},
+		{MustCreateNewLevel([]time.Time{testDate}, ""), kinds.String},
+		{MustCreateNewLevel([]time.Time{testDate}, ""), kinds.Bool},
+		{MustCreateNewLevel([]time.Time{testDate}, ""), kinds.DateTime},
 
 		// Interface
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Float64},
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Int64},
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.String},
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.Bool},
-		{mustCreateNewLevel([]interface{}{1, "2", true}), kinds.DateTime},
+		{MustCreateNewLevel([]interface{}{1, "2", true}, ""), kinds.Float64},
+		{MustCreateNewLevel([]interface{}{1, "2", true}, ""), kinds.Int64},
+		{MustCreateNewLevel([]interface{}{1, "2", true}, ""), kinds.String},
+		{MustCreateNewLevel([]interface{}{1, "2", true}, ""), kinds.Bool},
+		{MustCreateNewLevel([]interface{}{1, "2", true}, ""), kinds.DateTime},
 	}
 	for _, test := range tests {
 		lvl, err := test.lvl.Convert(test.convertTo)
@@ -72,8 +72,8 @@ func TestConvert_Numeric_Datetime(t *testing.T) {
 	var tests = []struct {
 		lvl Level
 	}{
-		{mustCreateNewLevel([]int64{n})},
-		{mustCreateNewLevel([]float64{float64(n)})},
+		{MustCreateNewLevel([]int64{n}, "")},
+		{MustCreateNewLevel([]float64{float64(n)}, "")},
 	}
 	for _, test := range tests {
 		lvl, _ := test.lvl.Convert(kinds.DateTime)
@@ -93,7 +93,7 @@ func TestConvert_Unsupported(t *testing.T) {
 		{kinds.Unsupported},
 	}
 	for _, test := range tests {
-		lvl := mustCreateNewLevel([]float64{1, 2, 3})
+		lvl := MustCreateNewLevel([]float64{1, 2, 3}, "")
 		_, err := lvl.Convert(test.kind)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.kind)

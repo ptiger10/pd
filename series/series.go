@@ -140,7 +140,7 @@ func (s Series) null() []int {
 	return ret
 }
 
-// All returns only the Value fields for the collection of Value/Null structs as an interface slice.
+// all returns only the Value fields for the collection of Value/Null structs as an interface slice.
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (s Series) all() []interface{} {
@@ -149,4 +149,44 @@ func (s Series) all() []interface{} {
 		ret = append(ret, s.values.Element(i).Value)
 	}
 	return ret
+}
+
+// Insert inserts a new row into the Series at a specified integer position and modifies the Series in place.
+func (s Series) Insert(pos int, val interface{}, idx []interface{}) error {
+	if len(idx) != s.index.Len() {
+		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
+			len(idx), s.index.Len())
+	}
+	for i := 0; i < s.index.Len(); i++ {
+		err := s.index.Levels[i].Labels.Insert(pos, idx[i])
+		if err != nil {
+			return fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
+		}
+		s.index.Levels[i].Refresh()
+	}
+	if err := s.values.Insert(pos, val); err != nil {
+		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)
+	}
+	return nil
+}
+
+// Drop drops a row at a specified integer position and modifies the Series in place.
+func (s Series) Drop(pos int) error {
+	for i := 0; i < s.index.Len(); i++ {
+		err := s.index.Levels[i].Labels.Drop(pos)
+		if err != nil {
+			return fmt.Errorf("Series.Drop(): %v", err)
+		}
+		s.index.Levels[i].Refresh()
+	}
+	if err := s.values.Drop(pos); err != nil {
+		return fmt.Errorf("Series.Drop(): %v", err)
+	}
+	return nil
+}
+
+// Append adds a row at a specified integer position and modifies the Series in place.
+func (s Series) Append(val interface{}, idx []interface{}) {
+	_ = s.Insert(s.Len(), val, idx)
+	return
 }

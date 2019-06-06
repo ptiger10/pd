@@ -110,7 +110,6 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	s.To = To{s: &s}
 	s.Index = Index{s: &s, To: To{s: &s, idx: true}}
 	s.Select = Select{s: &s}
-	// s.IndexTo = IndexTo{s: &s}
 	return s, err
 }
 
@@ -135,7 +134,7 @@ func indexFromMiniIndex(minis []config.MiniIndex, requiredLen int) (index.Index,
 		if err != nil {
 			return index.Index{}, fmt.Errorf("unable to construct index: %v", err)
 		}
-		labelLen := level.Labels.Len()
+		labelLen := level.Len()
 		if labelLen != requiredLen {
 			return index.Index{}, fmt.Errorf("unable to construct index %v:"+
 				"mismatch between supplied index length (%v) and expected length (%v)",
