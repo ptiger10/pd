@@ -2,6 +2,7 @@ package index
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/kinds"
@@ -52,13 +53,28 @@ func (idx Index) Copy() Index {
 }
 
 // Drop drops an index level and modifies the Index in-place. If there one or fewer levels, does nothing.
-func (idx *Index) Drop(level int) Index {
+func (idx *Index) Drop(level int) error {
 	if idx.Len() <= 1 {
-		return *idx
+		return nil
+	}
+	if level >= idx.Len() {
+		return fmt.Errorf("invalid level: %v (max: %v)", level, idx.Len())
 	}
 	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
 	idx.Refresh()
-	return *idx
+	return nil
+}
+
+// dropLevels drops multiple rows
+func (idx *Index) dropLevels(positions []int) error {
+	sort.IntSlice(positions).Sort()
+	for i, position := range positions {
+		err := idx.Drop(position - i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Len returns the number of levels in the index.

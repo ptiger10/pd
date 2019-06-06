@@ -217,17 +217,13 @@ func (sel Selection) Drop() (Series, error) {
 		return Series{}, fmt.Errorf("Selection.Set(): %v", err)
 	}
 	if sel.rowsOnly {
-		for _, row := range sel.rowPositions {
-			sel.s.values.Drop(row)
-		}
+		sel.s.dropRows(sel.rowPositions)
 	} else if sel.levelsOnly {
 		for _, level := range sel.levelPositions {
 			sel.s.index.Drop(level)
 		}
 	} else {
-		for _, row := range sel.rowPositions {
-			sel.s.values.Drop(row)
-		}
+		sel.s.dropRows(sel.rowPositions)
 		for _, level := range sel.levelPositions {
 			sel.s.index.Drop(level)
 		}

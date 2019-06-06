@@ -3,6 +3,7 @@ package series
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -151,7 +152,7 @@ func (s Series) all() []interface{} {
 	return ret
 }
 
-// Insert inserts a new row into the Series at a specified integer position and modifies the Series in place.
+// Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
 func (s Series) Insert(pos int, val interface{}, idx []interface{}) error {
 	if len(idx) != s.index.Len() {
 		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
@@ -166,6 +167,18 @@ func (s Series) Insert(pos int, val interface{}, idx []interface{}) error {
 	}
 	if err := s.values.Insert(pos, val); err != nil {
 		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)
+	}
+	return nil
+}
+
+// dropRows drops multiple rows
+func (s Series) dropRows(positions []int) error {
+	sort.IntSlice(positions).Sort()
+	for i, position := range positions {
+		err := s.Drop(position - i)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

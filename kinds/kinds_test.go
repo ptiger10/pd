@@ -11,8 +11,8 @@ func TestKind(t *testing.T) {
 	}{
 
 		{None, "none"},
-		{Float, "float64"},
-		{Int, "int64"},
+		{Float64, "float64"},
+		{Int64, "int64"},
 		{String, "string"},
 		{Bool, "bool"},
 		{DateTime, "time.Time"},

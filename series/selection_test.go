@@ -46,6 +46,18 @@ func TestAt_singleIndex_multipleCalls(t *testing.T) {
 	}
 }
 
+func TestSelect_Rows_Drop(t *testing.T) {
+	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
+	newS, err := s.Select.Rows([]int{0, 2}).Drop()
+	if err != nil {
+		t.Errorf("Select.Rows.Drop(): %v", err)
+	}
+	wantS, _ := New([]string{"dog"}, Idx([]int{100}))
+	if !seriesEquals(newS, wantS) {
+		t.Errorf("Select.Rows.Drop() returned %v, want %v", newS, wantS)
+	}
+}
+
 // // func TestAtLabel_singleIdx(t *testing.T) {
 // // 	var tests = []struct {
 // // 		input string
