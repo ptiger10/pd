@@ -13,13 +13,14 @@ import (
 
 // A Series is a 1-D data container with a labeled index, static type, and the ability to handle null values
 type Series struct {
-	index   index.Index
-	values  values.Values
-	kind    kinds.Kind
-	Name    string
-	Math    Math
-	To      To
-	IndexTo IndexTo
+	index  index.Index
+	values values.Values
+	kind   kinds.Kind
+	Name   string
+	Math   Math
+	To     To
+	// IndexTo IndexTo
+	Index Index
 }
 
 // An Element is a single item in a Series
@@ -75,7 +76,8 @@ func (s Series) copy() Series {
 	}
 	copyS.Math = Math{s: copyS}
 	copyS.To = To{s: copyS}
-	copyS.IndexTo = IndexTo{s: copyS}
+	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
+	// copyS.IndexTo = IndexTo{s: copyS}
 	return *copyS
 }
 

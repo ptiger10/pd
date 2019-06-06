@@ -6,7 +6,7 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
-func ExampleSeries_string_defaultIndex() {
+func ExampleSeries_string_defaultIdx() {
 	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"})
 	fmt.Println(s)
 
@@ -18,8 +18,8 @@ func ExampleSeries_string_defaultIndex() {
 	// kind: string
 }
 
-func ExampleSeries_string_customIndex() {
-	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Index([]int{100, 101, 102, 103}))
+func ExampleSeries_string_customIdx() {
+	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Idx([]int{100, 101, 102, 103}))
 	fmt.Println(s)
 
 	// Output:
@@ -33,7 +33,7 @@ func ExampleSeries_string_customIndex() {
 func ExampleSeries_string_customIndex2() {
 	s, _ := New(
 		[]string{"Joe", "Jamy", "", "Jenny"},
-		Index([]int{0, 10, 11, 12}))
+		Idx([]int{0, 10, 11, 12}))
 	fmt.Println(s)
 
 	// Output:
@@ -44,8 +44,8 @@ func ExampleSeries_string_customIndex2() {
 	// kind: string
 }
 
-func ExampleSeries_string_multiIndex() {
-	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Index([]int{0, 1, 2, 3}), Index([]int{100, 101, 102, 103}))
+func ExampleSeries_string_multiIdx() {
+	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Idx([]int{0, 1, 2, 3}), Idx([]int{100, 101, 102, 103}))
 	fmt.Println(s)
 
 	// Output:
@@ -59,8 +59,8 @@ func ExampleSeries_string_multiIndex() {
 func ExampleSeries_string_namedindex_1() {
 	s, _ := New(
 		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Index([]int{0, 0, 1, 1}, opt.Name("id")),
-		Index([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
+		Idx([]int{0, 0, 1, 1}, opt.Name("id")),
+		Idx([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -77,8 +77,8 @@ func ExampleSeries_string_namedindex_1() {
 func ExampleSeries_string_namedindex_2() {
 	s, _ := New(
 		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Index([]int{100, 100, 101, 101}, opt.Name("id")),
-		Index([]int{10, 20, 30, 40}, opt.Name("code")),
+		Idx([]int{100, 100, 101, 101}, opt.Name("id")),
+		Idx([]int{10, 20, 30, 40}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -95,8 +95,8 @@ func ExampleSeries_string_namedindex_2() {
 func ExampleSeries_string_named_index_nonsequential() {
 	s, _ := New(
 		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
-		Index([]int{0, 0, 1, 1, 0, 0}, opt.Name("id")),
-		Index([]int{10000, 10100, 10200, 10300, 10400, 10500}, opt.Name("code")),
+		Idx([]int{0, 0, 1, 1, 0, 0}, opt.Name("id")),
+		Idx([]int{10000, 10100, 10200, 10300, 10400, 10500}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -112,11 +112,11 @@ func ExampleSeries_string_named_index_nonsequential() {
 	// name: student
 }
 
-func ExampleSeries_string_partial_named_index() {
+func ExampleSeries_string_partial_named_Idx() {
 	s, _ := New(
 		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Index([]int{0, 0, 1, 1}),
-		Index([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
+		Idx([]int{0, 0, 1, 1}),
+		Idx([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
 	)
 	fmt.Println(s)
 
@@ -133,8 +133,8 @@ func ExampleSeries_string_partial_named_index() {
 // func TestPrinter(t *testing.T) {
 // 	s, _ := New(
 // 		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
-// 		Index([]int{0, 0, 1, 1, 0, 0}, opt.Name("code")),
-// 		Index([]int{10000, 10100, 10200, 10300, 10400, 10500}),
+// 		Idx([]int{0, 0, 1, 1, 0, 0}, opt.Name("code")),
+// 		Idx([]int{10000, 10100, 10200, 10300, 10400, 10500}),
 // 	)
 // 	fmt.Println(s.print())
 // }
@@ -146,7 +146,6 @@ func ExampleElem() {
 	// Output:
 	//      Value: foo
 	//       Null: false
-	//       Kind: string
 	//     Labels: [0]
 	// LabelKinds: [int64]
 }

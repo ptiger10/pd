@@ -52,15 +52,15 @@ func TestConstructor_Name_Slice_Float(t *testing.T) {
 func TestConstructor_Index_Slice_Float(t *testing.T) {
 	var err error
 
-	_, err = New([]float32{-1.5, 0, 1.5}, Index([]float32{1, 2, 3}))
+	_, err = New([]float32{-1.5, 0, 1.5}, Idx([]float32{1, 2, 3}))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float64{-1.5, 0, 1.5}, Index([]float64{1, 2, 3}))
+	_, err = New([]float64{-1.5, 0, 1.5}, Idx([]float64{1, 2, 3}))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float64{-1.5, 0, 1.5}, Index([]float64{1}))
+	_, err = New([]float64{-1.5, 0, 1.5}, Idx([]float64{1}))
 	if err == nil {
 		t.Errorf("Returned nil error, want error due to mismatched value/index lengths")
 	}

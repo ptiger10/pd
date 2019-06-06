@@ -10,7 +10,7 @@ import (
 )
 
 func TestElement(t *testing.T) {
-	s, err := New([]string{"", "valid"}, Index([]string{"A", "B"}), Index([]int{1, 2}))
+	s, err := New([]string{"", "valid"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 	if err != nil {
 		t.Error(err)
 	}
@@ -78,11 +78,11 @@ func Test_Copy(t *testing.T) {
 	copyS.kind = kinds.Bool
 	MathPtr := fmt.Sprintf("%p", copyS.Math.s)
 	ToPtr := fmt.Sprintf("%p", copyS.To.s)
-	IndexToPtr := fmt.Sprintf("%p", copyS.IndexTo.s)
+	IndexToPtr := fmt.Sprintf("%p", copyS.Index.s)
 	if !seriesEquals(s, origS) || seriesEquals(s, copyS) || fmt.Sprintf("%p", &s) == MathPtr {
 		t.Errorf("s.copy() retained references to original, want fresh copy")
 	}
-	if copyS.Math.s == nil || copyS.To.s == nil || copyS.IndexTo.s == nil {
+	if copyS.Math.s == nil || copyS.To.s == nil || copyS.Index.s == nil {
 		t.Errorf("s.copy() did not instantiate new pointers for embedded structs")
 	}
 	if MathPtr != ToPtr || MathPtr != IndexToPtr {
@@ -91,11 +91,11 @@ func Test_Copy(t *testing.T) {
 }
 
 func Test_Equals(t *testing.T) {
-	s, err := New("foo", Index("bar"), opt.Name("baz"))
+	s, err := New("foo", Idx("bar"), opt.Name("baz"))
 	if err != nil {
 		t.Error(err)
 	}
-	s2, _ := New("foo", Index("bar"), opt.Name("baz"))
+	s2, _ := New("foo", Idx("bar"), opt.Name("baz"))
 	if !seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned false, want true")
 	}
@@ -104,15 +104,15 @@ func Test_Equals(t *testing.T) {
 		t.Errorf("seriesEquals() returned true for different kind, want false")
 	}
 
-	s2, _ = New("quux", Index("bar"), opt.Name("baz"))
+	s2, _ = New("quux", Idx("bar"), opt.Name("baz"))
 	if seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned true for different values, want false")
 	}
-	s2, _ = New("foo", Index("corge"), opt.Name("baz"))
+	s2, _ = New("foo", Idx("corge"), opt.Name("baz"))
 	if seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned true for different index, want false")
 	}
-	s2, _ = New("foo", Index("bar"), opt.Name("qux"))
+	s2, _ = New("foo", Idx("bar"), opt.Name("qux"))
 	if seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned true for different name, want false")
 	}

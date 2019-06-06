@@ -127,12 +127,12 @@ func TestTo_Interface(t *testing.T) {
 
 func TestIndexTo_Float(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexTo.Float()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}))
+	newS := s.Index.To.Float()
+	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
@@ -147,12 +147,12 @@ func TestIndexTo_Float(t *testing.T) {
 
 func TestIndexTo_Int(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexTo.Int()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]int64{1, 1, 1, 0, 1.5566688e+18}))
+	newS := s.Index.To.Int()
+	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]int64{1, 1, 1, 0, 1.5566688e+18}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Int() returned %v, want %v", newS, wantS)
 	}
@@ -167,12 +167,12 @@ func TestIndexTo_Int(t *testing.T) {
 
 func TestIndexTo_String(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexTo.String()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}))
+	newS := s.Index.To.String()
+	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.String() returned %v, want %v", newS, wantS)
 	}
@@ -187,13 +187,13 @@ func TestIndexTo_String(t *testing.T) {
 
 func TestIndexTo_Bool(t *testing.T) {
 	// testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3}, Index([]interface{}{1.5, 1, "1", false}))
+	s, err := New([]int{0, 1, 2, 3}, Idx([]interface{}{1.5, 1, "1", false}))
 	if err != nil {
 		t.Error(err)
 	}
 
-	newS := s.IndexTo.Bool()
-	wantS, _ := New([]int{0, 1, 2, 3}, Index([]bool{true, true, true, false}))
+	newS := s.Index.To.Bool()
+	wantS, _ := New([]int{0, 1, 2, 3}, Idx([]bool{true, true, true, false}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Bool() returned %v, want %v", newS, wantS)
 	}
@@ -209,12 +209,12 @@ func TestIndexTo_Bool(t *testing.T) {
 func TestIndexTo_DateTime(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexTo.DateTime()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}))
+	newS := s.Index.To.DateTime()
+	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.DateTime() returned %v, want %v", newS, wantS)
 	}
@@ -229,12 +229,12 @@ func TestIndexTo_DateTime(t *testing.T) {
 
 func TestIndexTo_Interface(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	s, err := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.IndexTo.Interface()
-	wantS, _ := New([]int{0, 1, 2, 3, 4}, Index([]interface{}{1.5, 1, "1", false, testDate}))
+	newS := s.Index.To.Interface()
+	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Interface() returned %v, want %v", newS, wantS)
 	}
@@ -261,7 +261,7 @@ func TestIndexTo_Interface(t *testing.T) {
 // 		{kinds.DateTime, 1},
 // 	}
 // 	for _, test := range tests {
-// 		s, err := New([]interface{}{1, 2, 3}, Index([]int{1, 2, 3}), Index([]int{10, 20, 30}))
+// 		s, err := New([]interface{}{1, 2, 3}, Idx([]int{1, 2, 3}), Idx([]int{10, 20, 30}))
 // 		if err != nil {
 // 			t.Error(err)
 // 		}

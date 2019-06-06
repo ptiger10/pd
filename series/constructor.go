@@ -11,9 +11,9 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
-// Index returns a opt.ConstructorOption for use in the Series constructor New(),
+// Idx returns a opt.ConstructorOption for use in the Series constructor New(),
 // and takes an optional Name.
-func Index(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOption {
+func Idx(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOption {
 	cfg := config.ConstructorConfig{}
 	for _, option := range options {
 		option(&cfg)
@@ -108,7 +108,8 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	s := new(idx, v, kind, name)
 	s.Math = Math{s: &s}
 	s.To = To{s: &s}
-	s.IndexTo = IndexTo{s: &s}
+	s.Index = Index{s: &s, To: To{s: &s, idx: true}}
+	// s.IndexTo = IndexTo{s: &s}
 	return s, err
 }
 
