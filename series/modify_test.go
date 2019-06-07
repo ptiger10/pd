@@ -182,6 +182,25 @@ func Test_InPlace_Sort(t *testing.T) {
 	}
 }
 
+func Test_Index_Sort(t *testing.T) {
+	var tests = []struct {
+		desc string
+		orig Series
+		asc  bool
+		want Series
+	}{
+		{"float", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), true, mustNew([]float64{3, 5, 1}, Idx([]int{0, 1, 2}))},
+		{"float reverse", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), false, mustNew([]float64{1, 5, 3}, Idx([]int{2, 1, 0}))},
+	}
+	for _, test := range tests {
+		s := test.orig
+		s.Index.Sort(test.asc)
+		if !seriesEquals(s, test.want) {
+			t.Errorf("series.Index.Sort() test %v returned %v, want %v", test.desc, s, test.want)
+		}
+	}
+}
+
 // [START Convert tests]
 
 func TestTo_Float(t *testing.T) {

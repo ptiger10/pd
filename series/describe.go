@@ -74,7 +74,8 @@ func (s Series) Describe() {
 //
 // Applies to: All
 func (s Series) ValueCounts() map[string]int {
-	vals := s.validAll()
+	valid, _ := s.in(s.valid())
+	vals := valid.all()
 	counter := make(map[string]int)
 	for _, val := range vals {
 		counter[fmt.Sprint(val)]++

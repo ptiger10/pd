@@ -106,11 +106,12 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Construct Series
 	s := new(idx, v, kind, name)
-	s.Math = Math{s: &s}
-	s.To = To{s: &s}
+	s.Filter = Filter{s: &s}
 	s.Index = Index{s: &s, To: To{s: &s, idx: true}}
-	s.Select = Select{s: &s}
 	s.InPlace = InPlace{s: &s}
+	s.Math = Math{s: &s}
+	s.Select = Select{s: &s}
+	s.To = To{s: &s}
 	return s, err
 }
 

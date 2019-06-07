@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ptiger10/pd/opt"
 )
@@ -138,14 +139,14 @@ func ExampleSeries_string_partial_named_Idx() {
 	// name: student
 }
 
-// func TestPrinter(t *testing.T) {
-// 	s, _ := New(
-// 		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
-// 		Idx([]int{0, 0, 1, 1, 0, 0}, opt.Name("code")),
-// 		Idx([]int{10000, 10100, 10200, 10300, 10400, 10500}),
-// 	)
-// 	fmt.Println(s.print())
-// }
+func ExampleSeries_datetime() {
+	s, _ := New([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)})
+	fmt.Println(s)
+
+	// Output:
+	// 0    1/1/2019T00:00:00
+	// kind: dateTime
+}
 
 func ExampleElem() {
 	s, _ := New("foo")

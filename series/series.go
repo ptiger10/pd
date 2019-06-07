@@ -17,11 +17,12 @@ type Series struct {
 	values  values.Values
 	kind    kinds.Kind
 	Name    string
-	Math    Math
-	To      To
+	Filter  Filter
 	Index   Index
-	Select  Select
 	InPlace InPlace
+	Math    Math
+	Select  Select
+	To      To
 }
 
 // An Element is a single item in a Series.
@@ -75,11 +76,12 @@ func (s Series) copy() Series {
 		kind:   s.kind,
 		Name:   s.Name,
 	}
-	copyS.Math = Math{s: copyS}
-	copyS.To = To{s: copyS}
+	copyS.Filter = Filter{s: copyS}
 	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
-	copyS.Select = Select{s: copyS}
 	copyS.InPlace = InPlace{s: copyS}
+	copyS.Math = Math{s: copyS}
+	copyS.Select = Select{s: copyS}
+	copyS.To = To{s: copyS}
 	return *copyS
 }
 
@@ -88,6 +90,10 @@ func (s Series) in(positions []int) (Series, error) {
 	if err := s.ensureAlignment(); err != nil {
 		return s, fmt.Errorf("Series.in(): %v", err)
 	}
+	if positions == nil {
+		return Series{}, nil
+	}
+
 	newS := s.copy()
 	values, err := newS.values.In(positions)
 	if err != nil {

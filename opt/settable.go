@@ -8,6 +8,7 @@ var defaultOptions = struct {
 	displayFloatPrecision          int
 	displayRepeatedIndexLabels     bool
 	displayStringNullFiller        string
+	displayTimeFormat              string
 	stringNullValues               []string
 	logWarnings                    bool
 }{
@@ -18,6 +19,7 @@ var defaultOptions = struct {
 	displayFloatPrecision,
 	displayRepeatedIndexLabels,
 	displayStringNullFiller,
+	displayTimeFormat,
 	stringNullValues,
 	logWarnings,
 }
@@ -31,6 +33,7 @@ func RestoreDefaults() {
 	SetDisplayFloatPrecision(defaultOptions.displayFloatPrecision)
 	SetDisplayRepeatedIndexLabels(defaultOptions.displayRepeatedIndexLabels)
 	SetDisplayStringNullFiller(defaultOptions.displayStringNullFiller)
+	SetDisplayTimeFormat(defaultOptions.displayTimeFormat)
 	SetStringNullValues(defaultOptions.stringNullValues)
 	SetLogWarnings(defaultOptions.logWarnings)
 }
@@ -42,6 +45,7 @@ var displayIndexWhitespaceBuffer = 1
 var displayFloatPrecision = 2
 var displayRepeatedIndexLabels = false
 var displayStringNullFiller = "NaN"
+var displayTimeFormat = "1/2/2006T15:04:05"
 var stringNullValues = []string{"NaN", "n/a", "N/A", "", "nil"}
 var logWarnings = true
 
@@ -146,6 +150,16 @@ func SetDisplayStringNullFiller(s string) {
 // GetDisplayStringNullFiller returns DisplayStringNullFiller.
 func GetDisplayStringNullFiller() string {
 	return displayStringNullFiller
+}
+
+// SetDisplayTimeFormat formats how datetimes are displayed, using the syntax specified in package time.Time.
+func SetDisplayTimeFormat(s string) {
+	displayTimeFormat = s
+}
+
+// GetDisplayTimeFormat returns DisplayTimeFormat.
+func GetDisplayTimeFormat() string {
+	return displayTimeFormat
 }
 
 // SetStringNullValues sets StringNullValues to include only those items contained in nullList.

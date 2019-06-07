@@ -77,3 +77,28 @@ func TestNumerics(t *testing.T) {
 
 	}
 }
+
+func TestGt(t *testing.T) {
+	s, _ := New([]float64{1, 2, 3})
+	newS, err := s.Filter.Gt(2)
+	if err != nil {
+		t.Error(err)
+	}
+	want, _ := New([]float64{3})
+	if seriesEquals(newS, want) {
+		t.Errorf("s.Filter.Gt() returned %v, want %v", newS, want)
+	}
+}
+
+func TestGt_Null(t *testing.T) {
+	s, _ := New([]string{"", "1", "", "2", "", "3"})
+	s = s.To.Float()
+	newS, err := s.Filter.Gt(2)
+	if err != nil {
+		t.Error(err)
+	}
+	want, _ := New([]float64{3})
+	if seriesEquals(newS, want) {
+		t.Errorf("s.Filter.Gt() returned %v, want %v", newS, want)
+	}
+}

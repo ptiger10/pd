@@ -62,6 +62,14 @@ func TestSetting(t *testing.T) {
 		t.Error("Unable to set/get DisplayStringNullFiller")
 	}
 
+	if GetDisplayTimeFormat() != defaultOptions.displayTimeFormat {
+		t.Errorf("Default setting not reading for DisplayTimeFormat")
+	}
+	SetDisplayTimeFormat("2006")
+	if GetDisplayTimeFormat() != "2006" {
+		t.Error("Unable to set/get DisplayTimeFormat")
+	}
+
 	SetStringNullValues([]string{"Nada", "Nothing"})
 	if !reflect.DeepEqual(GetStringNullValues(), []string{"Nada", "Nothing"}) {
 		t.Error("Unable to set/get StringNullValues")

@@ -1,6 +1,52 @@
 package series
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
+
+// Filter contains filtering methods.
+type Filter struct {
+	s *Series
+}
+
+// Float64 filters
+func (f Filter) Float64(cmp func(float64) bool) (Series, error) {
+	s, _ := f.s.in(f.s.valid())
+	var include []int
+	vals, ok := s.values.Vals().([]float64)
+	if !ok {
+		return Series{}, fmt.Errorf("float64 filter expects float64 values only, got %T", f.s.Kind())
+	}
+	for i, val := range vals {
+		if cmp(val) {
+			include = append(include, i)
+		}
+	}
+	return s.in(include)
+}
+
+// Gt - Greater Than
+//
+// Applies to: Float, Int
+func (f Filter) Gt(comparison float64) (Series, error) {
+	s, err := f.Float64(func(elem float64) bool {
+		return elem > comparison
+	})
+	if err != nil {
+		return Series{}, fmt.Errorf("Filter.Gt(): %v", err)
+	}
+	return s, nil
+}
+
+// Gt - Greater Than
+//
+// Applies to: Float, Int
+// func (f Filter) Gt(comparison float64) func(float64) bool {
+// 	return func(elem float64) bool {
+// 		return elem > comparison
+// 	}
+// }
 
 // Gt - Greater Than
 //

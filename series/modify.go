@@ -68,38 +68,38 @@ type InPlace struct {
 }
 
 // Sort sorts the series by its values and modifies the Series in place.
-func (c InPlace) Sort(asc bool) {
+func (ip InPlace) Sort(asc bool) {
 	if asc {
-		sort.Stable(c.s)
+		sort.Stable(ip.s)
 	} else {
-		sort.Stable(sort.Reverse(c.s))
+		sort.Stable(sort.Reverse(ip.s))
 	}
 }
 
 // Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
-func (c InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
-	if len(idx) != c.s.index.Len() {
+func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
+	if len(idx) != ip.s.index.Len() {
 		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
-			len(idx), c.s.index.Len())
+			len(idx), ip.s.index.Len())
 	}
-	for i := 0; i < c.s.index.Len(); i++ {
-		err := c.s.index.Levels[i].Labels.Insert(pos, idx[i])
+	for i := 0; i < ip.s.index.Len(); i++ {
+		err := ip.s.index.Levels[i].Labels.Insert(pos, idx[i])
 		if err != nil {
 			return fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
 		}
-		c.s.index.Levels[i].Refresh()
+		ip.s.index.Levels[i].Refresh()
 	}
-	if err := c.s.values.Insert(pos, val); err != nil {
+	if err := ip.s.values.Insert(pos, val); err != nil {
 		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)
 	}
 	return nil
 }
 
 // dropRows drops multiple rows
-func (c InPlace) dropRows(positions []int) error {
+func (ip InPlace) dropRows(positions []int) error {
 	sort.IntSlice(positions).Sort()
 	for i, position := range positions {
-		err := c.s.InPlace.Drop(position - i)
+		err := ip.s.InPlace.Drop(position - i)
 		if err != nil {
 			return err
 		}
@@ -108,23 +108,23 @@ func (c InPlace) dropRows(positions []int) error {
 }
 
 // Drop drops a row at a specified integer position and modifies the Series in place.
-func (c InPlace) Drop(pos int) error {
-	for i := 0; i < c.s.index.Len(); i++ {
-		err := c.s.index.Levels[i].Labels.Drop(pos)
+func (ip InPlace) Drop(pos int) error {
+	for i := 0; i < ip.s.index.Len(); i++ {
+		err := ip.s.index.Levels[i].Labels.Drop(pos)
 		if err != nil {
 			return fmt.Errorf("Series.Drop(): %v", err)
 		}
-		c.s.index.Levels[i].Refresh()
+		ip.s.index.Levels[i].Refresh()
 	}
-	if err := c.s.values.Drop(pos); err != nil {
+	if err := ip.s.values.Drop(pos); err != nil {
 		return fmt.Errorf("Series.Drop(): %v", err)
 	}
 	return nil
 }
 
 // Append adds a row at a specified integer position and modifies the Series in place.
-func (c InPlace) Append(val interface{}, idx []interface{}) {
-	_ = c.s.InPlace.Insert(c.s.Len(), val, idx)
+func (ip InPlace) Append(val interface{}, idx []interface{}) {
+	_ = ip.s.InPlace.Insert(ip.s.Len(), val, idx)
 	return
 }
 
@@ -218,4 +218,33 @@ func (t To) Interface() Series {
 type Index struct {
 	s  *Series
 	To To
+}
+
+// Levels returns the number of levels in the index
+func (idx Index) Levels() int {
+	return idx.s.index.Len()
+}
+
+// Len returns the number of items in each level of the index.
+func (idx Index) Len() int {
+	return idx.s.index.Levels[0].Len()
+}
+
+// Swap swaps two labels at index level 0 and modifies the index in place.
+func (idx Index) Swap(i, j int) {
+	idx.s.Swap(i, j)
+}
+
+// Less compares two elements and returns true if the first is less than the second.
+func (idx Index) Less(i, j int) bool {
+	return idx.s.index.Levels[0].Labels.Less(i, j)
+}
+
+// Sort sorts the index by index level 0 and modifies the Series in place.
+func (idx Index) Sort(asc bool) {
+	if asc {
+		sort.Stable(idx)
+	} else {
+		sort.Stable(sort.Reverse(idx))
+	}
 }

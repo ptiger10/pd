@@ -20,12 +20,6 @@ func (s Series) validVals() interface{} {
 	return valid.Vals()
 }
 
-// a []interface of valid (non-null) values; appropriate for counting and indexing
-func (s Series) validAll() []interface{} {
-	valid, _ := s.in(s.valid())
-	return valid.all()
-}
-
 // Sum is shorthand for series.Math.Sum()
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().

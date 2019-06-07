@@ -3,7 +3,9 @@ package series
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -11,17 +13,7 @@ func (s Series) String() string {
 	if seriesEquals(Series{}, s) {
 		return "Series{}"
 	}
-	switch s.kind {
-	// case DateTime:
-	// 	var printer string
-	// 	vals := s.values.(dateTimeValues)
-	// 	for _, val := range vals {
-	// 		printer += fmt.Sprintln(val.v.Format("01/02/2006"))
-	// 	}
-	// 	return printer
-	default:
-		return s.print()
-	}
+	return s.print()
 }
 
 // expects to receive a slice of typed value structs (eg values.float64Values)
@@ -85,7 +77,13 @@ func (s Series) print() string {
 		// [END index printer]
 
 		// [START value printer]
-		valStr := fmt.Sprint(elem.Value)
+		var valStr string
+		if s.kind == kinds.DateTime {
+			valStr = elem.Value.(time.Time).Format(opt.GetDisplayTimeFormat())
+		} else {
+			valStr = fmt.Sprint(elem.Value)
+		}
+
 		// add buffer at beginning
 		val := strings.Repeat(" ", opt.GetDisplayValuesWhitespaceBuffer()) + valStr
 		// null string values must not return any trailing whitespace

@@ -23,7 +23,7 @@ func (kind Kind) String() string {
 		"int64",
 		"string",
 		"bool",
-		"time.Time",
+		"dateTime",
 		"interface",
 		"placeholder",
 		"unsupported",
