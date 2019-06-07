@@ -6,6 +6,14 @@ import (
 	"github.com/ptiger10/pd/opt"
 )
 
+func ExampleSeries_empty() {
+	s := Series{}
+	fmt.Println(s)
+
+	// Output:
+	// Series{}
+}
+
 func ExampleSeries_string_defaultIdx() {
 	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"})
 	fmt.Println(s)

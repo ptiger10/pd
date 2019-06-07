@@ -252,6 +252,6 @@ type Selection struct {
 
 func (sel Selection) String() string {
 	return fmt.Sprintf(
-		"Selection {rows: %v, levels: %v, swappable: %v, hasError: %v}. \nTo print underlying Series, call .Series() ",
+		"Selection{rows: %v, levels: %v, swappable: %v, hasError: %v}",
 		sel.rowPositions, sel.levelPositions, sel.swappable, sel.err != nil)
 }

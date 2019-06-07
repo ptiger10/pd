@@ -8,6 +8,9 @@ import (
 )
 
 func (s Series) String() string {
+	if seriesEquals(Series{}, s) {
+		return "Series{}"
+	}
 	switch s.kind {
 	// case DateTime:
 	// 	var printer string

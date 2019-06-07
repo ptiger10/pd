@@ -3,6 +3,8 @@ package series
 import (
 	"fmt"
 	"sort"
+
+	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Sort interface]
@@ -20,7 +22,7 @@ func (s Series) Less(i, j int) bool {
 
 // [END Sort interface]
 
-// [START Return New Series]
+// [START return new Series]
 
 // Sort sorts the series by its values and returns a new Series.
 func (s Series) Sort(asc bool) Series {
@@ -56,9 +58,9 @@ func (s Series) Append(val interface{}, idx []interface{}) Series {
 	return s
 }
 
-// [END Return New Series]
+// [END return new Series]
 
-// [START Modify InPlace]
+// [START modify in place]
 
 // InPlace contains methods for modifying a Series in place.
 type InPlace struct {
@@ -126,7 +128,89 @@ func (c InPlace) Append(val interface{}, idx []interface{}) {
 	return
 }
 
-// [END Modify InPlace]
+// [END modify in place]
+
+// [START type conversion methods]
+
+// To contains conversion methods
+type To struct {
+	s   *Series
+	idx bool
+}
+
+// Float converts Series values to float64.
+func (t To) Float() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToFloat()
+	} else {
+		t.s.values = t.s.values.ToFloat()
+		t.s.kind = kinds.Float64
+	}
+	return *t.s
+}
+
+// Int converts Series values to int64.
+func (t To) Int() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToInt()
+	} else {
+		t.s.values = t.s.values.ToInt()
+		t.s.kind = kinds.Int64
+	}
+	return *t.s
+}
+
+// String converts Series values to string.
+func (t To) String() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToString()
+	} else {
+		t.s.values = t.s.values.ToString()
+		t.s.kind = kinds.String
+	}
+	return *t.s
+}
+
+// Bool converts Series values to bool.
+func (t To) Bool() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToBool()
+	} else {
+		t.s.values = t.s.values.ToBool()
+		t.s.kind = kinds.Bool
+	}
+	return *t.s
+}
+
+// DateTime converts Series values to time.Time.
+func (t To) DateTime() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToDateTime()
+	} else {
+		t.s.values = t.s.values.ToDateTime()
+		t.s.kind = kinds.DateTime
+	}
+	return *t.s
+}
+
+// Interface converts Series values to interface.
+func (t To) Interface() Series {
+	if t.idx {
+		t.s.index = t.s.index.Copy()
+		t.s.index.Levels[0] = t.s.index.Levels[0].ToInterface()
+	} else {
+		t.s.values = t.s.values.ToInterface()
+		t.s.kind = kinds.Interface
+	}
+	return *t.s
+}
+
+// [END type conversion methods]
 
 // [START Index modifications]
 

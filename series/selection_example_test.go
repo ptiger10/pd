@@ -1,16 +1,18 @@
 package series
 
-// func ExampleSeries_Select_all() {
-// 	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
-// 	sel := s.Select()
-// 	fmt.Println(sel)
-// 	// Output:
-// 	// Selection Object. To print underlying Series, call .Get()
-// 	// DerivedIntent: Select All
-// 	// Rows: [0 1 2]
-// 	// Levels: []
-// 	// Error: false
-// }
+import (
+	"fmt"
+
+	"github.com/ptiger10/pd/opt"
+)
+
+func ExampleSeries_Select_all() {
+	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
+	sel := s.Select.ByRows([]int{0, 2})
+	fmt.Println(sel)
+	// Output:
+	// Selection{rows: [0 2], levels: [], swappable: true, hasError: false}
+}
 
 // func ExampleSeries_Select_levels() {
 // 	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
