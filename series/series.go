@@ -17,6 +17,7 @@ type Series struct {
 	values  values.Values
 	kind    kinds.Kind
 	Name    string
+	Apply   Apply
 	Filter  Filter
 	Index   Index
 	InPlace InPlace
@@ -76,6 +77,7 @@ func (s Series) copy() Series {
 		kind:   s.kind,
 		Name:   s.Name,
 	}
+	copyS.Apply = Apply{s: copyS}
 	copyS.Filter = Filter{s: copyS}
 	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
 	copyS.InPlace = InPlace{s: copyS}
