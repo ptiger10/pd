@@ -12,6 +12,13 @@ func newBool(val bool) boolValue {
 	return boolValue{val, false}
 }
 
+func (vals *boolValues) Less(i, j int) bool {
+	if (*vals)[i].v && !(*vals)[j].v {
+		return true
+	}
+	return false
+}
+
 // [END Constructor Functions]
 
 // [START Converters]

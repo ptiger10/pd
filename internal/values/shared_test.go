@@ -3,7 +3,9 @@ package values
 import (
 	"math"
 	"reflect"
+	"sort"
 	"testing"
+	"time"
 )
 
 func TestDrop_float(t *testing.T) {
@@ -11,12 +13,12 @@ func TestDrop_float(t *testing.T) {
 		dropPosition int
 		want         float64Values
 	}{
-		{0, float64Values([]float64Value{float64Value{2, false}, float64Value{3, false}})},
-		{1, float64Values([]float64Value{float64Value{1, false}, float64Value{3, false}})},
-		{2, float64Values([]float64Value{float64Value{1, false}, float64Value{2, false}})},
+		{0, float64Values{float64Value{2, false}, float64Value{3, false}}},
+		{1, float64Values{float64Value{1, false}, float64Value{3, false}}},
+		{2, float64Values{float64Value{1, false}, float64Value{2, false}}},
 	}
 	for _, test := range tests {
-		vals := float64Values([]float64Value{float64Value{1, false}, float64Value{2, false}, float64Value{3, false}})
+		vals := float64Values{float64Value{1, false}, float64Value{2, false}, float64Value{3, false}}
 		err := vals.Drop(test.dropPosition)
 		if err != nil {
 			t.Error(err)
@@ -33,12 +35,12 @@ func TestInsert_float(t *testing.T) {
 		val            interface{}
 		want           float64Values
 	}{
-		{0, 10, float64Values([]float64Value{float64Value{10, false}, float64Value{1, false}, float64Value{2, false}})},
-		{1, 10, float64Values([]float64Value{float64Value{1, false}, float64Value{10, false}, float64Value{2, false}})},
-		{2, 10, float64Values([]float64Value{float64Value{1, false}, float64Value{2, false}, float64Value{10, false}})},
+		{0, 10, float64Values{float64Value{10, false}, float64Value{1, false}, float64Value{2, false}}},
+		{1, 10, float64Values{float64Value{1, false}, float64Value{10, false}, float64Value{2, false}}},
+		{2, 10, float64Values{float64Value{1, false}, float64Value{2, false}, float64Value{10, false}}},
 	}
 	for _, test := range tests {
-		vals := float64Values([]float64Value{float64Value{1, false}, float64Value{2, false}})
+		vals := float64Values{float64Value{1, false}, float64Value{2, false}}
 		err := vals.Insert(test.insertPosition, test.val)
 		if err != nil {
 			t.Error(err)
@@ -49,8 +51,52 @@ func TestInsert_float(t *testing.T) {
 	}
 }
 
+func TestSort_float(t *testing.T) {
+	var tests = []struct {
+		input Values
+		want  Values
+	}{
+		{
+			&float64Values{float64Value{3, false}, float64Value{2, false}, float64Value{1, false}},
+			&float64Values{float64Value{1, false}, float64Value{2, false}, float64Value{3, false}},
+		},
+		{
+			&float64Values{float64Value{2, false}, float64Value{1, false}, float64Value{3, false}},
+			&float64Values{float64Value{1, false}, float64Value{2, false}, float64Value{3, false}},
+		},
+	}
+	for _, test := range tests {
+		sort.Sort(test.input)
+		if !reflect.DeepEqual(test.input, test.want) {
+			t.Errorf("float64Values.Sort() returned %v, want %v", test.input, test.want)
+		}
+	}
+}
+
+func TestSort_datetime(t *testing.T) {
+	var tests = []struct {
+		input Values
+		want  Values
+	}{
+		{
+			&dateTimeValues{dateTimeValue{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), false}},
+			&dateTimeValues{dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), false}},
+		},
+		{
+			&dateTimeValues{dateTimeValue{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}},
+			&dateTimeValues{dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), false}, dateTimeValue{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), false}},
+		},
+	}
+	for _, test := range tests {
+		sort.Sort(test.input)
+		if !reflect.DeepEqual(test.input, test.want) {
+			t.Errorf("datetimeValues.Sort() returned %v, want %v", test.input, test.want)
+		}
+	}
+}
+
 func TestSet_float(t *testing.T) {
-	vals := float64Values([]float64Value{float64Value{1, false}})
+	vals := float64Values{float64Value{1, false}}
 	err := vals.Set(0, "foo")
 	if err != nil {
 		t.Errorf("values.Set() returned err: %v", err)
@@ -67,7 +113,7 @@ func TestSet_float(t *testing.T) {
 }
 
 func TestCopy_float(t *testing.T) {
-	vals := float64Values([]float64Value{float64Value{1, false}})
+	vals := float64Values{float64Value{1, false}}
 	copyVals := vals.Copy()
 	if reflect.ValueOf(vals).Pointer() == reflect.ValueOf(copyVals).Pointer() {
 		t.Errorf("values.Copy() returned original Values, want fresh copy")

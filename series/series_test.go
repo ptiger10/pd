@@ -134,9 +134,15 @@ func TestInsert(t *testing.T) {
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
-		s.Insert(test.pos, test.val, test.idx)
-		if !seriesEquals(s, test.want) {
+		newS, err := s.Insert(test.pos, test.val, test.idx)
+		if err != nil {
+			t.Errorf("s.Insert(): %v", err)
+		}
+		if !seriesEquals(newS, test.want) {
 			t.Errorf("s.insert() returned %v, want %v", s, test.want)
+		}
+		if seriesEquals(newS, s) {
+			t.Error("s.insert() maintained reference to original Series, want fresh copy")
 		}
 	}
 }
@@ -152,9 +158,12 @@ func TestAppend(t *testing.T) {
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
-		s.Append(test.val, test.idx)
-		if !seriesEquals(s, test.want) {
+		newS := s.Append(test.val, test.idx)
+		if !seriesEquals(newS, test.want) {
 			t.Errorf("s.Append() returned %v, want %v", s, test.want)
+		}
+		if seriesEquals(newS, s) {
+			t.Error("s.Append() maintained reference to original Series, want fresh copy")
 		}
 	}
 }
@@ -169,9 +178,15 @@ func TestDrop(t *testing.T) {
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
-		s.Drop(test.pos)
-		if !seriesEquals(s, test.want) {
-			t.Errorf("s.insert() returned %v, want %v", s, test.want)
+		newS, err := s.Drop(test.pos)
+		if err != nil {
+			t.Errorf("s.Drop(): %v", err)
+		}
+		if !seriesEquals(newS, test.want) {
+			t.Errorf("s.Drop() returned %v, want %v", s, test.want)
+		}
+		if seriesEquals(newS, s) {
+			t.Error("s.Drop() maintained reference to original Series, want fresh copy")
 		}
 	}
 }

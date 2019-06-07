@@ -1,6 +1,7 @@
 package values
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"time"
@@ -20,6 +21,13 @@ func isNullInterface(i interface{}) bool {
 		if math.IsNaN(f) {
 			return true
 		}
+	}
+	return false
+}
+
+func (vals *interfaceValues) Less(i, j int) bool {
+	if fmt.Sprint((*vals)[i].v) < fmt.Sprint((*vals)[j].v) {
+		return true
 	}
 	return false
 }

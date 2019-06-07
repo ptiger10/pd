@@ -37,6 +37,10 @@ func (vals *float64Values) Len() int {
 	return len(*vals)
 }
 
+func (vals *float64Values) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
+}
+
 // In returns the values located at specific index positions.
 func (vals *float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
@@ -194,6 +198,10 @@ func newSliceInt64(vals []int64) Factory {
 // Len returns the number of value/null structs in the container.
 func (vals *int64Values) Len() int {
 	return len(*vals)
+}
+
+func (vals *int64Values) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
 // In returns the values located at specific index positions.
@@ -355,6 +363,10 @@ func (vals *stringValues) Len() int {
 	return len(*vals)
 }
 
+func (vals *stringValues) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
+}
+
 // In returns the values located at specific index positions.
 func (vals *stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
@@ -512,6 +524,10 @@ func newSliceBool(vals []bool) Factory {
 // Len returns the number of value/null structs in the container.
 func (vals *boolValues) Len() int {
 	return len(*vals)
+}
+
+func (vals *boolValues) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
 // In returns the values located at specific index positions.
@@ -673,6 +689,10 @@ func (vals *dateTimeValues) Len() int {
 	return len(*vals)
 }
 
+func (vals *dateTimeValues) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
+}
+
 // In returns the values located at specific index positions.
 func (vals *dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
@@ -830,6 +850,10 @@ func newSliceInterface(vals []interface{}) Factory {
 // Len returns the number of value/null structs in the container.
 func (vals *interfaceValues) Len() int {
 	return len(*vals)
+}
+
+func (vals *interfaceValues) Swap(i, j int) {
+	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
 // In returns the values located at specific index positions.

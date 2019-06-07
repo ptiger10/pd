@@ -15,6 +15,13 @@ func newFloat64(val float64) float64Value {
 	return float64Value{val, false}
 }
 
+func (vals *float64Values) Less(i, j int) bool {
+	if (*vals)[i].v < (*vals)[j].v {
+		return true
+	}
+	return false
+}
+
 // [END Constructor Functions]
 
 // [START Converters]

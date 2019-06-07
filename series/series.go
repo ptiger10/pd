@@ -14,14 +14,15 @@ import (
 
 // A Series is a 1-D data container with a labeled index, static type, and the ability to handle null values
 type Series struct {
-	index  index.Index
-	values values.Values
-	kind   kinds.Kind
-	Name   string
-	Math   Math
-	To     To
-	Index  Index
-	Select Select
+	index   index.Index
+	values  values.Values
+	kind    kinds.Kind
+	Name    string
+	Math    Math
+	To      To
+	Index   Index
+	Select  Select
+	InPlace InPlace
 }
 
 // An Element is a single item in a Series.
@@ -79,6 +80,7 @@ func (s Series) copy() Series {
 	copyS.To = To{s: copyS}
 	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
 	copyS.Select = Select{s: copyS}
+	copyS.InPlace = InPlace{s: copyS}
 	return *copyS
 }
 
@@ -152,54 +154,57 @@ func (s Series) all() []interface{} {
 	return ret
 }
 
-// Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
-func (s Series) Insert(pos int, val interface{}, idx []interface{}) error {
+// Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
+func (s Series) Insert(pos int, val interface{}, idx []interface{}) (Series, error) {
 	if len(idx) != s.index.Len() {
-		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
+		return Series{}, fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
 			len(idx), s.index.Len())
 	}
+	s = s.copy()
 	for i := 0; i < s.index.Len(); i++ {
 		err := s.index.Levels[i].Labels.Insert(pos, idx[i])
 		if err != nil {
-			return fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
+			return Series{}, fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
 		}
 		s.index.Levels[i].Refresh()
 	}
 	if err := s.values.Insert(pos, val); err != nil {
-		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)
+		return Series{}, fmt.Errorf("Series.Insert() with val %v: %v", val, err)
 	}
-	return nil
+	return s, nil
 }
 
-// dropRows drops multiple rows
-func (s Series) dropRows(positions []int) error {
+// dropRows drops multiple rows and returns a new Series
+func (s Series) dropRows(positions []int) (Series, error) {
+	var err error
 	sort.IntSlice(positions).Sort()
 	for i, position := range positions {
-		err := s.Drop(position - i)
+		s, err = s.Drop(position - i)
 		if err != nil {
-			return err
+			return Series{}, err
 		}
 	}
-	return nil
+	return s, nil
 }
 
-// Drop drops a row at a specified integer position and modifies the Series in place.
-func (s Series) Drop(pos int) error {
+// Drop drops the row at the specified integer position and returns a new Series.
+func (s Series) Drop(pos int) (Series, error) {
+	s = s.copy()
 	for i := 0; i < s.index.Len(); i++ {
 		err := s.index.Levels[i].Labels.Drop(pos)
 		if err != nil {
-			return fmt.Errorf("Series.Drop(): %v", err)
+			return Series{}, fmt.Errorf("Series.Drop(): %v", err)
 		}
 		s.index.Levels[i].Refresh()
 	}
 	if err := s.values.Drop(pos); err != nil {
-		return fmt.Errorf("Series.Drop(): %v", err)
+		return Series{}, fmt.Errorf("Series.Drop(): %v", err)
 	}
-	return nil
+	return s, nil
 }
 
-// Append adds a row at a specified integer position and modifies the Series in place.
-func (s Series) Append(val interface{}, idx []interface{}) {
-	_ = s.Insert(s.Len(), val, idx)
-	return
+// Append adds a row at the end and returns a new Series.
+func (s Series) Append(val interface{}, idx []interface{}) Series {
+	s, _ = s.Insert(s.Len(), val, idx)
+	return s
 }

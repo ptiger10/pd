@@ -15,6 +15,8 @@ type Values interface {
 	Copy() Values                  // clone the Values
 	Insert(int, interface{}) error // insert a Value/Null pair at an integer position
 	Drop(int) error                // drop a Value/Null pair at an integer position
+	Swap(i, j int)                 // swap two values - necessary for sorting
+	Less(i, j int) bool            // compare two values and return the lesser - required for sorting
 
 	ToFloat() Values
 	ToInt() Values

@@ -18,6 +18,10 @@ func (val valueTypeValue) toDateTime() dateTimeValue {
 	return dateTimeValue{}
 }
 
+func (val valueTypeValues) Less(i, j int) bool {
+	return true
+}
+
 func (val interfaceValue) tovalueType() valueTypeValue {
 	return valueTypeValue{}
 }

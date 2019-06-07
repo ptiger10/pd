@@ -12,6 +12,13 @@ func newInt64(val int64) int64Value {
 	return int64Value{val, false}
 }
 
+func (vals *int64Values) Less(i, j int) bool {
+	if (*vals)[i].v < (*vals)[j].v {
+		return true
+	}
+	return false
+}
+
 // [END Constructor Functions]
 
 // [START Converters]

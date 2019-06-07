@@ -214,7 +214,7 @@ func (sel Selection) Set(val interface{}) (Series, error) {
 // Drop drops all the values or index levels in a Selection. Will not drop an index level if it is the last remaining level.
 func (sel Selection) Drop() (Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.Set(): %v", err)
+		return Series{}, fmt.Errorf("Selection.Drop(): %v", err)
 	}
 	if sel.rowsOnly {
 		sel.s.dropRows(sel.rowPositions)
@@ -231,18 +231,6 @@ func (sel Selection) Drop() (Series, error) {
 	return sel.s, nil
 }
 
-// // SwapRows swaps the selected rows. If Selection is not swappable, returns error.
-// func (sel Selection) SwapRows() (Series, error) {
-// 	if err := sel.ensure(); err != nil {
-// 		return Series{}, fmt.Errorf("Selection.SwapLevels(): %v", err)
-// 	}
-// 	if !sel.swappableRows {
-// 		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two rows")
-// 	}
-
-// 	return s, nil
-// }
-
 // A Selection is a portion of a Series for use as an intermediate step in transforming data,
 // such as getting, setting, swapping, or dropping.
 type Selection struct {
@@ -258,12 +246,12 @@ type Selection struct {
 
 type derivedIntent string
 
-const (
-	catAll        derivedIntent = "Select All"
-	catLevelsOnly derivedIntent = "Select Levels"
-	catRowsOnly   derivedIntent = "Select Rows"
-	catXS         derivedIntent = "Select Cross-Section"
-)
+// const (
+// 	catAll        derivedIntent = "Select All"
+// 	catLevelsOnly derivedIntent = "Select Levels"
+// 	catRowsOnly   derivedIntent = "Select Rows"
+// 	catXS         derivedIntent = "Select Cross-Section"
+// )
 
 func (sel Selection) String() string {
 	return fmt.Sprintf(
@@ -433,85 +421,3 @@ func (sel Selection) String() string {
 // // 	sel := s.unpack(cfg)
 // // 	return sel
 // // }
-
-// // Get returns the Series specified in this Selection.
-// //
-// // Always returns a new Series.
-// // func (sel Selection) Get() (Series, error) {
-// // 	if sel.err != nil {
-// // 		return sel.s, sel.err
-// // 	}
-// // 	return sel.get()
-// // }
-
-// // // returns the rows or index levels specified in the Selection and
-// // // ducks .In() errors because those are checked by the unpacker on calls to s.Select().
-// // func (sel Selection) get() (Series, error) {
-// // 	switch sel.category {
-// // 	case "Select All":
-// // 		return sel.s, nil
-// // 	case "Select Levels":
-// // 		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
-// // 		return sel.s, nil
-// // 	case "Select Rows":
-// // 		sel.s, _ = sel.s.in(sel.rowPositions)
-// // 		return sel.s, nil
-// // 	case "Select Cross-Section":
-// // 		sel.s, _ = sel.s.in(sel.rowPositions)
-// // 		sel.s.index, _ = sel.s.index.In(sel.levelPositions)
-// // 		return sel.s, nil
-// // 	default:
-// // 		return sel.s, fmt.Errorf("unable to categorize intention of caller")
-// // 	}
-// // }
-
-// // Swap swaps the selected rows or index levels. If Selection is not swappable, returns error.
-// //
-// // Always returns a new Series.
-// // func (sel Selection) Swap() (Series, error) {
-// // 	if !sel.swappable {
-// // 		return sel.s, fmt.Errorf("selection is not swappable - must select exactly two of either rows or levels")
-// // 	}
-// // 	s := sel.s
-// // 	switch sel.category {
-// // 	case "Select Levels":
-// // 		lvl := s.index.Levels
-// // 		lvl[sel.levelPositions[0]], lvl[sel.levelPositions[1]] = lvl[sel.levelPositions[1]], lvl[sel.levelPositions[0]]
-// // 		s.index.Refresh()
-// // 		return s, nil
-// // 	case "Select Rows":
-// // 		r1 := sel.rowPositions[0]
-// // 		r2 := sel.rowPositions[1]
-
-// // 		for i := 0; i < len(s.index.Levels); i++ {
-// // 			r1v := s.index.Levels[i].Labels.Element(r1).Value
-// // 			r2v := s.index.Levels[i].Labels.Element(r2).Value
-// // 			s.index.Levels[i].Labels.Set(r1, r2v)
-// // 			s.index.Levels[i].Labels.Set(r2, r1v)
-// // 			s.index.Levels[i].Refresh()
-// // 		}
-// // 		r1v := s.values.Element(r1).Value
-// // 		r2v := s.values.Element(r2).Value
-// // 		s.values.Set(r1, r2v)
-// // 		s.values.Set(r2, r1v)
-// // 		return s, nil
-// // 	default:
-// // 		return sel.s, fmt.Errorf("")
-// // 	}
-// // }
-
-// // // Set sets all the value in a Selection to val
-// // func (sel Selection) Set(val interface{}) (Series, error) {
-// // 	switch sel.category {
-// // 	case "Select Rows":
-// // 		for _, row := range sel.rowPositions {
-// // 			err := sel.s.values.Set(row, val)
-// // 			if err != nil {
-// // 				return Series{}, fmt.Errorf("Selection.Set(): %v", err)
-// // 			}
-// // 		}
-// // 	}
-// // 	return sel.s, nil
-// // }
-
-// // // [END Selection]

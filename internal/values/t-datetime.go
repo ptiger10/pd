@@ -15,6 +15,13 @@ func newDateTime(val time.Time) dateTimeValue {
 	return dateTimeValue{val, false}
 }
 
+func (vals *dateTimeValues) Less(i, j int) bool {
+	if (*vals)[i].v.Before((*vals)[j].v) {
+		return true
+	}
+	return false
+}
+
 // [END Constructor Functions]
 
 // [START Converters]

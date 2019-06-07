@@ -30,6 +30,13 @@ func newString(val string) stringValue {
 	return stringValue{val, false}
 }
 
+func (vals *stringValues) Less(i, j int) bool {
+	if (*vals)[i].v < (*vals)[j].v {
+		return true
+	}
+	return false
+}
+
 // [END Constructor Functions]
 
 // [START Converters]
