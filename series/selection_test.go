@@ -1,6 +1,10 @@
 package series
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/ptiger10/pd/opt"
+)
 
 // func TestMain(m *testing.M) {
 // 	opt.SetLogWarnings(false)
@@ -32,7 +36,7 @@ func TestAt_singleIdx(t *testing.T) {
 
 func TestAt_singleIndex_multipleCalls(t *testing.T) {
 	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
-	sOrig, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
+	origS, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
 	_, err := s.At(0)
 	if err != nil {
 		t.Errorf("Returned %v want nil", err)
@@ -41,20 +45,48 @@ func TestAt_singleIndex_multipleCalls(t *testing.T) {
 	if err != nil {
 		t.Errorf("Returned %v want nil", err)
 	}
-	if !seriesEquals(s, sOrig) {
+	if !seriesEquals(s, origS) {
 		t.Errorf("s.At() modified s, want fresh copy")
 	}
 }
 
-func TestSelect_Rows_Drop(t *testing.T) {
-	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
-	newS, err := s.Select.Rows([]int{0, 2}).Drop()
-	if err != nil {
-		t.Errorf("Select.Rows.Drop(): %v", err)
+func TestSelect_Drop(t *testing.T) {
+	s, _ := New([]string{"foo", "bar", "baz"}, Idx([]string{"qux", "quux", "corge"}, opt.Name("1")), Idx([]string{"A", "B", "C"}, opt.Name("2")))
+	origS, _ := New([]string{"foo", "bar", "baz"}, Idx([]string{"qux", "quux", "corge"}, opt.Name("1")), Idx([]string{"A", "B", "C"}, opt.Name("2")))
+	var tests = []struct {
+		desc      string
+		selection Selection
+		want      Series
+	}{
+		{"ByRows", s.Select.ByRows([]int{0, 2}), mustNew([]string{"bar"}, Idx([]string{"quux"}, opt.Name("1")), Idx([]string{"B"}, opt.Name("2")))},
+		{"ByLabels", s.Select.ByLabels([]string{"qux", "corge"}), mustNew([]string{"bar"}, Idx([]string{"quux"}, opt.Name("1")), Idx([]string{"B"}, opt.Name("2")))},
+		{"ByLevels", s.Select.ByLevels([]int{0}), mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}, opt.Name("2")))},
+		{"ByLevelNames", s.Select.ByLevelNames([]string{"1"}), mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}, opt.Name("2")))},
 	}
-	wantS, _ := New([]string{"dog"}, Idx([]int{100}))
+
+	for _, test := range tests {
+		newS, err := test.selection.Drop()
+		if err != nil {
+			t.Errorf("Select.%v.Drop(): %v", test.desc, err)
+		}
+		if !seriesEquals(newS, test.want) {
+			t.Errorf("Select.%v.Drop() returned %v, want %v", test.desc, newS, test.want)
+		}
+		if !seriesEquals(s, origS) {
+			t.Errorf("Select.%v.Drop() modified s, want fresh copy", test.desc)
+		}
+	}
+}
+
+func TestSelect_Rows_Swap(t *testing.T) {
+	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
+	newS, err := s.Select.ByRows([]int{0, 2}).Swap()
+	if err != nil {
+		t.Errorf("Select.ByRows.Swap(): %v", err)
+	}
+	wantS, _ := New([]string{"log", "dog", "hot"}, Idx([]int{1000, 100, 10}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("Select.Rows.Drop() returned %v, want %v", newS, wantS)
+		t.Errorf("Select.ByRows.Swap() returned %v, want %v", newS, wantS)
 	}
 }
 

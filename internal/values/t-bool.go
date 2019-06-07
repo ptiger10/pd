@@ -13,7 +13,7 @@ func newBool(val bool) boolValue {
 }
 
 func (vals *boolValues) Less(i, j int) bool {
-	if (*vals)[i].v && !(*vals)[j].v {
+	if !(*vals)[i].v && (*vals)[j].v {
 		return true
 	}
 	return false

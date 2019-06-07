@@ -29,8 +29,8 @@ type Select struct {
 	s *Series
 }
 
-// Rows selects rows at the specified integer positions.
-func (sel Select) Rows(positions []int) Selection {
+// ByRows selects rows at the specified integer positions.
+func (sel Select) ByRows(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
 		s:            sel.s.copy(),
@@ -40,12 +40,13 @@ func (sel Select) Rows(positions []int) Selection {
 	}
 }
 
-// Labels selects rows at the specified index labels (for index level 0).
+// ByLabels selects rows at the specified index labels (for index level 0).
 // Appends out-of-range errors to Selection.err.
-func (sel Select) Labels(labels []string) Selection {
+func (sel Select) ByLabels(labels []string) Selection {
 	swappable := len(labels) == 2
 	var positions []int
 	var errList []string
+	var err error
 	for _, label := range labels {
 		val, ok := sel.s.index.Levels[0].LabelMap[label]
 		if !ok {
@@ -54,17 +55,22 @@ func (sel Select) Labels(labels []string) Selection {
 			positions = append(positions, val...)
 		}
 	}
+	if len(errList) < 1 {
+		err = nil
+	} else {
+		err = fmt.Errorf(strings.Join(errList, " - "))
+	}
 	return Selection{
 		s:            sel.s.copy(),
 		rowPositions: positions,
 		swappable:    swappable,
 		rowsOnly:     true,
-		err:          fmt.Errorf(strings.Join(errList, " - ")),
+		err:          err,
 	}
 }
 
-// Levels selects index levels at the specified integer positions.
-func (sel Select) Levels(positions []int) Selection {
+// ByLevels selects index levels at the specified integer positions.
+func (sel Select) ByLevels(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
 		s:              sel.s.copy(),
@@ -74,11 +80,12 @@ func (sel Select) Levels(positions []int) Selection {
 	}
 }
 
-// LevelNames selects the index levels at the specified names.
-func (sel Select) LevelNames(names []string) Selection {
+// ByLevelNames selects the index levels at the specified names.
+func (sel Select) ByLevelNames(names []string) Selection {
 	swappable := len(names) == 2
 	var positions []int
 	var errList []string
+	var err error
 	for _, name := range names {
 		val, ok := sel.s.index.NameMap[name]
 		if !ok {
@@ -87,13 +94,18 @@ func (sel Select) LevelNames(names []string) Selection {
 			positions = append(positions, val...)
 		}
 	}
+	if len(errList) < 1 {
+		err = nil
+	} else {
+		err = fmt.Errorf(strings.Join(errList, " - "))
+	}
 
 	return Selection{
 		s:              sel.s.copy(),
 		levelPositions: positions,
 		swappable:      swappable,
 		levelsOnly:     true,
-		err:            fmt.Errorf(strings.Join(errList, " - ")),
+		err:            err,
 	}
 }
 
@@ -123,7 +135,7 @@ func (sel Selection) ensure() error {
 	return nil
 }
 
-// Series returns the selected Series as a copy.
+// Series returns the Selection as a new Series.
 func (sel Selection) Series() (Series, error) {
 	return sel.series()
 }
@@ -154,21 +166,15 @@ func (sel Selection) swap() (Series, error) {
 	}
 	if sel.rowsOnly {
 		// swap Rows
-		s := sel.s
 		r1 := sel.rowPositions[0]
 		r2 := sel.rowPositions[1]
+		sel.s.values.Swap(r1, r2)
 
-		for i := 0; i < len(s.index.Levels); i++ {
-			r1v := s.index.Levels[i].Labels.Element(r1).Value
-			r2v := s.index.Levels[i].Labels.Element(r2).Value
-			s.index.Levels[i].Labels.Set(r1, r2v)
-			s.index.Levels[i].Labels.Set(r2, r1v)
-			s.index.Levels[i].Refresh()
+		for i := 0; i < len(sel.s.index.Levels); i++ {
+			sel.s.index.Levels[i].Labels.Swap(r1, r2)
+			sel.s.index.Levels[i].Refresh()
 		}
-		r1v := s.values.Element(r1).Value
-		r2v := s.values.Element(r2).Value
-		s.values.Set(r1, r2v)
-		s.values.Set(r2, r1v)
+
 	} else {
 		// swap Levels
 		lvl := sel.s.index.Levels
@@ -178,12 +184,12 @@ func (sel Selection) swap() (Series, error) {
 	return sel.s, nil
 }
 
-// Swap swaps the selected rows or index levels. If Selection is not swappable, returns error.
+// Swap swaps the selected rows or index levels and returns a new Series. If Selection is not swappable, returns error.
 func (sel Selection) Swap() (Series, error) {
 	return sel.swap()
 }
 
-// Set sets all the values in a Selection to val
+// Set sets all the values in a Selection to val and returns a new Series.
 func (sel Selection) Set(val interface{}) (Series, error) {
 	if err := sel.ensure(); err != nil {
 		return Series{}, fmt.Errorf("Selection.Set(): %v", err)
@@ -211,19 +217,20 @@ func (sel Selection) Set(val interface{}) (Series, error) {
 	return sel.s, nil
 }
 
-// Drop drops all the values or index levels in a Selection. Will not drop an index level if it is the last remaining level.
+// Drop drops all the values or index levels in a Selection and returns a new Series.
+// Will not drop an index level if it is the last remaining level.
 func (sel Selection) Drop() (Series, error) {
 	if err := sel.ensure(); err != nil {
 		return Series{}, fmt.Errorf("Selection.Drop(): %v", err)
 	}
 	if sel.rowsOnly {
-		sel.s.dropRows(sel.rowPositions)
+		sel.s.InPlace.dropRows(sel.rowPositions)
 	} else if sel.levelsOnly {
 		for _, level := range sel.levelPositions {
 			sel.s.index.Drop(level)
 		}
 	} else {
-		sel.s.dropRows(sel.rowPositions)
+		sel.s.InPlace.dropRows(sel.rowPositions)
 		for _, level := range sel.levelPositions {
 			sel.s.index.Drop(level)
 		}
@@ -232,192 +239,19 @@ func (sel Selection) Drop() (Series, error) {
 }
 
 // A Selection is a portion of a Series for use as an intermediate step in transforming data,
-// such as getting, setting, swapping, or dropping.
+// such as getting, setting, swapping, or dropping it.
 type Selection struct {
 	s              Series
 	levelPositions []int
 	rowPositions   []int
-	category       derivedIntent
 	swappable      bool
 	levelsOnly     bool
 	rowsOnly       bool
 	err            error
 }
 
-type derivedIntent string
-
-// const (
-// 	catAll        derivedIntent = "Select All"
-// 	catLevelsOnly derivedIntent = "Select Levels"
-// 	catRowsOnly   derivedIntent = "Select Rows"
-// 	catXS         derivedIntent = "Select Cross-Section"
-// )
-
 func (sel Selection) String() string {
 	return fmt.Sprintf(
-		"Selection Object. To print underlying Series, call .Get()\nDerivedIntent: %v\nRows: %v\nLevels: %v\nError: %v",
-		sel.category, sel.rowPositions, sel.levelPositions, sel.err != nil)
+		"Selection {rows: %v, levels: %v, swappable: %v, hasError: %v}. \nTo print underlying Series, call .Series() ",
+		sel.rowPositions, sel.levelPositions, sel.swappable, sel.err != nil)
 }
-
-// // Unpack the supplied options and try to categorize the caller's intention.
-// func (s Series) unpack(cfg config.SelectionConfig) Selection {
-// 	var sel = Selection{s: s.copy()}
-// 	// [START check input for errors]
-// 	noSelection := (cfg.LevelPositions == nil && cfg.LevelNames == nil && cfg.RowPositions == nil && cfg.RowLabels == nil)
-// 	multipleLevelIdentifiers := (cfg.LevelPositions != nil && cfg.LevelNames != nil)
-// 	multipleRowIdentifiers := (cfg.RowPositions != nil && cfg.RowLabels != nil)
-// 	levelsOnly := (!noSelection && cfg.RowPositions == nil && cfg.RowLabels == nil)
-// 	rowsOnly := (!noSelection && cfg.LevelPositions == nil && cfg.LevelNames == nil)
-// 	levelsAndLabels := (!rowsOnly && cfg.RowLabels != nil)
-// 	crossSection := (!noSelection && !levelsOnly && !rowsOnly)
-
-// 	if noSelection {
-// 		// return all row positions
-// 		sel.rowPositions = values.MakeIntRange(0, s.Len())
-// 		sel.category = catAll
-// 		return sel
-// 	}
-
-// 	if multipleLevelIdentifiers {
-// 		err := errors.New("the combination of integer positions and names is ambiguous. Provide at most one form of selecting index levels")
-// 		values.Warn(
-// 			fmt.Errorf("Cannot process level Selection: %v", err),
-// 			"invalid Selection (will return error if called)")
-// 		sel.err = err
-// 		return sel
-// 	}
-
-// 	if multipleRowIdentifiers {
-// 		err := errors.New("the combination of integer positions and labels is ambiguous. Provide at most one form of selecting rows")
-// 		values.Warn(
-// 			fmt.Errorf("Cannot process row Selection: %v", err),
-// 			"invalid Selection (will return error if called)")
-// 		sel.err = err
-// 		return sel
-// 	}
-// 	// [END check input for errors]
-
-// 	// Handling ByLevels
-// 	if cfg.LevelPositions != nil {
-// 		err := s.ensureLevelPositions(cfg.LevelPositions)
-// 		if err != nil {
-// 			values.Warn(
-// 				fmt.Errorf("Cannot process level Selection: %v", err),
-// 				"invalid Selection (will return error if called)")
-// 			sel.err = err
-// 			return sel
-// 		}
-// 		sel.levelPositions = cfg.LevelPositions
-// 	} else {
-// 		// Handling ByLevelNames
-// 		for _, name := range cfg.LevelNames {
-// 			val, ok := s.index.NameMap[name]
-// 			if !ok {
-// 				err := fmt.Errorf("level name %v not in index", name)
-// 				values.Warn(
-// 					fmt.Errorf("Cannot process level Selection: %v", err),
-// 					"invalid Selection (will return error if called)")
-// 				sel.err = err
-// 				return sel
-// 			}
-// 			sel.levelPositions = append(sel.levelPositions, val...)
-// 		}
-// 	}
-// 	// Handling ByRows
-// 	if cfg.RowPositions != nil {
-// 		err := s.ensureRowPositions(cfg.RowPositions)
-// 		if err != nil {
-// 			values.Warn(
-// 				fmt.Errorf("Cannot process level Selection: %v", err),
-// 				"invalid Selection (will return error if called)")
-// 			sel.err = err
-// 			return sel
-// 		}
-// 		sel.rowPositions = cfg.RowPositions
-// 	} else {
-// 		// Handling ByLabels
-// 		var lvl int
-// 		// no index level provided; defaults to first level
-// 		if rowsOnly {
-// 			lvl = 0
-// 		} else {
-// 			// multiple levels and row labels
-// 			if levelsAndLabels && len(cfg.LevelPositions) > 1 {
-// 				err := errors.New("the combination of multiple levels with row labels is ambiguous. To index on multiple levels, provide row integer values instead with opt.ByRows()")
-// 				values.Warn(
-// 					fmt.Errorf("Cannot process level Selection: %v", err),
-// 					"invalid Selection (will return error if called)")
-// 				sel.err = err
-// 				return sel
-
-// 			}
-// 			// a single index level provided
-// 			lvl = sel.levelPositions[0]
-// 		}
-// 		for _, label := range cfg.RowLabels {
-// 			val, ok := s.index.Levels[lvl].LabelMap[label]
-// 			if !ok {
-// 				err := fmt.Errorf("label value %v not in index level %v", label, lvl)
-// 				values.Warn(
-// 					fmt.Errorf("Cannot process level Selection: %v", err),
-// 					"invalid Selection (will return error if called)")
-// 				sel.err = err
-// 				return sel
-// 			}
-// 			sel.rowPositions = append(sel.rowPositions, val...)
-// 		}
-// 	}
-
-// 	// Infer category and swappable
-// 	if levelsOnly {
-// 		sel.category = catLevelsOnly
-// 		if len(sel.levelPositions) == 2 {
-// 			sel.swappable = true
-// 		}
-// 	}
-// 	if rowsOnly {
-// 		sel.category = catRowsOnly
-// 		if len(sel.rowPositions) == 2 {
-// 			sel.swappable = true
-// 		}
-// 	}
-// 	if crossSection {
-// 		sel.category = catXS
-// 	}
-
-// 	if !noSelection && !levelsOnly && !rowsOnly && !crossSection {
-// 		sel.category = "Unknown"
-// 		return sel
-// 	}
-
-// 	sel.rowPositions = sort.IntSlice(sel.rowPositions)
-// 	sel.levelPositions = sort.IntSlice(sel.levelPositions)
-// 	return sel
-// }
-
-// // Select a portion of a Series (index levels and/or rows), based on either integer or string-based inputs. Options:
-// //
-// // - Select index level(s): opt.ByIndexLevels([]int), opt.ByIndexNames([]string)
-// //
-// // - Select row(s): opt.ByRows([]int), opt.ByLabels([]string)
-// //
-// // If no options are passed, selects the entire Series. If multiple of the same type of option are passed, only the last one is used.
-// //
-// // The following option combinations are ambiguous:
-// //
-// // - Both ByIndexLevels() and ByIndexNames(): to select index level(s), use one or the other.
-// //
-// // - Both ByRows() and ByLabels(): to want to select row(s), use one or the other.
-// //
-// // - An index level selector with more than 1 item and ByLabels(): to select multiple index levels and multiple index rows, use ByRows().
-// //
-// // If the caller passes invalid options, a warning will be logged, and attempts to call Selection methods will return an error.
-// // func (s Series) Select(options ...opt.SelectionOption) Selection {
-// // 	// Setup
-// // 	cfg := config.SelectionConfig{}
-// // 	for _, option := range options {
-// // 		option(&cfg)
-// // 	}
-// // 	sel := s.unpack(cfg)
-// // 	return sel
-// // }

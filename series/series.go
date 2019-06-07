@@ -3,7 +3,6 @@ package series
 import (
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -152,59 +151,4 @@ func (s Series) all() []interface{} {
 		ret = append(ret, s.values.Element(i).Value)
 	}
 	return ret
-}
-
-// Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
-func (s Series) Insert(pos int, val interface{}, idx []interface{}) (Series, error) {
-	if len(idx) != s.index.Len() {
-		return Series{}, fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
-			len(idx), s.index.Len())
-	}
-	s = s.copy()
-	for i := 0; i < s.index.Len(); i++ {
-		err := s.index.Levels[i].Labels.Insert(pos, idx[i])
-		if err != nil {
-			return Series{}, fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
-		}
-		s.index.Levels[i].Refresh()
-	}
-	if err := s.values.Insert(pos, val); err != nil {
-		return Series{}, fmt.Errorf("Series.Insert() with val %v: %v", val, err)
-	}
-	return s, nil
-}
-
-// dropRows drops multiple rows and returns a new Series
-func (s Series) dropRows(positions []int) (Series, error) {
-	var err error
-	sort.IntSlice(positions).Sort()
-	for i, position := range positions {
-		s, err = s.Drop(position - i)
-		if err != nil {
-			return Series{}, err
-		}
-	}
-	return s, nil
-}
-
-// Drop drops the row at the specified integer position and returns a new Series.
-func (s Series) Drop(pos int) (Series, error) {
-	s = s.copy()
-	for i := 0; i < s.index.Len(); i++ {
-		err := s.index.Levels[i].Labels.Drop(pos)
-		if err != nil {
-			return Series{}, fmt.Errorf("Series.Drop(): %v", err)
-		}
-		s.index.Levels[i].Refresh()
-	}
-	if err := s.values.Drop(pos); err != nil {
-		return Series{}, fmt.Errorf("Series.Drop(): %v", err)
-	}
-	return s, nil
-}
-
-// Append adds a row at the end and returns a new Series.
-func (s Series) Append(val interface{}, idx []interface{}) Series {
-	s, _ = s.Insert(s.Len(), val, idx)
-	return s
 }
