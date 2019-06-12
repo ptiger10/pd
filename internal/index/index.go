@@ -92,3 +92,12 @@ func (idx Index) Aligned() bool {
 	}
 	return true
 }
+
+// Kinds returns a slice of the Kinds at each level of the index
+func (idx Index) Kinds() []kinds.Kind {
+	var idxKinds []kinds.Kind
+	for _, lvl := range idx.Levels {
+		idxKinds = append(idxKinds, lvl.Kind)
+	}
+	return idxKinds
+}

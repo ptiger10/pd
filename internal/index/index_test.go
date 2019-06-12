@@ -5,6 +5,13 @@ import (
 	"testing"
 )
 
+func Test_New_Empty(t *testing.T) {
+	idx := New()
+	if idx.Len() != 0 {
+		t.Error("Len() of empty index did not return 0")
+	}
+}
+
 func Test_Copy(t *testing.T) {
 	idx := New(MustCreateNewLevel([]int{1, 2, 3}, ""))
 	copyIdx := idx.Copy()

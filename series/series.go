@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -53,13 +54,12 @@ func (s Series) Element(position int) Element {
 	elem := s.values.Element(position)
 
 	var idx []interface{}
-	var idxKinds []kinds.Kind
 	for _, lvl := range s.index.Levels {
 		idxElem := lvl.Labels.Element(position)
 		idxVal := idxElem.Value
 		idx = append(idx, idxVal)
-		idxKinds = append(idxKinds, lvl.Kind)
 	}
+	idxKinds := s.index.Kinds()
 	return Element{elem.Value, elem.Null, idx, idxKinds}
 }
 
@@ -112,6 +112,15 @@ func (s Series) in(positions []int) (Series, error) {
 	return newS, nil
 }
 
+func (s Series) mustIn(positions []int) Series {
+	s, err := s.in(positions)
+	if err != nil {
+		log.Printf("Internal error: %v\n", err)
+		return Series{}
+	}
+	return s
+}
+
 func seriesEquals(s1, s2 Series) bool {
 	sameIndex := reflect.DeepEqual(s1.index, s2.index)
 	sameValues := reflect.DeepEqual(s1.values, s2.values)
@@ -125,6 +134,9 @@ func seriesEquals(s1, s2 Series) bool {
 
 // Len returns the number of Elements (i.e., Value/Null pairs) in the Series.
 func (s Series) Len() int {
+	if s.values == nil {
+		return 0
+	}
 	return s.values.Len()
 }
 
@@ -159,4 +171,11 @@ func (s Series) all() []interface{} {
 		ret = append(ret, s.values.Element(i).Value)
 	}
 	return ret
+}
+
+func (s *Series) replace(s2 *Series) {
+	s.Name = s2.Name
+	s.kind = s2.kind
+	s.values = s2.values
+	s.index = s2.index
 }

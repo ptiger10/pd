@@ -47,6 +47,9 @@ func (lvl *Level) updateLongest() {
 // Refresh updates the global name map and the label mappings and longest value at every level.
 // Should be called after Series selection or index modification
 func (idx *Index) Refresh() {
+	if idx.Len() == 0 {
+		return
+	}
 	idx.UpdateNameMap()
 	for i := 0; i < len(idx.Levels); i++ {
 		idx.Levels[i].Refresh()
@@ -55,6 +58,9 @@ func (idx *Index) Refresh() {
 
 // Refresh updates all the label mappings and longest value within a level.
 func (lvl *Level) Refresh() {
+	if lvl.Labels == nil {
+		return
+	}
 	lvl.updateLabelMap()
 	lvl.updateLongest()
 }

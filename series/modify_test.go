@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/opt"
 )
 
 func TestInsert(t *testing.T) {
@@ -66,7 +67,7 @@ func TestDrop(t *testing.T) {
 		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
-		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s, _ := NewPointer([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 		newS, err := s.Drop(test.pos)
 		if err != nil {
 			t.Errorf("s.Drop(): %v", err)
@@ -74,9 +75,19 @@ func TestDrop(t *testing.T) {
 		if !seriesEquals(newS, test.want) {
 			t.Errorf("s.Drop() returned %v, want %v", s, test.want)
 		}
-		if seriesEquals(newS, s) {
+		if seriesEquals(newS, *s) {
 			t.Error("s.Drop() maintained reference to original Series, want fresh copy")
 		}
+	}
+}
+
+func TestJoin(t *testing.T) {
+	s, _ := New([]int{1, 2, 3})
+	s2, _ := New([]float64{4, 5, 6})
+	s3 := s.Join(s2)
+	want := mustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
+	if !seriesEquals(s3, want) {
+		t.Errorf("s.Join() returned %v, want %v", s3, want)
 	}
 }
 
@@ -133,11 +144,40 @@ func TestDropInPlace(t *testing.T) {
 		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
-		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s, _ := NewPointer([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 		s.InPlace.Drop(test.pos)
-		if !seriesEquals(s, test.want) {
+		if !seriesEquals(*s, test.want) {
 			t.Errorf("s.insert() returned %v, want %v", s, test.want)
 		}
+	}
+}
+
+func Test_InPlace_Join(t *testing.T) {
+	s, _ := New([]int{1, 2, 3})
+	s2, _ := New([]float64{4, 5, 6})
+	s.InPlace.Join(s2)
+	want := mustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
+	if !seriesEquals(s, want) {
+		t.Errorf("s.Join() returned %v, want %v", s, want)
+	}
+}
+
+func Test_InPlace_replace(t *testing.T) {
+	s, _ := NewPointer(1, opt.Name("foo"))
+	s2, _ := NewPointer(2, opt.Name("bar"))
+	s.InPlace.s.replace(s2)
+	if !seriesEquals(*s, *s2) {
+		t.Errorf("s.InPlace.replace() returned %v, want %v", s, s2)
+	}
+}
+
+func Test_InPlace_Join_EmptyBase(t *testing.T) {
+	s, _ := NewPointer(nil)
+	s2, _ := New([]float64{4, 5, 6})
+	s.InPlace.Join(s2)
+	want := mustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
+	if !seriesEquals(*s, want) {
+		t.Errorf("s.InPlace.Join() returned %v, want %v", s2, want)
 	}
 }
 

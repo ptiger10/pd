@@ -58,6 +58,13 @@ func (s Series) Append(val interface{}, idx []interface{}) Series {
 	return s
 }
 
+// Join converts s2 to the same type as the base Series (s), appends s2 to the end, and returns a new Series.
+func (s Series) Join(s2 Series) Series {
+	s = s.copy()
+	s.InPlace.Join(s2)
+	return s
+}
+
 // [END return new Series]
 
 // [START modify in place]
@@ -126,6 +133,18 @@ func (ip InPlace) Drop(pos int) error {
 func (ip InPlace) Append(val interface{}, idx []interface{}) {
 	_ = ip.s.InPlace.Insert(ip.s.Len(), val, idx)
 	return
+}
+
+// Join converts s2 to the same type as the base Series (s), appends s2 to the end, and modifies s in place.
+func (ip InPlace) Join(s2 Series) {
+	if ip.s.values == nil {
+		ip.s.replace(&s2)
+		return
+	}
+	for i := 0; i < s2.Len(); i++ {
+		elem := s2.Element(i)
+		ip.s.InPlace.Append(elem.Value, elem.Labels)
+	}
 }
 
 // [END modify in place]
