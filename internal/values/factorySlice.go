@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 )
 
 // SliceFactory creates a Factory from an interface{} that has been determined elsewhere to be a Slice.
@@ -52,7 +52,7 @@ func SliceFactory(data interface{}) (Factory, error) {
 		ret = newSliceInterface(vals)
 
 	default:
-		ret = Factory{nil, kinds.None}
+		ret = Factory{nil, datatypes.None}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 

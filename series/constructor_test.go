@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/config"
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -61,31 +61,31 @@ func TestConstructor_Index_Slice_Float(t *testing.T) {
 func TestConstructor_Kind_Slice_Float(t *testing.T) {
 	var err error
 
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Float64))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.Float64))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Int64))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.Int64))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.String))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.String))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Bool))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.Bool))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.DateTime))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.DateTime))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Interface))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.Interface))
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = New([]float32{-1.5, 0, 1.5}, opt.Kind(kinds.Unsupported))
+	_, err = New([]float32{-1.5, 0, 1.5}, opt.DataType(datatypes.Unsupported))
 	if err == nil {
 		t.Error("Returned nil error, want error due to unsupported conversion type")
 	}
@@ -94,9 +94,9 @@ func TestConstructor_Kind_Slice_Float(t *testing.T) {
 
 func TestMini_single(t *testing.T) {
 	mini := config.MiniIndex{
-		Data: []int{1, 2, 3},
-		Kind: kinds.Int64,
-		Name: "test",
+		Data:     []int{1, 2, 3},
+		DataType: datatypes.Int64,
+		Name:     "test",
 	}
 	got, err := indexFromMiniIndex([]config.MiniIndex{mini}, 3)
 	if err != nil {
@@ -123,7 +123,7 @@ func TestNew2_float(t *testing.T) {
 		t.Error(err)
 	}
 	idx := index.Default(1)
-	want := &Series{values: v.Values, index: idx, kind: kinds.Float64}
+	want := &Series{values: v.Values, index: idx, datatype: datatypes.Float64}
 	if !seriesEquals(*got, *want) {
 		t.Errorf("New() = %v, want %v", got, want)
 	}
@@ -139,7 +139,7 @@ func TestNew2_int(t *testing.T) {
 		t.Error(err)
 	}
 	idx := index.Default(1)
-	want := &Series{values: v.Values, index: idx, kind: kinds.Int64}
+	want := &Series{values: v.Values, index: idx, datatype: datatypes.Int64}
 	if !seriesEquals(*got, *want) {
 		t.Errorf("New() = %v, want %v", got, want)
 	}

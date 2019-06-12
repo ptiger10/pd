@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 )
 
 // [START Sort interface]
@@ -164,7 +164,7 @@ func (t To) Float() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToFloat()
 	} else {
 		t.s.values = t.s.values.ToFloat()
-		t.s.kind = kinds.Float64
+		t.s.datatype = datatypes.Float64
 	}
 	return *t.s
 }
@@ -176,7 +176,7 @@ func (t To) Int() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToInt()
 	} else {
 		t.s.values = t.s.values.ToInt()
-		t.s.kind = kinds.Int64
+		t.s.datatype = datatypes.Int64
 	}
 	return *t.s
 }
@@ -188,7 +188,7 @@ func (t To) String() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToString()
 	} else {
 		t.s.values = t.s.values.ToString()
-		t.s.kind = kinds.String
+		t.s.datatype = datatypes.String
 	}
 	return *t.s
 }
@@ -200,7 +200,7 @@ func (t To) Bool() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToBool()
 	} else {
 		t.s.values = t.s.values.ToBool()
-		t.s.kind = kinds.Bool
+		t.s.datatype = datatypes.Bool
 	}
 	return *t.s
 }
@@ -212,7 +212,7 @@ func (t To) DateTime() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToDateTime()
 	} else {
 		t.s.values = t.s.values.ToDateTime()
-		t.s.kind = kinds.DateTime
+		t.s.datatype = datatypes.DateTime
 	}
 	return *t.s
 }
@@ -224,7 +224,7 @@ func (t To) Interface() Series {
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToInterface()
 	} else {
 		t.s.values = t.s.values.ToInterface()
-		t.s.kind = kinds.Interface
+		t.s.datatype = datatypes.Interface
 	}
 	return *t.s
 }
@@ -246,6 +246,9 @@ func (idx Index) Levels() int {
 
 // Len returns the number of items in each level of the index.
 func (idx Index) Len() int {
+	if len(idx.s.index.Levels) == 0 {
+		return 0
+	}
 	return idx.s.index.Levels[0].Len()
 }
 

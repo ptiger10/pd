@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -78,7 +78,7 @@ func (s Series) print() string {
 
 		// [START value printer]
 		var valStr string
-		if s.kind == kinds.DateTime {
+		if s.datatype == datatypes.DateTime {
 			valStr = elem.Value.(time.Time).Format(opt.GetDisplayTimeFormat())
 		} else {
 			valStr = fmt.Sprint(elem.Value)
@@ -94,7 +94,7 @@ func (s Series) print() string {
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
-	printer += fmt.Sprintf("kind: %s\n", s.kind)
+	printer += fmt.Sprintf("datatype: %s\n", s.datatype)
 	// [END rows]
 
 	if s.Name != "" {

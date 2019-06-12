@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -23,7 +23,7 @@ func TestElement(t *testing.T) {
 		{0, "NaN", true, []interface{}{"A", int64(1)}},
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
-	wantIdxKinds := []kinds.Kind{kinds.String, kinds.Int64}
+	wantIdxKinds := []datatypes.DataType{datatypes.String, datatypes.Int64}
 	for _, test := range tests {
 		got := s.Element(test.position)
 		if got.Value != test.wantVal {
@@ -42,26 +42,26 @@ func TestElement(t *testing.T) {
 }
 func TestKind(t *testing.T) {
 	var tests = []struct {
-		kind     kinds.Kind
+		datatype datatypes.DataType
 		expected string
 	}{
 
-		{kinds.None, "none"},
-		{kinds.Float64, "float64"},
-		{kinds.Int64, "int64"},
-		{kinds.String, "string"},
-		{kinds.Bool, "bool"},
-		{kinds.DateTime, "time.Time"},
-		{kinds.Interface, "interface"},
-		{kinds.Unsupported, "unsupported"},
+		{datatypes.None, "none"},
+		{datatypes.Float64, "float64"},
+		{datatypes.Int64, "int64"},
+		{datatypes.String, "string"},
+		{datatypes.Bool, "bool"},
+		{datatypes.DateTime, "time.Time"},
+		{datatypes.Interface, "interface"},
+		{datatypes.Unsupported, "unsupported"},
 		{-1, "unknown"},
 		{100, "unknown"},
 	}
 	for _, test := range tests {
 		s, _ := New([]int{1, 2, 3})
-		s.kind = test.kind
-		if s.Kind() != test.expected {
-			t.Errorf("s.Kind() for kind %v returned %v, want %v", test.kind, test.kind.String(), test.expected)
+		s.datatype = test.datatype
+		if s.DataType() != test.expected {
+			t.Errorf("s.Kind() for kind %v returned %v, want %v", test.datatype, test.datatype.String(), test.expected)
 		}
 	}
 }
@@ -75,7 +75,7 @@ func Test_Copy(t *testing.T) {
 	copyS.index.Levels[0].Labels.Set(0, "5")
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"
-	copyS.kind = kinds.Bool
+	copyS.datatype = datatypes.Bool
 	MathPtr := fmt.Sprintf("%p", copyS.Math.s)
 	ToPtr := fmt.Sprintf("%p", copyS.To.s)
 	IndexToPtr := fmt.Sprintf("%p", copyS.Index.s)
@@ -99,7 +99,7 @@ func Test_Equals(t *testing.T) {
 	if !seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned false, want true")
 	}
-	s2.kind = kinds.Bool
+	s2.datatype = datatypes.Bool
 	if seriesEquals(s, s2) {
 		t.Errorf("seriesEquals() returned true for different kind, want false")
 	}

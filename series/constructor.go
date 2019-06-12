@@ -5,10 +5,10 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/config"
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -20,10 +20,21 @@ func New2(data interface{}) (*Series, error) {
 	}
 
 	return &Series{
-		values: factory.Values,
-		index:  index.Default(factory.Values.Len()),
-		kind:   factory.Kind,
+		values:   factory.Values,
+		index:    index.Default(factory.Values.Len()),
+		datatype: factory.DataType,
 	}, nil
+}
+
+// The Config struct can be used in the custom Series constructor to specify the Series name or set the Series data type.
+// Basic usage: New("foo", series.Config{Name: "bar"})
+type Config struct {
+	Name     string
+	DataType datatypes.DataType
+}
+
+func NewCustom(data interface{}, config *Config, index ...Index) {
+
 }
 
 func mustNew2(data interface{}) *Series {
@@ -43,9 +54,9 @@ func Idx(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOpti
 	}
 	return func(c *config.ConstructorConfig) {
 		idx := config.MiniIndex{
-			Data: data,
-			Kind: cfg.Kind,
-			Name: cfg.Name,
+			Data:     data,
+			DataType: cfg.DataType,
+			Name:     cfg.Name,
 		}
 		c.Indices = append(c.Indices, idx)
 	}
@@ -58,7 +69,7 @@ func Idx(data interface{}, options ...opt.ConstructorOption) opt.ConstructorOpti
 // - Name(string): If no name is supplied, no name will appear when Series is printed.
 // If multiple Name() options are supplied, only the final will be used.
 //
-// - Kind(kinds.Kind): Convert the Series values to the specified kind. Kind options: Float, Int, String, Bool, DateTime, Interface.
+// - Kind(datatypes.DataType): Convert the Series values to the specified kind. Kind options: Float, Int, String, Bool, DateTime, Interface.
 // If multiple Kind() options are supplied, only the final will be used.
 //
 // - Index(interface{}, ...opt.ConstructorOption): If no index is supplied, defaults to a single index of int64Values (0, 1, 2, ...n).
@@ -73,8 +84,8 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 	for _, option := range options {
 		option(&cfg)
 	}
-	suppliedKind := cfg.Kind
-	var kind kinds.Kind
+	suppliedKind := cfg.DataType
+	var kind datatypes.DataType
 	name := cfg.Name
 
 	var factory values.Factory
@@ -84,7 +95,7 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Values
 	if data == nil {
-		factory = values.Factory{Values: nil, Kind: kinds.None}
+		factory = values.Factory{Values: nil, DataType: datatypes.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,
@@ -105,13 +116,13 @@ func New(data interface{}, options ...opt.ConstructorOption) (Series, error) {
 
 	// Sets values and kind based on the Values switch
 	v = factory.Values
-	kind = factory.Kind
+	kind = factory.DataType
 	if err != nil {
 		return Series{}, fmt.Errorf("unable to construct new Series: unable to construct values: %v", err)
 	}
 
 	// opt.ConstructorOptional kind conversion
-	if suppliedKind != kinds.None {
+	if suppliedKind != datatypes.None {
 		v, err = values.Convert(v, suppliedKind)
 		if err != nil {
 			return Series{}, fmt.Errorf("unable to construct new Series: %v", err)
@@ -154,8 +165,8 @@ func NewPointer(data interface{}, options ...opt.ConstructorOption) (*Series, er
 	for _, option := range options {
 		option(&cfg)
 	}
-	suppliedKind := cfg.Kind
-	var kind kinds.Kind
+	suppliedKind := cfg.DataType
+	var kind datatypes.DataType
 	name := cfg.Name
 
 	var factory values.Factory
@@ -165,7 +176,7 @@ func NewPointer(data interface{}, options ...opt.ConstructorOption) (*Series, er
 
 	// Values
 	if data == nil {
-		factory = values.Factory{Values: nil, Kind: kinds.None}
+		factory = values.Factory{Values: nil, DataType: datatypes.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,
@@ -186,13 +197,13 @@ func NewPointer(data interface{}, options ...opt.ConstructorOption) (*Series, er
 
 	// Sets values and kind based on the Values switch
 	v = factory.Values
-	kind = factory.Kind
+	kind = factory.DataType
 	if err != nil {
 		return &Series{}, fmt.Errorf("unable to construct new Series: unable to construct values: %v", err)
 	}
 
 	// opt.ConstructorOptional kind conversion
-	if suppliedKind != kinds.None {
+	if suppliedKind != datatypes.None {
 		v, err = values.Convert(v, suppliedKind)
 		if err != nil {
 			return &Series{}, fmt.Errorf("unable to construct new Series: %v", err)
@@ -228,21 +239,21 @@ func NewPointer(data interface{}, options ...opt.ConstructorOption) (*Series, er
 	return s, err
 }
 
-func new(idx index.Index, values values.Values, kind kinds.Kind, name string) Series {
+func new(idx index.Index, values values.Values, kind datatypes.DataType, name string) Series {
 	return Series{
-		index:  idx,
-		values: values,
-		kind:   kind,
-		Name:   name,
+		index:    idx,
+		values:   values,
+		datatype: kind,
+		Name:     name,
 	}
 }
 
-func newPointer(idx index.Index, values values.Values, kind kinds.Kind, name string) *Series {
+func newPointer(idx index.Index, values values.Values, kind datatypes.DataType, name string) *Series {
 	return &Series{
-		index:  idx,
-		values: values,
-		kind:   kind,
-		Name:   name,
+		index:    idx,
+		values:   values,
+		datatype: kind,
+		Name:     name,
 	}
 }
 
@@ -274,8 +285,8 @@ func indexFromMiniIndex(minis []config.MiniIndex, requiredLen int) (index.Index,
 				"mismatch between supplied index length (%v) and expected length (%v)",
 				miniIdx.Data, labelLen, requiredLen)
 		}
-		if miniIdx.Kind != kinds.None {
-			level.Convert(miniIdx.Kind)
+		if miniIdx.DataType != datatypes.None {
+			level.Convert(miniIdx.DataType)
 		}
 
 		levels = append(levels, level)

@@ -7,14 +7,14 @@ import (
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/opt"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 )
 
 // Describe the key details of the Series.
 func (s Series) Describe() {
 	var err error
 	// shared data
-	origKind := s.kind
+	origKind := s.datatype
 	l := s.Len()
 	valids := len(s.valid())
 	nulls := len(s.null())
@@ -22,8 +22,8 @@ func (s Series) Describe() {
 	valid := fmt.Sprint(valids)
 	null := fmt.Sprint(nulls)
 	// type-specific data
-	switch s.kind {
-	case kinds.Float64, kinds.Int64:
+	switch s.datatype {
+	case datatypes.Float64, datatypes.Int64:
 		precision := opt.GetDisplayFloatPrecision()
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Math.Min())
@@ -36,19 +36,19 @@ func (s Series) Describe() {
 		idx := Idx([]string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"})
 		s, err = New(values, idx, opt.Name(s.Name))
 
-	case kinds.String:
+	case datatypes.String:
 		unique := fmt.Sprint(len(s.UniqueVals()))
 		values := []string{length, valid, null, unique}
 		idx := Idx([]string{"len", "valid", "null", "unique"})
 		s, err = New(values, idx, opt.Name(s.Name))
-	case kinds.Bool:
+	case datatypes.Bool:
 		precision := opt.GetDisplayFloatPrecision()
 		sum := fmt.Sprintf("%.*f", precision, s.Math.Sum())
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		values := []string{length, valid, null, sum, mean}
 		idx := Idx([]string{"len", "valid", "null", "sum", "mean"})
 		s, err = New(values, idx, opt.Name(s.Name))
-	case kinds.DateTime:
+	case datatypes.DateTime:
 		unique := fmt.Sprint(len(s.UniqueVals()))
 		earliest := fmt.Sprint(s.Earliest())
 		latest := fmt.Sprint(s.Latest())
@@ -65,7 +65,7 @@ func (s Series) Describe() {
 		return
 	}
 	// reset to pre-transformation Kind
-	s.kind = origKind
+	s.datatype = origKind
 	fmt.Println(s)
 	return
 }
@@ -101,8 +101,8 @@ func (s Series) UniqueVals() []string {
 func (s Series) Earliest() time.Time {
 	earliest := time.Time{}
 	vals := s.validVals()
-	switch s.kind {
-	case kinds.DateTime:
+	switch s.datatype {
+	case datatypes.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {
 			if earliest == (time.Time{}) || t.Before(earliest) {
@@ -122,8 +122,8 @@ func (s Series) Earliest() time.Time {
 func (s Series) Latest() time.Time {
 	latest := time.Time{}
 	vals := s.validVals()
-	switch s.kind {
-	case kinds.DateTime:
+	switch s.datatype {
+	case datatypes.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {
 			if latest == (time.Time{}) || t.After(latest) {

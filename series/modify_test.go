@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -254,11 +254,11 @@ func TestTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Float64
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.Float() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Float64
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.Kind() == s.Kind() {
+	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to float occurred in place, want copy only")
 	}
 }
@@ -274,11 +274,11 @@ func TestTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Int() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Int64
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.Int() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Int64
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.Int() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.Kind() == s.Kind() {
+	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to int occurred in place, want copy only")
 	}
 }
@@ -294,11 +294,11 @@ func TestTo_String(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.String() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.String
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.String() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.String
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.String() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.Kind() == s.Kind() {
+	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to string occurred in place, want copy only")
 	}
 }
@@ -314,11 +314,11 @@ func TestTo_Bool(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Bool() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Bool
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.Bool() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Bool
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.Bool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.Kind() == s.Kind() {
+	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to bool occurred in place, want copy only")
 	}
 }
@@ -335,11 +335,11 @@ func TestTo_DateTime(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.DateTime
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.DateTime
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.Kind() == s.Kind() {
+	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
 	}
 }
@@ -355,9 +355,9 @@ func TestTo_Interface(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Interface
-	if gotKind := newS.kind; gotKind != wantKind {
-		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Interface
+	if gotDataType := newS.datatype; gotDataType != wantDataType {
+		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 }
 
@@ -372,11 +372,11 @@ func TestIndexTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Float64
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.To.Float() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Float64
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.index.Levels[0].Kind == s.index.Levels[0].Kind {
+	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to float occurred in place, want copy only")
 	}
 }
@@ -392,11 +392,11 @@ func TestIndexTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Int() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Int64
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.IndexTo.Int() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Int64
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.IndexTo.Int() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.index.Levels[0].Kind == s.index.Levels[0].Kind {
+	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to int occurred in place, want copy only")
 	}
 }
@@ -412,11 +412,11 @@ func TestIndexTo_String(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.String() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.String
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.IndexTo.String() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.String
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.IndexTo.String() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.index.Levels[0].Kind == s.index.Levels[0].Kind {
+	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to string occurred in place, want copy only")
 	}
 }
@@ -433,11 +433,11 @@ func TestIndexTo_Bool(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Bool() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Bool
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.IndexTo.Bool() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Bool
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.IndexTo.Bool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.index.Levels[0].Kind == s.index.Levels[0].Kind {
+	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to bool occurred in place, want copy only")
 	}
 }
@@ -454,11 +454,11 @@ func TestIndexTo_DateTime(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.DateTime
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.IndexTo.DateTime() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.DateTime
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.IndexTo.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
-	if newS.index.Levels[0].Kind == s.index.Levels[0].Kind {
+	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
 	}
 }
@@ -474,27 +474,27 @@ func TestIndexTo_Interface(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Interface() returned %v, want %v", newS, wantS)
 	}
-	wantKind := kinds.Interface
-	if gotKind := newS.index.Levels[0].Kind; gotKind != wantKind {
-		t.Errorf("s.IndexTo.Interface() returned kind %v, want %v", gotKind, wantKind)
+	wantDataType := datatypes.Interface
+	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
+		t.Errorf("s.IndexTo.Interface() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 }
 
 // func TestConvertIndexMulti(t *testing.T) {
 // 	var tests = []struct {
-// 		convertTo kinds.Kind
+// 		convertTo datatypes.DataType
 // 		lvl       int
 // 	}{
-// 		{kinds.Float64, 0},
-// 		{kinds.Float64, 1},
-// 		{kinds.Int, 0},
-// 		{kinds.Int, 1},
-// 		{kinds.String, 0},
-// 		{kinds.String, 1},
-// 		{kinds.Bool, 0},
-// 		{kinds.Bool, 1},
-// 		{kinds.DateTime, 0},
-// 		{kinds.DateTime, 1},
+// 		{datatypes.Float64, 0},
+// 		{datatypes.Float64, 1},
+// 		{datatypes.Int, 0},
+// 		{datatypes.Int, 1},
+// 		{datatypes.String, 0},
+// 		{datatypes.String, 1},
+// 		{datatypes.Bool, 0},
+// 		{datatypes.Bool, 1},
+// 		{datatypes.DateTime, 0},
+// 		{datatypes.DateTime, 1},
 // 	}
 // 	for _, test := range tests {
 // 		s, err := New([]interface{}{1, 2, 3}, Idx([]int{1, 2, 3}), Idx([]int{10, 20, 30}))
@@ -505,12 +505,12 @@ func TestIndexTo_Interface(t *testing.T) {
 // 		if err != nil {
 // 			t.Error(err)
 // 		}
-// 		if newS.index.Levels[test.lvl].Kind != test.convertTo {
-// 			t.Errorf("Conversion of Series with multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, newS.index.Levels[test.lvl].Kind, test.convertTo)
+// 		if newS.index.Levels[test.lvl].DataType != test.convertTo {
+// 			t.Errorf("Conversion of Series with multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, newS.index.Levels[test.lvl].DataType, test.convertTo)
 // 		}
 // 		// excludes Int because the original test Index is int
-// 		if test.convertTo != kinds.Int {
-// 			if s.index.Levels[test.lvl].Kind == newS.index.Levels[test.lvl].Kind {
+// 		if test.convertTo != datatypes.Int {
+// 			if s.index.Levels[test.lvl].DataType == newS.index.Levels[test.lvl].DataType {
 // 				t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
 // 			}
 // 		}

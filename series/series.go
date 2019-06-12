@@ -6,25 +6,25 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/kinds"
 	"github.com/ptiger10/pd/opt"
 )
 
 // A Series is a 1-D data container with a labeled index, static type, and the ability to handle null values
 type Series struct {
-	index   index.Index
-	values  values.Values
-	kind    kinds.Kind
-	Name    string
-	Apply   Apply
-	Filter  Filter
-	Index   Index
-	InPlace InPlace
-	Math    Math
-	Select  Select
-	To      To
+	index    index.Index
+	values   values.Values
+	datatype datatypes.DataType
+	Name     string
+	Apply    Apply
+	Filter   Filter
+	Index    Index
+	InPlace  InPlace
+	Math     Math
+	Select   Select
+	To       To
 }
 
 // An Element is a single item in a Series.
@@ -32,7 +32,7 @@ type Element struct {
 	Value      interface{}
 	Null       bool
 	Labels     []interface{}
-	LabelKinds []kinds.Kind
+	LabelKinds []datatypes.DataType
 }
 
 func (el Element) String() string {
@@ -63,19 +63,19 @@ func (s Series) Element(position int) Element {
 	return Element{elem.Value, elem.Null, idx, idxKinds}
 }
 
-// Kind is the data kind of the Series' values. Mimics reflect.Kind with the addition of time.Time as DateTime.
-func (s Series) Kind() string {
-	return fmt.Sprint(s.kind)
+// DataType is the data type of the Series' values. Mimics reflect.Type with the addition of time.Time as DateTime.
+func (s Series) DataType() string {
+	return fmt.Sprint(s.datatype)
 }
 
 func (s Series) copy() Series {
 	idx := s.index.Copy()
 	valsCopy := s.values.Copy()
 	copyS := &Series{
-		values: valsCopy,
-		index:  idx,
-		kind:   s.kind,
-		Name:   s.Name,
+		values:   valsCopy,
+		index:    idx,
+		datatype: s.datatype,
+		Name:     s.Name,
 	}
 	copyS.Apply = Apply{s: copyS}
 	copyS.Filter = Filter{s: copyS}
@@ -125,7 +125,7 @@ func seriesEquals(s1, s2 Series) bool {
 	sameIndex := reflect.DeepEqual(s1.index, s2.index)
 	sameValues := reflect.DeepEqual(s1.values, s2.values)
 	sameName := s1.Name == s2.Name
-	sameKind := s1.kind == s2.kind
+	sameKind := s1.datatype == s2.datatype
 	if sameIndex && sameValues && sameName && sameKind {
 		return true
 	}
@@ -175,7 +175,7 @@ func (s Series) all() []interface{} {
 
 func (s *Series) replace(s2 *Series) {
 	s.Name = s2.Name
-	s.kind = s2.kind
+	s.datatype = s2.datatype
 	s.values = s2.values
 	s.index = s2.index
 }

@@ -16,6 +16,6 @@ func New(levels ...Level) Index {
 func Default(length int) Index {
 	defaultRange := values.MakeRange(0, length)
 	factory := values.NewSliceInt(defaultRange)
-	level := newLevel(factory.Values, factory.Kind, "")
+	level := newLevel(factory.Values, factory.DataType, "")
 	return New(level)
 }

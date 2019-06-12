@@ -1,15 +1,15 @@
 package series
 
 import (
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/index"
-	"github.com/ptiger10/pd/kinds"
 )
 
 // A Group is a combination of group labels and the integer positions associated with each label.
 type Group struct {
 	s        *Series
 	groups   index.LabelMap
-	idxKinds []kinds.Kind
+	idxKinds []datatypes.DataType
 }
 
 // Sum all the groups

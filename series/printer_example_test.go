@@ -24,7 +24,7 @@ func ExampleSeries_string_defaultIdx() {
 	// 1    Jamy
 	// 2    NaN
 	// 3    Jenny
-	// kind: string
+	// datatype: string
 }
 
 func ExampleSeries_string_customIdx() {
@@ -36,7 +36,7 @@ func ExampleSeries_string_customIdx() {
 	// 101    Jamy
 	// 102    NaN
 	// 103    Jenny
-	// kind: string
+	// datatype: string
 }
 
 func ExampleSeries_string_customIndex2() {
@@ -50,7 +50,7 @@ func ExampleSeries_string_customIndex2() {
 	// 10    Jamy
 	// 11    NaN
 	// 12    Jenny
-	// kind: string
+	// datatype: string
 }
 
 func ExampleSeries_string_multiIdx() {
@@ -62,7 +62,7 @@ func ExampleSeries_string_multiIdx() {
 	// 1 101    Jamy
 	// 2 102    NaN
 	// 3 103    Jenny
-	// kind: string
+	// datatype: string
 }
 
 func ExampleSeries_string_namedindex_1() {
@@ -79,7 +79,7 @@ func ExampleSeries_string_namedindex_1() {
 	//    10100    Jamy
 	//  1 10200    NaN
 	//    10300    Jenny
-	// kind: string
+	// datatype: string
 	// name: student
 }
 
@@ -97,7 +97,7 @@ func ExampleSeries_string_namedindex_2() {
 	//       20    Jamy
 	// 101   30    NaN
 	//       40    Jenny
-	// kind: string
+	// datatype: string
 	// name: student
 }
 
@@ -117,7 +117,7 @@ func ExampleSeries_string_named_index_nonsequential() {
 	//    10300    Jenny
 	//  0 10400    Jeremiah
 	//    10500    Jemma
-	// kind: string
+	// datatype: string
 	// name: student
 }
 
@@ -135,7 +135,7 @@ func ExampleSeries_string_partial_named_Idx() {
 	//   10100    Jamy
 	// 1 10200    NaN
 	//   10300    Jenny
-	// kind: string
+	// datatype: string
 	// name: student
 }
 
@@ -145,7 +145,7 @@ func ExampleSeries_datetime() {
 
 	// Output:
 	// 0    1/1/2019T00:00:00
-	// kind: dateTime
+	// datatype: dateTime
 }
 
 func ExampleElem() {

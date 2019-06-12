@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 )
 
 // InterfaceFactory converts interface{} to Values
@@ -12,7 +12,7 @@ func InterfaceFactory(data interface{}) (Factory, error) {
 	var factory Factory
 	var err error
 	if data == nil {
-		factory = Factory{Values: nil, Kind: kinds.None}
+		factory = Factory{Values: nil, DataType: datatypes.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -29,7 +29,7 @@ func newSliceFloat64(vals []float64) Factory {
 	for _, val := range vals {
 		ret = append(ret, newFloat64(val))
 	}
-	return Factory{&ret, kinds.Float64}
+	return Factory{&ret, datatypes.Float64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -192,7 +192,7 @@ func newSliceInt64(vals []int64) Factory {
 	for _, val := range vals {
 		ret = append(ret, newInt64(val))
 	}
-	return Factory{&ret, kinds.Int64}
+	return Factory{&ret, datatypes.Int64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -355,7 +355,7 @@ func newSliceString(vals []string) Factory {
 	for _, val := range vals {
 		ret = append(ret, newString(val))
 	}
-	return Factory{&ret, kinds.String}
+	return Factory{&ret, datatypes.String}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -518,7 +518,7 @@ func newSliceBool(vals []bool) Factory {
 	for _, val := range vals {
 		ret = append(ret, newBool(val))
 	}
-	return Factory{&ret, kinds.Bool}
+	return Factory{&ret, datatypes.Bool}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -681,7 +681,7 @@ func newSliceDateTime(vals []time.Time) Factory {
 	for _, val := range vals {
 		ret = append(ret, newDateTime(val))
 	}
-	return Factory{&ret, kinds.DateTime}
+	return Factory{&ret, datatypes.DateTime}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -844,7 +844,7 @@ func newSliceInterface(vals []interface{}) Factory {
 	for _, val := range vals {
 		ret = append(ret, newInterface(val))
 	}
-	return Factory{&ret, kinds.Interface}
+	return Factory{&ret, datatypes.Interface}
 }
 
 // Len returns the number of value/null structs in the container.

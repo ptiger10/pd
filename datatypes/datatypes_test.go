@@ -1,12 +1,12 @@
-package kinds
+package datatypes
 
 import (
 	"testing"
 )
 
-func TestKind(t *testing.T) {
+func TestDataType(t *testing.T) {
 	var tests = []struct {
-		kind     Kind
+		DataType DataType
 		expected string
 	}{
 
@@ -15,15 +15,15 @@ func TestKind(t *testing.T) {
 		{Int64, "int64"},
 		{String, "string"},
 		{Bool, "bool"},
-		{DateTime, "time.Time"},
+		{DateTime, "dateTime"},
 		{Interface, "interface"},
 		{Unsupported, "unsupported"},
 		{-1, "unknown"},
 		{100, "unknown"},
 	}
 	for _, test := range tests {
-		if test.kind.String() != test.expected {
-			t.Errorf("Kind.String() for kind %v returned %v, want %v", test.kind, test.kind.String(), test.expected)
+		if test.DataType.String() != test.expected {
+			t.Errorf("DataType.String() for DataType %v returned %v, want %v", test.DataType, test.DataType.String(), test.expected)
 		}
 	}
 }

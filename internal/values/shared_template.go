@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cheekybits/genny/generic"
-	"github.com/ptiger10/pd/kinds"
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/opt"
 )
 
@@ -30,7 +30,7 @@ func newSlicevalueType(vals []valueType) Factory {
 	for _, val := range vals {
 		ret = append(ret, newvalueType(val))
 	}
-	return Factory{&ret, kinds.PlaceholdervalueType}
+	return Factory{&ret, datatypes.PlaceholdervalueType}
 }
 
 // Len returns the number of value/null structs in the container.

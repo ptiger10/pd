@@ -16,7 +16,7 @@ func (f Filter) Float64(cmp func(float64) bool) (Series, error) {
 	var include []int
 	vals, ok := s.values.Vals().([]float64)
 	if !ok {
-		return Series{}, fmt.Errorf("float64 filter expects float64 values only, got %v", f.s.Kind())
+		return Series{}, fmt.Errorf("float64 filter expects float64 values only, got %v", f.s.DataType())
 	}
 	for i, val := range vals {
 		if cmp(val) {

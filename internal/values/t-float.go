@@ -50,7 +50,7 @@ func (vals *float64Values) Less(i, j int) bool {
 
 // 	return Series{
 // 		Values: vals,
-// 		Kind:   DateTime,
+// 		DataType:   DateTime,
 // 	}, nil
 // }
 

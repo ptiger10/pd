@@ -1,8 +1,8 @@
 package opt
 
 import (
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/config"
-	"github.com/ptiger10/pd/kinds"
 )
 
 // [START Constructor options]
@@ -10,10 +10,10 @@ import (
 // A ConstructorOption is an optional parameter in the Series constructor.
 type ConstructorOption func(*config.ConstructorConfig)
 
-// Kind will convert either values or an index level to the specified kind
-func Kind(kind kinds.Kind) ConstructorOption {
+// DataType will convert either values or an index level to the specified kind
+func DataType(datatype datatypes.DataType) ConstructorOption {
 	return func(c *config.ConstructorConfig) {
-		c.Kind = kind
+		c.DataType = datatype
 	}
 }
 

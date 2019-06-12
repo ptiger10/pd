@@ -12,7 +12,7 @@ func (a Apply) Float64(fn func(float64) float64) (Series, error) {
 	s := a.s.copy()
 	vals, ok := s.values.Vals().([]float64)
 	if !ok {
-		return Series{}, fmt.Errorf("float64 Apply expects float64 values only, got %v", a.s.Kind())
+		return Series{}, fmt.Errorf("float64 Apply expects float64 values only, got %v", a.s.DataType())
 	}
 	for i := 0; i < a.s.values.Len(); i++ {
 		a.s.values.Set(i, fn(vals[i]))

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ptiger10/pd/datatypes"
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/kinds"
 )
 
 func TestLevel(t *testing.T) {
@@ -14,49 +14,49 @@ func TestLevel(t *testing.T) {
 	var tests = []struct {
 		data       interface{}
 		wantLabels values.Values
-		wantKind   kinds.Kind
+		wantKind   datatypes.DataType
 		wantName   string
 	}{
 		{
 			data:       []float64{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]float64{0, 1, 2}, "").Labels,
-			wantKind:   kinds.Float64,
+			wantKind:   datatypes.Float64,
 			wantName:   "test",
 		},
 		{
 			data:       []int{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   kinds.Int64,
+			wantKind:   datatypes.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   kinds.Int64,
+			wantKind:   datatypes.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []string{"0", "1", "2"},
 			wantLabels: MustCreateNewLevel([]string{"0", "1", "2"}, "").Labels,
-			wantKind:   kinds.String,
+			wantKind:   datatypes.String,
 			wantName:   "test",
 		},
 		{
 			data:       []bool{true, true, false},
 			wantLabels: MustCreateNewLevel([]bool{true, true, false}, "").Labels,
-			wantKind:   kinds.Bool,
+			wantKind:   datatypes.Bool,
 			wantName:   "test",
 		},
 		{
 			data:       []time.Time{testDate},
 			wantLabels: MustCreateNewLevel([]time.Time{testDate}, "").Labels,
-			wantKind:   kinds.DateTime,
+			wantKind:   datatypes.DateTime,
 			wantName:   "test",
 		},
 		{
 			data:       []interface{}{1.5, 1, "", false, testDate},
 			wantLabels: MustCreateNewLevel([]interface{}{1.5, 1, "", false, testDate}, "").Labels,
-			wantKind:   kinds.Interface,
+			wantKind:   datatypes.Interface,
 			wantName:   "test",
 		},
 	}
@@ -68,8 +68,8 @@ func TestLevel(t *testing.T) {
 		if !reflect.DeepEqual(lvl.Labels, test.wantLabels) {
 			t.Errorf("%T test returned labels %#v, want %#v", test.data, lvl.Labels, test.wantLabels)
 		}
-		if lvl.Kind != test.wantKind {
-			t.Errorf("%T test returned kind %v, want %v", test.data, lvl.Kind, test.wantKind)
+		if lvl.DataType != test.wantKind {
+			t.Errorf("%T test returned kind %v, want %v", test.data, lvl.DataType, test.wantKind)
 		}
 		if lvl.Name != test.wantName {
 			t.Errorf("%T test returned name %v, want %v", test.data, lvl.Name, test.wantName)
@@ -92,7 +92,7 @@ func Test_LevelCopy(t *testing.T) {
 	if copyLvl.Name != "foo" {
 		t.Error("Level.Copy() did not copy Name")
 	}
-	if copyLvl.Kind != kinds.Int64 {
+	if copyLvl.DataType != datatypes.Int64 {
 		t.Error("Level.Copy() did not copy Kind")
 	}
 	if copyLvl.Longest != 1 {
