@@ -144,3 +144,8 @@ func (val interfaceValue) toInterface() interfaceValue {
 }
 
 // [END Converters]
+
+// emptyValues returns empty interface values
+func emptyValues() Values {
+	return &interfaceValues{}
+}

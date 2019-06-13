@@ -83,7 +83,7 @@ func ExampleNewWithConfig_string() {
 
 func ExampleNewWithConfig_nonsequential_repeating() {
 	s, _ := NewWithConfig(
-		Config{Name: "student"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
+		Config{Name: "foobar"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
 		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
 		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
 	)
@@ -98,12 +98,33 @@ func ExampleNewWithConfig_nonsequential_repeating() {
 	//  0 10400    qux
 	//    10500    quux
 	// datatype: string
-	// name: student
+	// name: foobar
+}
+
+func ExampleNew_named_later() {
+	s, _ := New(
+		[]string{"foo", "bar", "", "baz", "qux", "quux"},
+		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
+		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
+	)
+	s.Name = "foobar"
+	fmt.Println(s)
+
+	// Output:
+	// id  code
+	//  0 10000    foo
+	//    10100    bar
+	//  1 10200    NaN
+	//    10300    baz
+	//  0 10400    qux
+	//    10500    quux
+	// datatype: string
+	// name: foobar
 }
 
 func ExampleNewWithConfig_partially_named_indexes() {
 	s, _ := NewWithConfig(
-		Config{Name: "student"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
+		Config{Name: "foobar"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
 		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
 		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
 	)
@@ -116,7 +137,7 @@ func ExampleNewWithConfig_partially_named_indexes() {
 	// 1 10200    NaN
 	//   10300    Jenny
 	// datatype: string
-	// name: student
+	// name: foobar
 }
 
 func ExampleSeries_datetime() {

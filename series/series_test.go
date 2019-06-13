@@ -39,7 +39,7 @@ func TestElement(t *testing.T) {
 		}
 	}
 }
-func TestKind(t *testing.T) {
+func TestDatatype(t *testing.T) {
 	var tests = []struct {
 		datatype options.DataType
 		expected string
@@ -50,7 +50,7 @@ func TestKind(t *testing.T) {
 		{options.Int64, "int64"},
 		{options.String, "string"},
 		{options.Bool, "bool"},
-		{options.DateTime, "time.Time"},
+		{options.DateTime, "dateTime"},
 		{options.Interface, "interface"},
 		{options.Unsupported, "unsupported"},
 		{-1, "unknown"},
@@ -60,7 +60,7 @@ func TestKind(t *testing.T) {
 		s, _ := New([]int{1, 2, 3})
 		s.datatype = test.datatype
 		if s.DataType() != test.expected {
-			t.Errorf("s.Kind() for kind %v returned %v, want %v", test.datatype, test.datatype.String(), test.expected)
+			t.Errorf("s.Datatype() for datatype %v returned %v, want %v", test.datatype, test.datatype.String(), test.expected)
 		}
 	}
 }
@@ -70,7 +70,7 @@ func Test_Copy(t *testing.T) {
 	s.Name = "foo"
 	origS, _ := New("foo")
 	origS.Name = "foo"
-	copyS := s.copy()
+	copyS := s.Copy()
 	copyS.index.Levels[0].Labels.Set(0, "5")
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"

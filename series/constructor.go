@@ -18,19 +18,24 @@ type Config struct {
 
 // New creates a new Series with the supplied values and n-level index.
 func New(data interface{}, idx ...IndexLevel) (*Series, error) {
+	// Handling values
 	factory, err := values.InterfaceFactory(data)
 	if err != nil {
 		return nil, fmt.Errorf("series.New(): %v", err)
 	}
-
+	// Handling index
 	var seriesIndex index.Index
-	// No index supplied: return with default index
-	if len(idx) != 0 {
+	// Empty data: return empty index
+	if data == nil {
+		lvl, _ := index.NewLevel(nil, "")
+		seriesIndex = index.New(lvl)
+	} else if len(idx) != 0 {
+		var levels []index.Level
 		for i := 0; i < len(idx); i++ {
 			// Any level with no values: create default index and supply name only
 			if idx[i].Labels == nil {
 				lvl := index.DefaultLevel(factory.Values.Len(), idx[i].Name)
-				seriesIndex.Levels = append(seriesIndex.Levels, lvl)
+				levels = append(levels, lvl)
 			} else {
 				// Create new level from label and name
 				lvl, err := index.NewLevel(idx[i].Labels, idx[i].Name)
@@ -41,19 +46,21 @@ func New(data interface{}, idx ...IndexLevel) (*Series, error) {
 						return nil, fmt.Errorf("series.New(): %v", err)
 					}
 				}
-				seriesIndex.Levels = append(seriesIndex.Levels, lvl)
+				levels = append(levels, lvl)
 				if err != nil {
 					return nil, fmt.Errorf("series.New(): %v", err)
 				}
 			}
 		}
+		seriesIndex = index.New(levels...)
+		// No index supplied: return with default index
 	} else {
 		seriesIndex = index.Default(factory.Values.Len())
 	}
 
 	s := &Series{
 		values:   factory.Values,
-		index:    index.Default(factory.Values.Len()),
+		index:    seriesIndex,
 		datatype: factory.DataType,
 	}
 

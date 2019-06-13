@@ -67,7 +67,8 @@ func (s *Series) DataType() string {
 	return fmt.Sprint(s.datatype)
 }
 
-func (s *Series) copy() *Series {
+// Copy creates a new deep copy of a Series.
+func (s *Series) Copy() *Series {
 	idx := s.index.Copy()
 	valsCopy := s.values.Copy()
 	copyS := &Series{
@@ -95,7 +96,7 @@ func (s *Series) in(positions []int) (*Series, error) {
 		return nil, nil
 	}
 
-	newS := s.copy()
+	newS := s.Copy()
 	values, err := newS.values.In(positions)
 	if err != nil {
 		return nil, fmt.Errorf("Series.in() values: %v", err)

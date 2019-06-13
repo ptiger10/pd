@@ -33,7 +33,7 @@ type Select struct {
 func (sel Select) ByRows(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
-		s:            sel.s.copy(),
+		s:            sel.s.Copy(),
 		rowPositions: positions,
 		swappable:    swappable,
 		rowsOnly:     true,
@@ -61,7 +61,7 @@ func (sel Select) ByLabels(labels []string) Selection {
 		err = fmt.Errorf(strings.Join(errList, " - "))
 	}
 	return Selection{
-		s:            sel.s.copy(),
+		s:            sel.s.Copy(),
 		rowPositions: positions,
 		swappable:    swappable,
 		rowsOnly:     true,
@@ -73,7 +73,7 @@ func (sel Select) ByLabels(labels []string) Selection {
 func (sel Select) ByLevels(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
-		s:              sel.s.copy(),
+		s:              sel.s.Copy(),
 		levelPositions: positions,
 		swappable:      swappable,
 		levelsOnly:     true,
@@ -101,7 +101,7 @@ func (sel Select) ByLevelNames(names []string) Selection {
 	}
 
 	return Selection{
-		s:              sel.s.copy(),
+		s:              sel.s.Copy(),
 		levelPositions: positions,
 		swappable:      swappable,
 		levelsOnly:     true,
@@ -112,10 +112,37 @@ func (sel Select) ByLevelNames(names []string) Selection {
 // XS selects a cross-section of index rows and levels at the specified integer locations.
 func (sel Select) XS(rows []int, levels []int) Selection {
 	return Selection{
-		s:              sel.s.copy(),
+		s:              sel.s.Copy(),
 		rowPositions:   rows,
 		levelPositions: levels,
 	}
+}
+
+// GroupBy returns a Grouping for the selected levels.
+func (sel Selection) GroupBy() (Grouping, error) {
+	if !sel.levelsOnly {
+		return Grouping{}, fmt.Errorf("Selection.GroupBy() requires that only levels have been selected")
+	}
+	g := Grouping{s: sel.s, groups: make(map[string]*group)}
+	for i := 0; i < sel.s.Len(); i++ {
+		var levels []interface{}
+		var labels []string
+		for j := 0; j < len(sel.levelPositions); j++ {
+			idx, err := sel.s.Index.At(i, sel.levelPositions[j])
+			if err != nil {
+				return Grouping{}, fmt.Errorf("series.GroupByIndex(): %v", err)
+			}
+			levels = append(levels, idx)
+			labels = append(labels, fmt.Sprint(idx))
+		}
+		label := strings.Join(labels, " ")
+		if g.groups[label] == nil {
+			g.groups[label] = &group{}
+		}
+		g.groups[label].Positions = append(g.groups[label].Positions, i)
+		g.groups[label].IndexLevels = levels
+	}
+	return g, nil
 }
 
 // ensure checks for errors on the Selection prior to calling other methods.

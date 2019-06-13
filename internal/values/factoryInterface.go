@@ -12,7 +12,7 @@ func InterfaceFactory(data interface{}) (Factory, error) {
 	var factory Factory
 	var err error
 	if data == nil {
-		factory = Factory{Values: nil, DataType: options.None}
+		factory = Factory{Values: emptyValues(), DataType: options.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,

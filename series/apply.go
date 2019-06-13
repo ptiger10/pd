@@ -9,7 +9,7 @@ type Apply struct {
 
 // Float64 applies a function to all float64 values and returns a new Series.
 func (a Apply) Float64(fn func(float64) float64) (*Series, error) {
-	s := a.s.copy()
+	s := a.s.Copy()
 	vals, ok := s.values.Vals().([]float64)
 	if !ok {
 		return nil, fmt.Errorf("float64 Apply expects float64 values only, got %v", a.s.DataType())

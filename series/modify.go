@@ -26,28 +26,28 @@ func (s *Series) Less(i, j int) bool {
 
 // Sort sorts the series by its values and returns a new Series.
 func (s *Series) Sort(asc bool) *Series {
-	s = s.copy()
+	s = s.Copy()
 	s.InPlace.Sort(asc)
 	return s
 }
 
 // Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
 func (s *Series) Insert(pos int, val interface{}, idx []interface{}) (*Series, error) {
-	s = s.copy()
+	s = s.Copy()
 	s.InPlace.Insert(pos, val, idx)
 	return s, nil
 }
 
 // dropRows drops multiple rows and returns a new Series
 func (s *Series) dropRows(positions []int) (*Series, error) {
-	s = s.copy()
+	s = s.Copy()
 	s.InPlace.dropRows(positions)
 	return s, nil
 }
 
 // Drop drops the row at the specified integer position and returns a new Series.
 func (s *Series) Drop(pos int) (*Series, error) {
-	s = s.copy()
+	s = s.Copy()
 	s.InPlace.Drop(pos)
 	return s, nil
 }
@@ -60,7 +60,7 @@ func (s *Series) Append(val interface{}, idx []interface{}) *Series {
 
 // Join converts s2 to the same type as the base Series (s), appends s2 to the end, and returns a new Series.
 func (s *Series) Join(s2 *Series) *Series {
-	s = s.copy()
+	s = s.Copy()
 	s.InPlace.Join(s2)
 	return s
 }
@@ -71,7 +71,8 @@ func (s *Series) Join(s2 *Series) *Series {
 
 // InPlace contains methods for modifying a Series in place.
 type InPlace struct {
-	s *Series
+	s  *Series
+	To To
 }
 
 // Sort sorts the series by its values and modifies the Series in place.
@@ -137,7 +138,7 @@ func (ip InPlace) Append(val interface{}, idx []interface{}) {
 
 // Join converts s2 to the same type as the base Series (s), appends s2 to the end, and modifies s in place.
 func (ip InPlace) Join(s2 *Series) {
-	if ip.s.values == nil {
+	if ip.s.datatype == options.None {
 		ip.s.replace(s2)
 		return
 	}
@@ -157,76 +158,79 @@ type To struct {
 	idx bool
 }
 
-// Float converts Series values to float64.
+// Float converts Series values to float64 and returns a new Series.
 func (t To) Float() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToFloat()
+		s.index.Levels[0] = s.index.Levels[0].ToFloat()
 	} else {
-		t.s.values = t.s.values.ToFloat()
-		t.s.datatype = options.Float64
+		s.values = s.values.ToFloat()
+		s.datatype = options.Float64
 	}
-	return t.s
+	return s
 }
 
-// Int converts Series values to int64.
+// Int converts Series values to int64 and returns a new Series.
 func (t To) Int() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToInt()
+		s.index.Levels[0] = s.index.Levels[0].ToInt()
 	} else {
-		t.s.values = t.s.values.ToInt()
-		t.s.datatype = options.Int64
+		s.values = s.values.ToInt()
+		s.datatype = options.Int64
 	}
-	return t.s
+	return s
 }
 
-// String converts Series values to string.
+// String converts Series values to string and returns a new Series.
 func (t To) String() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToString()
+		s.index.Levels[0] = s.index.Levels[0].ToString()
 	} else {
-		t.s.values = t.s.values.ToString()
-		t.s.datatype = options.String
+		s.values = s.values.ToString()
+		s.datatype = options.String
 	}
-	return t.s
+	return s
 }
 
-// Bool converts Series values to bool.
+// Bool converts Series values to bool and returns a new Series.
 func (t To) Bool() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToBool()
+		s.index = s.index.Copy()
+		s.index.Levels[0] = s.index.Levels[0].ToBool()
 	} else {
-		t.s.values = t.s.values.ToBool()
-		t.s.datatype = options.Bool
+		s.values = s.values.ToBool()
+		s.datatype = options.Bool
 	}
-	return t.s
+	return s
 }
 
-// DateTime converts Series values to time.Time.
+// DateTime converts Series values to time.Time and returns a new Series.
 func (t To) DateTime() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToDateTime()
+		s.index = s.index.Copy()
+		s.index.Levels[0] = s.index.Levels[0].ToDateTime()
 	} else {
-		t.s.values = t.s.values.ToDateTime()
-		t.s.datatype = options.DateTime
+		s.values = s.values.ToDateTime()
+		s.datatype = options.DateTime
 	}
-	return t.s
+	return s
 }
 
-// Interface converts Series values to interface.
+// Interface converts Series values to interface and returns a new Series.
 func (t To) Interface() *Series {
+	s := t.s.Copy()
 	if t.idx {
-		t.s.index = t.s.index.Copy()
-		t.s.index.Levels[0] = t.s.index.Levels[0].ToInterface()
+		s.index = s.index.Copy()
+		s.index.Levels[0] = s.index.Levels[0].ToInterface()
 	} else {
-		t.s.values = t.s.values.ToInterface()
-		t.s.datatype = options.Interface
+		s.values = s.values.ToInterface()
+		s.datatype = options.Interface
 	}
-	return t.s
+	return s
 }
 
 // [END type conversion methods]
@@ -271,7 +275,19 @@ func (idx Index) Sort(asc bool) {
 	}
 }
 
+// At returns the index value at a specified index level and integer position.
+func (idx Index) At(position int, level int) (interface{}, error) {
+	if level >= idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	if position >= idx.s.Len() {
+		return nil, fmt.Errorf("invalid position: %d (len: %v)", position, idx.s.Len())
+	}
+	elem := idx.s.Element(position)
+	return elem.Labels[level], nil
+}
+
 func (s *Series) rename(name string) {
-	s = s.copy()
+	s = s.Copy()
 	s.index.Levels[0].Name = name
 }

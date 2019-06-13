@@ -95,3 +95,32 @@ func sliceUIntToSliceInt64(data interface{}) []int64 {
 }
 
 // [END interface converters]
+
+// [START utility slices]
+
+// makeRange returns a sequential series of numbers, for use in the default Series index constructor.
+func makeRange(min, max int) []int64 {
+	a := make([]int64, max-min)
+	for i := range a {
+		a[i] = int64(min + i)
+	}
+	return a
+}
+
+// MakeIntRange returns a sequential series of numbers, for use in creating a list of integer positions.
+func MakeIntRange(min, max int) []int {
+	a := make([]int, max-min)
+	for i := range a {
+		a[i] = min + i
+	}
+	return a
+}
+
+// NewDefault returns a factory of []int64 values {0, 1, 2, ... n} for use in a default index.
+func NewDefault(n int) Values {
+	defaultRange := makeRange(0, n)
+	v := newSliceInt64(defaultRange)
+	return v.Values
+}
+
+// [END utility slices]

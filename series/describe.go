@@ -11,8 +11,10 @@ import (
 func (s *Series) Describe() {
 	var values interface{}
 	var idx interface{}
-	// shared data
+	// dt preserves the datatype of the original Series
+	dt := s.datatype
 
+	// shared data
 	l := s.Len()
 	valids := len(s.valid())
 	nulls := len(s.null())
@@ -58,10 +60,11 @@ func (s *Series) Describe() {
 		idx = []string{"len", "valid", "null"}
 	}
 
-	s, err := New(values, Idx(idx))
+	s, err := NewWithConfig(Config{Name: s.Name}, values, Idx(idx))
 	if err != nil {
 		fmt.Printf("series.Describe(): %v", err)
 	}
+	s.datatype = dt
 	fmt.Println(s)
 	return
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
@@ -44,7 +44,7 @@ func (lvl Level) Copy() Level {
 	lvlCopy = lvl
 	lvlCopy.Labels = lvlCopy.Labels.Copy()
 	lvlCopy.LabelMap = make(LabelMap)
-	for k, v := range lvlCopy.LabelMap {
+	for k, v := range lvl.LabelMap {
 		lvlCopy.LabelMap[k] = v
 	}
 	return lvlCopy
@@ -53,4 +53,11 @@ func (lvl Level) Copy() Level {
 // Len returns the number of labels in the level
 func (lvl Level) Len() int {
 	return lvl.Labels.Len()
+}
+
+// DefaultLevel creates an unnamed index level with range labels (0, 1, 2, ...n)
+func DefaultLevel(n int, name string) Level {
+	v := values.NewDefault(n)
+	level := newLevel(v, options.Int64, name)
+	return level
 }

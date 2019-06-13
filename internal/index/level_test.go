@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 func TestLevel(t *testing.T) {
@@ -89,6 +89,9 @@ func Test_LevelCopy(t *testing.T) {
 	idxLvl := MustCreateNewLevel([]int{1, 2, 3}, "")
 	idxLvl.Name = "foo"
 	copyLvl := idxLvl.Copy()
+	if !reflect.DeepEqual(idxLvl.LabelMap, copyLvl.LabelMap) {
+		t.Error("Level.Copy() did not copy LabelMap")
+	}
 	if copyLvl.Name != "foo" {
 		t.Error("Level.Copy() did not copy Name")
 	}

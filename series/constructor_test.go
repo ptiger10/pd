@@ -5,6 +5,11 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	// "github.com/d4l3k/messagediff"
+	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 // // Float Tests
@@ -124,21 +129,46 @@ import (
 // 	}
 // }
 
-// func TestNew_int(t *testing.T) {
-// 	got, err := New(1)
-// 	if err != nil {
-// 		t.Errorf("New() error = %v, wantErr nil", err)
-// 	}
-// 	v, err := values.InterfaceFactory(1)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	idx := index.Default(1)
-// 	want := &Series{values: v.Values, index: idx, datatype: options.Int64}
-// 	if !seriesEquals(*got, *want) {
-// 		t.Errorf("New() = %v, want %v", got, want)
-// 	}
-// }
+func TestNew_test(t *testing.T) {
+	s, _ := New("foo", Idx("bar"))
+	s2, _ := New("foo", Idx("bar"))
+	if !reflect.DeepEqual(s, s2) {
+		t.Errorf("New() = %#v, want %#v", s, s2)
+	}
+}
+
+func TestNew_multi(t *testing.T) {
+	got, _ := New("foo", Idx("bar"), Idx("baz"))
+	v, err := values.InterfaceFactory("foo")
+	if err != nil {
+		t.Error(err)
+	}
+	idx1, _ := index.NewLevel("bar", "")
+	idx2, _ := index.NewLevel("baz", "")
+	idx := index.New(idx1, idx2)
+	want := &Series{values: v.Values, index: idx, datatype: options.String}
+	if !seriesEquals(got, want) {
+		t.Errorf("New() = %v, want %v", got, want)
+	}
+}
+
+func TestNew_int(t *testing.T) {
+	got, err := New(1)
+	if err != nil {
+		t.Errorf("New() error = %v, wantErr nil", err)
+	}
+	v, err := values.InterfaceFactory(1)
+	if err != nil {
+		t.Error(err)
+	}
+	idx := index.Default(1)
+	want := &Series{values: v.Values, index: idx, datatype: options.Int64}
+	if !seriesEquals(got, want) {
+		t.Errorf("New() = %#v, want %#v", got, want)
+	}
+	// diff, _ := messagediff.PrettyDiff(got, want)
+	// fmt.Println(diff)
+}
 
 func TestNew_scalar(t *testing.T) {
 	type args struct {

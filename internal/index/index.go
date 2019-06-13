@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 // An Index is a collection of levels, plus label mappings
@@ -25,6 +25,22 @@ type Level struct {
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
 type LabelMap map[string][]int
+
+// New receives one or more Levels and returns a new Index.
+// Expects that Levels already have .LabelMap and .Longest set.
+func New(levels ...Level) Index {
+	idx := Index{
+		Levels: levels,
+	}
+	idx.UpdateNameMap()
+	return idx
+}
+
+// Default creates an index with one unnamed index level and range labels (0, 1, 2, ...n)
+func Default(length int) Index {
+	level := DefaultLevel(length, "")
+	return New(level)
+}
 
 // In returns a copy of the index with only those levels located at specified integer positions
 func (idx Index) In(positions []int) (Index, error) {

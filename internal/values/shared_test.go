@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+func TestToInt(t *testing.T) {
+	vals := float64Values{float64Value{1.5, false}}
+	newVals := vals.ToInt()
+	if reflect.DeepEqual(vals, newVals) {
+		t.Error("ToInt() retained reference to original, want copy")
+	}
+}
+
 func TestDrop_float(t *testing.T) {
 	var tests = []struct {
 		dropPosition int
