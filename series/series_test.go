@@ -5,8 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/datatypes"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
 func TestElement(t *testing.T) {
@@ -23,7 +22,7 @@ func TestElement(t *testing.T) {
 		{0, "NaN", true, []interface{}{"A", int64(1)}},
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
-	wantIdxKinds := []datatypes.DataType{datatypes.String, datatypes.Int64}
+	wantIdxKinds := []options.DataType{options.String, options.Int64}
 	for _, test := range tests {
 		got := s.Element(test.position)
 		if got.Value != test.wantVal {
@@ -42,18 +41,18 @@ func TestElement(t *testing.T) {
 }
 func TestKind(t *testing.T) {
 	var tests = []struct {
-		datatype datatypes.DataType
+		datatype options.DataType
 		expected string
 	}{
 
-		{datatypes.None, "none"},
-		{datatypes.Float64, "float64"},
-		{datatypes.Int64, "int64"},
-		{datatypes.String, "string"},
-		{datatypes.Bool, "bool"},
-		{datatypes.DateTime, "time.Time"},
-		{datatypes.Interface, "interface"},
-		{datatypes.Unsupported, "unsupported"},
+		{options.None, "none"},
+		{options.Float64, "float64"},
+		{options.Int64, "int64"},
+		{options.String, "string"},
+		{options.Bool, "bool"},
+		{options.DateTime, "time.Time"},
+		{options.Interface, "interface"},
+		{options.Unsupported, "unsupported"},
 		{-1, "unknown"},
 		{100, "unknown"},
 	}
@@ -75,7 +74,7 @@ func Test_Copy(t *testing.T) {
 	copyS.index.Levels[0].Labels.Set(0, "5")
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"
-	copyS.datatype = datatypes.Bool
+	copyS.datatype = options.Bool
 	MathPtr := fmt.Sprintf("%p", copyS.Math.s)
 	ToPtr := fmt.Sprintf("%p", copyS.To.s)
 	IndexToPtr := fmt.Sprintf("%p", copyS.Index.s)
@@ -90,38 +89,38 @@ func Test_Copy(t *testing.T) {
 	}
 }
 
-func Test_Equals(t *testing.T) {
-	s, err := New("foo", Idx("bar"), opt.Name("baz"))
-	if err != nil {
-		t.Error(err)
-	}
-	s2, _ := New("foo", Idx("bar"), opt.Name("baz"))
-	if !seriesEquals(s, s2) {
-		t.Errorf("seriesEquals() returned false, want true")
-	}
-	s2.datatype = datatypes.Bool
-	if seriesEquals(s, s2) {
-		t.Errorf("seriesEquals() returned true for different kind, want false")
-	}
+// func Test_Equals(t *testing.T) {
+// 	s, err := New("foo", Idx("bar"), options.Name("baz"))
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+// 	s2, _ := New("foo", Idx("bar"), options.Name("baz"))
+// 	if !seriesEquals(s, s2) {
+// 		t.Errorf("seriesEquals() returned false, want true")
+// 	}
+// 	s2.datatype = options.Bool
+// 	if seriesEquals(s, s2) {
+// 		t.Errorf("seriesEquals() returned true for different kind, want false")
+// 	}
 
-	s2, _ = New("quux", Idx("bar"), opt.Name("baz"))
-	if seriesEquals(s, s2) {
-		t.Errorf("seriesEquals() returned true for different values, want false")
-	}
-	s2, _ = New("foo", Idx("corge"), opt.Name("baz"))
-	if seriesEquals(s, s2) {
-		t.Errorf("seriesEquals() returned true for different index, want false")
-	}
-	s2, _ = New("foo", Idx("bar"), opt.Name("qux"))
-	if seriesEquals(s, s2) {
-		t.Errorf("seriesEquals() returned true for different name, want false")
-	}
-}
+// 	s2, _ = New("quux", Idx("bar"), options.Name("baz"))
+// 	if seriesEquals(s, s2) {
+// 		t.Errorf("seriesEquals() returned true for different values, want false")
+// 	}
+// 	s2, _ = New("foo", Idx("corge"), options.Name("baz"))
+// 	if seriesEquals(s, s2) {
+// 		t.Errorf("seriesEquals() returned true for different index, want false")
+// 	}
+// 	s2, _ = New("foo", Idx("bar"), options.Name("qux"))
+// 	if seriesEquals(s, s2) {
+// 		t.Errorf("seriesEquals() returned true for different name, want false")
+// 	}
+// }
 
 func TestReplaceNil(t *testing.T) {
 	s := mustNew(nil)
 	s2 := mustNew([]int{1, 2})
-	s.replace(&s2)
+	s.replace(s2)
 	if !seriesEquals(s, s2) {
 		t.Errorf("Series.replace() returned %v, want %v", s, s2)
 	}

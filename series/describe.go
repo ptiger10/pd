@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/opt"
-
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // Describe the key details of the Series.
-func (s Series) Describe() {
-	var err error
+func (s *Series) Describe() {
+	var values interface{}
+	var idx interface{}
 	// shared data
-	origKind := s.datatype
+
 	l := s.Len()
 	valids := len(s.valid())
 	nulls := len(s.null())
@@ -23,8 +21,8 @@ func (s Series) Describe() {
 	null := fmt.Sprint(nulls)
 	// type-specific data
 	switch s.datatype {
-	case datatypes.Float64, datatypes.Int64:
-		precision := opt.GetDisplayFloatPrecision()
+	case options.Float64, options.Int64:
+		precision := options.GetDisplayFloatPrecision()
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Math.Min())
 		q1 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(1))
@@ -32,40 +30,38 @@ func (s Series) Describe() {
 		q3 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(3))
 		max := fmt.Sprintf("%.*f", precision, s.Math.Max())
 
-		values := []string{length, valid, null, mean, min, q1, q2, q3, max}
-		idx := Idx([]string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"})
-		s, err = New(values, idx, opt.Name(s.Name))
+		values = []string{length, valid, null, mean, min, q1, q2, q3, max}
+		idx = []string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"}
 
-	case datatypes.String:
+	case options.String:
 		unique := fmt.Sprint(len(s.UniqueVals()))
-		values := []string{length, valid, null, unique}
-		idx := Idx([]string{"len", "valid", "null", "unique"})
-		s, err = New(values, idx, opt.Name(s.Name))
-	case datatypes.Bool:
-		precision := opt.GetDisplayFloatPrecision()
+		values = []string{length, valid, null, unique}
+		idx = []string{"len", "valid", "null", "unique"}
+
+	case options.Bool:
+		precision := options.GetDisplayFloatPrecision()
 		sum := fmt.Sprintf("%.*f", precision, s.Math.Sum())
 		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
-		values := []string{length, valid, null, sum, mean}
-		idx := Idx([]string{"len", "valid", "null", "sum", "mean"})
-		s, err = New(values, idx, opt.Name(s.Name))
-	case datatypes.DateTime:
+		values = []string{length, valid, null, sum, mean}
+		idx = []string{"len", "valid", "null", "sum", "mean"}
+
+	case options.DateTime:
 		unique := fmt.Sprint(len(s.UniqueVals()))
 		earliest := fmt.Sprint(s.Earliest())
 		latest := fmt.Sprint(s.Latest())
-		values := []string{length, valid, null, unique, earliest, latest}
-		idx := Idx([]string{"len", "valid", "null", "unique", "earliest", "latest"})
-		s, err = New(values, idx, opt.Name(s.Name))
+		values = []string{length, valid, null, unique, earliest, latest}
+		idx = []string{"len", "valid", "null", "unique", "earliest", "latest"}
+
+	// Interface or None
 	default:
-		values := []string{length, valid, null}
-		idx := Idx([]string{"len", "valid", "null"})
-		s, err = New(values, idx, opt.Name(s.Name))
+		values = []string{length, valid, null}
+		idx = []string{"len", "valid", "null"}
 	}
+
+	s, err := New(values, Idx(idx))
 	if err != nil {
-		values.Warn(err, "nil (internal error)")
-		return
+		fmt.Printf("series.Describe(): %v", err)
 	}
-	// reset to pre-transformation Kind
-	s.datatype = origKind
 	fmt.Println(s)
 	return
 }
@@ -73,7 +69,7 @@ func (s Series) Describe() {
 // ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
 //
 // Applies to: All
-func (s Series) ValueCounts() map[string]int {
+func (s *Series) ValueCounts() map[string]int {
 	valid, _ := s.in(s.valid())
 	vals := valid.all()
 	counter := make(map[string]int)
@@ -86,7 +82,7 @@ func (s Series) ValueCounts() map[string]int {
 // UniqueVals returns a de-duplicated list all element values (as strings) that appear in the Series.
 //
 // Applies to: All
-func (s Series) UniqueVals() []string {
+func (s *Series) UniqueVals() []string {
 	var ret []string
 	counter := s.ValueCounts()
 	for k := range counter {
@@ -98,11 +94,11 @@ func (s Series) UniqueVals() []string {
 // Earliest returns the earliest non-null time.Time{} in the Series
 //
 // Applies to: time.Time. If inapplicable, defaults to time.Time{}.
-func (s Series) Earliest() time.Time {
+func (s *Series) Earliest() time.Time {
 	earliest := time.Time{}
 	vals := s.validVals()
 	switch s.datatype {
-	case datatypes.DateTime:
+	case options.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {
 			if earliest == (time.Time{}) || t.Before(earliest) {
@@ -119,11 +115,11 @@ func (s Series) Earliest() time.Time {
 // Latest returns the latest non-null time.Time{} in the Series
 //
 // Applies to: time.Time. If inapplicable, defaults to time.Time{}.
-func (s Series) Latest() time.Time {
+func (s *Series) Latest() time.Time {
 	latest := time.Time{}
 	vals := s.validVals()
 	switch s.datatype {
-	case datatypes.DateTime:
+	case options.DateTime:
 		data := ensureDateTime(vals)
 		for _, t := range data {
 			if latest == (time.Time{}) || t.After(latest) {

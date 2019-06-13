@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cheekybits/genny/generic"
-	"github.com/ptiger10/pd/datatypes"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
 //go:generate genny -in=$GOFILE -out=shared_autogen.go gen "valueType=float64,int64,string,bool,time.Time,interface{}"
@@ -30,7 +29,7 @@ func newSlicevalueType(vals []valueType) Factory {
 	for _, val := range vals {
 		ret = append(ret, newvalueType(val))
 	}
-	return Factory{&ret, datatypes.PlaceholdervalueType}
+	return Factory{&ret, options.PlaceholdervalueType}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -128,7 +127,7 @@ func (vals *valueTypeValues) ToInt() Values {
 
 func (val *valueTypeValue) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }

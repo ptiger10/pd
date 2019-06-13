@@ -2,14 +2,12 @@ package series
 
 import (
 	"testing"
-
-	"github.com/ptiger10/pd/opt"
 )
 
 // func TestMain(m *testing.M) {
-// 	opt.SetLogWarnings(false)
+// 	options.SetLogWarnings(false)
 // 	exitCode := m.Run()
-// 	opt.RestoreDefaults()
+// 	options.RestoreDefaults()
 // 	os.Exit(exitCode)
 // }
 
@@ -51,17 +49,25 @@ func TestAt_singleIndex_multipleCalls(t *testing.T) {
 }
 
 func TestSelect_Drop(t *testing.T) {
-	s, _ := New([]string{"foo", "bar", "baz"}, Idx([]string{"qux", "quux", "corge"}, opt.Name("1")), Idx([]string{"A", "B", "C"}, opt.Name("2")))
-	origS, _ := New([]string{"foo", "bar", "baz"}, Idx([]string{"qux", "quux", "corge"}, opt.Name("1")), Idx([]string{"A", "B", "C"}, opt.Name("2")))
+	s, _ := New(
+		[]string{"foo", "bar", "baz"},
+		IndexLevel{Labels: []string{"qux", "quux", "corge"}, Name: "1"},
+		IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"},
+	)
+	origS, _ := New(
+		[]string{"foo", "bar", "baz"},
+		IndexLevel{Labels: []string{"qux", "quux", "corge"}, Name: "1"},
+		IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"},
+	)
 	var tests = []struct {
 		desc      string
 		selection Selection
-		want      Series
+		want      *Series
 	}{
-		{"ByRows", s.Select.ByRows([]int{0, 2}), mustNew([]string{"bar"}, Idx([]string{"quux"}, opt.Name("1")), Idx([]string{"B"}, opt.Name("2")))},
-		{"ByLabels", s.Select.ByLabels([]string{"qux", "corge"}), mustNew([]string{"bar"}, Idx([]string{"quux"}, opt.Name("1")), Idx([]string{"B"}, opt.Name("2")))},
-		{"ByLevels", s.Select.ByLevels([]int{0}), mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}, opt.Name("2")))},
-		{"ByLevelNames", s.Select.ByLevelNames([]string{"1"}), mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}, opt.Name("2")))},
+		{"ByRows", s.Select.ByRows([]int{0, 2}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
+		{"ByLabels", s.Select.ByLabels([]string{"qux", "corge"}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
+		{"ByLevels", s.Select.ByLevels([]int{0}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
+		{"ByLevelNames", s.Select.ByLevelNames([]string{"1"}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
 	}
 
 	for _, test := range tests {
@@ -170,19 +176,19 @@ func TestSelect_Rows_Swap(t *testing.T) {
 
 // func TestSelect_Failures(t *testing.T) {
 // 	var tests = []struct {
-// 		options  []opt.SelectionOption
+// 		options  []options.SelectionOption
 // 		errorMsg string
 // 	}{
-// 		{[]opt.SelectionOption{opt.ByRows([]int{0, 3})}, "row indexing out range"},
-// 		{[]opt.SelectionOption{opt.ByLabels([]string{"0", "3"})}, "label indexing out range"},
-// 		{[]opt.SelectionOption{opt.ByLevels([]int{0, 2})}, "index level out range"},
-// 		{[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "baz"})}, "index name not in index"},
-// 		{[]opt.SelectionOption{opt.ByLabels([]string{"0"}), opt.ByRows([]int{0})}, "multiple row selectors supplied"},
-// 		{[]opt.SelectionOption{opt.ByLevelNames([]string{"foo"}), opt.ByLevels([]int{0})}, "multiple index level selectors supplied"},
-// 		{[]opt.SelectionOption{opt.ByLevels([]int{0, 1}), opt.ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
+// 		{[]options.SelectionOption{options.ByRows([]int{0, 3})}, "row indexing out range"},
+// 		{[]options.SelectionOption{options.ByLabels([]string{"0", "3"})}, "label indexing out range"},
+// 		{[]options.SelectionOption{options.ByLevels([]int{0, 2})}, "index level out range"},
+// 		{[]options.SelectionOption{options.ByLevelNames([]string{"foo", "baz"})}, "index name not in index"},
+// 		{[]options.SelectionOption{options.ByLabels([]string{"0"}), options.ByRows([]int{0})}, "multiple row selectors supplied"},
+// 		{[]options.SelectionOption{options.ByLevelNames([]string{"foo"}), options.ByLevels([]int{0})}, "multiple index level selectors supplied"},
+// 		{[]options.SelectionOption{options.ByLevels([]int{0, 1}), options.ByLabels([]string{"0"})}, "multiple levels plus labels supplied."},
 // 	}
 // 	for _, test := range tests {
-// 		s, _ := New([]int{1, 5, 10}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
+// 		s, _ := New([]int{1, 5, 10}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
 // 		sel := s.Select(test.options...)
 // 		if !seriesEquals(sel.s, s) {
 // 			t.Errorf("Select() returned %v, want return of underlying series due to %v", sel.s, test.errorMsg)
@@ -192,73 +198,73 @@ func TestSelect_Rows_Swap(t *testing.T) {
 
 // func TestSelect_Get(t *testing.T) {
 // 	var tests = []struct {
-// 		options    []opt.SelectionOption
+// 		options    []options.SelectionOption
 // 		wantSeries Series
 // 		desc       string
 // 	}{
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0})},
-// 			mustNew([]int{0}, Idx([]int{0}, opt.Name("foo")), Idx([]string{"A"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0})},
+// 			mustNew([]int{0}, Idx([]int{0}, options.Name("foo")), Idx([]string{"A"}, options.Name("bar"))),
 // 			"one row only",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 2})},
-// 			mustNew([]int{0, 2}, Idx([]int{0, 2}, opt.Name("foo")), Idx([]string{"A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 2})},
+// 			mustNew([]int{0, 2}, Idx([]int{0, 2}, options.Name("foo")), Idx([]string{"A", "C"}, options.Name("bar"))),
 // 			"multiple rows",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLabels([]string{"0"})},
-// 			mustNew([]int{0}, Idx([]int{0}, opt.Name("foo")), Idx([]string{"A"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLabels([]string{"0"})},
+// 			mustNew([]int{0}, Idx([]int{0}, options.Name("foo")), Idx([]string{"A"}, options.Name("bar"))),
 // 			"one label only",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLabels([]string{"0", "2"})},
-// 			mustNew([]int{0, 2}, Idx([]int{0, 2}, opt.Name("foo")), Idx([]string{"A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLabels([]string{"0", "2"})},
+// 			mustNew([]int{0, 2}, Idx([]int{0, 2}, options.Name("foo")), Idx([]string{"A", "C"}, options.Name("bar"))),
 // 			"multiple labels",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevels([]int{0})},
-// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevels([]int{0})},
+// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"one index level only",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevels([]int{0, 1})},
-// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLevels([]int{0, 1})},
+// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar"))),
 // 			"multiple index levels",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo"})},
-// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevelNames([]string{"foo"})},
+// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"index name only",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "bar"})},
-// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLevelNames([]string{"foo", "bar"})},
+// 			mustNew([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar"))),
 // 			"multiple index names",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevels([]int{0})},
-// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 1}), options.ByLevels([]int{0})},
+// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, options.Name("foo"))),
 // 			"rows and one index level",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevels([]int{0, 1})},
-// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, opt.Name("foo")), Idx([]string{"A", "B"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 1}), options.ByLevels([]int{0, 1})},
+// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, options.Name("foo")), Idx([]string{"A", "B"}, options.Name("bar"))),
 // 			"rows and multiple index levels",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevelNames([]string{"foo"})},
-// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 1}), options.ByLevelNames([]string{"foo"})},
+// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, options.Name("foo"))),
 // 			"rows and one index name",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 1}), opt.ByLevelNames([]string{"foo", "bar"})},
-// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, opt.Name("foo")), Idx([]string{"A", "B"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 1}), options.ByLevelNames([]string{"foo", "bar"})},
+// 			mustNew([]int{0, 1}, Idx([]int{0, 1}, options.Name("foo")), Idx([]string{"A", "B"}, options.Name("bar"))),
 // 			"rows and multiple index names",
 // 		},
 // 	}
 // 	for _, test := range tests {
-// 		s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
+// 		s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
 // 		sel := s.Select(test.options...)
 // 		newS, err := sel.Get()
 // 		if err != nil {
@@ -272,54 +278,54 @@ func TestSelect_Rows_Swap(t *testing.T) {
 
 // func TestSelect_Swap(t *testing.T) {
 // 	var tests = []struct {
-// 		options    []opt.SelectionOption
+// 		options    []options.SelectionOption
 // 		wantSeries Series
 // 		desc       string
 // 	}{
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{0, 1})},
-// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, opt.Name("foo")), Idx([]string{"B", "A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{0, 1})},
+// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, options.Name("foo")), Idx([]string{"B", "A", "C"}, options.Name("bar"))),
 // 			"swap two rows by position",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByRows([]int{1, 0})},
-// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, opt.Name("foo")), Idx([]string{"B", "A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByRows([]int{1, 0})},
+// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, options.Name("foo")), Idx([]string{"B", "A", "C"}, options.Name("bar"))),
 // 			"swap two rows by position - reverse arguments",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLabels([]string{"0", "1"})},
-// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, opt.Name("foo")), Idx([]string{"B", "A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLabels([]string{"0", "1"})},
+// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, options.Name("foo")), Idx([]string{"B", "A", "C"}, options.Name("bar"))),
 // 			"swap two rows by label",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLabels([]string{"1", "0"})},
-// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, opt.Name("foo")), Idx([]string{"B", "A", "C"}, opt.Name("bar"))),
+// 			[]options.SelectionOption{options.ByLabels([]string{"1", "0"})},
+// 			mustNew([]int{1, 0, 2}, Idx([]int{1, 0, 2}, options.Name("foo")), Idx([]string{"B", "A", "C"}, options.Name("bar"))),
 // 			"swap two rows by label - reverse arguments",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevels([]int{0, 1})},
-// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, opt.Name("bar")), Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevels([]int{0, 1})},
+// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, options.Name("bar")), Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"swap two levels by position",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevels([]int{1, 0})},
-// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, opt.Name("bar")), Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevels([]int{1, 0})},
+// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, options.Name("bar")), Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"swap two levels by position - reverse arguments",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevelNames([]string{"foo", "bar"})},
-// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, opt.Name("bar")), Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevelNames([]string{"foo", "bar"})},
+// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, options.Name("bar")), Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"swap two levels by name",
 // 		},
 // 		{
-// 			[]opt.SelectionOption{opt.ByLevelNames([]string{"bar", "foo"})},
-// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, opt.Name("bar")), Idx([]int{0, 1, 2}, opt.Name("foo"))),
+// 			[]options.SelectionOption{options.ByLevelNames([]string{"bar", "foo"})},
+// 			mustNew([]int{0, 1, 2}, Idx([]string{"A", "B", "C"}, options.Name("bar")), Idx([]int{0, 1, 2}, options.Name("foo"))),
 // 			"swap two levels by name - reverse arguments",
 // 		},
 // 	}
 // 	for _, test := range tests {
-// 		s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
-// 		origS, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
+// 		s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
+// 		origS, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
 // 		sel := s.Select(test.options...)
 // 		newS, err := sel.Swap()
 // 		if err != nil {
@@ -335,9 +341,9 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // }
 
 // func TestSelect_Set(t *testing.T) {
-// 	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
-// 	origS, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, opt.Name("foo")), Idx([]string{"A", "B", "C"}, opt.Name("bar")))
-// 	sel := s.Select(opt.ByRows([]int{0, 1, 2}))
+// 	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
+// 	origS, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
+// 	sel := s.Select(options.ByRows([]int{0, 1, 2}))
 // 	newS, err := sel.Set(5)
 // 	if err != nil {
 // 		t.Errorf("selection.Set() %v", err)

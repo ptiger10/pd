@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/values"
 )
 
@@ -16,7 +16,7 @@ type Index struct {
 
 // A Level is a single collection of labels within an index, plus label mappings and metadata
 type Level struct {
-	DataType datatypes.DataType
+	DataType options.DataType
 	Labels   values.Values
 	LabelMap LabelMap
 	Name     string
@@ -94,8 +94,8 @@ func (idx Index) Aligned() bool {
 }
 
 // Kinds returns a slice of the Kinds at each level of the index
-func (idx Index) Kinds() []datatypes.DataType {
-	var idxKinds []datatypes.DataType
+func (idx Index) Kinds() []options.DataType {
+	var idxKinds []options.DataType
 	for _, lvl := range idx.Levels {
 		idxKinds = append(idxKinds, lvl.DataType)
 	}

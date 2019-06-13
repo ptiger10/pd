@@ -18,7 +18,7 @@ func TestSeriesMath(t *testing.T) {
 
 func TestMath_numerics(t *testing.T) {
 	var tests = []struct {
-		s          Series
+		s          *Series
 		wantSum    float64
 		wantMean   float64
 		wantMedian float64
@@ -75,7 +75,7 @@ func TestMath_numerics(t *testing.T) {
 
 func TestMath_bool(t *testing.T) {
 	var tests = []struct {
-		s        Series
+		s        *Series
 		wantSum  float64
 		wantMean float64
 	}{

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // [START Sort interface]
-func (s Series) Swap(i, j int) {
+func (s *Series) Swap(i, j int) {
 	s.values.Swap(i, j)
 	for lvl := 0; lvl < s.index.Len(); lvl++ {
 		s.index.Levels[lvl].Labels.Swap(i, j)
@@ -16,7 +16,7 @@ func (s Series) Swap(i, j int) {
 	}
 }
 
-func (s Series) Less(i, j int) bool {
+func (s *Series) Less(i, j int) bool {
 	return s.values.Less(i, j)
 }
 
@@ -25,41 +25,41 @@ func (s Series) Less(i, j int) bool {
 // [START return new Series]
 
 // Sort sorts the series by its values and returns a new Series.
-func (s Series) Sort(asc bool) Series {
+func (s *Series) Sort(asc bool) *Series {
 	s = s.copy()
 	s.InPlace.Sort(asc)
 	return s
 }
 
 // Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
-func (s Series) Insert(pos int, val interface{}, idx []interface{}) (Series, error) {
+func (s *Series) Insert(pos int, val interface{}, idx []interface{}) (*Series, error) {
 	s = s.copy()
 	s.InPlace.Insert(pos, val, idx)
 	return s, nil
 }
 
 // dropRows drops multiple rows and returns a new Series
-func (s Series) dropRows(positions []int) (Series, error) {
+func (s *Series) dropRows(positions []int) (*Series, error) {
 	s = s.copy()
 	s.InPlace.dropRows(positions)
 	return s, nil
 }
 
 // Drop drops the row at the specified integer position and returns a new Series.
-func (s Series) Drop(pos int) (Series, error) {
+func (s *Series) Drop(pos int) (*Series, error) {
 	s = s.copy()
 	s.InPlace.Drop(pos)
 	return s, nil
 }
 
 // Append adds a row at the end and returns a new Series.
-func (s Series) Append(val interface{}, idx []interface{}) Series {
+func (s *Series) Append(val interface{}, idx []interface{}) *Series {
 	s, _ = s.Insert(s.Len(), val, idx)
 	return s
 }
 
 // Join converts s2 to the same type as the base Series (s), appends s2 to the end, and returns a new Series.
-func (s Series) Join(s2 Series) Series {
+func (s *Series) Join(s2 *Series) *Series {
 	s = s.copy()
 	s.InPlace.Join(s2)
 	return s
@@ -136,9 +136,9 @@ func (ip InPlace) Append(val interface{}, idx []interface{}) {
 }
 
 // Join converts s2 to the same type as the base Series (s), appends s2 to the end, and modifies s in place.
-func (ip InPlace) Join(s2 Series) {
+func (ip InPlace) Join(s2 *Series) {
 	if ip.s.values == nil {
-		ip.s.replace(&s2)
+		ip.s.replace(s2)
 		return
 	}
 	for i := 0; i < s2.Len(); i++ {
@@ -158,75 +158,75 @@ type To struct {
 }
 
 // Float converts Series values to float64.
-func (t To) Float() Series {
+func (t To) Float() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToFloat()
 	} else {
 		t.s.values = t.s.values.ToFloat()
-		t.s.datatype = datatypes.Float64
+		t.s.datatype = options.Float64
 	}
-	return *t.s
+	return t.s
 }
 
 // Int converts Series values to int64.
-func (t To) Int() Series {
+func (t To) Int() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToInt()
 	} else {
 		t.s.values = t.s.values.ToInt()
-		t.s.datatype = datatypes.Int64
+		t.s.datatype = options.Int64
 	}
-	return *t.s
+	return t.s
 }
 
 // String converts Series values to string.
-func (t To) String() Series {
+func (t To) String() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToString()
 	} else {
 		t.s.values = t.s.values.ToString()
-		t.s.datatype = datatypes.String
+		t.s.datatype = options.String
 	}
-	return *t.s
+	return t.s
 }
 
 // Bool converts Series values to bool.
-func (t To) Bool() Series {
+func (t To) Bool() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToBool()
 	} else {
 		t.s.values = t.s.values.ToBool()
-		t.s.datatype = datatypes.Bool
+		t.s.datatype = options.Bool
 	}
-	return *t.s
+	return t.s
 }
 
 // DateTime converts Series values to time.Time.
-func (t To) DateTime() Series {
+func (t To) DateTime() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToDateTime()
 	} else {
 		t.s.values = t.s.values.ToDateTime()
-		t.s.datatype = datatypes.DateTime
+		t.s.datatype = options.DateTime
 	}
-	return *t.s
+	return t.s
 }
 
 // Interface converts Series values to interface.
-func (t To) Interface() Series {
+func (t To) Interface() *Series {
 	if t.idx {
 		t.s.index = t.s.index.Copy()
 		t.s.index.Levels[0] = t.s.index.Levels[0].ToInterface()
 	} else {
 		t.s.values = t.s.values.ToInterface()
-		t.s.datatype = datatypes.Interface
+		t.s.datatype = options.Interface
 	}
-	return *t.s
+	return t.s
 }
 
 // [END type conversion methods]
@@ -269,4 +269,9 @@ func (idx Index) Sort(asc bool) {
 	} else {
 		sort.Stable(sort.Reverse(idx))
 	}
+}
+
+func (s *Series) rename(name string) {
+	s = s.copy()
+	s.index.Levels[0].Name = name
 }

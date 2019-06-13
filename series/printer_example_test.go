@@ -3,8 +3,6 @@ package series
 import (
 	"fmt"
 	"time"
-
-	"github.com/ptiger10/pd/opt"
 )
 
 func ExampleSeries_empty() {
@@ -65,67 +63,49 @@ func ExampleSeries_string_multiIdx() {
 	// datatype: string
 }
 
-func ExampleSeries_string_namedindex_1() {
-	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Idx([]int{0, 0, 1, 1}, opt.Name("id")),
-		Idx([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
+func ExampleNewWithConfig_string() {
+	s, _ := NewWithConfig(
+		Config{Name: "student"}, []string{"foo", "bar", "", "baz"},
+		IndexLevel{Labels: []int{0, 0, 1, 1}, Name: "id"},
+		IndexLevel{Labels: []int{10000, 10100, 10200, 10300}, Name: "code"},
 	)
 	fmt.Println(s)
 
 	// Output:
 	// id  code
-	//  0 10000    Joe
-	//    10100    Jamy
+	//  0 10000    foo
+	//    10100    bar
 	//  1 10200    NaN
-	//    10300    Jenny
+	//    10300    baz
 	// datatype: string
 	// name: student
 }
 
-func ExampleSeries_string_namedindex_2() {
-	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Idx([]int{100, 100, 101, 101}, opt.Name("id")),
-		Idx([]int{10, 20, 30, 40}, opt.Name("code")),
-	)
-	fmt.Println(s)
-
-	// Output:
-	//  id code
-	// 100   10    Joe
-	//       20    Jamy
-	// 101   30    NaN
-	//       40    Jenny
-	// datatype: string
-	// name: student
-}
-
-func ExampleSeries_string_named_index_nonsequential() {
-	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny", "Jeremiah", "Jemma"}, opt.Name("student"),
-		Idx([]int{0, 0, 1, 1, 0, 0}, opt.Name("id")),
-		Idx([]int{10000, 10100, 10200, 10300, 10400, 10500}, opt.Name("code")),
+func ExampleNewWithConfig_nonsequential_repeating() {
+	s, _ := NewWithConfig(
+		Config{Name: "student"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
+		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
+		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
 	)
 	fmt.Println(s)
 
 	// Output:
 	// id  code
-	//  0 10000    Joe
-	//    10100    Jamy
+	//  0 10000    foo
+	//    10100    bar
 	//  1 10200    NaN
-	//    10300    Jenny
-	//  0 10400    Jeremiah
-	//    10500    Jemma
+	//    10300    baz
+	//  0 10400    qux
+	//    10500    quux
 	// datatype: string
 	// name: student
 }
 
-func ExampleSeries_string_partial_named_Idx() {
-	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"}, opt.Name("student"),
-		Idx([]int{0, 0, 1, 1}),
-		Idx([]int{10000, 10100, 10200, 10300}, opt.Name("code")),
+func ExampleNewWithConfig_partially_named_indexes() {
+	s, _ := NewWithConfig(
+		Config{Name: "student"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
+		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
+		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
 	)
 	fmt.Println(s)
 

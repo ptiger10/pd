@@ -4,8 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
 func TestInsert(t *testing.T) {
@@ -13,7 +12,7 @@ func TestInsert(t *testing.T) {
 		pos  int
 		val  interface{}
 		idx  []interface{}
-		want Series
+		want *Series
 	}{
 		{0, "baz", []interface{}{"C", 3},
 			mustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
@@ -41,7 +40,7 @@ func TestAppend(t *testing.T) {
 	var tests = []struct {
 		val  interface{}
 		idx  []interface{}
-		want Series
+		want *Series
 	}{
 		{"baz", []interface{}{"C", 3},
 			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
@@ -61,13 +60,13 @@ func TestAppend(t *testing.T) {
 func TestDrop(t *testing.T) {
 	var tests = []struct {
 		pos  int
-		want Series
+		want *Series
 	}{
 		{0, mustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
 		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
-		s, _ := NewPointer([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 		newS, err := s.Drop(test.pos)
 		if err != nil {
 			t.Errorf("s.Drop(): %v", err)
@@ -75,7 +74,7 @@ func TestDrop(t *testing.T) {
 		if !seriesEquals(newS, test.want) {
 			t.Errorf("s.Drop() returned %v, want %v", s, test.want)
 		}
-		if seriesEquals(newS, *s) {
+		if seriesEquals(newS, s) {
 			t.Error("s.Drop() maintained reference to original Series, want fresh copy")
 		}
 	}
@@ -96,7 +95,7 @@ func TestInsertInPlace(t *testing.T) {
 		pos  int
 		val  interface{}
 		idx  []interface{}
-		want Series
+		want *Series
 	}{
 		{0, "baz", []interface{}{"C", 3},
 			mustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
@@ -121,7 +120,7 @@ func TestAppendInPlace(t *testing.T) {
 	var tests = []struct {
 		val  interface{}
 		idx  []interface{}
-		want Series
+		want *Series
 	}{
 		{"baz", []interface{}{"C", 3},
 			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
@@ -138,15 +137,15 @@ func TestAppendInPlace(t *testing.T) {
 func TestDropInPlace(t *testing.T) {
 	var tests = []struct {
 		pos  int
-		want Series
+		want *Series
 	}{
 		{0, mustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
 		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
-		s, _ := NewPointer([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
+		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 		s.InPlace.Drop(test.pos)
-		if !seriesEquals(*s, test.want) {
+		if !seriesEquals(s, test.want) {
 			t.Errorf("s.insert() returned %v, want %v", s, test.want)
 		}
 	}
@@ -162,21 +161,21 @@ func Test_InPlace_Join(t *testing.T) {
 	}
 }
 
-func Test_InPlace_replace(t *testing.T) {
-	s, _ := NewPointer(1, opt.Name("foo"))
-	s2, _ := NewPointer(2, opt.Name("bar"))
-	s.InPlace.s.replace(s2)
-	if !seriesEquals(*s, *s2) {
-		t.Errorf("s.InPlace.replace() returned %v, want %v", s, s2)
-	}
-}
+// func Test_InPlace_replace(t *testing.T) {
+// 	s, _ := New(1, options.Name("foo"))
+// 	s2, _ := New(2, options.Name("bar"))
+// 	s.InPlace.s.replace(s2)
+// 	if !seriesEquals(s, *s2) {
+// 		t.Errorf("s.InPlace.replace() returned %v, want %v", s, s2)
+// 	}
+// }
 
 func Test_InPlace_Join_EmptyBase(t *testing.T) {
-	s, _ := NewPointer(nil)
+	s, _ := New(nil)
 	s2, _ := New([]float64{4, 5, 6})
 	s.InPlace.Join(s2)
 	want := mustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
-	if !seriesEquals(*s, want) {
+	if !seriesEquals(s, want) {
 		t.Errorf("s.InPlace.Join() returned %v, want %v", s2, want)
 	}
 }
@@ -184,9 +183,9 @@ func Test_InPlace_Join_EmptyBase(t *testing.T) {
 func Test_InPlace_Sort(t *testing.T) {
 	var tests = []struct {
 		desc string
-		orig Series
+		orig *Series
 		asc  bool
-		want Series
+		want *Series
 	}{
 		{"float", mustNew([]float64{3, 5, 1}), true, mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1}))},
 		{"float reverse", mustNew([]float64{3, 5, 1}), false, mustNew([]float64{5, 3, 1}, Idx([]int{1, 0, 2}))},
@@ -225,9 +224,9 @@ func Test_InPlace_Sort(t *testing.T) {
 func Test_Index_Sort(t *testing.T) {
 	var tests = []struct {
 		desc string
-		orig Series
+		orig *Series
 		asc  bool
-		want Series
+		want *Series
 	}{
 		{"float", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), true, mustNew([]float64{3, 5, 1}, Idx([]int{0, 1, 2}))},
 		{"float reverse", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), false, mustNew([]float64{1, 5, 3}, Idx([]int{2, 1, 0}))},
@@ -254,7 +253,7 @@ func TestTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Float64
+	wantDataType := options.Float64
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -274,7 +273,7 @@ func TestTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Int() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Int64
+	wantDataType := options.Int64
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.Int() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -294,7 +293,7 @@ func TestTo_String(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.String() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.String
+	wantDataType := options.String
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.String() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -314,7 +313,7 @@ func TestTo_Bool(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Bool() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Bool
+	wantDataType := options.Bool
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.Bool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -335,7 +334,7 @@ func TestTo_DateTime(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.DateTime
+	wantDataType := options.DateTime
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -355,7 +354,7 @@ func TestTo_Interface(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Interface
+	wantDataType := options.Interface
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
 		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -372,7 +371,7 @@ func TestIndexTo_Float(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Float64
+	wantDataType := options.Float64
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -392,7 +391,7 @@ func TestIndexTo_Int(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Int() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Int64
+	wantDataType := options.Int64
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexTo.Int() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -412,7 +411,7 @@ func TestIndexTo_String(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.String() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.String
+	wantDataType := options.String
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexTo.String() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -433,7 +432,7 @@ func TestIndexTo_Bool(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Bool() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Bool
+	wantDataType := options.Bool
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexTo.Bool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -454,7 +453,7 @@ func TestIndexTo_DateTime(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.DateTime() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.DateTime
+	wantDataType := options.DateTime
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexTo.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -474,7 +473,7 @@ func TestIndexTo_Interface(t *testing.T) {
 	if !seriesEquals(newS, wantS) {
 		t.Errorf("s.IndexTo.Interface() returned %v, want %v", newS, wantS)
 	}
-	wantDataType := datatypes.Interface
+	wantDataType := options.Interface
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexTo.Interface() returned kind %v, want %v", gotDataType, wantDataType)
 	}
@@ -482,19 +481,19 @@ func TestIndexTo_Interface(t *testing.T) {
 
 // func TestConvertIndexMulti(t *testing.T) {
 // 	var tests = []struct {
-// 		convertTo datatypes.DataType
+// 		convertTo options.DataType
 // 		lvl       int
 // 	}{
-// 		{datatypes.Float64, 0},
-// 		{datatypes.Float64, 1},
-// 		{datatypes.Int, 0},
-// 		{datatypes.Int, 1},
-// 		{datatypes.String, 0},
-// 		{datatypes.String, 1},
-// 		{datatypes.Bool, 0},
-// 		{datatypes.Bool, 1},
-// 		{datatypes.DateTime, 0},
-// 		{datatypes.DateTime, 1},
+// 		{options.Float64, 0},
+// 		{options.Float64, 1},
+// 		{options.Int, 0},
+// 		{options.Int, 1},
+// 		{options.String, 0},
+// 		{options.String, 1},
+// 		{options.Bool, 0},
+// 		{options.Bool, 1},
+// 		{options.DateTime, 0},
+// 		{options.DateTime, 1},
 // 	}
 // 	for _, test := range tests {
 // 		s, err := New([]interface{}{1, 2, 3}, Idx([]int{1, 2, 3}), Idx([]int{10, 20, 30}))
@@ -509,7 +508,7 @@ func TestIndexTo_Interface(t *testing.T) {
 // 			t.Errorf("Conversion of Series with multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, newS.index.Levels[test.lvl].DataType, test.convertTo)
 // 		}
 // 		// excludes Int because the original test Index is int
-// 		if test.convertTo != datatypes.Int {
+// 		if test.convertTo != options.Int {
 // 			if s.index.Levels[test.lvl].DataType == newS.index.Levels[test.lvl].DataType {
 // 				t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
 // 			}
@@ -518,3 +517,11 @@ func TestIndexTo_Interface(t *testing.T) {
 // }
 
 // [END Convert tests]
+
+// func TestRename(t *testing.T) {
+// 	s, _ := New("foo", IndexLevel{Labels: "bar", Name: "baz"})
+// 	// s, _ := New("foo", Idx("bar", options.Name("baz")))
+// 	fmt.Println(s)
+// 	s.Rename("qux")
+// 	fmt.Println(s)
+// }

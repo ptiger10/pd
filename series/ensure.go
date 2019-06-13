@@ -54,7 +54,7 @@ func ensureDateTime(vals interface{}) []time.Time {
 
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
-func (s Series) ensureAlignment() error {
+func (s *Series) ensureAlignment() error {
 	if !s.index.Aligned() {
 		return fmt.Errorf("index out of alignment: not all levels have same number of values")
 	}
@@ -65,7 +65,7 @@ func (s Series) ensureAlignment() error {
 }
 
 // returns an error if any row position does not exist
-func (s Series) ensureRowPositions(positions []int) error {
+func (s *Series) ensureRowPositions(positions []int) error {
 	_, err := s.values.In(positions)
 	if err != nil {
 		return fmt.Errorf("ensureRowPositions(): %v", err)
@@ -74,7 +74,7 @@ func (s Series) ensureRowPositions(positions []int) error {
 }
 
 // returns an error if any level position does not exist
-func (s Series) ensureLevelPositions(positions []int) error {
+func (s *Series) ensureLevelPositions(positions []int) error {
 	_, err := s.index.In(positions)
 	if err != nil {
 		return fmt.Errorf("ensureLevelPositions(): %v", err)

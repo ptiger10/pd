@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // func TestConvertAtomic(t *testing.T) {
@@ -15,13 +15,13 @@ import (
 // 	nan := math.NaN()
 // 	var test = []struct {
 // 		input        interface{}
-// 		originalType datatypes.DataType
-// 		convertTo    datatypes.DataType
+// 		originalType options.DataType
+// 		convertTo    options.DataType
 // 		wantVal      interface{}
 // 		wantNull     bool
 // 	}{
-// 		{math.NaN(), datatypes.Float64, datatypes.Float64, nan, true},
-// 		{1.5, datatypes.Float64, datatypes.Float64, 1.5, false},
+// 		{math.NaN(), options.Float64, options.Float64, nan, true},
+// 		{1.5, options.Float64, options.Float64, 1.5, false},
 // 	}
 // 	for _, test := range tests {
 // 		converted, err := Convert(test.input.V, test.convertTo)
@@ -41,113 +41,113 @@ func TestConvert(t *testing.T) {
 	nan := math.NaN()
 	var tests = []struct {
 		input     Factory
-		convertTo datatypes.DataType
+		convertTo options.DataType
 		wantVal   interface{}
 		wantNull  bool
 	}{
 		// Float
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.Float64, nan, true},
-		{newSliceFloat64([]float64{1.5}), datatypes.Float64, 1.5, false},
+		{newSliceFloat64([]float64{math.NaN()}), options.Float64, nan, true},
+		{newSliceFloat64([]float64{1.5}), options.Float64, 1.5, false},
 
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.Int64, int64(0), true},
-		{newSliceFloat64([]float64{1.5}), datatypes.Int64, int64(1), false},
+		{newSliceFloat64([]float64{math.NaN()}), options.Int64, int64(0), true},
+		{newSliceFloat64([]float64{1.5}), options.Int64, int64(1), false},
 
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.String, "NaN", true},
-		{newSliceFloat64([]float64{1.5}), datatypes.String, "1.5", false},
+		{newSliceFloat64([]float64{math.NaN()}), options.String, "NaN", true},
+		{newSliceFloat64([]float64{1.5}), options.String, "1.5", false},
 
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.Bool, false, true},
-		{newSliceFloat64([]float64{1.5}), datatypes.Bool, true, false},
+		{newSliceFloat64([]float64{math.NaN()}), options.Bool, false, true},
+		{newSliceFloat64([]float64{1.5}), options.Bool, true, false},
 
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.DateTime, time.Time{}, true},
-		{newSliceFloat64([]float64{float64(testEpoch)}), datatypes.DateTime, testDate, false},
+		{newSliceFloat64([]float64{math.NaN()}), options.DateTime, time.Time{}, true},
+		{newSliceFloat64([]float64{float64(testEpoch)}), options.DateTime, testDate, false},
 
-		{newSliceFloat64([]float64{math.NaN()}), datatypes.Interface, nan, true},
-		{newSliceFloat64([]float64{1.5}), datatypes.Interface, 1.5, false},
+		{newSliceFloat64([]float64{math.NaN()}), options.Interface, nan, true},
+		{newSliceFloat64([]float64{1.5}), options.Interface, 1.5, false},
 
 		// Int
-		{NewSliceInt([]int64{1}), datatypes.Float64, 1.0, false},
-		{NewSliceInt([]int64{1}), datatypes.Int64, int64(1), false},
-		{NewSliceInt([]int64{1}), datatypes.String, "1", false},
-		{NewSliceInt([]int64{1}), datatypes.Bool, true, false},
+		{newSliceInt64([]int64{1}), options.Float64, 1.0, false},
+		{newSliceInt64([]int64{1}), options.Int64, int64(1), false},
+		{newSliceInt64([]int64{1}), options.String, "1", false},
+		{newSliceInt64([]int64{1}), options.Bool, true, false},
 
-		{NewSliceInt([]int64{1}), datatypes.DateTime, epochDate, false},
-		{NewSliceInt([]int64{int64(testEpoch)}), datatypes.DateTime, testDate, false},
+		{newSliceInt64([]int64{1}), options.DateTime, epochDate, false},
+		{newSliceInt64([]int64{int64(testEpoch)}), options.DateTime, testDate, false},
 
 		// String
-		{newSliceString([]string{""}), datatypes.Float64, nan, true},
-		{newSliceString([]string{"foo"}), datatypes.Float64, nan, true},
-		{newSliceString([]string{"1.5"}), datatypes.Float64, 1.5, false},
+		{newSliceString([]string{""}), options.Float64, nan, true},
+		{newSliceString([]string{"foo"}), options.Float64, nan, true},
+		{newSliceString([]string{"1.5"}), options.Float64, 1.5, false},
 
-		{newSliceString([]string{""}), datatypes.Int64, int64(0), true},
-		{newSliceString([]string{"foo"}), datatypes.Int64, int64(0), true},
-		{newSliceString([]string{"1.5"}), datatypes.Int64, int64(1), false},
-		{newSliceString([]string{"1.0"}), datatypes.Int64, int64(1), false},
-		{newSliceString([]string{"1"}), datatypes.Int64, int64(1), false},
+		{newSliceString([]string{""}), options.Int64, int64(0), true},
+		{newSliceString([]string{"foo"}), options.Int64, int64(0), true},
+		{newSliceString([]string{"1.5"}), options.Int64, int64(1), false},
+		{newSliceString([]string{"1.0"}), options.Int64, int64(1), false},
+		{newSliceString([]string{"1"}), options.Int64, int64(1), false},
 
-		{newSliceString([]string{""}), datatypes.String, "NaN", true},
-		{newSliceString([]string{"NaN"}), datatypes.String, "NaN", true},
-		{newSliceString([]string{"n/a"}), datatypes.String, "NaN", true},
-		{newSliceString([]string{"N/A"}), datatypes.String, "NaN", true},
-		{newSliceString([]string{"1.5"}), datatypes.String, "1.5", false},
-		{newSliceString([]string{"foo"}), datatypes.String, "foo", false},
+		{newSliceString([]string{""}), options.String, "NaN", true},
+		{newSliceString([]string{"NaN"}), options.String, "NaN", true},
+		{newSliceString([]string{"n/a"}), options.String, "NaN", true},
+		{newSliceString([]string{"N/A"}), options.String, "NaN", true},
+		{newSliceString([]string{"1.5"}), options.String, "1.5", false},
+		{newSliceString([]string{"foo"}), options.String, "foo", false},
 
-		{newSliceString([]string{""}), datatypes.Bool, false, true},
-		{newSliceString([]string{"foo"}), datatypes.Bool, true, false},
+		{newSliceString([]string{""}), options.Bool, false, true},
+		{newSliceString([]string{"foo"}), options.Bool, true, false},
 
-		{newSliceString([]string{"May 1, 2019"}), datatypes.DateTime, testDate, false},
-		{newSliceString([]string{"5/1/2019"}), datatypes.DateTime, testDate, false},
-		{newSliceString([]string{"2019-05-01"}), datatypes.DateTime, testDate, false},
+		{newSliceString([]string{"May 1, 2019"}), options.DateTime, testDate, false},
+		{newSliceString([]string{"5/1/2019"}), options.DateTime, testDate, false},
+		{newSliceString([]string{"2019-05-01"}), options.DateTime, testDate, false},
 
 		// Bool
-		{newSliceBool([]bool{true}), datatypes.Float64, 1.0, false},
-		{newSliceBool([]bool{false}), datatypes.Float64, 0.0, false},
+		{newSliceBool([]bool{true}), options.Float64, 1.0, false},
+		{newSliceBool([]bool{false}), options.Float64, 0.0, false},
 
-		{newSliceBool([]bool{true}), datatypes.Int64, int64(1), false},
-		{newSliceBool([]bool{false}), datatypes.Int64, int64(0), false},
+		{newSliceBool([]bool{true}), options.Int64, int64(1), false},
+		{newSliceBool([]bool{false}), options.Int64, int64(0), false},
 
-		{newSliceBool([]bool{true}), datatypes.String, "true", false},
-		{newSliceBool([]bool{false}), datatypes.String, "false", false},
+		{newSliceBool([]bool{true}), options.String, "true", false},
+		{newSliceBool([]bool{false}), options.String, "false", false},
 
-		{newSliceBool([]bool{true}), datatypes.Bool, true, false},
-		{newSliceBool([]bool{false}), datatypes.Bool, false, false},
+		{newSliceBool([]bool{true}), options.Bool, true, false},
+		{newSliceBool([]bool{false}), options.Bool, false, false},
 
-		{newSliceBool([]bool{true}), datatypes.DateTime, epochDate, false},
-		{newSliceBool([]bool{false}), datatypes.DateTime, epochDate, false},
+		{newSliceBool([]bool{true}), options.DateTime, epochDate, false},
+		{newSliceBool([]bool{false}), options.DateTime, epochDate, false},
 
 		// DateTime
-		{newSliceDateTime([]time.Time{testDate}), datatypes.Float64, float64(testEpoch), false},
-		{newSliceDateTime([]time.Time{time.Time{}}), datatypes.Float64, nan, true},
+		{newSliceDateTime([]time.Time{testDate}), options.Float64, float64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), options.Float64, nan, true},
 
-		{newSliceDateTime([]time.Time{testDate}), datatypes.Int64, int64(testEpoch), false},
-		{newSliceDateTime([]time.Time{time.Time{}}), datatypes.Int64, int64(0), true},
+		{newSliceDateTime([]time.Time{testDate}), options.Int64, int64(testEpoch), false},
+		{newSliceDateTime([]time.Time{time.Time{}}), options.Int64, int64(0), true},
 
-		{newSliceDateTime([]time.Time{testDate}), datatypes.String, "2019-05-01 00:00:00 +0000 UTC", false},
-		{newSliceDateTime([]time.Time{time.Time{}}), datatypes.String, "NaN", true},
+		{newSliceDateTime([]time.Time{testDate}), options.String, "2019-05-01 00:00:00 +0000 UTC", false},
+		{newSliceDateTime([]time.Time{time.Time{}}), options.String, "NaN", true},
 
-		{newSliceDateTime([]time.Time{testDate}), datatypes.Bool, true, false},
-		{newSliceDateTime([]time.Time{time.Time{}}), datatypes.Bool, false, true},
+		{newSliceDateTime([]time.Time{testDate}), options.Bool, true, false},
+		{newSliceDateTime([]time.Time{time.Time{}}), options.Bool, false, true},
 
-		{newSliceDateTime([]time.Time{testDate}), datatypes.DateTime, testDate, false},
-		{newSliceDateTime([]time.Time{time.Time{}}), datatypes.DateTime, time.Time{}, true},
+		{newSliceDateTime([]time.Time{testDate}), options.DateTime, testDate, false},
+		{newSliceDateTime([]time.Time{time.Time{}}), options.DateTime, time.Time{}, true},
 
 		// Interface
-		{newSliceInterface([]interface{}{math.NaN()}), datatypes.Float64, nan, true},
-		{newSliceInterface([]interface{}{1.5}), datatypes.Float64, 1.5, false},
+		{newSliceInterface([]interface{}{math.NaN()}), options.Float64, nan, true},
+		{newSliceInterface([]interface{}{1.5}), options.Float64, 1.5, false},
 
-		{newSliceInterface([]interface{}{1}), datatypes.Int64, int64(1), false},
+		{newSliceInterface([]interface{}{1}), options.Int64, int64(1), false},
 
-		{newSliceInterface([]interface{}{""}), datatypes.String, "NaN", true},
-		{newSliceInterface([]interface{}{"NaN"}), datatypes.String, "NaN", true},
-		{newSliceInterface([]interface{}{"n/a"}), datatypes.String, "NaN", true},
-		{newSliceInterface([]interface{}{"N/A"}), datatypes.String, "NaN", true},
-		{newSliceInterface([]interface{}{"1.5"}), datatypes.String, "1.5", false},
-		{newSliceInterface([]interface{}{"foo"}), datatypes.String, "foo", false},
+		{newSliceInterface([]interface{}{""}), options.String, "NaN", true},
+		{newSliceInterface([]interface{}{"NaN"}), options.String, "NaN", true},
+		{newSliceInterface([]interface{}{"n/a"}), options.String, "NaN", true},
+		{newSliceInterface([]interface{}{"N/A"}), options.String, "NaN", true},
+		{newSliceInterface([]interface{}{"1.5"}), options.String, "1.5", false},
+		{newSliceInterface([]interface{}{"foo"}), options.String, "foo", false},
 
-		{newSliceInterface([]interface{}{true}), datatypes.Bool, true, false},
-		{newSliceInterface([]interface{}{false}), datatypes.Bool, false, false},
+		{newSliceInterface([]interface{}{true}), options.Bool, true, false},
+		{newSliceInterface([]interface{}{false}), options.Bool, false, false},
 
-		{newSliceInterface([]interface{}{testDate}), datatypes.DateTime, testDate, false},
-		{newSliceInterface([]interface{}{time.Time{}}), datatypes.DateTime, time.Time{}, true},
+		{newSliceInterface([]interface{}{testDate}), options.DateTime, testDate, false},
+		{newSliceInterface([]interface{}{time.Time{}}), options.DateTime, time.Time{}, true},
 	}
 
 	for _, test := range tests {
@@ -175,10 +175,10 @@ func TestConvert(t *testing.T) {
 
 func TestConvert_Unsupported(t *testing.T) {
 	var tests = []struct {
-		datatype datatypes.DataType
+		datatype options.DataType
 	}{
-		{datatypes.None},
-		{datatypes.Unsupported},
+		{options.None},
+		{options.Unsupported},
 	}
 	for _, test := range tests {
 		vals := newSliceFloat64([]float64{1.5})

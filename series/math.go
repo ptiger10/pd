@@ -6,7 +6,7 @@ import (
 
 	gonum "github.com/gonum/floats" // uses optimized gonum/floats methods where available
 	"github.com/montanaflynn/stats" // and stats package otherwise
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // Math contains mathematical methods
@@ -15,7 +15,7 @@ type Math struct {
 }
 
 // an interface of valid (non-null) values; appropriate for type assertion
-func (s Series) validVals() interface{} {
+func (s *Series) validVals() interface{} {
 	valid, _ := s.values.In(s.valid())
 	return valid.Vals()
 }
@@ -23,14 +23,14 @@ func (s Series) validVals() interface{} {
 // Sum is shorthand for series.Math.Sum()
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
-func (s Series) Sum() float64 {
+func (s *Series) Sum() float64 {
 	return s.Math.Sum()
 }
 
 // Mean is shorthand for series.Math.Mean()
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
-func (s Series) Mean() float64 {
+func (s *Series) Mean() float64 {
 	return s.Math.Mean()
 }
 
@@ -40,10 +40,10 @@ func (s Series) Mean() float64 {
 func (m Math) Sum() float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		return gonum.Sum(data)
-	case datatypes.Bool:
+	case options.Bool:
 		var sum float64
 		data := ensureBools(vals)
 		for _, d := range data {
@@ -64,13 +64,13 @@ func (m Math) Mean() float64 {
 	var sum float64
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		for _, d := range data {
 			sum += d
 		}
 		return sum / float64(len(data))
-	case datatypes.Bool:
+	case options.Bool:
 		data := ensureBools(vals)
 		l := len(data)
 		return m.Sum() / float64(l)
@@ -85,7 +85,7 @@ func (m Math) Mean() float64 {
 func (m Math) Median() float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -107,7 +107,7 @@ func (m Math) Median() float64 {
 func (m Math) Min() float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -124,7 +124,7 @@ func (m Math) Min() float64 {
 func (m Math) Max() float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
@@ -141,7 +141,7 @@ func (m Math) Max() float64 {
 func (m Math) Quartile(i int) float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		val, err := stats.Quartile(data)
 		if err != nil {
@@ -168,7 +168,7 @@ func (m Math) Quartile(i int) float64 {
 func (m Math) Std() float64 {
 	vals := m.s.validVals()
 	switch m.s.datatype {
-	case datatypes.Float64, datatypes.Int64:
+	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()

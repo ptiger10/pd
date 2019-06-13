@@ -1,4 +1,4 @@
-package datatypes
+package options
 
 import (
 	"testing"

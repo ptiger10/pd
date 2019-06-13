@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // InterfaceFactory converts interface{} to Values
@@ -12,7 +12,7 @@ func InterfaceFactory(data interface{}) (Factory, error) {
 	var factory Factory
 	var err error
 	if data == nil {
-		factory = Factory{Values: nil, DataType: datatypes.None}
+		factory = Factory{Values: nil, DataType: options.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,
@@ -27,7 +27,7 @@ func InterfaceFactory(data interface{}) (Factory, error) {
 			factory, err = SliceFactory(data)
 
 		default:
-			return Factory{}, fmt.Errorf("unable to create value from interface: type not supported: %T", data)
+			return Factory{}, fmt.Errorf("internal.values.InterfaceFactory(): type not supported: %T", data)
 		}
 	}
 	return factory, err

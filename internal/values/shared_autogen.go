@@ -8,8 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
 // [START] float64Values
@@ -29,7 +28,7 @@ func newSliceFloat64(vals []float64) Factory {
 	for _, val := range vals {
 		ret = append(ret, newFloat64(val))
 	}
-	return Factory{&ret, datatypes.Float64}
+	return Factory{&ret, options.Float64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -127,7 +126,7 @@ func (vals *float64Values) ToInt() Values {
 
 func (val *float64Value) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }
@@ -192,7 +191,7 @@ func newSliceInt64(vals []int64) Factory {
 	for _, val := range vals {
 		ret = append(ret, newInt64(val))
 	}
-	return Factory{&ret, datatypes.Int64}
+	return Factory{&ret, options.Int64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -290,7 +289,7 @@ func (vals *int64Values) ToInt() Values {
 
 func (val *int64Value) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }
@@ -355,7 +354,7 @@ func newSliceString(vals []string) Factory {
 	for _, val := range vals {
 		ret = append(ret, newString(val))
 	}
-	return Factory{&ret, datatypes.String}
+	return Factory{&ret, options.String}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -453,7 +452,7 @@ func (vals *stringValues) ToInt() Values {
 
 func (val *stringValue) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }
@@ -518,7 +517,7 @@ func newSliceBool(vals []bool) Factory {
 	for _, val := range vals {
 		ret = append(ret, newBool(val))
 	}
-	return Factory{&ret, datatypes.Bool}
+	return Factory{&ret, options.Bool}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -616,7 +615,7 @@ func (vals *boolValues) ToInt() Values {
 
 func (val *boolValue) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }
@@ -681,7 +680,7 @@ func newSliceDateTime(vals []time.Time) Factory {
 	for _, val := range vals {
 		ret = append(ret, newDateTime(val))
 	}
-	return Factory{&ret, datatypes.DateTime}
+	return Factory{&ret, options.DateTime}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -779,7 +778,7 @@ func (vals *dateTimeValues) ToInt() Values {
 
 func (val *dateTimeValue) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }
@@ -844,7 +843,7 @@ func newSliceInterface(vals []interface{}) Factory {
 	for _, val := range vals {
 		ret = append(ret, newInterface(val))
 	}
-	return Factory{&ret, datatypes.Interface}
+	return Factory{&ret, options.Interface}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -942,7 +941,7 @@ func (vals *interfaceValues) ToInt() Values {
 
 func (val *interfaceValue) toString() stringValue {
 	if val.null {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{fmt.Sprint(val.v), false}
 }

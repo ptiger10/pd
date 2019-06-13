@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
 // [START Constructor Functions]
 
 func isNullString(s string) bool {
-	nullStrings := opt.GetStringNullValues()
+	nullStrings := options.GetStringNullValues()
 	for _, ns := range nullStrings {
 		if strings.TrimSpace(s) == ns {
 			return true
@@ -25,7 +25,7 @@ func isNullString(s string) bool {
 // newString creates an stringValue from atomic string value
 func newString(val string) stringValue {
 	if isNullString(val) {
-		return stringValue{opt.GetDisplayStringNullFiller(), true}
+		return stringValue{options.GetDisplayStringNullFiller(), true}
 	}
 	return stringValue{val, false}
 }

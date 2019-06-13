@@ -5,19 +5,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
-	"github.com/ptiger10/pd/opt"
+	"github.com/ptiger10/pd/options"
 )
 
-func (s Series) String() string {
-	if seriesEquals(Series{}, s) {
+func (s *Series) String() string {
+	if s == nil {
 		return "Series{}"
 	}
 	return s.print()
 }
 
 // expects to receive a slice of typed value structs (eg values.float64Values)
-func (s Series) print() string {
+func (s *Series) print() string {
 	numLevels := len(s.index.Levels)
 	var header string
 	var printer string
@@ -28,7 +27,7 @@ func (s Series) print() string {
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
-			header += strings.Repeat(" ", opt.GetDisplayIndexWhitespaceBuffer())
+			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 		}
 	}
 	// omit header line if empty
@@ -52,7 +51,7 @@ func (s Series) print() string {
 			idx := fmt.Sprint(elem.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
-				buffer = strings.Repeat(" ", opt.GetDisplayIndexWhitespaceBuffer())
+				buffer = strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 				// skip repeated label values if this is not the last index level
 				if prior[j] == idx {
 					skip = true
@@ -62,7 +61,7 @@ func (s Series) print() string {
 
 			printStr := fmt.Sprintf("%*v", padding, idx)
 			// elide index string if longer than the max allowable width
-			if padding == opt.GetDisplayIndexMaxWidth() {
+			if padding == options.GetDisplayIndexMaxWidth() {
 				printStr = printStr[:len(printStr)-4] + "..."
 			}
 
@@ -78,14 +77,14 @@ func (s Series) print() string {
 
 		// [START value printer]
 		var valStr string
-		if s.datatype == datatypes.DateTime {
-			valStr = elem.Value.(time.Time).Format(opt.GetDisplayTimeFormat())
+		if s.datatype == options.DateTime {
+			valStr = elem.Value.(time.Time).Format(options.GetDisplayTimeFormat())
 		} else {
 			valStr = fmt.Sprint(elem.Value)
 		}
 
 		// add buffer at beginning
-		val := strings.Repeat(" ", opt.GetDisplayValuesWhitespaceBuffer()) + valStr
+		val := strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()) + valStr
 		// null string values must not return any trailing whitespace
 		if valStr == "" {
 			val = strings.TrimSpace(val)

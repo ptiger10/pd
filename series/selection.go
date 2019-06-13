@@ -12,7 +12,7 @@ import (
 // At returns the value at a single integer position, or an error if position is out of range.
 //
 // To return rows at one or more positions, use s.Select().Get())
-func (s Series) At(pos int) (interface{}, error) {
+func (s *Series) At(pos int) (interface{}, error) {
 	sNew, err := s.in([]int{pos})
 	if err != nil {
 		return nil, fmt.Errorf("At(): %v", err)
@@ -136,14 +136,14 @@ func (sel Selection) ensure() error {
 }
 
 // Series returns the Selection as a new Series.
-func (sel Selection) Series() (Series, error) {
+func (sel Selection) Series() (*Series, error) {
 	return sel.series()
 }
 
 // series returns the rows or index levels specified in the Selection.
-func (sel Selection) series() (Series, error) {
+func (sel Selection) series() (*Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.series(): %v", err)
+		return nil, fmt.Errorf("Selection.series(): %v", err)
 	}
 	if sel.rowPositions == nil {
 		sel.rowPositions = values.MakeIntRange(0, sel.s.Len())
@@ -157,9 +157,9 @@ func (sel Selection) series() (Series, error) {
 }
 
 // if sel.swappable is true, then either sel.rowsOnly or sel.levelsOnly must be true
-func (sel Selection) swap() (Series, error) {
+func (sel Selection) swap() (*Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.Swap(): %v", err)
+		return nil, fmt.Errorf("Selection.Swap(): %v", err)
 	}
 	if !sel.swappable {
 		return sel.s, fmt.Errorf("selection is not swappable: must select exactly two of either rows or levels")
@@ -185,14 +185,14 @@ func (sel Selection) swap() (Series, error) {
 }
 
 // Swap swaps the selected rows or index levels and returns a new Series. If Selection is not swappable, returns error.
-func (sel Selection) Swap() (Series, error) {
+func (sel Selection) Swap() (*Series, error) {
 	return sel.swap()
 }
 
 // Set sets all the values in a Selection to val and returns a new Series.
-func (sel Selection) Set(val interface{}) (Series, error) {
+func (sel Selection) Set(val interface{}) (*Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.Set(): %v", err)
+		return nil, fmt.Errorf("Selection.Set(): %v", err)
 	}
 	if sel.rowsOnly {
 		for _, row := range sel.rowPositions {
@@ -219,9 +219,9 @@ func (sel Selection) Set(val interface{}) (Series, error) {
 
 // Drop drops all the values or index levels in a Selection and returns a new Series.
 // Will not drop an index level if it is the last remaining level.
-func (sel Selection) Drop() (Series, error) {
+func (sel Selection) Drop() (*Series, error) {
 	if err := sel.ensure(); err != nil {
-		return Series{}, fmt.Errorf("Selection.Drop(): %v", err)
+		return nil, fmt.Errorf("Selection.Drop(): %v", err)
 	}
 	if sel.rowsOnly {
 		sel.s.InPlace.dropRows(sel.rowPositions)
@@ -241,7 +241,7 @@ func (sel Selection) Drop() (Series, error) {
 // A Selection is a portion of a Series for use as an intermediate step in transforming data,
 // such as getting, setting, swapping, or dropping it.
 type Selection struct {
-	s              Series
+	s              *Series
 	levelPositions []int
 	rowPositions   []int
 	swappable      bool

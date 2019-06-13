@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 func TestSliceConstructor(t *testing.T) {
@@ -14,82 +14,82 @@ func TestSliceConstructor(t *testing.T) {
 	var tests = []struct {
 		data     interface{}
 		wantVals Factory
-		wantKind datatypes.DataType
+		wantKind options.DataType
 	}{
 		{
 			data:     []float32{0, 1, 2},
 			wantVals: newSliceFloat64([]float64{0, 1, 2}),
-			wantKind: datatypes.Float64,
+			wantKind: options.Float64,
 		},
 		{
 			data:     []float64{0, 1, 2},
 			wantVals: newSliceFloat64([]float64{0, 1, 2}),
-			wantKind: datatypes.Float64,
+			wantKind: options.Float64,
 		},
 		{
 			data:     []float64{},
 			wantVals: newSliceFloat64([]float64{}),
-			wantKind: datatypes.Float64,
+			wantKind: options.Float64,
 		},
 		{
 			data:     []int{0, 1, 2},
 			wantVals: newSliceInt64([]int64{0, 1, 2}),
-			wantKind: datatypes.Int64,
+			wantKind: options.Int64,
 		},
 		{
 			data:     []int64{0, 1, 2},
 			wantVals: newSliceInt64([]int64{0, 1, 2}),
-			wantKind: datatypes.Int64,
+			wantKind: options.Int64,
 		},
 		{
 			data:     []int{},
 			wantVals: newSliceInt64([]int64{}),
-			wantKind: datatypes.Int64,
+			wantKind: options.Int64,
 		},
 		{
 			data:     []uint{0, 1, 2},
 			wantVals: newSliceInt64([]int64{0, 1, 2}),
-			wantKind: datatypes.Int64,
+			wantKind: options.Int64,
 		},
 		{
 			data:     []string{"0", "1", ""},
 			wantVals: newSliceString([]string{"0", "1", "NaN"}),
-			wantKind: datatypes.String,
+			wantKind: options.String,
 		},
 		{
 			data:     []string{},
 			wantVals: newSliceString([]string{}),
-			wantKind: datatypes.String,
+			wantKind: options.String,
 		},
 		{
 			data:     []bool{true, true, false},
 			wantVals: newSliceBool([]bool{true, true, false}),
-			wantKind: datatypes.Bool,
+			wantKind: options.Bool,
 		},
 		{
 			data:     []bool{},
 			wantVals: newSliceBool([]bool{}),
-			wantKind: datatypes.Bool,
+			wantKind: options.Bool,
 		},
 		{
 			data:     []time.Time{testDate, time.Time{}},
 			wantVals: newSliceDateTime([]time.Time{testDate, time.Time{}}),
-			wantKind: datatypes.DateTime,
+			wantKind: options.DateTime,
 		},
 		{
 			data:     []time.Time{},
 			wantVals: newSliceDateTime([]time.Time{}),
-			wantKind: datatypes.DateTime,
+			wantKind: options.DateTime,
 		},
 		{
 			data:     []interface{}{1.5, 1, "", false, testDate},
 			wantVals: newSliceInterface([]interface{}{1.5, 1, "", false, testDate}),
-			wantKind: datatypes.Interface,
+			wantKind: options.Interface,
 		},
 		{
 			data:     []interface{}{},
 			wantVals: newSliceInterface([]interface{}{}),
-			wantKind: datatypes.Interface,
+			wantKind: options.Interface,
 		},
 	}
 	for _, test := range tests {

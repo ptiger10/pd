@@ -42,7 +42,7 @@ func (vals *float64Values) Less(i, j int) bool {
 // 	return ret
 // }
 
-// func (s Series) FilterDateTime(callbackFn func(time.Time) bool) (Series, error) {
+// func (s *Series) FilterDateTime(callbackFn func(time.Time) bool) (*Series, error) {
 // 	if s.Kind != DateTime {
 // 		return s, fmt.Errorf("FilterString can be called only on Series with type String, not %v", s.Kind)
 // 	}

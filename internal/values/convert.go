@@ -3,29 +3,29 @@ package values
 import (
 	"fmt"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // Convert a collection of values from one type to another, and coerce to null if a value cannot be converted sensibly
-func Convert(currentVals Values, kind datatypes.DataType) (Values, error) {
+func Convert(currentVals Values, dataType options.DataType) (Values, error) {
 	var vals Values
-	switch kind {
-	case datatypes.None:
+	switch dataType {
+	case options.None:
 		return nil, fmt.Errorf("unable to convert values: must supply a valid Kind")
-	case datatypes.Float64:
+	case options.Float64:
 		vals = currentVals.ToFloat()
-	case datatypes.Int64:
+	case options.Int64:
 		vals = currentVals.ToInt()
-	case datatypes.String:
+	case options.String:
 		vals = currentVals.ToString()
-	case datatypes.Bool:
+	case options.Bool:
 		vals = currentVals.ToBool()
-	case datatypes.DateTime:
+	case options.DateTime:
 		vals = currentVals.ToDateTime()
-	case datatypes.Interface:
+	case options.Interface:
 		vals = currentVals.ToInterface()
 	default:
-		return nil, fmt.Errorf("unable to convert values: kind not supported: %v", kind)
+		return nil, fmt.Errorf("unable to convert values: kind not supported: %v", dataType)
 	}
 	return vals, nil
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/values"
 )
 
@@ -14,49 +14,49 @@ func TestLevel(t *testing.T) {
 	var tests = []struct {
 		data       interface{}
 		wantLabels values.Values
-		wantKind   datatypes.DataType
+		wantKind   options.DataType
 		wantName   string
 	}{
 		{
 			data:       []float64{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]float64{0, 1, 2}, "").Labels,
-			wantKind:   datatypes.Float64,
+			wantKind:   options.Float64,
 			wantName:   "test",
 		},
 		{
 			data:       []int{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   datatypes.Int64,
+			wantKind:   options.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []uint{0, 1, 2},
 			wantLabels: MustCreateNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   datatypes.Int64,
+			wantKind:   options.Int64,
 			wantName:   "test",
 		},
 		{
 			data:       []string{"0", "1", "2"},
 			wantLabels: MustCreateNewLevel([]string{"0", "1", "2"}, "").Labels,
-			wantKind:   datatypes.String,
+			wantKind:   options.String,
 			wantName:   "test",
 		},
 		{
 			data:       []bool{true, true, false},
 			wantLabels: MustCreateNewLevel([]bool{true, true, false}, "").Labels,
-			wantKind:   datatypes.Bool,
+			wantKind:   options.Bool,
 			wantName:   "test",
 		},
 		{
 			data:       []time.Time{testDate},
 			wantLabels: MustCreateNewLevel([]time.Time{testDate}, "").Labels,
-			wantKind:   datatypes.DateTime,
+			wantKind:   options.DateTime,
 			wantName:   "test",
 		},
 		{
 			data:       []interface{}{1.5, 1, "", false, testDate},
 			wantLabels: MustCreateNewLevel([]interface{}{1.5, 1, "", false, testDate}, "").Labels,
-			wantKind:   datatypes.Interface,
+			wantKind:   options.Interface,
 			wantName:   "test",
 		},
 	}
@@ -92,7 +92,7 @@ func Test_LevelCopy(t *testing.T) {
 	if copyLvl.Name != "foo" {
 		t.Error("Level.Copy() did not copy Name")
 	}
-	if copyLvl.DataType != datatypes.Int64 {
+	if copyLvl.DataType != options.Int64 {
 		t.Error("Level.Copy() did not copy Kind")
 	}
 	if copyLvl.Longest != 1 {

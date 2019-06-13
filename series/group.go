@@ -1,7 +1,7 @@
 package series
 
 import (
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/internal/index"
 )
 
@@ -9,12 +9,12 @@ import (
 type Group struct {
 	s        *Series
 	groups   index.LabelMap
-	idxKinds []datatypes.DataType
+	idxKinds []options.DataType
 }
 
 // Sum all the groups
-func (g Group) Sum() Series {
-	s, _ := NewPointer(nil)
+func (g Group) Sum() *Series {
+	s, _ := New(nil)
 	for k, v := range g.groups {
 		s2 := g.s.mustIn(v).copy()
 		d := s2.Math.Sum()
@@ -25,13 +25,13 @@ func (g Group) Sum() Series {
 		newS := mustNew(d, Idx(k))
 		s.InPlace.Join(newS)
 	}
-	return *s
+	return s
 }
 
 // GroupByIndex groups a Series by index level 0.
-func (s Series) GroupByIndex() Group {
+func (s *Series) GroupByIndex() Group {
 	return Group{
-		s:        &s,
+		s:        s,
 		groups:   s.index.Levels[0].LabelMap,
 		idxKinds: s.index.Kinds(),
 	}

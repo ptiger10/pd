@@ -1,7 +1,7 @@
 package values
 
 import (
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // The Values interface is the primary means of handling a collection of values
@@ -29,7 +29,7 @@ type Values interface {
 // Factory contains Values (a list of Value/Null pairs satisfying the Values interface) and Kind.
 type Factory struct {
 	Values   Values
-	DataType datatypes.DataType
+	DataType options.DataType
 }
 
 // An Elem is a single Value/Null pair.

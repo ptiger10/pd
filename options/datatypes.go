@@ -1,4 +1,4 @@
-package datatypes
+package options
 
 // DataType identifies the type of a data object.
 // For most values it is interchangeable with the reflect.Type value, but it supports custom identifiers as well (e.g., DateTime).

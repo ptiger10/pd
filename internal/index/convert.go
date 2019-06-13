@@ -3,26 +3,26 @@ package index
 import (
 	"fmt"
 
-	"github.com/ptiger10/pd/datatypes"
+	"github.com/ptiger10/pd/options"
 )
 
 // Convert an index level from one kind to another, then refresh the LabelMap
-func (lvl Level) Convert(kind datatypes.DataType) (Level, error) {
+func (lvl Level) Convert(kind options.DataType) (Level, error) {
 	var convertedLvl Level
 	switch kind {
-	case datatypes.None:
+	case options.None:
 		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
-	case datatypes.Float64:
+	case options.Float64:
 		convertedLvl = lvl.ToFloat()
-	case datatypes.Int64:
+	case options.Int64:
 		convertedLvl = lvl.ToInt()
-	case datatypes.String:
+	case options.String:
 		convertedLvl = lvl.ToString()
-	case datatypes.Bool:
+	case options.Bool:
 		convertedLvl = lvl.ToBool()
-	case datatypes.DateTime:
+	case options.DateTime:
 		convertedLvl = lvl.ToDateTime()
-	case datatypes.Interface:
+	case options.Interface:
 		convertedLvl = lvl.ToInterface()
 	default:
 		return Level{}, fmt.Errorf("unable to convert level: kind not supported: %v", kind)
@@ -33,7 +33,7 @@ func (lvl Level) Convert(kind datatypes.DataType) (Level, error) {
 // ToFloat converts an index level to Float
 func (lvl Level) ToFloat() Level {
 	lvl.Labels = lvl.Labels.ToFloat()
-	lvl.DataType = datatypes.Float64
+	lvl.DataType = options.Float64
 	lvl.Refresh()
 	return lvl
 }
@@ -41,7 +41,7 @@ func (lvl Level) ToFloat() Level {
 // ToInt converts an index level to Int
 func (lvl Level) ToInt() Level {
 	lvl.Labels = lvl.Labels.ToInt()
-	lvl.DataType = datatypes.Int64
+	lvl.DataType = options.Int64
 	lvl.Refresh()
 	return lvl
 }
@@ -49,7 +49,7 @@ func (lvl Level) ToInt() Level {
 // ToString converts an index level to String
 func (lvl Level) ToString() Level {
 	lvl.Labels = lvl.Labels.ToString()
-	lvl.DataType = datatypes.String
+	lvl.DataType = options.String
 	lvl.Refresh()
 	return lvl
 }
@@ -57,7 +57,7 @@ func (lvl Level) ToString() Level {
 // ToBool converts an index level to Bool
 func (lvl Level) ToBool() Level {
 	lvl.Labels = lvl.Labels.ToBool()
-	lvl.DataType = datatypes.Bool
+	lvl.DataType = options.Bool
 	lvl.Refresh()
 	return lvl
 }
@@ -65,7 +65,7 @@ func (lvl Level) ToBool() Level {
 // ToDateTime converts an index level to DateTime
 func (lvl Level) ToDateTime() Level {
 	lvl.Labels = lvl.Labels.ToDateTime()
-	lvl.DataType = datatypes.DateTime
+	lvl.DataType = options.DateTime
 	lvl.Refresh()
 	return lvl
 }
@@ -73,7 +73,7 @@ func (lvl Level) ToDateTime() Level {
 // ToInterface converts an index level to Interface
 func (lvl Level) ToInterface() Level {
 	lvl.Labels = lvl.Labels.ToInterface()
-	lvl.DataType = datatypes.Interface
+	lvl.DataType = options.Interface
 	lvl.Refresh()
 	return lvl
 }
