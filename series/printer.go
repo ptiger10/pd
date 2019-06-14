@@ -23,7 +23,7 @@ func (s *Series) print() string {
 	// [START header row]
 	for j := 0; j < numLevels; j++ {
 		name := s.index.Levels[j].Name
-		padding := s.index.Levels[j].Longest
+		padding := s.index.Levels[j].MaxWidth()
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
@@ -47,7 +47,7 @@ func (s *Series) print() string {
 		for j := 0; j < numLevels; j++ {
 			var skip bool
 			var buffer string
-			padding := s.index.Levels[j].Longest
+			padding := s.index.Levels[j].MaxWidth()
 			idx := fmt.Sprint(elem.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
@@ -61,7 +61,7 @@ func (s *Series) print() string {
 
 			printStr := fmt.Sprintf("%*v", padding, idx)
 			// elide index string if longer than the max allowable width
-			if padding == options.GetDisplayIndexMaxWidth() {
+			if padding == options.GetDisplayMaxWidth() {
 				printStr = printStr[:len(printStr)-4] + "..."
 			}
 

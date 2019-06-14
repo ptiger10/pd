@@ -1,7 +1,7 @@
 package options
 
 var defaultOptions = struct {
-	displayIndexMaxWidth           int
+	displayMaxWidth                int
 	displayValuesWhitespaceBuffer  int
 	displayElementWhitespaceBuffer int
 	displayIndexWhitespaceBuffer   int
@@ -12,7 +12,7 @@ var defaultOptions = struct {
 	stringNullValues               []string
 	logWarnings                    bool
 }{
-	displayIndexMaxWidth,
+	displayMaxWidth,
 	displayValuesWhitespaceBuffer,
 	displayElementWhitespaceBuffer,
 	displayIndexWhitespaceBuffer,
@@ -26,7 +26,7 @@ var defaultOptions = struct {
 
 // RestoreDefaults resets options back to their default setting
 func RestoreDefaults() {
-	SetDisplayIndexMaxWidth(defaultOptions.displayIndexMaxWidth)
+	SetDisplayMaxWidth(defaultOptions.displayMaxWidth)
 	SetDisplayValuesWhitespaceBuffer(defaultOptions.displayValuesWhitespaceBuffer)
 	SetDisplayElementWhitespaceBuffer(defaultOptions.displayElementWhitespaceBuffer)
 	SetDisplayIndexWhitespaceBuffer(defaultOptions.displayIndexWhitespaceBuffer)
@@ -38,7 +38,7 @@ func RestoreDefaults() {
 	SetLogWarnings(defaultOptions.logWarnings)
 }
 
-var displayIndexMaxWidth = 25
+var displayMaxWidth = 25
 var displayValuesWhitespaceBuffer = 4
 var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
@@ -49,17 +49,17 @@ var displayTimeFormat = "1/2/2006T15:04:05"
 var stringNullValues = []string{"NaN", "n/a", "N/A", "", "nil"}
 var logWarnings = true
 
-// SetDisplayIndexMaxWidth sets DisplayIndexMaxWidth to n characters.
-// DisplayIndexMaxWidth is an option when printing a Series.
-// It is the widest allowable character width for an index label.
+// SetDisplayMaxWidth sets DisplayMaxWidth to n characters.
+// DisplayMaxWidth is an option when printing a Series.
+// It is the widest allowable character width for an index label or value.
 // If a label is longer than the max, it will be elided at the end.
-func SetDisplayIndexMaxWidth(n int) {
-	displayIndexMaxWidth = n
+func SetDisplayMaxWidth(n int) {
+	displayMaxWidth = n
 }
 
-// GetDisplayIndexMaxWidth returns DisplayIndexMaxWidth.
-func GetDisplayIndexMaxWidth() int {
-	return displayIndexMaxWidth
+// GetDisplayMaxWidth returns DisplayMaxWidth.
+func GetDisplayMaxWidth() int {
+	return displayMaxWidth
 }
 
 // SetDisplayValuesWhitespaceBuffer sets DisplayValuesWhitespaceBuffer to n spaces.

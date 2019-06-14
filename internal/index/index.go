@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -13,18 +12,6 @@ type Index struct {
 	Levels  []Level
 	NameMap LabelMap
 }
-
-// A Level is a single collection of labels within an index, plus label mappings and metadata
-type Level struct {
-	DataType options.DataType
-	Labels   values.Values
-	LabelMap LabelMap
-	Name     string
-	Longest  int
-}
-
-// A LabelMap records the position of labels, in the form {label name: [label position(s)]}
-type LabelMap map[string][]int
 
 // New receives one or more Levels and returns a new Index.
 // Expects that Levels already have .LabelMap and .Longest set.
@@ -109,11 +96,28 @@ func (idx Index) Aligned() bool {
 	return true
 }
 
-// Kinds returns a slice of the Kinds at each level of the index
-func (idx Index) Kinds() []options.DataType {
-	var idxKinds []options.DataType
+// DataTypes returns a slice of the DataTypes at each level of the index
+func (idx Index) DataTypes() []options.DataType {
+	var idxDataTypes []options.DataType
 	for _, lvl := range idx.Levels {
-		idxKinds = append(idxKinds, lvl.DataType)
+		idxDataTypes = append(idxDataTypes, lvl.DataType)
 	}
-	return idxKinds
+	return idxDataTypes
+}
+
+// Elements returns all the index elements at an integer position.
+func (idx Index) Elements(position int) Elements {
+	var labels []interface{}
+	var datatypes []options.DataType
+	for _, lvl := range idx.Levels {
+		elem := lvl.Element(position)
+		labels = append(labels, elem.Label)
+		datatypes = append(datatypes, elem.DataType)
+	}
+	return Elements{labels, datatypes}
+}
+
+type Elements struct {
+	Labels    []interface{}
+	DataTypes []options.DataType
 }

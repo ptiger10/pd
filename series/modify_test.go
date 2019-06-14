@@ -90,6 +90,16 @@ func TestJoin(t *testing.T) {
 	}
 }
 
+func TestJoinEmpty(t *testing.T) {
+	s, _ := New(nil)
+	s2, _ := New([]float64{4, 5, 6})
+	s3 := s.Join(s2)
+	want := MustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
+	if !seriesEquals(s3, want) {
+		t.Errorf("s.Join() returned %v, want %v", s3, want)
+	}
+}
+
 func TestInsertInPlace(t *testing.T) {
 	var tests = []struct {
 		pos  int
@@ -485,6 +495,15 @@ func TestIndexTo_Interface(t *testing.T) {
 	wantDataType := options.Interface
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
 		t.Errorf("s.IndexToInterface() returned kind %v, want %v", gotDataType, wantDataType)
+	}
+}
+
+func TestIndexAt(t *testing.T) {
+	s, _ := New([]int{0, 1, 2})
+	got, _ := s.Index.At(0, 0)
+	want := int64(0)
+	if got.(int64) != want {
+		t.Errorf("IndexAt() got %v, want %v", got, want)
 	}
 }
 

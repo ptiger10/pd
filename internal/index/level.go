@@ -8,6 +8,17 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+// A Level is a single collection of labels within an index, plus label mappings and metadata
+type Level struct {
+	DataType options.DataType
+	Labels   values.Values
+	LabelMap LabelMap
+	Name     string
+}
+
+// A LabelMap records the position of labels, in the form {label name: [label position(s)]}
+type LabelMap map[string][]int
+
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
 	factory, err := values.InterfaceFactory(data)
@@ -28,10 +39,10 @@ func MustCreateNewLevel(data interface{}, name string) Level {
 
 // newLevel returns an Index level with updated label map and longest value computed. Never returns an error.
 // NB: Create labels using the values.constructors factory methods, as in NewLevel().
-func newLevel(labels values.Values, kind options.DataType, name string) Level {
+func newLevel(labels values.Values, datatype options.DataType, name string) Level {
 	lvl := Level{
 		Labels:   labels,
-		DataType: kind,
+		DataType: datatype,
 		Name:     name,
 	}
 	lvl.Refresh()
@@ -60,4 +71,34 @@ func DefaultLevel(n int, name string) Level {
 	v := values.NewDefault(n)
 	level := newLevel(v, options.Int64, name)
 	return level
+}
+
+type Element struct {
+	Label    interface{}
+	DataType options.DataType
+}
+
+func (lvl Level) Element(position int) Element {
+	return Element{
+		Label:    lvl.Labels.Element(position).Value,
+		DataType: lvl.DataType,
+	}
+}
+
+// MaxWidth finds the max length of either the level name or the longest string in the LabelMap,
+// for use in printing a Series or DataFrame
+func (lvl *Level) MaxWidth() int {
+	var max int
+	for k := range lvl.LabelMap {
+		if len(k) > max {
+			max = len(k)
+		}
+	}
+	if len(lvl.Name) > max {
+		max = len(lvl.Name)
+	}
+	if max > options.GetDisplayMaxWidth() {
+		max = options.GetDisplayMaxWidth()
+	}
+	return max
 }

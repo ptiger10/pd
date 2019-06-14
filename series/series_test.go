@@ -21,7 +21,7 @@ func TestElement(t *testing.T) {
 		{0, "NaN", true, []interface{}{"A", int64(1)}},
 		{1, "valid", false, []interface{}{"B", int64(2)}},
 	}
-	wantIdxKinds := []options.DataType{options.String, options.Int64}
+	wantIdxTypes := []options.DataType{options.String, options.Int64}
 	for _, test := range tests {
 		got := s.Element(test.position)
 		if got.Value != test.wantVal {
@@ -33,8 +33,8 @@ func TestElement(t *testing.T) {
 		if !reflect.DeepEqual(got.Labels, test.wantIdx) {
 			t.Errorf("Element returned index %#v, want %#v", got.Labels, test.wantIdx)
 		}
-		if !reflect.DeepEqual(got.LabelKinds, wantIdxKinds) {
-			t.Errorf("Element returned kind %v, want %v", got.LabelKinds, wantIdxKinds)
+		if !reflect.DeepEqual(got.LabelTypes, wantIdxTypes) {
+			t.Errorf("Element returned kind %v, want %v", got.LabelTypes, wantIdxTypes)
 		}
 	}
 }

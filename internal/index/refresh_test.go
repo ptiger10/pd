@@ -28,8 +28,8 @@ func Test_RefreshLevel(t *testing.T) {
 		if !reflect.DeepEqual(lvl.LabelMap, test.wantLabelMap) {
 			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, test.wantLabelMap)
 		}
-		if lvl.Longest != test.wantLongest {
-			t.Errorf("Returned longest length %v, want %v", lvl.Longest, test.wantLongest)
+		if lvl.MaxWidth() != test.wantLongest {
+			t.Errorf("Returned longest length %v, want %v", lvl.MaxWidth(), test.wantLongest)
 		}
 	}
 }

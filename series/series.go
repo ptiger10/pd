@@ -28,7 +28,7 @@ type Element struct {
 	Value      interface{}
 	Null       bool
 	Labels     []interface{}
-	LabelKinds []options.DataType
+	LabelTypes []options.DataType
 }
 
 func (el Element) String() string {
@@ -37,9 +37,9 @@ func (el Element) String() string {
 		[]interface{}{"Value", el.Value},
 		[]interface{}{"Null", el.Null},
 		[]interface{}{"Labels", el.Labels},
-		[]interface{}{"LabelKinds", el.LabelKinds},
+		[]interface{}{"LabelTypes", el.LabelTypes},
 	} {
-		// LabelKinds is 10 characters wide, so left padding set to 10
+		// LabelTypes is 10 characters wide, so left padding set to 10
 		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", options.GetDisplayElementWhitespaceBuffer()), pair[1])
 	}
 	return printStr
@@ -48,15 +48,8 @@ func (el Element) String() string {
 // Element returns information about the value and index labels at this position.
 func (s *Series) Element(position int) Element {
 	elem := s.values.Element(position)
-
-	var idx []interface{}
-	for _, lvl := range s.index.Levels {
-		idxElem := lvl.Labels.Element(position)
-		idxVal := idxElem.Value
-		idx = append(idx, idxVal)
-	}
-	idxKinds := s.index.Kinds()
-	return Element{elem.Value, elem.Null, idx, idxKinds}
+	idxElems := s.index.Elements(position)
+	return Element{elem.Value, elem.Null, idxElems.Labels, idxElems.DataTypes}
 }
 
 // DataType is the data type of the Series' values. Mimics reflect.Type with the addition of time.Time as DateTime.
@@ -172,4 +165,22 @@ func (s *Series) replace(s2 *Series) {
 	s.datatype = s2.datatype
 	s.values = s2.values
 	s.index = s2.index
+}
+
+// MaxWidth returns the max number of characters in any value in the Series.
+// For use in printing Series and DataFrames.
+func (s *Series) MaxWidth() int {
+	var max int
+	for _, v := range s.all() {
+		if length := len(fmt.Sprint(v)); length > max {
+			max = length
+		}
+	}
+	if len(s.Name) > max {
+		max = len(s.Name)
+	}
+	if max > options.GetDisplayMaxWidth() {
+		max = options.GetDisplayMaxWidth()
+	}
+	return max
 }

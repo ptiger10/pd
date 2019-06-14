@@ -6,12 +6,12 @@ import (
 )
 
 func TestSetting(t *testing.T) {
-	if GetDisplayIndexMaxWidth() != defaultOptions.displayIndexMaxWidth {
-		t.Errorf("Default setting not reading for DisplayIndexMaxWidth")
+	if GetDisplayMaxWidth() != defaultOptions.displayMaxWidth {
+		t.Errorf("Default setting not reading for DisplayMaxWidth")
 	}
-	SetDisplayIndexMaxWidth(15)
-	if GetDisplayIndexMaxWidth() != 15 {
-		t.Error("Unable to set/get DisplayIndexMaxWidth")
+	SetDisplayMaxWidth(15)
+	if GetDisplayMaxWidth() != 15 {
+		t.Error("Unable to set/get DisplayMaxWidth")
 	}
 
 	if GetDisplayIndexWhitespaceBuffer() != defaultOptions.displayIndexWhitespaceBuffer {
@@ -80,8 +80,8 @@ func TestSetting(t *testing.T) {
 		t.Error("Unable to set/get LogWarnings")
 	}
 	RestoreDefaults()
-	if GetDisplayIndexMaxWidth() != 25 {
-		t.Error("Unable to restore default for DisplayIndexMaxWidth")
+	if GetDisplayMaxWidth() != 25 {
+		t.Error("Unable to restore default for DisplayMaxWidth")
 	}
 
 }

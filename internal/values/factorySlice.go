@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/ptiger10/pd/options"
@@ -116,11 +117,20 @@ func MakeIntRange(min, max int) []int {
 	return a
 }
 
-// NewDefault returns a factory of []int64 values {0, 1, 2, ... n} for use in a default index.
+// NewDefault returns a factory of []int64 values {0, 1, 2, ... n} for use in a default Series index.
 func NewDefault(n int) Values {
 	defaultRange := makeRange(0, n)
 	v := newSliceInt64(defaultRange)
 	return v.Values
+}
+
+// NewDefaultColumns returns a factory of []string values {"0", "1", "2", ... n} for use in default DataFrame columns.
+func NewDefaultColumns(n int) []string {
+	a := make([]string, n)
+	for i := range a {
+		a[i] = strconv.Itoa(0 + i)
+	}
+	return a
 }
 
 // [END utility slices]

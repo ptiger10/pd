@@ -151,7 +151,7 @@ func (ip InPlace) Append(val interface{}, idx []interface{}) {
 
 // Join converts s2 to the same type as the base Series (s), appends s2 to the end, and modifies s in place.
 func (ip InPlace) Join(s2 *Series) {
-	if ip.s.datatype == options.None {
+	if ip.s == nil || ip.s.datatype == options.None {
 		ip.s.replace(s2)
 		return
 	}

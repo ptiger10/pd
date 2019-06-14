@@ -4,15 +4,20 @@ import (
 	"fmt"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
 // New creates a new DataFrame with default column names.
 func New(data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
+	if data == nil {
+		return nil, fmt.Errorf("dataframe.New(): data cannot be nil")
+	}
 	var s []*series.Series
-	for _, val := range data {
-		n, err := series.New(val, index...)
+	cols := values.NewDefaultColumns(len(data))
+	for i := 0; i < len(data); i++ {
+		n, err := series.NewWithConfig(series.Config{Name: cols[i]}, data[i], index...)
 		if err != nil {
 			return nil, fmt.Errorf("dataframe.New(): %v", err)
 		}
@@ -29,6 +34,7 @@ func New(data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
 	df := &DataFrame{
 		s:     s,
 		index: idx,
+		cols:  cols,
 	}
 	return df, nil
 }

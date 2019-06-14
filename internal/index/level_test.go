@@ -98,7 +98,7 @@ func Test_LevelCopy(t *testing.T) {
 	if copyLvl.DataType != options.Int64 {
 		t.Error("Level.Copy() did not copy Kind")
 	}
-	if copyLvl.Longest != 1 {
+	if copyLvl.MaxWidth() != 1 {
 		t.Error("Level.Copy() did not copy Kind")
 	}
 	if reflect.ValueOf(idxLvl.Labels).Pointer() == reflect.ValueOf(copyLvl.Labels).Pointer() {
