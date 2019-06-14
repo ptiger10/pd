@@ -124,7 +124,7 @@ import (
 // 	}
 // 	idx := index.Default(1)
 // 	want := &Series{values: v.Values, index: idx, datatype: options.Float64}
-// 	if !seriesEquals(*got, *want) {
+// 	if !Equal(*got, *want) {
 // 		t.Errorf("New() = %v, want %v", got, want)
 // 	}
 // }
@@ -147,7 +147,7 @@ func TestNew_multi(t *testing.T) {
 	idx2, _ := index.NewLevel("baz", "")
 	idx := index.New(idx1, idx2)
 	want := &Series{values: v.Values, index: idx, datatype: options.String}
-	if !seriesEquals(got, want) {
+	if !Equal(got, want) {
 		t.Errorf("New() = %v, want %v", got, want)
 	}
 }
@@ -163,7 +163,7 @@ func TestNew_int(t *testing.T) {
 	}
 	idx := index.Default(1)
 	want := &Series{values: v.Values, index: idx, datatype: options.Int64}
-	if !seriesEquals(got, want) {
+	if !Equal(got, want) {
 		t.Errorf("New() = %#v, want %#v", got, want)
 	}
 	// diff, _ := messagediff.PrettyDiff(got, want)

@@ -13,7 +13,6 @@ func Test_New(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// fmt.Printf("%#v", df.s[0].Name)
+	fmt.Print(df)
 	// fmt.Println(df.Sum())
-	fmt.Println(df)
 }

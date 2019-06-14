@@ -85,7 +85,7 @@ func TestGt(t *testing.T) {
 		t.Error(err)
 	}
 	want, _ := New([]float64{3})
-	if seriesEquals(newS, want) {
+	if Equal(newS, want) {
 		t.Errorf("s.Filter.Gt() returned %v, want %v", newS, want)
 	}
 }
@@ -98,7 +98,7 @@ func TestGt_Null(t *testing.T) {
 		t.Error(err)
 	}
 	want, _ := New([]float64{3})
-	if seriesEquals(newS, want) {
+	if Equal(newS, want) {
 		t.Errorf("s.Filter.Gt() returned %v, want %v", newS, want)
 	}
 }

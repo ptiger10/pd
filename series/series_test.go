@@ -74,7 +74,7 @@ func Test_Copy(t *testing.T) {
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"
 	copyS.datatype = options.Bool
-	if !seriesEquals(s, origS) || seriesEquals(s, copyS) {
+	if !Equal(s, origS) || Equal(s, copyS) {
 		t.Errorf("s.copy() retained references to original, want fresh copy")
 	}
 }
@@ -85,25 +85,25 @@ func Test_Copy(t *testing.T) {
 // 		t.Error(err)
 // 	}
 // 	s2, _ := New("foo", Idx("bar"), options.Name("baz"))
-// 	if !seriesEquals(s, s2) {
-// 		t.Errorf("seriesEquals() returned false, want true")
+// 	if !Equal(s, s2) {
+// 		t.Errorf("Equal() returned false, want true")
 // 	}
 // 	s2.datatype = options.Bool
-// 	if seriesEquals(s, s2) {
-// 		t.Errorf("seriesEquals() returned true for different kind, want false")
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different kind, want false")
 // 	}
 
 // 	s2, _ = New("quux", Idx("bar"), options.Name("baz"))
-// 	if seriesEquals(s, s2) {
-// 		t.Errorf("seriesEquals() returned true for different values, want false")
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different values, want false")
 // 	}
 // 	s2, _ = New("foo", Idx("corge"), options.Name("baz"))
-// 	if seriesEquals(s, s2) {
-// 		t.Errorf("seriesEquals() returned true for different index, want false")
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different index, want false")
 // 	}
 // 	s2, _ = New("foo", Idx("bar"), options.Name("qux"))
-// 	if seriesEquals(s, s2) {
-// 		t.Errorf("seriesEquals() returned true for different name, want false")
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different name, want false")
 // 	}
 // }
 
@@ -111,7 +111,7 @@ func TestReplaceNil(t *testing.T) {
 	s := MustNew(nil)
 	s2 := MustNew([]int{1, 2})
 	s.replace(s2)
-	if !seriesEquals(s, s2) {
+	if !Equal(s, s2) {
 		t.Errorf("Series.replace() returned %v, want %v", s, s2)
 	}
 }

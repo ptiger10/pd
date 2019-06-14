@@ -9,7 +9,7 @@ func Test_Group_Sum(t *testing.T) {
 	g := s.GroupByIndex()
 	got := g.Sum()
 	want, _ := New([]float64{3, 7}, Idx([]int{1, 2}))
-	if !seriesEquals(got, want) {
+	if !Equal(got, want) {
 		t.Errorf("s.GroupByIndex.Sum() returned %v, want %v", got.index, want.index)
 	}
 }
@@ -19,7 +19,7 @@ func Test_Group_Sum_extended(t *testing.T) {
 	g := s.GroupByIndex()
 	got := g.Sum()
 	want, _ := New([]float64{10, 12, 6, 8}, Idx([]string{"bar", "bar", "foo", "foo"}), Idx([]int{1, 2, 1, 2}))
-	if !seriesEquals(got, want) {
+	if !Equal(got, want) {
 		t.Errorf("s.GroupByIndex.Sum() returned %v, want %v", got, want)
 	}
 }

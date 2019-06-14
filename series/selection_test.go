@@ -43,7 +43,7 @@ func TestAt_singleIndex_multipleCalls(t *testing.T) {
 	if err != nil {
 		t.Errorf("Returned %v want nil", err)
 	}
-	if !seriesEquals(s, origS) {
+	if !Equal(s, origS) {
 		t.Errorf("s.At() modified s, want fresh copy")
 	}
 }
@@ -75,10 +75,10 @@ func TestSelect_Drop(t *testing.T) {
 		if err != nil {
 			t.Errorf("Select.%v.Drop(): %v", test.desc, err)
 		}
-		if !seriesEquals(newS, test.want) {
+		if !Equal(newS, test.want) {
 			t.Errorf("Select.%v.Drop() returned %v, want %v", test.desc, newS, test.want)
 		}
-		if !seriesEquals(s, origS) {
+		if !Equal(s, origS) {
 			t.Errorf("Select.%v.Drop() modified s, want fresh copy", test.desc)
 		}
 	}
@@ -91,7 +91,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 		t.Errorf("SelectRows.Swap(): %v", err)
 	}
 	wantS, _ := New([]string{"log", "dog", "hot"}, Idx([]int{1000, 100, 10}))
-	if !seriesEquals(newS, wantS) {
+	if !Equal(newS, wantS) {
 		t.Errorf("SelectRows.Swap() returned %v, want %v", newS, wantS)
 	}
 }
@@ -108,7 +108,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // // 	for _, test := range tests {
 // // 		s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
 // // 		got := s.AtLabel(test.input)
-// // 		if !seriesEquals(got, test.want) {
+// // 		if !Equal(got, test.want) {
 // // 			t.Errorf("Returned Series %v, want %v", got, test.want)
 // // 		}
 // // 	}
@@ -125,7 +125,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // // func TestAtLabel_fail(t *testing.T) {
 // // 	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
 // // 	got := s.AtLabel("NotPresent")
-// // 	if !seriesEquals(got, s) {
+// // 	if !Equal(got, s) {
 // // 		t.Errorf("Returned %v, want original series", got)
 // // 	}
 // // }
@@ -146,7 +146,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // 			Idx([]string{"A", "B", "C"}),
 // 		)
 // 		got := s.At(test.input)
-// 		if !seriesEquals(got, test.want) {
+// 		if !Equal(got, test.want) {
 // 			t.Errorf("Returned Series %v, want %v", got, test.want)
 // 		}
 // 	}
@@ -168,7 +168,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // // 			Idx([]string{"A", "B", "C"}),
 // // 		)
 // // 		got := s.AtLabel(test.input)
-// // 		if !seriesEquals(got, test.want) {
+// // 		if !Equal(got, test.want) {
 // // 			t.Errorf("Returned Series %v, want %v", got, test.want)
 // // 		}
 // // 	}
@@ -190,7 +190,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // 	for _, test := range tests {
 // 		s, _ := New([]int{1, 5, 10}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
 // 		sel := s.Select(test.options...)
-// 		if !seriesEquals(sel.s, s) {
+// 		if !Equal(sel.s, s) {
 // 			t.Errorf("Select() returned %v, want return of underlying series due to %v", sel.s, test.errorMsg)
 // 		}
 // 	}
@@ -270,7 +270,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // 		if err != nil {
 // 			t.Errorf("selection.Get() returned %v when selecting %s", err, test.desc)
 // 		}
-// 		if !seriesEquals(newS, test.wantSeries) {
+// 		if !Equal(newS, test.wantSeries) {
 // 			t.Errorf("selection.Get() returned \n%v when selecting %s, want \n%v", newS, test.desc, test.wantSeries)
 // 		}
 // 	}
@@ -331,10 +331,10 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // 		if err != nil {
 // 			t.Errorf("selection.Swap() returned %v when selecting %s", err, test.desc)
 // 		}
-// 		if !seriesEquals(newS, test.wantSeries) {
+// 		if !Equal(newS, test.wantSeries) {
 // 			t.Errorf("selection.Swap() returned \n%v when selecting %s, want \n%v", newS.index, test.desc, test.wantSeries.index)
 // 		}
-// 		if !seriesEquals(origS, s) {
+// 		if !Equal(origS, s) {
 // 			t.Errorf("selection.Swap() modifying Series in place instead of returning new")
 // 		}
 // 	}
@@ -348,7 +348,7 @@ func TestSelect_Rows_Swap(t *testing.T) {
 // 	if err != nil {
 // 		t.Errorf("selection.Set() %v", err)
 // 	}
-// 	if !seriesEquals(origS, s) {
+// 	if !Equal(origS, s) {
 // 		t.Errorf("selection.Set() modifying Series in place instead of returning new")
 // 	}
 // 	if newS.Element(0).Value != int64(5) || newS.Element(1).Value != int64(5) || newS.Element(2).Value != int64(5) {

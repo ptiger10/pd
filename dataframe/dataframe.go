@@ -2,7 +2,6 @@ package dataframe
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/series"
@@ -33,18 +32,6 @@ func (df *DataFrame) DataType() string {
 		return df.s[0].DataType()
 	}
 	return "mixed"
-}
-
-// Sum all numerical or boolean columns.
-func (df *DataFrame) Sum() *series.Series {
-	ret := new(series.Series)
-	for _, s := range df.s {
-		if sum := s.Sum(); !math.IsNaN(sum) {
-			newSum := series.MustNew(sum, series.Idx(s.Name))
-			ret.Join(newSum)
-		}
-	}
-	return ret
 }
 
 // Len returns the number of values in each Series of the DataFrame.

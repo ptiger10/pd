@@ -108,7 +108,8 @@ func (s *Series) mustIn(positions []int) *Series {
 	return s
 }
 
-func seriesEquals(s1, s2 *Series) bool {
+// Equal compares whether two series are equivalent.
+func Equal(s1, s2 *Series) bool {
 	sameIndex := reflect.DeepEqual(s1.index, s2.index)
 	sameValues := reflect.DeepEqual(s1.values, s2.values)
 	sameName := s1.Name == s2.Name
