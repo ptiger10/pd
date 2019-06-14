@@ -24,7 +24,7 @@ func (g Grouping) Sum() *Series {
 	for _, group := range g.Groups() {
 		positions := g.groups[group].Positions
 		sum := g.s.mustIn(positions).Sum()
-		newS := mustNew(sum, g.groups[group].buildIndex()...)
+		newS := MustNew(sum, g.groups[group].buildIndex()...)
 		s.InPlace.Join(newS)
 	}
 	s.index.Refresh()

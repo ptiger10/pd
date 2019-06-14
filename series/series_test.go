@@ -108,8 +108,8 @@ func Test_Copy(t *testing.T) {
 // }
 
 func TestReplaceNil(t *testing.T) {
-	s := mustNew(nil)
-	s2 := mustNew([]int{1, 2})
+	s := MustNew(nil)
+	s2 := MustNew([]int{1, 2})
 	s.replace(s2)
 	if !seriesEquals(s, s2) {
 		t.Errorf("Series.replace() returned %v, want %v", s, s2)

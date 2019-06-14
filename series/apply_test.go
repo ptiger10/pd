@@ -8,7 +8,7 @@ func Test_Apply_Float64_Multiply(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	want := mustNew([]float64{2, 4, 6})
+	want := MustNew([]float64{2, 4, 6})
 	if seriesEquals(newS, want) {
 		t.Errorf("Apply.Float() returned %v, want %v", newS, want)
 	}

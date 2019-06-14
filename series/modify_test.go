@@ -15,11 +15,11 @@ func TestInsert(t *testing.T) {
 		want *Series
 	}{
 		{0, "baz", []interface{}{"C", 3},
-			mustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
+			MustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
 		{1, "baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "baz", "bar"}, Idx([]string{"A", "C", "B"}), Idx([]int{1, 3, 2}))},
+			MustNew([]string{"foo", "baz", "bar"}, Idx([]string{"A", "C", "B"}), Idx([]int{1, 3, 2}))},
 		{2, "baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+			MustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -43,7 +43,7 @@ func TestAppend(t *testing.T) {
 		want *Series
 	}{
 		{"baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+			MustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -62,8 +62,8 @@ func TestDrop(t *testing.T) {
 		pos  int
 		want *Series
 	}{
-		{0, mustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
-		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
+		{0, MustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
+		{1, MustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -84,7 +84,7 @@ func TestJoin(t *testing.T) {
 	s, _ := New([]int{1, 2, 3})
 	s2, _ := New([]float64{4, 5, 6})
 	s3 := s.Join(s2)
-	want := mustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
+	want := MustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
 	if !seriesEquals(s3, want) {
 		t.Errorf("s.Join() returned %v, want %v", s3, want)
 	}
@@ -98,11 +98,11 @@ func TestInsertInPlace(t *testing.T) {
 		want *Series
 	}{
 		{0, "baz", []interface{}{"C", 3},
-			mustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
+			MustNew([]string{"baz", "foo", "bar"}, Idx([]string{"C", "A", "B"}), Idx([]int{3, 1, 2}))},
 		{1, "baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "baz", "bar"}, Idx([]string{"A", "C", "B"}), Idx([]int{1, 3, 2}))},
+			MustNew([]string{"foo", "baz", "bar"}, Idx([]string{"A", "C", "B"}), Idx([]int{1, 3, 2}))},
 		{2, "baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+			MustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
 	}
 	for _, test := range tests {
 		s, err := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -123,7 +123,7 @@ func TestAppendInPlace(t *testing.T) {
 		want *Series
 	}{
 		{"baz", []interface{}{"C", 3},
-			mustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
+			MustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -139,8 +139,8 @@ func TestDropInPlace(t *testing.T) {
 		pos  int
 		want *Series
 	}{
-		{0, mustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
-		{1, mustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
+		{0, MustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
+		{1, MustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
 	}
 	for _, test := range tests {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -164,7 +164,7 @@ func Test_InPlace_Join(t *testing.T) {
 	s, _ := New([]int{1, 2, 3})
 	s2, _ := New([]float64{4, 5, 6})
 	s.InPlace.Join(s2)
-	want := mustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
+	want := MustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
 	if !seriesEquals(s, want) {
 		t.Errorf("s.InPlace.Join() returned %v, want %v", s, want)
 	}
@@ -183,7 +183,7 @@ func Test_InPlace_Join_EmptyBase(t *testing.T) {
 	s, _ := New(nil)
 	s2, _ := New([]float64{4, 5, 6})
 	s.InPlace.Join(s2)
-	want := mustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
+	want := MustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
 	if !seriesEquals(s, want) {
 		t.Errorf("s.InPlace.Join() returned %v, want %v", s2, want)
 	}
@@ -196,29 +196,29 @@ func Test_InPlace_Sort(t *testing.T) {
 		asc  bool
 		want *Series
 	}{
-		{"float", mustNew([]float64{3, 5, 1}), true, mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1}))},
-		{"float reverse", mustNew([]float64{3, 5, 1}), false, mustNew([]float64{5, 3, 1}, Idx([]int{1, 0, 2}))},
+		{"float", MustNew([]float64{3, 5, 1}), true, MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1}))},
+		{"float reverse", MustNew([]float64{3, 5, 1}), false, MustNew([]float64{5, 3, 1}, Idx([]int{1, 0, 2}))},
 
-		{"int", mustNew([]int{3, 5, 1}), true, mustNew([]int{1, 3, 5}, Idx([]int{2, 0, 1}))},
-		{"int reverse", mustNew([]int{3, 5, 1}), false, mustNew([]int{5, 3, 1}, Idx([]int{1, 0, 2}))},
+		{"int", MustNew([]int{3, 5, 1}), true, MustNew([]int{1, 3, 5}, Idx([]int{2, 0, 1}))},
+		{"int reverse", MustNew([]int{3, 5, 1}), false, MustNew([]int{5, 3, 1}, Idx([]int{1, 0, 2}))},
 
-		{"string", mustNew([]string{"3", "5", "1"}), true, mustNew([]string{"1", "3", "5"}, Idx([]int{2, 0, 1}))},
-		{"string reverse", mustNew([]string{"3", "5", "1"}), false, mustNew([]string{"5", "3", "1"}, Idx([]int{1, 0, 2}))},
+		{"string", MustNew([]string{"3", "5", "1"}), true, MustNew([]string{"1", "3", "5"}, Idx([]int{2, 0, 1}))},
+		{"string reverse", MustNew([]string{"3", "5", "1"}), false, MustNew([]string{"5", "3", "1"}, Idx([]int{1, 0, 2}))},
 
-		{"bool", mustNew([]bool{false, true, false}), true, mustNew([]bool{false, false, true}, Idx([]int{0, 2, 1}))},
-		{"bool reverse", mustNew([]bool{false, true, false}), false, mustNew([]bool{true, false, false}, Idx([]int{1, 0, 2}))},
+		{"bool", MustNew([]bool{false, true, false}), true, MustNew([]bool{false, false, true}, Idx([]int{0, 2, 1}))},
+		{"bool reverse", MustNew([]bool{false, true, false}), false, MustNew([]bool{true, false, false}, Idx([]int{1, 0, 2}))},
 
 		{
 			"datetime",
-			mustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
+			MustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
 			true,
-			mustNew([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{2, 0, 1})),
+			MustNew([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{2, 0, 1})),
 		},
 		{
 			"datetime reverse",
-			mustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
+			MustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
 			false,
-			mustNew([]time.Time{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{1, 0, 2})),
+			MustNew([]time.Time{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{1, 0, 2})),
 		},
 	}
 	for _, test := range tests {
@@ -237,8 +237,8 @@ func Test_Index_Sort(t *testing.T) {
 		asc  bool
 		want *Series
 	}{
-		{"float", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), true, mustNew([]float64{3, 5, 1}, Idx([]int{0, 1, 2}))},
-		{"float reverse", mustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), false, mustNew([]float64{1, 5, 3}, Idx([]int{2, 1, 0}))},
+		{"float", MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), true, MustNew([]float64{3, 5, 1}, Idx([]int{0, 1, 2}))},
+		{"float reverse", MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), false, MustNew([]float64{1, 5, 3}, Idx([]int{2, 1, 0}))},
 	}
 	for _, test := range tests {
 		s := test.orig

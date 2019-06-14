@@ -101,10 +101,11 @@ func Idx(labels interface{}) IndexLevel {
 	}
 }
 
-func mustNew(data interface{}, index ...IndexLevel) *Series {
+// MustNew returns a new Series or panics on error.
+func MustNew(data interface{}, index ...IndexLevel) *Series {
 	s, err := New(data, index...)
 	if err != nil {
-		log.Fatalf("Internal error: mustNew(): %v", err)
+		log.Panicf("MustNew(): %v", err)
 	}
 	return s
 }
@@ -330,7 +331,7 @@ func mustNewWithConfig(config Config, data interface{}, index ...IndexLevel) *Se
 // }
 
 // // Calls New and panics if error. For use in testing
-// func mustNew(data interface{}, options ...options.ConstructorOption*Series {
+// func MustNew(data interface{}, options ...options.ConstructorOption*Series {
 // 	s, err := New(data, options...)
 // 	if err != nil {
 // 		log.Printf("Internal error: %v\n", err)

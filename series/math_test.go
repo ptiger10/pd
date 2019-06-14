@@ -29,9 +29,9 @@ func TestMath_numerics(t *testing.T) {
 		wantQ3     float64
 		wantStd    float64
 	}{
-		{mustNew([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
-		{mustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
-		{mustNew([]float64{-1, 2, 3, 4}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
+		{MustNew([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
+		{MustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
+		{MustNew([]float64{-1, 2, 3, 4}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
 	}
 	for _, test := range tests {
 		gotSum := test.s.Sum()
@@ -79,8 +79,8 @@ func TestMath_bool(t *testing.T) {
 		wantSum  float64
 		wantMean float64
 	}{
-		{mustNew([]bool{true, false}), 1, .5},
-		{mustNew([]bool{false}), 0, 0},
+		{MustNew([]bool{true, false}), 1, .5},
+		{MustNew([]bool{false}), 0, 0},
 	}
 	for _, test := range tests {
 		gotSum := test.s.Sum()

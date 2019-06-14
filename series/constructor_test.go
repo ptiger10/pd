@@ -181,16 +181,16 @@ func TestNew_scalar(t *testing.T) {
 		wantErr bool
 	}{
 		{"unsupported", args{complex64(1)}, nil, true},
-		{"float32", args{float32(1)}, mustNew(float64(1)), false},
-		{"float64", args{float64(1)}, mustNew(float64(1)), false},
-		{"int", args{int(1)}, mustNew(int64(1)), false},
-		{"int8", args{int8(1)}, mustNew(int64(1)), false},
-		{"int16", args{int16(1)}, mustNew(int64(1)), false},
-		{"int32", args{int32(1)}, mustNew(int64(1)), false},
-		{"int64", args{int64(1)}, mustNew(int64(1)), false},
-		{"string", args{"foo"}, mustNew("foo"), false},
-		{"bool", args{true}, mustNew(true), false},
-		{"datetime", args{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, mustNew(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)), false},
+		{"float32", args{float32(1)}, MustNew(float64(1)), false},
+		{"float64", args{float64(1)}, MustNew(float64(1)), false},
+		{"int", args{int(1)}, MustNew(int64(1)), false},
+		{"int8", args{int8(1)}, MustNew(int64(1)), false},
+		{"int16", args{int16(1)}, MustNew(int64(1)), false},
+		{"int32", args{int32(1)}, MustNew(int64(1)), false},
+		{"int64", args{int64(1)}, MustNew(int64(1)), false},
+		{"string", args{"foo"}, MustNew("foo"), false},
+		{"bool", args{true}, MustNew(true), false},
+		{"datetime", args{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, MustNew(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -217,16 +217,16 @@ func TestNew_slice(t *testing.T) {
 		wantErr bool
 	}{
 		{"unsupported", args{[]complex64{1}}, nil, true},
-		{"float32", args{[]float32{1}}, mustNew([]float64{1}), false},
-		{"float64", args{[]float64{1}}, mustNew([]float64{1}), false},
-		{"int", args{[]int{1}}, mustNew([]int64{1}), false},
-		{"int8", args{int8(1)}, mustNew(int64(1)), false},
-		{"int16", args{int16(1)}, mustNew(int64(1)), false},
-		{"int32", args{int32(1)}, mustNew(int64(1)), false},
-		{"int64", args{int64(1)}, mustNew(int64(1)), false},
-		{"string", args{"foo"}, mustNew("foo"), false},
-		{"bool", args{true}, mustNew(true), false},
-		{"datetime", args{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, mustNew(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)), false},
+		{"float32", args{[]float32{1}}, MustNew([]float64{1}), false},
+		{"float64", args{[]float64{1}}, MustNew([]float64{1}), false},
+		{"int", args{[]int{1}}, MustNew([]int64{1}), false},
+		{"int8", args{int8(1)}, MustNew(int64(1)), false},
+		{"int16", args{int16(1)}, MustNew(int64(1)), false},
+		{"int32", args{int32(1)}, MustNew(int64(1)), false},
+		{"int64", args{int64(1)}, MustNew(int64(1)), false},
+		{"string", args{"foo"}, MustNew("foo"), false},
+		{"bool", args{true}, MustNew(true), false},
+		{"datetime", args{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, MustNew(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
