@@ -146,8 +146,17 @@ func TestDropInPlace(t *testing.T) {
 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
 		s.InPlace.Drop(test.pos)
 		if !seriesEquals(s, test.want) {
-			t.Errorf("s.insert() returned %v, want %v", s, test.want)
+			t.Errorf("s.InPlace.Drop() returned %v, want %v", s, test.want)
 		}
+	}
+}
+
+func TestDropNullInPlace(t *testing.T) {
+	s, _ := New([]string{"foo", "", "bar"})
+	s.InPlace.DropNull()
+	want, _ := New([]string{"foo", "bar"}, Idx([]int{0, 2}))
+	if !seriesEquals(s, want) {
+		t.Errorf("s.insert() returned %v, want %v", s, want)
 	}
 }
 
@@ -157,7 +166,7 @@ func Test_InPlace_Join(t *testing.T) {
 	s.InPlace.Join(s2)
 	want := mustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
 	if !seriesEquals(s, want) {
-		t.Errorf("s.Join() returned %v, want %v", s, want)
+		t.Errorf("s.InPlace.Join() returned %v, want %v", s, want)
 	}
 }
 

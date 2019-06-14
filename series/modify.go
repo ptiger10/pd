@@ -53,6 +53,13 @@ func (s *Series) Drop(pos int) (*Series, error) {
 	return s, nil
 }
 
+// DropNull drops all null values and modifies the Series in place.
+func (s *Series) DropNull() *Series {
+	s = s.Copy()
+	s.InPlace.DropNull()
+	return s
+}
+
 // Append adds a row at the end and returns a new Series.
 func (s *Series) Append(val interface{}, idx []interface{}) *Series {
 	s, _ = s.Insert(s.Len(), val, idx)
@@ -128,6 +135,12 @@ func (ip InPlace) Drop(pos int) error {
 		return fmt.Errorf("Series.Drop(): %v", err)
 	}
 	return nil
+}
+
+// DropNull drops all null values and modifies the Series in place.
+func (ip InPlace) DropNull() {
+	ip.dropRows(ip.s.null())
+	return
 }
 
 // Append adds a row at a specified integer position and modifies the Series in place.
