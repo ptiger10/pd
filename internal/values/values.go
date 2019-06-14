@@ -18,8 +18,8 @@ type Values interface {
 	Swap(i, j int)                 // swap two values - necessary for sorting
 	Less(i, j int) bool            // compare two values and return the lesser - required for sorting
 
-	ToFloat() Values
-	ToInt() Values
+	ToFloat64() Values
+	ToInt64() Values
 	ToString() Values
 	ToBool() Values
 	ToDateTime() Values

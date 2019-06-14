@@ -1,7 +1,6 @@
 package series
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -75,17 +74,8 @@ func Test_Copy(t *testing.T) {
 	copyS.values.Set(0, "bar")
 	copyS.Name = "bar"
 	copyS.datatype = options.Bool
-	MathPtr := fmt.Sprintf("%p", copyS.Math.s)
-	ToPtr := fmt.Sprintf("%p", copyS.To.s)
-	IndexToPtr := fmt.Sprintf("%p", copyS.Index.s)
-	if !seriesEquals(s, origS) || seriesEquals(s, copyS) || fmt.Sprintf("%p", &s) == MathPtr {
+	if !seriesEquals(s, origS) || seriesEquals(s, copyS) {
 		t.Errorf("s.copy() retained references to original, want fresh copy")
-	}
-	if copyS.Math.s == nil || copyS.To.s == nil || copyS.Index.s == nil {
-		t.Errorf("s.copy() did not instantiate new pointers for embedded structs")
-	}
-	if MathPtr != ToPtr || MathPtr != IndexToPtr {
-		t.Errorf("s.copy() did not instantiate pointers for embedded structs correctly")
 	}
 }
 

@@ -92,7 +92,7 @@ func TestGt(t *testing.T) {
 
 func TestGt_Null(t *testing.T) {
 	s, _ := New([]string{"", "1", "", "2", "", "3"})
-	s = s.To.Float()
+	s = s.ToFloat64()
 	newS, err := s.Filter.Gt(2)
 	if err != nil {
 		t.Error(err)

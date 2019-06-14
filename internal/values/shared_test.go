@@ -10,7 +10,7 @@ import (
 
 func TestToInt(t *testing.T) {
 	vals := float64Values{float64Value{1.5, false}}
-	newVals := vals.ToInt()
+	newVals := vals.ToInt64()
 	if reflect.DeepEqual(vals, newVals) {
 		t.Error("ToInt() retained reference to original, want copy")
 	}

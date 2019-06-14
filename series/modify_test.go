@@ -248,14 +248,14 @@ func TestTo_Float(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.Float()
+	newS := s.ToFloat64()
 	wantS, _ := New([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToFloat64() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Float64
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToFloat64() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to float occurred in place, want copy only")
@@ -268,14 +268,14 @@ func TestTo_Int(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.Int()
+	newS := s.ToInt64()
 	wantS, _ := New([]int64{1, 1.0, 1.0, 0, 1.5566688e+18})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.Int() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToInt64() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Int64
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.Int() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToInt64() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to int occurred in place, want copy only")
@@ -288,14 +288,14 @@ func TestTo_String(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.String()
+	newS := s.ToString()
 	wantS, _ := New([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.String() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToString() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.String
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.String() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToString() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to string occurred in place, want copy only")
@@ -308,14 +308,14 @@ func TestTo_Bool(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.Bool()
+	newS := s.ToBool()
 	wantS, _ := New([]bool{true, true, true, false, true})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.Bool() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToBool() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Bool
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.Bool() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToBool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to bool occurred in place, want copy only")
@@ -329,14 +329,14 @@ func TestTo_DateTime(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.DateTime()
+	newS := s.ToDateTime()
 	wantS, _ := New([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToDateTime() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.DateTime
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.DataType() == s.DataType() {
 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
@@ -349,14 +349,14 @@ func TestTo_Interface(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.To.Interface()
+	newS := s.ToInterface()
 	wantS, _ := New([]interface{}{1.5, 1, "1", false, testDate})
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.DateTime() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToDateTime() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Interface
 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-		t.Errorf("s.To.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 }
 
@@ -366,14 +366,14 @@ func TestIndexTo_Float(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.Index.To.Float()
+	newS := s.Index.ToFloat64()
 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.To.Float() returned %v, want %v", newS, wantS)
+		t.Errorf("s.ToFloat64() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Float64
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.To.Float() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.ToFloat64() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to float occurred in place, want copy only")
@@ -386,14 +386,14 @@ func TestIndexTo_Int(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.Index.To.Int()
+	newS := s.Index.ToInt64()
 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]int64{1, 1, 1, 0, 1.5566688e+18}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.IndexTo.Int() returned %v, want %v", newS, wantS)
+		t.Errorf("s.IndexToInt64() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Int64
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.IndexTo.Int() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.IndexToInt64() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to int occurred in place, want copy only")
@@ -406,14 +406,14 @@ func TestIndexTo_String(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.Index.To.String()
+	newS := s.Index.ToString()
 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.IndexTo.String() returned %v, want %v", newS, wantS)
+		t.Errorf("s.IndexToString() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.String
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.IndexTo.String() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.IndexToString() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to string occurred in place, want copy only")
@@ -427,14 +427,14 @@ func TestIndexTo_Bool(t *testing.T) {
 		t.Error(err)
 	}
 
-	newS := s.Index.To.Bool()
+	newS := s.Index.ToBool()
 	wantS, _ := New([]int{0, 1, 2, 3}, Idx([]bool{true, true, true, false}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.IndexTo.Bool() returned %v, want %v", newS, wantS)
+		t.Errorf("s.IndexToBool() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Bool
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.IndexTo.Bool() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.IndexToBool() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to bool occurred in place, want copy only")
@@ -448,14 +448,14 @@ func TestIndexTo_DateTime(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.Index.To.DateTime()
+	newS := s.Index.ToDateTime()
 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.IndexTo.DateTime() returned %v, want %v", newS, wantS)
+		t.Errorf("s.IndexToDateTime() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.DateTime
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.IndexTo.DateTime() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.IndexToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
@@ -468,14 +468,14 @@ func TestIndexTo_Interface(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newS := s.Index.To.Interface()
+	newS := s.Index.ToInterface()
 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("s.IndexTo.Interface() returned %v, want %v", newS, wantS)
+		t.Errorf("s.IndexToInterface() returned %v, want %v", newS, wantS)
 	}
 	wantDataType := options.Interface
 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-		t.Errorf("s.IndexTo.Interface() returned kind %v, want %v", gotDataType, wantDataType)
+		t.Errorf("s.IndexToInterface() returned kind %v, want %v", gotDataType, wantDataType)
 	}
 }
 

@@ -107,7 +107,7 @@ func (vals *float64Values) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts float64Values to floatValues.
-func (vals *float64Values) ToFloat() Values {
+func (vals *float64Values) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -116,7 +116,7 @@ func (vals *float64Values) ToFloat() Values {
 }
 
 // ToInt converts float64Values to intValues.
-func (vals *float64Values) ToInt() Values {
+func (vals *float64Values) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
@@ -270,7 +270,7 @@ func (vals *int64Values) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts int64Values to floatValues.
-func (vals *int64Values) ToFloat() Values {
+func (vals *int64Values) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -279,7 +279,7 @@ func (vals *int64Values) ToFloat() Values {
 }
 
 // ToInt converts int64Values to intValues.
-func (vals *int64Values) ToInt() Values {
+func (vals *int64Values) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
@@ -433,7 +433,7 @@ func (vals *stringValues) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts stringValues to floatValues.
-func (vals *stringValues) ToFloat() Values {
+func (vals *stringValues) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -442,7 +442,7 @@ func (vals *stringValues) ToFloat() Values {
 }
 
 // ToInt converts stringValues to intValues.
-func (vals *stringValues) ToInt() Values {
+func (vals *stringValues) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
@@ -596,7 +596,7 @@ func (vals *boolValues) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts boolValues to floatValues.
-func (vals *boolValues) ToFloat() Values {
+func (vals *boolValues) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -605,7 +605,7 @@ func (vals *boolValues) ToFloat() Values {
 }
 
 // ToInt converts boolValues to intValues.
-func (vals *boolValues) ToInt() Values {
+func (vals *boolValues) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
@@ -759,7 +759,7 @@ func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts dateTimeValues to floatValues.
-func (vals *dateTimeValues) ToFloat() Values {
+func (vals *dateTimeValues) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -768,7 +768,7 @@ func (vals *dateTimeValues) ToFloat() Values {
 }
 
 // ToInt converts dateTimeValues to intValues.
-func (vals *dateTimeValues) ToInt() Values {
+func (vals *dateTimeValues) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())
@@ -922,7 +922,7 @@ func (vals *interfaceValues) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts interfaceValues to floatValues.
-func (vals *interfaceValues) ToFloat() Values {
+func (vals *interfaceValues) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -931,7 +931,7 @@ func (vals *interfaceValues) ToFloat() Values {
 }
 
 // ToInt converts interfaceValues to intValues.
-func (vals *interfaceValues) ToInt() Values {
+func (vals *interfaceValues) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())

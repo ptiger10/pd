@@ -13,9 +13,9 @@ func (lvl Level) Convert(kind options.DataType) (Level, error) {
 	case options.None:
 		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
 	case options.Float64:
-		convertedLvl = lvl.ToFloat()
+		convertedLvl = lvl.ToFloat64()
 	case options.Int64:
-		convertedLvl = lvl.ToInt()
+		convertedLvl = lvl.ToInt64()
 	case options.String:
 		convertedLvl = lvl.ToString()
 	case options.Bool:
@@ -30,17 +30,17 @@ func (lvl Level) Convert(kind options.DataType) (Level, error) {
 	return convertedLvl, nil
 }
 
-// ToFloat converts an index level to Float
-func (lvl Level) ToFloat() Level {
-	lvl.Labels = lvl.Labels.ToFloat()
+// ToFloat64 converts an index level to Float
+func (lvl Level) ToFloat64() Level {
+	lvl.Labels = lvl.Labels.ToFloat64()
 	lvl.DataType = options.Float64
 	lvl.Refresh()
 	return lvl
 }
 
-// ToInt converts an index level to Int
-func (lvl Level) ToInt() Level {
-	lvl.Labels = lvl.Labels.ToInt()
+// ToInt64 converts an index level to Int
+func (lvl Level) ToInt64() Level {
+	lvl.Labels = lvl.Labels.ToInt64()
 	lvl.DataType = options.Int64
 	lvl.Refresh()
 	return lvl

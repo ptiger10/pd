@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/ptiger10/pd/options"
@@ -71,8 +72,7 @@ func (s *Series) Join(s2 *Series) *Series {
 
 // InPlace contains methods for modifying a Series in place.
 type InPlace struct {
-	s  *Series
-	To To
+	s *Series
 }
 
 // Sort sorts the series by its values and modifies the Series in place.
@@ -152,84 +152,52 @@ func (ip InPlace) Join(s2 *Series) {
 
 // [START type conversion methods]
 
-// To contains conversion methods
-type To struct {
-	s   *Series
-	idx bool
-}
-
-// Float converts Series values to float64 and returns a new Series.
-func (t To) Float() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index.Levels[0] = s.index.Levels[0].ToFloat()
-	} else {
-		s.values = s.values.ToFloat()
-		s.datatype = options.Float64
-	}
+// ToFloat64 converts Series values to float64 and returns a new Series.
+func (s *Series) ToFloat64() *Series {
+	s = s.Copy()
+	s.values = s.values.ToFloat64()
+	s.datatype = options.Float64
 	return s
 }
 
-// Int converts Series values to int64 and returns a new Series.
-func (t To) Int() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index.Levels[0] = s.index.Levels[0].ToInt()
-	} else {
-		s.values = s.values.ToInt()
-		s.datatype = options.Int64
-	}
+// ToInt64 converts Series values to int64 and returns a new Series.
+func (s *Series) ToInt64() *Series {
+	s = s.Copy()
+	s.values = s.values.ToInt64()
+	s.datatype = options.Int64
+
 	return s
 }
 
-// String converts Series values to string and returns a new Series.
-func (t To) String() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index.Levels[0] = s.index.Levels[0].ToString()
-	} else {
-		s.values = s.values.ToString()
-		s.datatype = options.String
-	}
+// ToString converts Series values to string and returns a new Series.
+func (s *Series) ToString() *Series {
+	s = s.Copy()
+	s.values = s.values.ToString()
+	s.datatype = options.String
 	return s
 }
 
-// Bool converts Series values to bool and returns a new Series.
-func (t To) Bool() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index = s.index.Copy()
-		s.index.Levels[0] = s.index.Levels[0].ToBool()
-	} else {
-		s.values = s.values.ToBool()
-		s.datatype = options.Bool
-	}
+// ToBool converts Series values to bool and returns a new Series.
+func (s *Series) ToBool() *Series {
+	s = s.Copy()
+	s.values = s.values.ToBool()
+	s.datatype = options.Bool
 	return s
 }
 
-// DateTime converts Series values to time.Time and returns a new Series.
-func (t To) DateTime() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index = s.index.Copy()
-		s.index.Levels[0] = s.index.Levels[0].ToDateTime()
-	} else {
-		s.values = s.values.ToDateTime()
-		s.datatype = options.DateTime
-	}
+// ToDateTime converts Series values to time.Time and returns a new Series.
+func (s *Series) ToDateTime() *Series {
+	s = s.Copy()
+	s.values = s.values.ToDateTime()
+	s.datatype = options.DateTime
 	return s
 }
 
-// Interface converts Series values to interface and returns a new Series.
-func (t To) Interface() *Series {
-	s := t.s.Copy()
-	if t.idx {
-		s.index = s.index.Copy()
-		s.index.Levels[0] = s.index.Levels[0].ToInterface()
-	} else {
-		s.values = s.values.ToInterface()
-		s.datatype = options.Interface
-	}
+// ToInterface converts Series values to interface and returns a new Series.
+func (s *Series) ToInterface() *Series {
+	s = s.Copy()
+	s.values = s.values.ToInterface()
+	s.datatype = options.Interface
 	return s
 }
 
@@ -239,8 +207,7 @@ func (t To) Interface() *Series {
 
 // Index contains index selection and conversion
 type Index struct {
-	s  *Series
-	To To
+	s *Series
 }
 
 // Levels returns the number of levels in the index
@@ -290,4 +257,124 @@ func (idx Index) At(position int, level int) (interface{}, error) {
 func (s *Series) rename(name string) {
 	s = s.Copy()
 	s.index.Levels[0].Name = name
+}
+
+// LevelToFloat64 converts the labels at a specified index level to float64 and returns a new Series.
+func (idx Index) LevelToFloat64(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToFloat64()
+	return s, nil
+}
+
+// ToFloat64 converts the labels at index level 0 to float64 and returns a new Series.
+func (idx Index) ToFloat64() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToFloat64(0)
+	return s
+}
+
+// LevelToInt64 converts the labels at a specified index level to int64 and returns a new Series.
+func (idx Index) LevelToInt64(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToInt64()
+	return s, nil
+}
+
+// ToInt64 converts the labels at index level 0 to int64 and returns a new Series.
+func (idx Index) ToInt64() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToInt64(0)
+	return s
+}
+
+// LevelToString converts the labels at a specified index level to string and returns a new Series.
+func (idx Index) LevelToString(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToString()
+	return s, nil
+}
+
+// ToString converts the labels at index level 0 to string and returns a new Series.
+func (idx Index) ToString() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToString(0)
+	return s
+}
+
+// LevelToBool converts the labels at a specified index level to bool and returns a new Series.
+func (idx Index) LevelToBool(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToBool()
+	return s, nil
+}
+
+// ToBool converts the labels at index level 0 to bool and returns a new Series.
+func (idx Index) ToBool() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToBool(0)
+	return s
+}
+
+// LevelToDateTime converts the labels at a specified index level to DateTime and returns a new Series.
+func (idx Index) LevelToDateTime(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToDateTime()
+	return s, nil
+}
+
+// ToDateTime converts the labels at index level 0 to DateTime and returns a new Series.
+func (idx Index) ToDateTime() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToDateTime(0)
+	return s
+}
+
+// LevelToInterface converts the labels at a specified index level to interface and returns a new Series.
+func (idx Index) LevelToInterface(level int) (*Series, error) {
+	if level > idx.s.index.Len() {
+		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level] = s.index.Levels[level].ToInterface()
+	return s, nil
+}
+
+// ToInterface converts the labels at index level 0 to interface and returns a new Series.
+func (idx Index) ToInterface() *Series {
+	if idx.s.index.Len() == 0 {
+		log.Println("Cannot convert empty index")
+		return nil
+	}
+	s, _ := idx.LevelToInterface(0)
+	return s
 }

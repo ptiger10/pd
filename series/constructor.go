@@ -65,12 +65,9 @@ func New(data interface{}, idx ...IndexLevel) (*Series, error) {
 	}
 
 	s.Filter = Filter{s: s}
-	s.Index = Index{s: s, To: To{s: s, idx: true}}
+	s.Index = Index{s: s}
 	s.InPlace = InPlace{s: s}
 	s.Apply = Apply{s: s}
-	s.Math = Math{s: s}
-	s.Select = Select{s: s}
-	s.To = To{s: s}
 
 	return s, nil
 }

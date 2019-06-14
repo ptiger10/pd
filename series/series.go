@@ -21,9 +21,6 @@ type Series struct {
 	Filter   Filter
 	Index    Index
 	InPlace  InPlace
-	Math     Math
-	Select   Select
-	To       To
 }
 
 // An Element is a single item in a Series.
@@ -79,11 +76,8 @@ func (s *Series) Copy() *Series {
 	}
 	copyS.Apply = Apply{s: copyS}
 	copyS.Filter = Filter{s: copyS}
-	copyS.Index = Index{s: copyS, To: To{s: copyS, idx: true}}
+	copyS.Index = Index{s: copyS}
 	copyS.InPlace = InPlace{s: copyS}
-	copyS.Math = Math{s: copyS}
-	copyS.Select = Select{s: copyS}
-	copyS.To = To{s: copyS}
 	return copyS
 }
 

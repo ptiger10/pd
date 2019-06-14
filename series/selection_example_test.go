@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-func ExampleSeries_Select_rows() {
+func ExampleSeries_SelectRows() {
 	s, _ := New(
 		[]int{0, 1, 2},
 		IndexLevel{Labels: []int{0, 1, 2}, Name: "foo"},
 		IndexLevel{Labels: []string{"A", "B", "C"}, Name: "bar"},
 	)
-	sel := s.Select.ByRows([]int{0, 2})
+	sel := s.SelectRows([]int{0, 2})
 	fmt.Println(sel)
 	// Output:
 	// Selection{rows: [0 2], levels: [], swappable: true, hasError: false}

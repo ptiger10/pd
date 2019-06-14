@@ -108,7 +108,7 @@ func (vals *valueTypeValues) Insert(pos int, val interface{}) error {
 }
 
 // ToFloat converts valueTypeValues to floatValues.
-func (vals *valueTypeValues) ToFloat() Values {
+func (vals *valueTypeValues) ToFloat64() Values {
 	var ret float64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toFloat64())
@@ -117,7 +117,7 @@ func (vals *valueTypeValues) ToFloat() Values {
 }
 
 // ToInt converts valueTypeValues to intValues.
-func (vals *valueTypeValues) ToInt() Values {
+func (vals *valueTypeValues) ToInt64() Values {
 	var ret int64Values
 	for _, val := range *vals {
 		ret = append(ret, val.toInt64())

@@ -24,31 +24,26 @@ func (s *Series) At(pos int) (interface{}, error) {
 
 // [START Selection]
 
-// Select contains methods that return a Selection.
-type Select struct {
-	s *Series
-}
-
-// ByRows selects rows at the specified integer positions.
-func (sel Select) ByRows(positions []int) Selection {
+// SelectRows selects rows at the specified integer positions.
+func (s *Series) SelectRows(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
-		s:            sel.s.Copy(),
+		s:            s.Copy(),
 		rowPositions: positions,
 		swappable:    swappable,
 		rowsOnly:     true,
 	}
 }
 
-// ByLabels selects rows at the specified index labels (for index level 0).
+// SelectLabels selects rows at the specified index labels (for index level 0).
 // Appends out-of-range errors to Selection.err.
-func (sel Select) ByLabels(labels []string) Selection {
+func (s *Series) SelectLabels(labels []string) Selection {
 	swappable := len(labels) == 2
 	var positions []int
 	var errList []string
 	var err error
 	for _, label := range labels {
-		val, ok := sel.s.index.Levels[0].LabelMap[label]
+		val, ok := s.index.Levels[0].LabelMap[label]
 		if !ok {
 			errList = append(errList, fmt.Sprintf("label %v not in index", label))
 		} else {
@@ -61,7 +56,7 @@ func (sel Select) ByLabels(labels []string) Selection {
 		err = fmt.Errorf(strings.Join(errList, " - "))
 	}
 	return Selection{
-		s:            sel.s.Copy(),
+		s:            s.Copy(),
 		rowPositions: positions,
 		swappable:    swappable,
 		rowsOnly:     true,
@@ -69,25 +64,25 @@ func (sel Select) ByLabels(labels []string) Selection {
 	}
 }
 
-// ByLevels selects index levels at the specified integer positions.
-func (sel Select) ByLevels(positions []int) Selection {
+// SelectLevels selects index levels at the specified integer positions.
+func (s *Series) SelectLevels(positions []int) Selection {
 	swappable := len(positions) == 2
 	return Selection{
-		s:              sel.s.Copy(),
+		s:              s.Copy(),
 		levelPositions: positions,
 		swappable:      swappable,
 		levelsOnly:     true,
 	}
 }
 
-// ByLevelNames selects the index levels at the specified names.
-func (sel Select) ByLevelNames(names []string) Selection {
+// SelectLevelNames selects index levels at the specified index level names.
+func (s *Series) SelectLevelNames(names []string) Selection {
 	swappable := len(names) == 2
 	var positions []int
 	var errList []string
 	var err error
 	for _, name := range names {
-		val, ok := sel.s.index.NameMap[name]
+		val, ok := s.index.NameMap[name]
 		if !ok {
 			errList = append(errList, fmt.Sprintf("name %v not in index levels", name))
 		} else {
@@ -101,7 +96,7 @@ func (sel Select) ByLevelNames(names []string) Selection {
 	}
 
 	return Selection{
-		s:              sel.s.Copy(),
+		s:              s.Copy(),
 		levelPositions: positions,
 		swappable:      swappable,
 		levelsOnly:     true,
@@ -109,10 +104,10 @@ func (sel Select) ByLevelNames(names []string) Selection {
 	}
 }
 
-// XS selects a cross-section of index rows and levels at the specified integer locations.
-func (sel Select) XS(rows []int, levels []int) Selection {
+// SelectXS selects a cross-section of index rows and levels at the specified integer locations.
+func (s *Series) SelectXS(rows []int, levels []int) Selection {
 	return Selection{
-		s:              sel.s.Copy(),
+		s:              s.Copy(),
 		rowPositions:   rows,
 		levelPositions: levels,
 	}
@@ -178,12 +173,12 @@ func (sel Selection) series() (*Series, error) {
 	if sel.levelPositions == nil {
 		sel.levelPositions = values.MakeIntRange(0, sel.s.index.Len())
 	}
-	sel.s, _ = sel.s.in(sel.rowPositions)
-	sel.s.index, _ = sel.s.index.In(sel.levelPositions)
-	return sel.s, nil
+	s, _ := sel.s.in(sel.rowPositions)
+	s.index, _ = s.index.In(sel.levelPositions)
+	return s, nil
 }
 
-// if sel.swappable is true, then either sel.rowsOnly or sel.levelsOnly must be true
+// if swappable is true, then either sel.rowsOnly or sel.levelsOnly must be true
 func (sel Selection) swap() (*Series, error) {
 	if err := sel.ensure(); err != nil {
 		return nil, fmt.Errorf("Selection.Swap(): %v", err)

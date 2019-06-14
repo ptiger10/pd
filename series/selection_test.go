@@ -64,10 +64,10 @@ func TestSelect_Drop(t *testing.T) {
 		selection Selection
 		want      *Series
 	}{
-		{"ByRows", s.Select.ByRows([]int{0, 2}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
-		{"ByLabels", s.Select.ByLabels([]string{"qux", "corge"}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
-		{"ByLevels", s.Select.ByLevels([]int{0}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
-		{"ByLevelNames", s.Select.ByLevelNames([]string{"1"}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
+		{"ByRows", s.SelectRows([]int{0, 2}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
+		{"ByLabels", s.SelectLabels([]string{"qux", "corge"}), mustNew([]string{"bar"}, IndexLevel{Labels: []string{"quux"}, Name: "1"}, IndexLevel{Labels: []string{"B"}, Name: "2"})},
+		{"ByLevels", s.SelectLevels([]int{0}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
+		{"ByLevelNames", s.SelectLevelNames([]string{"1"}), mustNew([]string{"foo", "bar", "baz"}, IndexLevel{Labels: []string{"A", "B", "C"}, Name: "2"})},
 	}
 
 	for _, test := range tests {
@@ -86,13 +86,13 @@ func TestSelect_Drop(t *testing.T) {
 
 func TestSelect_Rows_Swap(t *testing.T) {
 	s, _ := New([]string{"hot", "dog", "log"}, Idx([]int{10, 100, 1000}))
-	newS, err := s.Select.ByRows([]int{0, 2}).Swap()
+	newS, err := s.SelectRows([]int{0, 2}).Swap()
 	if err != nil {
-		t.Errorf("Select.ByRows.Swap(): %v", err)
+		t.Errorf("SelectRows.Swap(): %v", err)
 	}
 	wantS, _ := New([]string{"log", "dog", "hot"}, Idx([]int{1000, 100, 10}))
 	if !seriesEquals(newS, wantS) {
-		t.Errorf("Select.ByRows.Swap() returned %v, want %v", newS, wantS)
+		t.Errorf("SelectRows.Swap() returned %v, want %v", newS, wantS)
 	}
 }
 

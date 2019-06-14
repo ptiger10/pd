@@ -4,3 +4,5 @@
 *.sh
 Makefile
 notebooks/
+profile.out
+debug

@@ -25,12 +25,12 @@ func (s *Series) Describe() {
 	switch s.datatype {
 	case options.Float64, options.Int64:
 		precision := options.GetDisplayFloatPrecision()
-		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
-		min := fmt.Sprintf("%.*f", precision, s.Math.Min())
-		q1 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(1))
-		q2 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(2))
-		q3 := fmt.Sprintf("%.*f", precision, s.Math.Quartile(3))
-		max := fmt.Sprintf("%.*f", precision, s.Math.Max())
+		mean := fmt.Sprintf("%.*f", precision, s.Mean())
+		min := fmt.Sprintf("%.*f", precision, s.Min())
+		q1 := fmt.Sprintf("%.*f", precision, s.Quartile(1))
+		q2 := fmt.Sprintf("%.*f", precision, s.Quartile(2))
+		q3 := fmt.Sprintf("%.*f", precision, s.Quartile(3))
+		max := fmt.Sprintf("%.*f", precision, s.Max())
 
 		values = []string{length, valid, null, mean, min, q1, q2, q3, max}
 		idx = []string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"}
@@ -42,8 +42,8 @@ func (s *Series) Describe() {
 
 	case options.Bool:
 		precision := options.GetDisplayFloatPrecision()
-		sum := fmt.Sprintf("%.*f", precision, s.Math.Sum())
-		mean := fmt.Sprintf("%.*f", precision, s.Math.Mean())
+		sum := fmt.Sprintf("%.*f", precision, s.Sum())
+		mean := fmt.Sprintf("%.*f", precision, s.Mean())
 		values = []string{length, valid, null, sum, mean}
 		idx = []string{"len", "valid", "null", "sum", "mean"}
 

@@ -9,37 +9,18 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
-// Math contains mathematical methods
-type Math struct {
-	s *Series
-}
-
 // an interface of valid (non-null) values; appropriate for type assertion
 func (s *Series) validVals() interface{} {
 	valid, _ := s.values.In(s.valid())
 	return valid.Vals()
 }
 
-// Sum is shorthand for series.Math.Sum()
-//
-// Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
-func (s *Series) Sum() float64 {
-	return s.Math.Sum()
-}
-
-// Mean is shorthand for series.Math.Mean()
-//
-// Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
-func (s *Series) Mean() float64 {
-	return s.Math.Mean()
-}
-
 // Sum of non-null series elements. For bool values, sum of true values.
 //
 // Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
-func (m Math) Sum() float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Sum() float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		return gonum.Sum(data)
@@ -60,10 +41,10 @@ func (m Math) Sum() float64 {
 // Mean of non-null series values. For bool values, mean of true values.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Mean() float64 {
+func (s *Series) Mean() float64 {
 	var sum float64
-	vals := m.s.validVals()
-	switch m.s.datatype {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		for _, d := range data {
@@ -73,7 +54,7 @@ func (m Math) Mean() float64 {
 	case options.Bool:
 		data := ensureBools(vals)
 		l := len(data)
-		return m.Sum() / float64(l)
+		return s.Sum() / float64(l)
 	default:
 		return math.NaN()
 	}
@@ -82,9 +63,9 @@ func (m Math) Mean() float64 {
 // Median of a series.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Median() float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Median() float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -104,9 +85,9 @@ func (m Math) Median() float64 {
 // Min of a series.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Min() float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Min() float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -121,9 +102,9 @@ func (m Math) Min() float64 {
 // Max of a series.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Max() float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Max() float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
@@ -138,9 +119,9 @@ func (m Math) Max() float64 {
 // Quartile i (must be 1, 2, 3)
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Quartile(i int) float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Quartile(i int) float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		val, err := stats.Quartile(data)
@@ -165,9 +146,9 @@ func (m Math) Quartile(i int) float64 {
 // Std returns the Standard Deviation of a series.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (m Math) Std() float64 {
-	vals := m.s.validVals()
-	switch m.s.datatype {
+func (s *Series) Std() float64 {
+	vals := s.validVals()
+	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {

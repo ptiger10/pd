@@ -13,9 +13,9 @@ func Convert(currentVals Values, dataType options.DataType) (Values, error) {
 	case options.None:
 		return nil, fmt.Errorf("unable to convert values: must supply a valid Kind")
 	case options.Float64:
-		vals = currentVals.ToFloat()
+		vals = currentVals.ToFloat64()
 	case options.Int64:
-		vals = currentVals.ToInt()
+		vals = currentVals.ToInt64()
 	case options.String:
 		vals = currentVals.ToString()
 	case options.Bool:
