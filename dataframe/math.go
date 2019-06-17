@@ -11,7 +11,7 @@ func (df *DataFrame) Sum() *series.Series {
 	ret, _ := series.New(nil)
 	for _, s := range df.s {
 		if calc := s.Sum(); !math.IsNaN(calc) {
-			newS := series.MustNew(calc, series.Idx(s.Name))
+			newS := series.MustNew(calc, series.Config{Index: s.Name})
 			ret.InPlace.Join(newS)
 		}
 	}
@@ -23,7 +23,7 @@ func (df *DataFrame) Mean() *series.Series {
 	ret, _ := series.New(nil)
 	for _, s := range df.s {
 		if calc := s.Mean(); !math.IsNaN(calc) {
-			newS := series.MustNew(calc, series.Idx(s.Name))
+			newS := series.MustNew(calc, series.Config{Index: s.Name})
 			ret.InPlace.Join(newS)
 		}
 	}

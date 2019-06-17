@@ -66,18 +66,20 @@ func (lvl Level) Len() int {
 	return lvl.Labels.Len()
 }
 
-// DefaultLevel creates an unnamed index level with range labels (0, 1, 2, ...n)
-func DefaultLevel(n int, name string) Level {
-	v := values.NewDefault(n)
+// NewDefaultLevel creates an unnamed index level with range labels (0, 1, 2, ...n)
+func NewDefaultLevel(n int, name string) Level {
+	v := values.NewDefaultValues(n)
 	level := newLevel(v, options.Int64, name)
 	return level
 }
 
+// Element is a single Element in an index level.
 type Element struct {
 	Label    interface{}
 	DataType options.DataType
 }
 
+// Element returns an Element at an integer position within an index level.
 func (lvl Level) Element(position int) Element {
 	return Element{
 		Label:    lvl.Labels.Element(position).Value,
@@ -101,4 +103,23 @@ func (lvl *Level) MaxWidth() int {
 		max = options.GetDisplayMaxWidth()
 	}
 	return max
+}
+
+// updateLabelMap updates a single level's map of {label values: [label positions]}.
+// A level's label map is agnostic of the actual values in those positions.
+func (lvl *Level) updateLabelMap() {
+	labelMap := make(LabelMap, lvl.Len())
+	for i := 0; i < lvl.Len(); i++ {
+		key := fmt.Sprint(lvl.Labels.Element(i).Value)
+		labelMap[key] = append(labelMap[key], i)
+	}
+	lvl.LabelMap = labelMap
+}
+
+// Refresh updates all the label mappings value within a level.
+func (lvl *Level) Refresh() {
+	if lvl.Labels == nil {
+		return
+	}
+	lvl.updateLabelMap()
 }

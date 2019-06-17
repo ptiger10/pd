@@ -23,13 +23,13 @@ func New(levels ...Level) Index {
 	idx := Index{
 		Levels: levels,
 	}
-	idx.UpdateNameMap()
+	idx.updateNameMap()
 	return idx
 }
 
 // NewDefault creates a new index with one unnamed index level and range labels (0, 1, 2, ...n)
 func NewDefault(length int) Index {
-	level := DefaultLevel(length, "")
+	level := NewDefaultLevel(length, "")
 	return New(level)
 }
 
@@ -122,7 +122,29 @@ func (idx Index) Elements(position int) Elements {
 	return Elements{labels, datatypes}
 }
 
+// Elements refer to all the elements at the same position across all levels of an index.
 type Elements struct {
 	Labels    []interface{}
 	DataTypes []options.DataType
+}
+
+// updateNameMap updates the holistic index map of {index level names: [index level positions]}
+func (idx *Index) updateNameMap() {
+	nameMap := make(LabelMap)
+	for i, lvl := range idx.Levels {
+		nameMap[lvl.Name] = append(nameMap[lvl.Name], i)
+	}
+	idx.NameMap = nameMap
+}
+
+// Refresh updates the global name map and the label mappings at every level.
+// Should be called after Series selection or index modification
+func (idx *Index) Refresh() {
+	if idx.Len() == 0 {
+		return
+	}
+	idx.updateNameMap()
+	for i := 0; i < len(idx.Levels); i++ {
+		idx.Levels[i].Refresh()
+	}
 }

@@ -17,15 +17,14 @@ type DataFrame struct {
 func (df *DataFrame) DT() *series.Series {
 	ret, _ := series.New(nil)
 	for _, s := range df.s {
-		dt := series.MustNew(s.DataType(), series.Idx(s.Name))
+		dt := series.MustNew(s.DataType(), series.Config{Index: s.Name, Name: "datatypes"})
 		ret.InPlace.Join(dt)
 	}
-	ret.Name = "datatypes"
 	return ret
 }
 
-// DataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
-func (df *DataFrame) DataType() string {
+// dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
+func (df *DataFrame) dataType() string {
 	uniqueTypes := df.DT().UniqueVals()
 	if len(uniqueTypes) == 1 {
 		return df.s[0].DataType()
@@ -49,7 +48,7 @@ func (df *DataFrame) Cols() int {
 	return 0
 }
 
-// Levels returns the number of index levels in the DataFrame.
-func (df *DataFrame) Levels() int {
+// IndexLevels returns the number of index levels in the DataFrame.
+func (df *DataFrame) IndexLevels() int {
 	return df.index.Len()
 }

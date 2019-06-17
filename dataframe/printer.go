@@ -17,7 +17,7 @@ func (df *DataFrame) String() string {
 
 // printer for DataFrame index, values, and columns
 func (df *DataFrame) print() string {
-	numLevels := df.Levels()
+	numLevels := df.IndexLevels()
 	var header string
 	var printer string
 	// [START header row]
@@ -121,7 +121,7 @@ func (df *DataFrame) print() string {
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
-	printer += fmt.Sprintf("datatype: %s\n", df.DataType())
+	printer += fmt.Sprintf("datatype: %s\n", df.dataType())
 	// [END rows]
 
 	if df.Name != "" {

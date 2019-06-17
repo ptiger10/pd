@@ -3,32 +3,34 @@ package dataframe
 import (
 	"fmt"
 	"log"
-
-	"github.com/ptiger10/pd/series"
 )
 
 func ExampleNew_float64() {
-	df, err := New([]interface{}{[]float64{0, 1}}, series.Idx([]string{"foo", "bar"}))
+	df, err := New([]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}}, Config{Index: []string{"foo", "bar"}, Cols: []interface{}{"baz", "qux"}})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(df)
 	// Output:
-	//        0
-	// foo    0
-	// bar    1
+	//        baz qux
+	// foo      0   2.5
+	// bar      1.5   3
+	// datatype: float64
 	//
 }
 
-func ExampleNewWithConfig_float64() {
-	df, err := NewWithConfig(Config{Columns: []string{"foobar"}}, []interface{}{[]float64{0, 1}}, series.Idx([]string{"foo", "bar"}))
+func ExampleNew_float64_multiCol() {
+	df, err := New([]interface{}{[]float64{0, 1}, []float64{2, 3}}, Config{Index: []string{"foo", "bar"}, Cols: []interface{}{"baz", "qux"}})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(df)
 	// Output:
-	//        foobar
-	// foo         0
-	// bar         1
+	//	     year     2019
+	//       class     baz qux
+	// index
+	//   foo             0   2
+	//   bar             1   3
+	// datatype: float64
 	//
 }

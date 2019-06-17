@@ -5,112 +5,159 @@ import (
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
 // New creates a new DataFrame with default column names.
-func New(data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
+func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	if data == nil {
-		return nil, fmt.Errorf("dataframe.New(): data cannot be nil")
+		return &DataFrame{s: nil, index: index.New()}, nil
 	}
+	vals, _ := values.InterfaceFactory(data[0])
+	valuesLen := vals.Values.Len()
+
 	var s []*series.Series
-	columnSlice := values.NewDefaultColumns(len(data))
-	cols := make(map[string][]int, len(columnSlice))
-	for i, val := range columnSlice {
-		cols[val] = append(cols[val], i)
+	var idx index.Index
+	var cols index.Columns
+	var err error
+
+	if config != nil {
+		if len(config) > 1 {
+			return nil, fmt.Errorf("dataframe.New(): can supply at most one Config (%d > 1)", len(config))
+		}
+		// Handling index
+		idx, err = config[0].indexFactory()
+		if err != nil {
+			return nil, fmt.Errorf("dataframe.New(): %v", err)
+		}
+		//Handling columns
+		cols, err = config[0].columnFactory()
+		if err != nil {
+			return nil, fmt.Errorf("dataframe.New(): %v", err)
+		}
+	} else {
+		idx = index.NewDefault(valuesLen)
+		cols = index.NewDefaultColumns(len(data))
 	}
+
+	// Handling Series
 	for i := 0; i < len(data); i++ {
-		n, err := series.NewWithConfig(series.Config{Name: columnSlice[i]}, data[i], index...)
+		sName := fmt.Sprint(cols.Levels[0].Labels[i])
+		n, err := series.New(data[i], series.Config{ConfigInternalIndex: &idx, Name: sName})
 		if err != nil {
 			return nil, fmt.Errorf("dataframe.New(): %v", err)
 		}
 		s = append(s, n)
 	}
-	var length int
-	if len(data) > 0 && data[0] != nil {
-		length = s[0].Len()
+	df := &DataFrame{
+		s:     s,
+		index: idx,
+		cols:  cols,
 	}
-	idx, err := indexFactory(index, length, data == nil)
-	if err != nil {
+
+	if err := df.ensureAlignment(); err != nil {
 		return nil, fmt.Errorf("dataframe.New(): %v", err)
 	}
-	df := &DataFrame{
-		s:      s,
-		index:  idx,
-		colMap: cols,
-	}
-	return df, nil
+
+	return df, err
 }
 
-// NewWithConfig creates a new DataFrame with the config struct, supplied values, and optional n-level index.
-func NewWithConfig(config Config, data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
-	df, err := New(data, index...)
-	if err != nil {
-		return nil, fmt.Errorf("dataframe.NewWithConfig(): %v", err)
+// create an Index from supplied config fields
+func (config Config) indexFactory() (index.Index, error) {
+	var idx index.Index
+	if config.Index != nil && config.MultiIndex != nil {
+		return index.Index{}, fmt.Errorf("indexFactory(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
-	if config.Columns != nil {
-		if len(config.Columns) != len(df.s) {
-			return nil, fmt.Errorf("dataframe.NewWithConfig(): number of columns must match number of series: %d != %d",
-				len(config.Columns), len(df.s))
+	if config.Index != nil {
+		newLevel, err := index.NewLevel(config.Index, config.IndexName)
+		if err != nil {
+			return index.Index{}, fmt.Errorf("indexFactory(): %v", err)
 		}
-		for i, val := range config.Columns {
-			df.colMap[val] = append(df.colMap[val], i)
+		idx = index.New(newLevel)
+	}
+	if config.MultiIndex != nil {
+		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
+			return index.Index{}, fmt.Errorf(
+				"indexFactory(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
+				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
-	}
-	df.Name = config.Name
-	for i := 0; i < len(config.Columns); i++ {
-		df.s[i].Name = config.Columns[i]
-	}
-	return df, nil
-}
-
-// Config customizes the new DataFrame constructor.
-type Config struct {
-	Name           string
-	Cols           []interface{}
-	ColsName       string
-	MultiCols      [][]interface{}
-	MultiColsNames []string
-	DataType       options.DataType
-}
-
-// indexFactory creates an index from supplied IndexLevels.
-// Duplicated from series to maintain index.Index encapsulation.
-func indexFactory(idx []series.IndexLevel, length int, nullData bool) (index.Index, error) {
-	// Handling index
-	var ret index.Index
-	// Empty data: return empty index
-	if nullData {
-		lvl, _ := index.NewLevel(nil, "")
-		ret = index.New(lvl)
-	} else if len(idx) != 0 {
-		var levels []index.Level
-		for i := 0; i < len(idx); i++ {
-			// Any level with no values: create default index and supply name only
-			if idx[i].Labels == nil {
-				lvl := index.DefaultLevel(length, idx[i].Name)
-				levels = append(levels, lvl)
+		var newLevels []index.Level
+		for i := 0; i < len(config.MultiIndex); i++ {
+			var levelName string
+			if i < len(config.MultiIndexNames) {
+				levelName = config.MultiIndexNames[i]
 			} else {
-				// Create new level from label and name
-				lvl, err := index.NewLevel(idx[i].Labels, idx[i].Name)
-				// Optional type conversion
-				if idx[i].DataType != options.None {
-					lvl, err = lvl.Convert(idx[i].DataType)
-					if err != nil {
-						return index.Index{}, fmt.Errorf("internal.IndexFactory(): %v", err)
-					}
-				}
-				levels = append(levels, lvl)
-				if err != nil {
-					return index.Index{}, fmt.Errorf("internal.IndexFactory(): %v", err)
-				}
+				levelName = ""
 			}
+			newLevel, err := index.NewLevel(config.MultiIndex[i], levelName)
+			if err != nil {
+				return index.Index{}, fmt.Errorf("dataframe.New(): %v", err)
+			}
+			newLevels = append(newLevels, newLevel)
 		}
-		ret = index.New(levels...)
-		// No index supplied: return with default index
-	} else {
-		ret = index.Default(length)
+		idx = index.New(newLevels...)
 	}
-	return ret, nil
+	return idx, nil
+
+}
+
+// create Columns from supplied config fields
+func (config Config) columnFactory() (index.Columns, error) {
+	var columns index.Columns
+	// Handling columns
+	if config.Cols != nil && config.MultiCols != nil {
+		return index.Columns{}, fmt.Errorf("columnFactory(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+	}
+	if config.Cols != nil {
+		newLevel := index.NewColLevel(config.Cols, config.ColsName)
+		columns = index.NewColumns(newLevel)
+	}
+	if config.MultiIndex != nil {
+		if config.MultiColsNames != nil && len(config.MultiColsNames) != len(config.MultiCols) {
+			return index.Columns{}, fmt.Errorf(
+				"columnFactory(): if MultiColsNames is not nil, it must must have same length as MultiCols: %d != %d",
+				len(config.MultiColsNames), len(config.MultiCols))
+		}
+		var newLevels []index.ColLevel
+		for i := 0; i < len(config.MultiCols); i++ {
+			var levelName string
+			if i < len(config.MultiColsNames) {
+				levelName = config.MultiColsNames[i]
+			}
+			newLevel := index.NewColLevel(config.MultiCols[i], levelName)
+			newLevels = append(newLevels, newLevel)
+		}
+		columns = index.NewColumns(newLevels...)
+	}
+	return columns, nil
+}
+
+// returns an error if any index levels have different lengths
+// or if there is a mismatch between the number of values and index items
+func (df *DataFrame) ensureAlignment() error {
+	if err := df.index.Aligned(); err != nil {
+		return fmt.Errorf("dataframe out of alignment: %v", err)
+	}
+	if labels := df.index.Levels[0].Len(); df.Len() != labels {
+		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
+	}
+
+	if df.cols.Len() != df.Cols() {
+		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
+			df.cols.Len(), df.Cols())
+	}
+	return nil
+}
+
+// Config customizes the DataFrame constructor.
+type Config struct {
+	Name            string
+	Index           interface{}
+	IndexName       string
+	MultiIndex      []interface{}
+	MultiIndexNames []string
+	Cols            []interface{}
+	ColsName        string
+	MultiCols       [][]interface{}
+	MultiColsNames  []string
 }

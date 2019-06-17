@@ -18,6 +18,8 @@ type Config struct {
 	IndexName       string
 	MultiIndex      []interface{}
 	MultiIndexNames []string
+	// For internal use overwriting Series.index with new index.Index in DataFrame constructor
+	ConfigInternalIndex *index.Index
 }
 
 // New creates a new Series with the supplied values and default index.
@@ -71,26 +73,29 @@ func (s *Series) configure(config Config) (*Series, error) {
 	if config.DataType != options.None {
 		s.values, err = values.Convert(s.values, config.DataType)
 		if err != nil {
-			return nil, fmt.Errorf("series.NewWithConfig(): %v", err)
+			return nil, fmt.Errorf("series.New(): %v", err)
 		}
 		s.datatype = config.DataType
+	}
+	if config.ConfigInternalIndex != nil {
+		s.index = *config.ConfigInternalIndex
 	}
 
 	// Handling index
 	if config.Index != nil && config.MultiIndex != nil {
-		return nil, fmt.Errorf("series.NewWithConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+		return nil, fmt.Errorf("series.New(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
 	if config.Index != nil {
 		newLevel, err := index.NewLevel(config.Index, config.IndexName)
 		if err != nil {
-			return nil, fmt.Errorf("series.NewWithConfig(): %v", err)
+			return nil, fmt.Errorf("series.New(): %v", err)
 		}
 		s.index = index.New(newLevel)
 	}
 	if config.MultiIndex != nil {
 		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
 			return nil, fmt.Errorf(
-				"series.NewWithConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
+				"series.New(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
 		var newLevels []index.Level
@@ -98,12 +103,10 @@ func (s *Series) configure(config Config) (*Series, error) {
 			var levelName string
 			if i < len(config.MultiIndexNames) {
 				levelName = config.MultiIndexNames[i]
-			} else {
-				levelName = ""
 			}
 			newLevel, err := index.NewLevel(config.MultiIndex[i], levelName)
 			if err != nil {
-				return nil, fmt.Errorf("series.NewWithConfig(): %v", err)
+				return nil, fmt.Errorf("series.New(): %v", err)
 			}
 			newLevels = append(newLevels, newLevel)
 		}
@@ -111,7 +114,7 @@ func (s *Series) configure(config Config) (*Series, error) {
 	}
 
 	if err := s.ensureAlignment(); err != nil {
-		return nil, fmt.Errorf("series.NewWithConfig(): %v", err)
+		return nil, fmt.Errorf("series.New(): %v", err)
 	}
 	return s, nil
 }

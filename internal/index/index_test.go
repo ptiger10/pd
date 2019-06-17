@@ -92,3 +92,28 @@ func Test_Droplevels(t *testing.T) {
 		t.Errorf("idx.Drop() for multilevel returned %v, want %v", idx, want)
 	}
 }
+
+func Test_RefreshIndex(t *testing.T) {
+	origLvl, err := NewLevel([]int64{1, 2}, "")
+	if err != nil {
+		t.Error(err)
+	}
+	idx := New(origLvl)
+	if idx.Levels[0].Name != "" {
+		t.Error("Expecting no name")
+	}
+	newLvl, err := NewLevel([]int64{1, 2}, "ints")
+	if err != nil {
+		t.Error(err)
+	}
+	idx.Levels[0] = newLvl
+	idx.Refresh()
+	wantNameMap := LabelMap{"ints": []int{0}}
+	wantName := "ints"
+	if !reflect.DeepEqual(idx.NameMap, wantNameMap) {
+		t.Errorf("Returned nameMap %v, want %v", idx.NameMap, wantNameMap)
+	}
+	if idx.Levels[0].Name != wantName {
+		t.Errorf("Returned name %v, want %v", idx.Levels[0].Name, wantName)
+	}
+}
