@@ -107,3 +107,30 @@ func (lvl *ColLevel) updateLabelMap() {
 	}
 	lvl.LabelMap = labelMap
 }
+
+// Copy copies a Column Level
+func (lvl ColLevel) Copy() ColLevel {
+	lvlCopy := ColLevel{}
+	lvlCopy = lvl
+	lvlCopy.Labels = make([]interface{}, lvl.Len())
+	for i := 0; i < lvl.Len(); i++ {
+		lvlCopy.Labels[i] = lvl.Labels[i]
+	}
+	lvlCopy.LabelMap = make(LabelMap)
+	for k, v := range lvl.LabelMap {
+		lvlCopy.LabelMap[k] = v
+	}
+	return lvlCopy
+}
+
+// Copy returns a deep copy of each column level.
+func (cols Columns) Copy() Columns {
+	colsCopy := Columns{NameMap: LabelMap{}}
+	for k, v := range cols.NameMap {
+		colsCopy.NameMap[k] = v
+	}
+	for i := 0; i < len(cols.Levels); i++ {
+		colsCopy.Levels = append(colsCopy.Levels, cols.Levels[i].Copy())
+	}
+	return colsCopy
+}

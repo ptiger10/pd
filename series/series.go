@@ -77,26 +77,26 @@ func (s *Series) Copy() *Series {
 // in copies a Series then subsets it to include only index items and values at the positions supplied
 func (s *Series) in(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
-		return s, fmt.Errorf("Series.in(): %v", err)
+		return s, fmt.Errorf("series internal alignment error: %v", err)
 	}
 	if positions == nil {
 		return nil, nil
 	}
 
-	newS := s.Copy()
-	values, err := newS.values.In(positions)
+	s = s.Copy()
+	values, err := s.values.In(positions)
 	if err != nil {
-		return nil, fmt.Errorf("Series.in() values: %v", err)
+		return nil, fmt.Errorf("series internal alignment error values: %v", err)
 	}
-	newS.values = values
-	for i, level := range newS.index.Levels {
-		newS.index.Levels[i].Labels, err = level.Labels.In(positions)
+	s.values = values
+	for i, level := range s.index.Levels {
+		s.index.Levels[i].Labels, err = level.Labels.In(positions)
 		if err != nil {
-			return nil, fmt.Errorf("Series.in() index: %v", err)
+			return nil, fmt.Errorf("series internal alignment error index: %v", err)
 		}
 	}
-	newS.index.Refresh()
-	return newS, nil
+	s.index.Refresh()
+	return s, nil
 }
 
 func (s *Series) mustIn(positions []int) *Series {

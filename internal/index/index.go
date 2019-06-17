@@ -148,3 +148,90 @@ func (idx *Index) Refresh() {
 		idx.Levels[i].Refresh()
 	}
 }
+
+// NewFromConfig returns a new Index with length n using a config struct.
+func NewFromConfig(n int, config Config) (Index, error) {
+	var index Index
+	// both nil: return default index
+	if config.Index == nil && config.MultiIndex == nil {
+		return NewDefault(n), nil
+	}
+	// both not nil: return error
+	if config.Index != nil && config.MultiIndex != nil {
+		return Index{}, fmt.Errorf("internal index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+	}
+	// single index
+	if config.Index != nil {
+		newLevel, err := NewLevel(config.Index, config.IndexName)
+		if err != nil {
+			return Index{}, fmt.Errorf("internal index.NewFromConfig(): %v", err)
+		}
+		return New(newLevel), nil
+	}
+	// multi index
+	if config.MultiIndex != nil {
+		// name misalignment
+		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
+			return Index{}, fmt.Errorf(
+				"internal index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
+				len(config.MultiIndexNames), len(config.MultiIndex))
+		}
+		var newLevels []Level
+		for i := 0; i < len(config.MultiIndex); i++ {
+			var levelName string
+			if i < len(config.MultiIndexNames) {
+				levelName = config.MultiIndexNames[i]
+			}
+			newLevel, err := NewLevel(config.MultiIndex[i], levelName)
+			if err != nil {
+				return Index{}, fmt.Errorf("internal index.NewFromConfig(): %v", err)
+			}
+			newLevels = append(newLevels, newLevel)
+		}
+		return New(newLevels...), nil
+	}
+	return index, nil
+}
+
+// NewColumnFromConfig returns new Columns with length n using a config struct.
+func NewColumnFromConfig(n int, config Config) (Columns, error) {
+	var columns Columns
+	// Handling columns
+	if config.Cols != nil && config.MultiCols != nil {
+		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+	}
+	if config.Cols != nil {
+		newLevel := NewColLevel(config.Cols, config.ColsName)
+		columns = NewColumns(newLevel)
+	}
+	if config.MultiIndex != nil {
+		if config.MultiColsNames != nil && len(config.MultiColsNames) != len(config.MultiCols) {
+			return Columns{}, fmt.Errorf(
+				"columnFactory(): if MultiColsNames is not nil, it must must have same length as MultiCols: %d != %d",
+				len(config.MultiColsNames), len(config.MultiCols))
+		}
+		var newLevels []ColLevel
+		for i := 0; i < len(config.MultiCols); i++ {
+			var levelName string
+			if i < len(config.MultiColsNames) {
+				levelName = config.MultiColsNames[i]
+			}
+			newLevel := NewColLevel(config.MultiCols[i], levelName)
+			newLevels = append(newLevels, newLevel)
+		}
+		columns = NewColumns(newLevels...)
+	}
+	return columns, nil
+}
+
+// A Config customizes the construction of an Index or Columns object.
+type Config struct {
+	Index           interface{}
+	IndexName       string
+	MultiIndex      []interface{}
+	MultiIndexNames []string
+	Cols            []interface{}
+	ColsName        string
+	MultiCols       [][]interface{}
+	MultiColsNames  []string
+}

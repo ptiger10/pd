@@ -13,8 +13,8 @@ func ExampleNew_float64() {
 	fmt.Println(df)
 	// Output:
 	//        baz qux
-	// foo      0   2.5
-	// bar      1.5   3
+	// foo      0 2.5
+	// bar    1.5   3
 	// datatype: float64
 	//
 }

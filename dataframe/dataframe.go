@@ -13,6 +13,77 @@ type DataFrame struct {
 	index index.Index
 }
 
+// Len returns the number of values in each Series of the DataFrame.
+func (df *DataFrame) Len() int {
+	if df.s == nil {
+		return 0
+	}
+	return df.s[0].Len()
+}
+
+// Cols returns the number of columsn in the DataFrame.
+func (df *DataFrame) Cols() int {
+	if df.s == nil {
+		return 0
+	}
+	return len(df.s)
+}
+
+// IndexLevels returns the number of index levels in the DataFrame.
+func (df *DataFrame) IndexLevels() int {
+	return df.index.Len()
+}
+
+// Copy creates a new deep copy of a Series.
+func (df *DataFrame) Copy() *DataFrame {
+	var sCopy []*series.Series
+	for i := 0; i < len(df.s); i++ {
+		sCopy = append(sCopy, df.s[i].Copy())
+	}
+	idxCopy := df.index.Copy()
+	colsCopy := df.cols.Copy()
+	dfCopy := &DataFrame{
+		s:     sCopy,
+		index: idxCopy,
+		cols:  colsCopy,
+		Name:  df.Name,
+	}
+	// dfCopy.Apply = Apply{s: copyS}
+	// dfCopy.Filter = Filter{s: copyS}
+	// dfCopy.Index = Index{s: copyS}
+	// dfCopy.InPlace = InPlace{s: copyS}
+	return dfCopy
+}
+
+// // in copies a Series then subsets it to include only index items and values at the integer positions supplied
+// func (df *DataFrame) in(rowPositions []int, colPositions []int) (*DataFrame, error) {
+// 	if err := df.ensureAlignment(); err != nil {
+// 		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
+// 	}
+// 	if rowPositions == nil && colPositions == nil {
+// 		return nil, nil
+// 	}
+
+// 	df = df.Copy()
+// 	values, err := df.values.In(positions)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("Series.in() values: %v", err)
+// 	}
+// 	df.values = values
+// 	for i, level := range df.index.Levels {
+// 		df.index.Levels[i].Labels, err = level.Labels.In(positions)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("Series.in() index: %v", err)
+// 		}
+// 	}
+// 	df.index.Refresh()
+// 	return df, nil
+// }
+
+// func (df *DataFrame) Col(label string) *Series {
+
+// }
+
 // DT returns the DataTypes of the Series in the DataFrame.
 func (df *DataFrame) DT() *series.Series {
 	ret, _ := series.New(nil)
@@ -30,25 +101,4 @@ func (df *DataFrame) dataType() string {
 		return df.s[0].DataType()
 	}
 	return "mixed"
-}
-
-// Len returns the number of values in each Series of the DataFrame.
-func (df *DataFrame) Len() int {
-	if df.s != nil {
-		return df.s[0].Len()
-	}
-	return 0
-}
-
-// Cols returns the number of columsn in the DataFrame.
-func (df *DataFrame) Cols() int {
-	if df.s != nil {
-		return len(df.s)
-	}
-	return 0
-}
-
-// IndexLevels returns the number of index levels in the DataFrame.
-func (df *DataFrame) IndexLevels() int {
-	return df.index.Len()
 }

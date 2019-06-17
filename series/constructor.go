@@ -18,31 +18,58 @@ type Config struct {
 	IndexName       string
 	MultiIndex      []interface{}
 	MultiIndexNames []string
-	// For internal use overwriting Series.index with new index.Index in DataFrame constructor
-	ConfigInternalIndex *index.Index
 }
 
 // New creates a new Series with the supplied values and default index.
 func New(data interface{}, config ...Config) (*Series, error) {
+	var idx index.Index
+	sConfig := Config{}         // series config
+	idxConfig := index.Config{} // index config
+
+	// Handling config
+	if config != nil {
+		if len(config) > 1 {
+			return nil, fmt.Errorf("series.New(): can supply at most one Config (%d > 1)", len(config))
+		}
+		sConfig = config[0]
+		idxConfig = index.Config{
+			Index: sConfig.Index, IndexName: sConfig.IndexName,
+			MultiIndex: sConfig.MultiIndex, MultiIndexNames: sConfig.MultiIndexNames,
+		}
+	}
+
 	// Handling values
 	factory, err := values.InterfaceFactory(data)
 	if err != nil {
 		return nil, fmt.Errorf("series.New(): %v", err)
 	}
+
 	// Handling index
-	var seriesIndex index.Index
-	// Empty data: return empty index
-	if data == nil {
-		seriesIndex = index.New()
-		// Not empty data: return with default index
+	// empty data: return empty index
+	if lenValues := factory.Values.Len(); lenValues == 0 {
+		idx = index.New()
+		// not empty data: use config
 	} else {
-		seriesIndex = index.NewDefault(factory.Values.Len())
+		idx, err = index.NewFromConfig(lenValues, idxConfig)
+		if err != nil {
+			return nil, fmt.Errorf("series.New(): %v", err)
+		}
 	}
 
 	s := &Series{
 		values:   factory.Values,
-		index:    seriesIndex,
+		index:    idx,
 		datatype: factory.DataType,
+		Name:     sConfig.Name,
+	}
+
+	// Optional datatype conversion
+	if sConfig.DataType != options.None {
+		s.values, err = values.Convert(s.values, sConfig.DataType)
+		if err != nil {
+			return nil, fmt.Errorf("series.New(): %v", err)
+		}
+		s.datatype = sConfig.DataType
 	}
 
 	s.Filter = Filter{s: s}
@@ -50,73 +77,12 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	s.InPlace = InPlace{s: s}
 	s.Apply = Apply{s: s}
 
-	if config != nil {
-		if len(config) > 1 {
-			return nil, fmt.Errorf("series.New(): can supply at most one Config (%d > 1)", len(config))
-		}
-		s, err = s.configure(config[0])
-	}
-	return s, err
-}
-
-// configure configures an existing Series with supplied config struct
-func (s *Series) configure(config Config) (*Series, error) {
-	var err error
-	// Handling name
-	s.Name = config.Name
-	// If Series has no values, ignore other Config fields
-	if s.Len() == 0 {
-		return s, nil
-	}
-
-	// Optional datatype conversion
-	if config.DataType != options.None {
-		s.values, err = values.Convert(s.values, config.DataType)
-		if err != nil {
-			return nil, fmt.Errorf("series.New(): %v", err)
-		}
-		s.datatype = config.DataType
-	}
-	if config.ConfigInternalIndex != nil {
-		s.index = *config.ConfigInternalIndex
-	}
-
-	// Handling index
-	if config.Index != nil && config.MultiIndex != nil {
-		return nil, fmt.Errorf("series.New(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
-	}
-	if config.Index != nil {
-		newLevel, err := index.NewLevel(config.Index, config.IndexName)
-		if err != nil {
-			return nil, fmt.Errorf("series.New(): %v", err)
-		}
-		s.index = index.New(newLevel)
-	}
-	if config.MultiIndex != nil {
-		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
-			return nil, fmt.Errorf(
-				"series.New(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
-				len(config.MultiIndexNames), len(config.MultiIndex))
-		}
-		var newLevels []index.Level
-		for i := 0; i < len(config.MultiIndex); i++ {
-			var levelName string
-			if i < len(config.MultiIndexNames) {
-				levelName = config.MultiIndexNames[i]
-			}
-			newLevel, err := index.NewLevel(config.MultiIndex[i], levelName)
-			if err != nil {
-				return nil, fmt.Errorf("series.New(): %v", err)
-			}
-			newLevels = append(newLevels, newLevel)
-		}
-		s.index = index.New(newLevels...)
-	}
-
+	// Alignment check
 	if err := s.ensureAlignment(); err != nil {
 		return nil, fmt.Errorf("series.New(): %v", err)
 	}
-	return s, nil
+
+	return s, err
 }
 
 // MustNew returns a new Series or logs an error and returns a blank Series.

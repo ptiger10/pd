@@ -1,11 +1,8 @@
 package series
 
-// import (
-// 	"reflect"
-// 	"testing"
-
-// 	"github.com/ptiger10/pd/options"
-// )
+import (
+	"testing"
+)
 
 // func TestElement(t *testing.T) {
 // 	s, err := New([]string{"", "valid"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
@@ -64,54 +61,58 @@ package series
 // 	}
 // }
 
-// func Test_Copy(t *testing.T) {
-// 	s, _ := New("foo")
-// 	s.Name = "foo"
-// 	origS, _ := New("foo")
-// 	origS.Name = "foo"
-// 	copyS := s.Copy()
-// 	copyS.index.Levels[0].Labels.Set(0, "5")
-// 	copyS.values.Set(0, "bar")
-// 	copyS.Name = "bar"
-// 	copyS.datatype = options.Bool
-// 	if !Equal(s, origS) || Equal(s, copyS) {
-// 		t.Errorf("s.copy() retained references to original, want fresh copy")
+func Test_Copy(t *testing.T) {
+	s, _ := New("foo")
+	s.Name = "foo"
+	sOrig, _ := New("foo")
+	sOrig.Name = "foo"
+	sCopy := s.Copy()
+	sCopy.index.Levels[0].Labels.Set(0, 5)
+	sCopy.values.Set(0, "bar")
+	sCopy.Name = "foobar"
+	sCopy.index.Refresh()
+	want, _ := New("bar", Config{Index: 5, Name: "foobar"})
+	if !Equal(sCopy, want) {
+		t.Errorf("s.Copy() returned %v, want %v", sCopy.index, want.index)
+	}
+	if !Equal(s, sOrig) || Equal(s, sCopy) {
+		t.Errorf("s.copy() retained references to original, want fresh copy")
+	}
+}
+
+// func Test_Equals(t *testing.T) {
+// 	s, err := New("foo", Idx("bar"), options.Name("baz"))
+// 	if err != nil {
+// 		t.Error(err)
 // 	}
-// }
-
-// // func Test_Equals(t *testing.T) {
-// // 	s, err := New("foo", Idx("bar"), options.Name("baz"))
-// // 	if err != nil {
-// // 		t.Error(err)
-// // 	}
-// // 	s2, _ := New("foo", Idx("bar"), options.Name("baz"))
-// // 	if !Equal(s, s2) {
-// // 		t.Errorf("Equal() returned false, want true")
-// // 	}
-// // 	s2.datatype = options.Bool
-// // 	if Equal(s, s2) {
-// // 		t.Errorf("Equal() returned true for different kind, want false")
-// // 	}
-
-// // 	s2, _ = New("quux", Idx("bar"), options.Name("baz"))
-// // 	if Equal(s, s2) {
-// // 		t.Errorf("Equal() returned true for different values, want false")
-// // 	}
-// // 	s2, _ = New("foo", Idx("corge"), options.Name("baz"))
-// // 	if Equal(s, s2) {
-// // 		t.Errorf("Equal() returned true for different index, want false")
-// // 	}
-// // 	s2, _ = New("foo", Idx("bar"), options.Name("qux"))
-// // 	if Equal(s, s2) {
-// // 		t.Errorf("Equal() returned true for different name, want false")
-// // 	}
-// // }
-
-// func TestReplaceNil(t *testing.T) {
-// 	s := MustNew(nil)
-// 	s2 := MustNew([]int{1, 2})
-// 	s.replace(s2)
+// 	s2, _ := New("foo", Idx("bar"), options.Name("baz"))
 // 	if !Equal(s, s2) {
-// 		t.Errorf("Series.replace() returned %v, want %v", s, s2)
+// 		t.Errorf("Equal() returned false, want true")
+// 	}
+// 	s2.datatype = options.Bool
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different kind, want false")
+// 	}
+
+// 	s2, _ = New("quux", Idx("bar"), options.Name("baz"))
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different values, want false")
+// 	}
+// 	s2, _ = New("foo", Idx("corge"), options.Name("baz"))
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different index, want false")
+// 	}
+// 	s2, _ = New("foo", Idx("bar"), options.Name("qux"))
+// 	if Equal(s, s2) {
+// 		t.Errorf("Equal() returned true for different name, want false")
 // 	}
 // }
+
+func TestReplaceNil(t *testing.T) {
+	s := MustNew(nil)
+	s2 := MustNew([]int{1, 2})
+	s.replace(s2)
+	if !Equal(s, s2) {
+		t.Errorf("Series.replace() returned %v, want %v", s, s2)
+	}
+}
