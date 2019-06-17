@@ -93,7 +93,9 @@ func (s *Series) print() string {
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
-	printer += fmt.Sprintf("datatype: %s\n", s.datatype)
+	if s.datatype != options.None {
+		printer += fmt.Sprintf("datatype: %s\n", s.datatype)
+	}
 	// [END rows]
 
 	if s.Name != "" {

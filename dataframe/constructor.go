@@ -15,9 +15,13 @@ func New(data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
 		return nil, fmt.Errorf("dataframe.New(): data cannot be nil")
 	}
 	var s []*series.Series
-	cols := values.NewDefaultColumns(len(data))
+	columnSlice := values.NewDefaultColumns(len(data))
+	cols := make(map[string][]int, len(columnSlice))
+	for i, val := range columnSlice {
+		cols[val] = append(cols[val], i)
+	}
 	for i := 0; i < len(data); i++ {
-		n, err := series.NewWithConfig(series.Config{Name: cols[i]}, data[i], index...)
+		n, err := series.NewWithConfig(series.Config{Name: columnSlice[i]}, data[i], index...)
 		if err != nil {
 			return nil, fmt.Errorf("dataframe.New(): %v", err)
 		}
@@ -32,9 +36,9 @@ func New(data []interface{}, index ...series.IndexLevel) (*DataFrame, error) {
 		return nil, fmt.Errorf("dataframe.New(): %v", err)
 	}
 	df := &DataFrame{
-		s:     s,
-		index: idx,
-		cols:  cols,
+		s:      s,
+		index:  idx,
+		colMap: cols,
 	}
 	return df, nil
 }
@@ -50,20 +54,25 @@ func NewWithConfig(config Config, data []interface{}, index ...series.IndexLevel
 			return nil, fmt.Errorf("dataframe.NewWithConfig(): number of columns must match number of series: %d != %d",
 				len(config.Columns), len(df.s))
 		}
-		df.cols = config.Columns
+		for i, val := range config.Columns {
+			df.colMap[val] = append(df.colMap[val], i)
+		}
 	}
 	df.Name = config.Name
-	for i := 0; i < len(df.cols); i++ {
-		df.s[i].Name = df.cols[i]
+	for i := 0; i < len(config.Columns); i++ {
+		df.s[i].Name = config.Columns[i]
 	}
 	return df, nil
 }
 
 // Config customizes the new DataFrame constructor.
 type Config struct {
-	Name     string
-	Columns  []string
-	DataType options.DataType
+	Name           string
+	Cols           []interface{}
+	ColsName       string
+	MultiCols      [][]interface{}
+	MultiColsNames []string
+	DataType       options.DataType
 }
 
 // indexFactory creates an index from supplied IndexLevels.

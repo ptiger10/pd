@@ -90,8 +90,8 @@ func (lvl Level) Element(position int) Element {
 func (lvl *Level) MaxWidth() int {
 	var max int
 	for k := range lvl.LabelMap {
-		if len(k) > max {
-			max = len(k)
+		if length := len(fmt.Sprint(k)); length > max {
+			max = length
 		}
 	}
 	if len(lvl.Name) > max {

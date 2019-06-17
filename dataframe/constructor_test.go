@@ -9,10 +9,11 @@ import (
 
 func Test_New(t *testing.T) {
 	c := Config{Columns: []string{"fooCol", "barCol"}}
-	df, err := NewWithConfig(c, []interface{}{[]float64{1, 2, 3}, []float64{4, 5, 6}}, series.Idx([]string{"foo", "bar", "baz"}))
+	df, err := NewWithConfig(c, []interface{}{[]int64{1, 2, 3}, []float64{4, 5, 6}}, series.Idx([]string{"foo", "bar", "baz"}))
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Print(df)
+	fmt.Println(df.DT())
+	// fmt.Print(df)
 	// fmt.Println(df.Sum())
 }

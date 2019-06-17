@@ -35,8 +35,8 @@ func (s *Series) Sort(asc bool) *Series {
 // Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
 func (s *Series) Insert(pos int, val interface{}, idx []interface{}) (*Series, error) {
 	s = s.Copy()
-	s.InPlace.Insert(pos, val, idx)
-	return s, nil
+	err := s.InPlace.Insert(pos, val, idx)
+	return s, err
 }
 
 // dropRows drops multiple rows and returns a new Series

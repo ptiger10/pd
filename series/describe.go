@@ -60,13 +60,12 @@ func (s *Series) Describe() {
 		idx = []string{"len", "valid", "null"}
 	}
 
-	s, err := NewWithConfig(Config{Name: s.Name}, values, Idx(idx))
-	if err != nil {
-		fmt.Printf("series.Describe(): %v", err)
-	}
+	// duck errors because constructor called internally
+	s = MustNew(values, Config{Name: s.Name, Index: idx})
 	s.datatype = dt
 	fmt.Println(s)
 	return
+
 }
 
 // ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
@@ -74,6 +73,9 @@ func (s *Series) Describe() {
 // Applies to: All
 func (s *Series) ValueCounts() map[string]int {
 	valid, _ := s.in(s.valid())
+	if valid == nil {
+		return nil
+	}
 	vals := valid.all()
 	counter := make(map[string]int)
 	for _, val := range vals {
@@ -88,6 +90,9 @@ func (s *Series) ValueCounts() map[string]int {
 func (s *Series) UniqueVals() []string {
 	var ret []string
 	counter := s.ValueCounts()
+	if counter == nil {
+		return []string{}
+	}
 	for k := range counter {
 		ret = append(ret, k)
 	}

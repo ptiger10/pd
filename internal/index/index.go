@@ -16,6 +16,10 @@ type Index struct {
 // New receives one or more Levels and returns a new Index.
 // Expects that Levels already have .LabelMap and .Longest set.
 func New(levels ...Level) Index {
+	if levels == nil {
+		emptyLevel, _ := NewLevel(nil, "")
+		levels = append(levels, emptyLevel)
+	}
 	idx := Index{
 		Levels: levels,
 	}
@@ -23,8 +27,8 @@ func New(levels ...Level) Index {
 	return idx
 }
 
-// Default creates an index with one unnamed index level and range labels (0, 1, 2, ...n)
-func Default(length int) Index {
+// NewDefault creates a new index with one unnamed index level and range labels (0, 1, 2, ...n)
+func NewDefault(length int) Index {
 	level := DefaultLevel(length, "")
 	return New(level)
 }
@@ -86,14 +90,15 @@ func (idx Index) Len() int {
 }
 
 // Aligned ensures that all index levels have the same length.
-func (idx Index) Aligned() bool {
+func (idx Index) Aligned() error {
 	lvl0 := idx.Levels[0].Len()
 	for i := 1; i < idx.Len(); i++ {
-		if lvl0 != idx.Levels[i].Len() {
-			return false
+		if cmpLvl := idx.Levels[i].Len(); lvl0 != cmpLvl {
+			return fmt.Errorf("index.Aligned(): index level %v must have same number of labels as level 0, %d != %d",
+				i, cmpLvl, lvl0)
 		}
 	}
-	return true
+	return nil
 }
 
 // DataTypes returns a slice of the DataTypes at each level of the index

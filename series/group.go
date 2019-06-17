@@ -24,20 +24,20 @@ func (g Grouping) Sum() *Series {
 	for _, group := range g.Groups() {
 		positions := g.groups[group].Positions
 		sum := g.s.mustIn(positions).Sum()
-		newS := MustNew(sum, g.groups[group].buildIndex()...)
+		newS := MustNew(sum, Config{MultiIndex: g.groups[group].IndexLevels})
 		s.InPlace.Join(newS)
 	}
 	s.index.Refresh()
 	return s
 }
 
-func (g group) buildIndex() []IndexLevel {
-	var idxLevels []IndexLevel
-	for _, lvl := range g.IndexLevels {
-		idxLevels = append(idxLevels, Idx(lvl))
-	}
-	return idxLevels
-}
+// func (g group) buildIndex() []interface{} {
+// 	var idxLevels []interface{}
+// 	for _, lvl := range g.IndexLevels {
+// 		idxLevels = append(idxLevels, Idx(lvl))
+// 	}
+// 	return idxLevels
+// }
 
 // Groups returns all valid group labels in the Grouping.
 func (g Grouping) Groups() []string {
@@ -62,7 +62,7 @@ func (g Grouping) Group(label string) (*Series, error) {
 	return s, nil
 }
 
-// GroupByIndex groups a Series by index level 0.
+// GroupByIndex groups a Series by all of its index levels.
 func (s *Series) GroupByIndex() Grouping {
 
 	g := Grouping{s: s, groups: make(map[string]*group)}

@@ -2,7 +2,6 @@ package series
 
 import (
 	"fmt"
-	"time"
 )
 
 func ExampleSeries_empty() {
@@ -13,149 +12,164 @@ func ExampleSeries_empty() {
 	// Series{}
 }
 
-func ExampleSeries_string_defaultIdx() {
-	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"})
+func ExampleNew_string() {
+	s, _ := New([]string{"foo", "bar", "", "baz"})
 	fmt.Println(s)
 
 	// Output:
-	// 0    Joe
-	// 1    Jamy
+	// 0    foo
+	// 1    bar
 	// 2    NaN
-	// 3    Jenny
+	// 3    baz
 	// datatype: string
 }
 
-func ExampleSeries_string_customIdx() {
-	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Idx([]int{100, 101, 102, 103}))
-	fmt.Println(s)
+// func ExampleNewWithConfig_string_named() {
+// 	s, _ := NewWithConfig([]string{"foo", "bar", "", "baz"}, Config{Name: "foobar"})
+// 	fmt.Println(s)
 
-	// Output:
-	// 100    Joe
-	// 101    Jamy
-	// 102    NaN
-	// 103    Jenny
-	// datatype: string
-}
+// 	// Output:
+// 	// 0    foo
+// 	// 1    bar
+// 	// 2    NaN
+// 	// 3    baz
+// 	// datatype: string
+// 	// name: foobar
+// }
 
-func ExampleSeries_string_customIndex2() {
-	s, _ := New(
-		[]string{"Joe", "Jamy", "", "Jenny"},
-		Idx([]int{0, 10, 11, 12}))
-	fmt.Println(s)
+// func ExampleNew_named_later() {
+// 	s, _ := New(
+// 		[]string{"foo", "bar", "", "baz"},
+// 	)
+// 	s.Name = "foobar"
+// 	fmt.Println(s)
 
-	// Output:
-	//  0    Joe
-	// 10    Jamy
-	// 11    NaN
-	// 12    Jenny
-	// datatype: string
-}
+// 	// Output:
+// 	// 0    foo
+// 	// 1    bar
+// 	// 2    NaN
+// 	// 3    baz
+// 	// datatype: string
+// 	// name: foobar
+// }
 
-func ExampleSeries_string_multiIdx() {
-	s, _ := New([]string{"Joe", "Jamy", "", "Jenny"}, Idx([]int{0, 1, 2, 3}), Idx([]int{100, 101, 102, 103}))
-	fmt.Println(s)
+// func ExampleNewWithConfig_string_singleIdx() {
+// 	s, _ := NewWithConfig([]string{"foo", "bar", "", "baz"}, Config{Index: []int{100, 101, 102, 103}})
+// 	fmt.Println(s)
 
-	// Output:
-	// 0 100    Joe
-	// 1 101    Jamy
-	// 2 102    NaN
-	// 3 103    Jenny
-	// datatype: string
-}
+// 	// Output:
+// 	// 100    foo
+// 	// 101    bar
+// 	// 102    NaN
+// 	// 103    baz
+// 	// datatype: string
+// }
 
-func ExampleNewWithConfig_string() {
-	s, _ := NewWithConfig(
-		Config{Name: "student"}, []string{"foo", "bar", "", "baz"},
-		IndexLevel{Labels: []int{0, 0, 1, 1}, Name: "id"},
-		IndexLevel{Labels: []int{10000, 10100, 10200, 10300}, Name: "code"},
-	)
-	fmt.Println(s)
+// func ExampleNewWithConfig_string_multiIdx() {
+// 	s, _ := NewWithConfig(
+// 		[]string{"foo", "bar", "", "baz"},
+// 		Config{MultiIndex: []interface{}{[]int{0, 1, 2, 3}, []int{100, 101, 102, 103}}})
+// 	fmt.Println(s)
 
-	// Output:
-	// id  code
-	//  0 10000    foo
-	//    10100    bar
-	//  1 10200    NaN
-	//    10300    baz
-	// datatype: string
-	// name: student
-}
+// 	// Output:
+// 	// 0 100    foo
+// 	// 1 101    bar
+// 	// 2 102    NaN
+// 	// 3 103    baz
+// 	// datatype: string
+// }
 
-func ExampleNewWithConfig_nonsequential_repeating() {
-	s, _ := NewWithConfig(
-		Config{Name: "foobar"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
-		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
-		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
-	)
-	fmt.Println(s)
+// func ExampleNewWithConfig_string_multiIdx_named_sequential_repeating() {
+// 	s, _ := NewWithConfig(
+// 		[]string{"foo", "bar", "", "baz"},
+// 		Config{
+// 			Name:            "foobar",
+// 			MultiIndex:      []interface{}{[]int{0, 0, 1, 1}, []int{10000, 10100, 10200, 10300}},
+// 			MultiIndexNames: []string{"id", "code"},
+// 		},
+// 	)
+// 	fmt.Println(s)
 
-	// Output:
-	// id  code
-	//  0 10000    foo
-	//    10100    bar
-	//  1 10200    NaN
-	//    10300    baz
-	//  0 10400    qux
-	//    10500    quux
-	// datatype: string
-	// name: foobar
-}
+// 	// Output:
+// 	// id  code
+// 	//  0 10000    foo
+// 	//    10100    bar
+// 	//  1 10200    NaN
+// 	//    10300    baz
+// 	// datatype: string
+// 	// name: foobar
+// }
 
-func ExampleNew_named_later() {
-	s, _ := New(
-		[]string{"foo", "bar", "", "baz", "qux", "quux"},
-		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
-		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
-	)
-	s.Name = "foobar"
-	fmt.Println(s)
+// func ExampleNewWithConfig_nonsequential_repeating() {
+// 	s, _ := NewWithConfig(
+// 		[]string{"foo", "bar", "", "baz", "qux", "quux"},
+// 		Config{
+// 			Name:            "foobar",
+// 			MultiIndex:      []interface{}{[]int{0, 0, 1, 1, 0, 0}, []int{10000, 10100, 10200, 10300, 10400, 10500}},
+// 			MultiIndexNames: []string{"id", "code"},
+// 		},
+// 	)
+// 	fmt.Println(s)
 
-	// Output:
-	// id  code
-	//  0 10000    foo
-	//    10100    bar
-	//  1 10200    NaN
-	//    10300    baz
-	//  0 10400    qux
-	//    10500    quux
-	// datatype: string
-	// name: foobar
-}
+// 	// Output:
+// 	// id  code
+// 	//  0 10000    foo
+// 	//    10100    bar
+// 	//  1 10200    NaN
+// 	//    10300    baz
+// 	//  0 10400    qux
+// 	//    10500    quux
+// 	// datatype: string
+// 	// name: foobar
+// }
 
-func ExampleNewWithConfig_partially_named_indexes() {
-	s, _ := NewWithConfig(
-		Config{Name: "foobar"}, []string{"foo", "bar", "", "baz", "qux", "quux"},
-		IndexLevel{Labels: []int{0, 0, 1, 1, 0, 0}, Name: "id"},
-		IndexLevel{Labels: []int{10000, 10100, 10200, 10300, 10400, 10500}, Name: "code"},
-	)
-	fmt.Println(s)
+// func ExampleNewWithConfig_partially_named_indexes() {
+// 	s, _ := NewWithConfig(
+// 		[]string{"foo", "bar"},
+// 		Config{
+// 			MultiIndex: []interface{}{
+// 				[]int{0, 1},
+// 				[]int{10000, 10100}},
+// 			MultiIndexNames: []string{"", "code"},
+// 			Name:            "foobar"},
+// 	)
+// 	fmt.Println(s)
 
-	// Output:
-	//    code
-	// 0 10000    Joe
-	//   10100    Jamy
-	// 1 10200    NaN
-	//   10300    Jenny
-	// datatype: string
-	// name: foobar
-}
+// 	// Output:
+// 	//    code
+// 	// 0 10000    foo
+// 	// 1 10100    bar
+// 	// datatype: string
+// 	// name: foobar
+// }
 
-func ExampleSeries_datetime() {
-	s, _ := New([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)})
-	fmt.Println(s)
+// func ExampleNew_datetime() {
+// 	s, _ := New([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)})
+// 	fmt.Println(s)
 
-	// Output:
-	// 0    1/1/2019T00:00:00
-	// datatype: dateTime
-}
+// 	// Output:
+// 	// 0    1/1/2019T00:00:00
+// 	// datatype: dateTime
+// }
 
-func ExampleElem() {
-	s, _ := New("foo")
-	fmt.Println(s.Element(0))
+// func ExampleElem_valid() {
+// 	s, _ := New("foo")
+// 	fmt.Println(s.Element(0))
 
-	// Output:
-	//      Value: foo
-	//       Null: false
-	//     Labels: [0]
-	// LabelKinds: [int64]
-}
+// 	// Output:
+// 	//      Value: foo
+// 	//       Null: false
+// 	//     Labels: [0]
+// 	// LabelTypes: [int64]
+// }
+
+// func ExampleElem_null() {
+// 	s, _ := New("")
+// 	fmt.Println(s.Element(0))
+
+// 	// Output:
+// 	//      Value: NaN
+// 	//       Null: true
+// 	//     Labels: [0]
+// 	// LabelTypes: [int64]
+// }

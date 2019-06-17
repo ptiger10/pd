@@ -55,11 +55,11 @@ func ensureDateTime(vals interface{}) []time.Time {
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
 func (s *Series) ensureAlignment() error {
-	if !s.index.Aligned() {
-		return fmt.Errorf("index out of alignment: not all levels have same number of values")
+	if err := s.index.Aligned(); err != nil {
+		return fmt.Errorf("series out of alignment: %v", err)
 	}
 	if labels := s.index.Levels[0].Len(); s.Len() != labels {
-		return fmt.Errorf("series out of alignment: %v values and %v index labels", s.Len(), labels)
+		return fmt.Errorf("series out of alignment: series must have same number of values as index labels (%d != %d)", s.Len(), labels)
 	}
 	return nil
 }

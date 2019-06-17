@@ -12,8 +12,8 @@ func Test_New_Empty(t *testing.T) {
 	}
 }
 
-func Test_Default(t *testing.T) {
-	got := Default(3)
+func Test_NewDefault(t *testing.T) {
+	got := NewDefault(3)
 	lvl, err := NewLevel([]int64{0, 1, 2}, "")
 	if err != nil {
 		t.Error(err)
