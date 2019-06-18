@@ -174,7 +174,7 @@ func (sel Selection) series() (*Series, error) {
 		sel.levelPositions = values.MakeIntRange(0, sel.s.index.Len())
 	}
 	s, _ := sel.s.in(sel.rowPositions)
-	s.index, _ = s.index.In(sel.levelPositions)
+	s.index, _ = s.index.LevelsIn(sel.levelPositions)
 	return s, nil
 }
 

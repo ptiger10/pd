@@ -172,3 +172,32 @@ func NewColumnsFromConfig(n int, config Config) (Columns, error) {
 	}
 	return columns, nil
 }
+
+// In returns a new Columns with all the column levels located at the specified integer positions
+func (cols Columns) In(colPositions []int) (Columns, error) {
+	cols = cols.Copy()
+	var lvls []ColLevel
+	for _, lvl := range cols.Levels {
+		lvl, err := lvl.In(colPositions)
+		if err != nil {
+			return Columns{}, fmt.Errorf("internal columns.In(): %v", err)
+		}
+		lvls = append(lvls, lvl)
+	}
+	cols.Levels = lvls
+	cols.updateNameMap()
+	return cols, nil
+}
+
+// In returns the label values in a column level at specified integer positions.
+func (lvl ColLevel) In(positions []int) (ColLevel, error) {
+	var labels []interface{}
+	for _, pos := range positions {
+		if pos > lvl.Len() {
+			return ColLevel{}, fmt.Errorf("internal colLevel.In(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)
+		}
+		labels = append(labels, lvl.Labels[pos])
+	}
+	lvl.Refresh()
+	return lvl, nil
+}

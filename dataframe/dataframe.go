@@ -68,30 +68,58 @@ func (df *DataFrame) Copy() *DataFrame {
 	return dfCopy
 }
 
-// // in copies a Series then subsets it to include only index items and values at the integer positions supplied
-// func (df *DataFrame) in(rowPositions []int, colPositions []int) (*DataFrame, error) {
-// 	if err := df.ensureAlignment(); err != nil {
-// 		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
-// 	}
-// 	if rowPositions == nil && colPositions == nil {
-// 		return nil, nil
-// 	}
+func (df *DataFrame) rowsIn(rowPositions []int) (*DataFrame, error) {
+	if err := df.ensureAlignment(); err != nil {
+		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
+	}
+	var seriesSlice []*series.Series
+	for i := 0; i < df.Cols(); i++ {
+		s, err := df.s[i].SelectRows(rowPositions).Series()
+		if err != nil {
+			return nil, fmt.Errorf("dataframe.rowsIn() selecting rows within series (position %v): %v", i, err)
+		}
+		seriesSlice = append(seriesSlice, s)
+	}
+	idx, err := df.index.In(rowPositions)
+	if err != nil {
+		return nil, fmt.Errorf("dataframe.rowsIn() selecting index labels: %v", err)
+	}
+	df = newFromComponents(seriesSlice, idx, df.cols, df.name)
+	return df, nil
+}
 
-// 	df = df.Copy()
-// 	values, err := df.values.In(positions)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Series.in() values: %v", err)
-// 	}
-// 	df.values = values
-// 	for i, level := range df.index.Levels {
-// 		df.index.Levels[i].Labels, err = level.Labels.In(positions)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("Series.in() index: %v", err)
-// 		}
-// 	}
-// 	df.index.Refresh()
-// 	return df, nil
-// }
+func (df *DataFrame) colsIn(colPositions []int) (*DataFrame, error) {
+	if err := df.ensureAlignment(); err != nil {
+		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
+	}
+	var seriesSlice []*series.Series
+	for _, pos := range colPositions {
+		if pos > df.Cols() {
+			return nil, fmt.Errorf("dataframe.colsIn(): invalid col position %d (max: %d)", pos, df.Cols()-1)
+		}
+		seriesSlice = append(seriesSlice, df.s[pos])
+	}
+	columnsSlice, err := df.cols.In(colPositions)
+	if err != nil {
+		return nil, fmt.Errorf("dataframe.colsIn(): %v", err)
+	}
+
+	df = newFromComponents(seriesSlice, df.index, columnsSlice, df.name)
+	return df, nil
+}
+
+func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, name string) *DataFrame {
+	if s == nil {
+		df, _ := New(nil)
+		return df
+	}
+	return &DataFrame{
+		s:     s,
+		index: idx,
+		cols:  cols,
+		name:  name,
+	}
+}
 
 // func (df *DataFrame) Col(label string) *Series {
 
@@ -105,7 +133,7 @@ func (df *DataFrame) DataTypes() *series.Series {
 		vals = append(vals, s.DataType())
 		idx = append(idx, s.Name())
 	}
-	s, err := newSingleIndexFromSeries(vals, idx, "datatypes")
+	s, err := newSingleIndexSeries(vals, idx, "datatypes")
 	if err != nil {
 		log.Printf("DataTypes(): %v", err)
 		return nil
@@ -113,7 +141,8 @@ func (df *DataFrame) DataTypes() *series.Series {
 	return s
 }
 
-func newSingleIndexFromSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
+// newSingleIndexSeries constructs a Series with a single-level index from values and index slices. Used to convert DataFrames to Series.
+func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
 	ret, err := series.New(nil)
 	if err != nil {
 		return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)

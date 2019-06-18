@@ -22,6 +22,30 @@ func TestDataTypes(t *testing.T) {
 	}
 }
 
+func TestRowsIn(t *testing.T) {
+	var err error
+	df, _ := New(
+		[]interface{}{[]string{"foo", "bar", "baz"}, []string{"qux", "quux", "corge"}},
+		Config{Cols: []interface{}{"foofoo", "barbar"}})
+	df, err = df.rowsIn([]int{0, 1})
+	if err != nil {
+		t.Errorf("rowsIn(): %v", err)
+	}
+	fmt.Println(df)
+}
+
+func TestColsIn(t *testing.T) {
+	var err error
+	df, _ := New(
+		[]interface{}{[]string{"foo", "bar", "baz"}, []string{"qux", "quux", "corge"}},
+		Config{Cols: []interface{}{"foofoo", "barbar"}})
+	df, err = df.colsIn([]int{1})
+	if err != nil {
+		t.Errorf("colsIn(): %v", err)
+	}
+	fmt.Println(df)
+}
+
 func TestDataType(t *testing.T) {
 	df, _ := New([]interface{}{"foo"})
 	got := df.dataType()

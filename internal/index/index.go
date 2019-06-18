@@ -33,11 +33,25 @@ func NewDefault(length int) Index {
 	return New(level)
 }
 
-// In returns a copy of the index with only those levels located at specified integer positions
-func (idx Index) In(positions []int) (Index, error) {
+// In returns a new index with all the labels located at the specified integer positions
+func (idx Index) In(rowPositions []int) (Index, error) {
+	var err error
+	idx = idx.Copy()
+	for i, level := range idx.Levels {
+		idx.Levels[i].Labels, err = level.Labels.In(rowPositions)
+		if err != nil {
+			return Index{}, fmt.Errorf("internal index.In(): %v", err)
+		}
+	}
+	idx.Refresh()
+	return idx, nil
+}
+
+// LevelsIn returns a copy of the index with only those levels located at specified integer positions
+func (idx Index) LevelsIn(levelPositions []int) (Index, error) {
 	idx = idx.Copy()
 	var lvls []Level
-	for _, pos := range positions {
+	for _, pos := range levelPositions {
 		if pos >= len(idx.Levels) {
 			return Index{}, fmt.Errorf("error indexing index levels: level %d is out of range", pos)
 		}

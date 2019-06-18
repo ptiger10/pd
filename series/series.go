@@ -86,16 +86,14 @@ func (s *Series) in(positions []int) (*Series, error) {
 	s = s.Copy()
 	values, err := s.values.In(positions)
 	if err != nil {
-		return nil, fmt.Errorf("series internal alignment error values: %v", err)
+		return nil, fmt.Errorf("series.In() selecting rows: %v", err)
 	}
 	s.values = values
-	for i, level := range s.index.Levels {
-		s.index.Levels[i].Labels, err = level.Labels.In(positions)
-		if err != nil {
-			return nil, fmt.Errorf("series internal alignment error index: %v", err)
-		}
+	idx, err := s.index.In(positions)
+	if err != nil {
+		return nil, fmt.Errorf("series.In() selecting index labels: %v", err)
 	}
-	s.index.Refresh()
+	s.index = idx
 	return s, nil
 }
 

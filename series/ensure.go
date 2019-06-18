@@ -75,7 +75,7 @@ func (s *Series) ensureRowPositions(positions []int) error {
 
 // returns an error if any level position does not exist
 func (s *Series) ensureLevelPositions(positions []int) error {
-	_, err := s.index.In(positions)
+	_, err := s.index.LevelsIn(positions)
 	if err != nil {
 		return fmt.Errorf("ensureLevelPositions(): %v", err)
 	}
