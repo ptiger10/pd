@@ -34,3 +34,17 @@ func ExampleNew_float64_multiCol() {
 	// datatype: float64
 	//
 }
+
+func ExampleNew_mixed() {
+	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//      0   1
+	// 0    1 foo
+	// 1    3 bar
+	// 2    5 baz
+	// datatype: mixed
+}

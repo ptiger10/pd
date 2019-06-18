@@ -7,7 +7,7 @@ import (
 
 func ExampleSeries_Describe_scalarString() {
 	s, _ := New("foo")
-	s.Name = "bar"
+	s.name = "bar"
 	s.Describe()
 	// Output:
 	//    len    1

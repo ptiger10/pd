@@ -1,18 +1,22 @@
 package dataframe
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ptiger10/pd/series"
 )
 
-func TestDT(t *testing.T) {
+func TestDataTypes(t *testing.T) {
 	df, err := New([]interface{}{"foo"})
 	if err != nil {
 		t.Errorf("df.DT(): %v", err)
 	}
-	got := df.DT()
-	want := series.MustNew("string", series.Config{Index: "0", Name: "datatypes"})
+	got := df.DataTypes()
+	want, err := series.New("string", series.Config{Index: "0", Name: "datatypes"})
+	if err != nil {
+		fmt.Println(err)
+	}
 	if !series.Equal(got, want) {
 		t.Errorf("df.DT() returned %v, want %v", got, want)
 	}

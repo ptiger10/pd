@@ -34,9 +34,8 @@ func NewDefaultColumns(n int) Columns {
 func (cols Columns) Len() int {
 	if len(cols.Levels) == 0 {
 		return 0
-	} else {
-		return cols.Levels[0].Len()
 	}
+	return cols.Levels[0].Len()
 }
 
 // UpdateNameMap updates the holistic index map of {index level names: [index level positions]}
@@ -90,7 +89,7 @@ func (lvl ColLevel) Len() int {
 }
 
 // Refresh updates all the label mappings value within a column level.
-func (lvl ColLevel) Refresh() {
+func (lvl *ColLevel) Refresh() {
 	if lvl.Labels == nil {
 		return
 	}
@@ -133,4 +132,43 @@ func (cols Columns) Copy() Columns {
 		colsCopy.Levels = append(colsCopy.Levels, cols.Levels[i].Copy())
 	}
 	return colsCopy
+}
+
+// NewColumnsFromConfig returns new Columns with length n using a config struct.
+func NewColumnsFromConfig(n int, config Config) (Columns, error) {
+	var columns Columns
+
+	// both nil: return default index
+	if config.Cols == nil && config.MultiCols == nil {
+		return NewDefaultColumns(n), nil
+	}
+	// both not nil: return error
+	if config.Cols != nil && config.MultiCols != nil {
+		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCols is ambiguous; supply one or the other")
+	}
+	// single-level Columns
+	if config.Cols != nil {
+		newLevel := NewColLevel(config.Cols, config.ColsName)
+		columns = NewColumns(newLevel)
+	}
+
+	// multi-level Columns
+	if config.MultiCols != nil {
+		if config.MultiColsNames != nil && len(config.MultiColsNames) != len(config.MultiCols) {
+			return Columns{}, fmt.Errorf(
+				"columnFactory(): if MultiColsNames is not nil, it must must have same length as MultiCols: %d != %d",
+				len(config.MultiColsNames), len(config.MultiCols))
+		}
+		var newLevels []ColLevel
+		for i := 0; i < len(config.MultiCols); i++ {
+			var levelName string
+			if i < len(config.MultiColsNames) {
+				levelName = config.MultiColsNames[i]
+			}
+			newLevel := NewColLevel(config.MultiCols[i], levelName)
+			newLevels = append(newLevels, newLevel)
+		}
+		columns = NewColumns(newLevels...)
+	}
+	return columns, nil
 }

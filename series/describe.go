@@ -61,7 +61,7 @@ func (s *Series) Describe() {
 	}
 
 	// duck errors because constructor called internally
-	s = MustNew(values, Config{Name: s.Name, Index: idx})
+	s = MustNew(values, Config{Name: s.name, Index: idx})
 	s.datatype = dt
 	fmt.Println(s)
 	return

@@ -1,24 +1,37 @@
 package dataframe
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/series"
 )
 
 // A DataFrame is a 2D collection of one or more Series with a shared index and associated columns.
 type DataFrame struct {
-	Name  string
+	name  string
 	s     []*series.Series
 	cols  index.Columns
 	index index.Index
 }
 
 // Len returns the number of values in each Series of the DataFrame.
-func (df *DataFrame) Len() int {
+func (df DataFrame) Len() int {
 	if df.s == nil {
 		return 0
 	}
 	return df.s[0].Len()
+}
+
+// Name returns the DataFrame's name.
+func (df DataFrame) Name() string {
+	return df.name
+}
+
+// Rename the DataFrame.
+func (df *DataFrame) Rename(name string) {
+	df.name = name
 }
 
 // Cols returns the number of columsn in the DataFrame.
@@ -46,7 +59,7 @@ func (df *DataFrame) Copy() *DataFrame {
 		s:     sCopy,
 		index: idxCopy,
 		cols:  colsCopy,
-		Name:  df.Name,
+		name:  df.name,
 	}
 	// dfCopy.Apply = Apply{s: copyS}
 	// dfCopy.Filter = Filter{s: copyS}
@@ -84,19 +97,43 @@ func (df *DataFrame) Copy() *DataFrame {
 
 // }
 
-// DT returns the DataTypes of the Series in the DataFrame.
-func (df *DataFrame) DT() *series.Series {
-	ret, _ := series.New(nil)
+// DataTypes returns the DataTypes of the Series in the DataFrame.
+func (df *DataFrame) DataTypes() *series.Series {
+	var vals []interface{}
+	var idx []interface{}
 	for _, s := range df.s {
-		dt := series.MustNew(s.DataType(), series.Config{Index: s.Name, Name: "datatypes"})
-		ret.InPlace.Join(dt)
+		vals = append(vals, s.DataType())
+		idx = append(idx, s.Name())
 	}
-	return ret
+	s, err := newSingleIndexFromSeries(vals, idx, "datatypes")
+	if err != nil {
+		log.Printf("DataTypes(): %v", err)
+		return nil
+	}
+	return s
+}
+
+func newSingleIndexFromSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
+	ret, err := series.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+	}
+	if len(values) != len(idx) {
+		return nil, fmt.Errorf("internal error: newFromSeries(): values must have same length as index: %d != %d", len(values), len(idx))
+	}
+	for i := 0; i < len(values); i++ {
+		n, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
+		if err != nil {
+			return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+		}
+		ret.InPlace.Join(n)
+	}
+	return ret, nil
 }
 
 // dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
 func (df *DataFrame) dataType() string {
-	uniqueTypes := df.DT().UniqueVals()
+	uniqueTypes := df.DataTypes().UniqueVals()
 	if len(uniqueTypes) == 1 {
 		return df.s[0].DataType()
 	}

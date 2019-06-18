@@ -16,7 +16,7 @@ type Series struct {
 	index    index.Index
 	values   values.Values
 	datatype options.DataType
-	Name     string
+	name     string
 	Apply    Apply
 	Filter   Filter
 	Index    Index
@@ -65,7 +65,7 @@ func (s *Series) Copy() *Series {
 		values:   valsCopy,
 		index:    idx,
 		datatype: s.datatype,
-		Name:     s.Name,
+		name:     s.name,
 	}
 	copyS.Apply = Apply{s: copyS}
 	copyS.Filter = Filter{s: copyS}
@@ -112,7 +112,7 @@ func (s *Series) mustIn(positions []int) *Series {
 func Equal(s1, s2 *Series) bool {
 	sameIndex := reflect.DeepEqual(s1.index, s2.index)
 	sameValues := reflect.DeepEqual(s1.values, s2.values)
-	sameName := s1.Name == s2.Name
+	sameName := s1.name == s2.name
 	sameKind := s1.datatype == s2.datatype
 	if sameIndex && sameValues && sameName && sameKind {
 		return true
@@ -162,7 +162,7 @@ func (s *Series) all() []interface{} {
 }
 
 func (s *Series) replace(s2 *Series) {
-	s.Name = s2.Name
+	s.name = s2.name
 	s.datatype = s2.datatype
 	s.values = s2.values
 	s.index = s2.index
@@ -177,11 +177,21 @@ func (s *Series) MaxWidth() int {
 			max = length
 		}
 	}
-	if len(s.Name) > max {
-		max = len(s.Name)
+	if len(s.name) > max {
+		max = len(s.name)
 	}
 	if max > options.GetDisplayMaxWidth() {
 		max = options.GetDisplayMaxWidth()
 	}
 	return max
+}
+
+// Name returns the Series' name.
+func (s Series) Name() string {
+	return s.name
+}
+
+// Rename the Series.
+func (s *Series) Rename(name string) {
+	s.name = name
 }

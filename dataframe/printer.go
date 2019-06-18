@@ -34,7 +34,7 @@ func (df *DataFrame) print() string {
 	header += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer())
 	// handle columns
 	for k := 0; k < df.Cols(); k++ {
-		colStr := df.s[k].Name
+		colStr := df.s[k].Name()
 		padding := df.s[k].MaxWidth()
 		if padding == options.GetDisplayMaxWidth() {
 			colStr = colStr[:len(colStr)-4] + "..."
@@ -124,8 +124,8 @@ func (df *DataFrame) print() string {
 	printer += fmt.Sprintf("datatype: %s\n", df.dataType())
 	// [END rows]
 
-	if df.Name != "" {
-		printer += fmt.Sprintf("name: %s\n", df.Name)
+	if df.name != "" {
+		printer += fmt.Sprintf("name: %s\n", df.name)
 	}
 	return printer
 }

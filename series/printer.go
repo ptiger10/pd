@@ -98,8 +98,8 @@ func (s *Series) print() string {
 	}
 	// [END rows]
 
-	if s.Name != "" {
-		printer += fmt.Sprintf("name: %s\n", s.Name)
+	if s.name != "" {
+		printer += fmt.Sprintf("name: %s\n", s.name)
 	}
 	return printer
 }

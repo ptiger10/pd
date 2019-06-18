@@ -20,21 +20,21 @@ type Config struct {
 	MultiIndexNames []string
 }
 
-// New creates a new Series with the supplied values and default index.
+// New creates a new Series with the supplied values and an optional config.
 func New(data interface{}, config ...Config) (*Series, error) {
 	var idx index.Index
-	sConfig := Config{}         // series config
-	idxConfig := index.Config{} // index config
+	configuration := index.Config{} // Series config
 
 	// Handling config
 	if config != nil {
 		if len(config) > 1 {
 			return nil, fmt.Errorf("series.New(): can supply at most one Config (%d > 1)", len(config))
 		}
-		sConfig = config[0]
-		idxConfig = index.Config{
-			Index: sConfig.Index, IndexName: sConfig.IndexName,
-			MultiIndex: sConfig.MultiIndex, MultiIndexNames: sConfig.MultiIndexNames,
+		tmp := config[0]
+		configuration = index.Config{
+			Name: tmp.Name, DataType: tmp.DataType,
+			Index: tmp.Index, IndexName: tmp.IndexName,
+			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 		}
 	}
 
@@ -50,7 +50,7 @@ func New(data interface{}, config ...Config) (*Series, error) {
 		idx = index.New()
 		// not empty data: use config
 	} else {
-		idx, err = index.NewFromConfig(lenValues, idxConfig)
+		idx, err = index.NewFromConfig(lenValues, configuration)
 		if err != nil {
 			return nil, fmt.Errorf("series.New(): %v", err)
 		}
@@ -60,16 +60,16 @@ func New(data interface{}, config ...Config) (*Series, error) {
 		values:   factory.Values,
 		index:    idx,
 		datatype: factory.DataType,
-		Name:     sConfig.Name,
+		name:     configuration.Name,
 	}
 
 	// Optional datatype conversion
-	if sConfig.DataType != options.None {
-		s.values, err = values.Convert(s.values, sConfig.DataType)
+	if configuration.DataType != options.None {
+		s.values, err = values.Convert(s.values, configuration.DataType)
 		if err != nil {
 			return nil, fmt.Errorf("series.New(): %v", err)
 		}
-		s.datatype = sConfig.DataType
+		s.datatype = configuration.DataType
 	}
 
 	s.Filter = Filter{s: s}
@@ -90,7 +90,7 @@ func MustNew(data interface{}, config ...Config) *Series {
 	s, err := New(data, config...)
 	if err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("MustNew(): %v", err)
+			log.Printf("dataframe.MustNew(): %v", err)
 		}
 	}
 	return s

@@ -193,39 +193,10 @@ func NewFromConfig(n int, config Config) (Index, error) {
 	return index, nil
 }
 
-// NewColumnFromConfig returns new Columns with length n using a config struct.
-func NewColumnFromConfig(n int, config Config) (Columns, error) {
-	var columns Columns
-	// Handling columns
-	if config.Cols != nil && config.MultiCols != nil {
-		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
-	}
-	if config.Cols != nil {
-		newLevel := NewColLevel(config.Cols, config.ColsName)
-		columns = NewColumns(newLevel)
-	}
-	if config.MultiIndex != nil {
-		if config.MultiColsNames != nil && len(config.MultiColsNames) != len(config.MultiCols) {
-			return Columns{}, fmt.Errorf(
-				"columnFactory(): if MultiColsNames is not nil, it must must have same length as MultiCols: %d != %d",
-				len(config.MultiColsNames), len(config.MultiCols))
-		}
-		var newLevels []ColLevel
-		for i := 0; i < len(config.MultiCols); i++ {
-			var levelName string
-			if i < len(config.MultiColsNames) {
-				levelName = config.MultiColsNames[i]
-			}
-			newLevel := NewColLevel(config.MultiCols[i], levelName)
-			newLevels = append(newLevels, newLevel)
-		}
-		columns = NewColumns(newLevels...)
-	}
-	return columns, nil
-}
-
 // A Config customizes the construction of an Index or Columns object.
 type Config struct {
+	Name            string
+	DataType        options.DataType
 	Index           interface{}
 	IndexName       string
 	MultiIndex      []interface{}

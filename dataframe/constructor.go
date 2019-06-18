@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
@@ -14,8 +15,8 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	var s []*series.Series
 	var idx index.Index
 	var cols index.Columns
-	dfConfig := Config{}
-	idxColConfig := index.Config{}
+	configuration := index.Config{}
+	tmp := Config{}
 	var err error
 
 	if data == nil {
@@ -26,12 +27,12 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		if len(config) > 1 {
 			return nil, fmt.Errorf("dataframe.New(): can supply at most one Config (%d > 1)", len(config))
 		}
-		dfConfig = config[0]
-		idxColConfig = index.Config{
-			Index: dfConfig.Index, IndexName: dfConfig.IndexName,
-			MultiIndex: dfConfig.MultiIndex, MultiIndexNames: dfConfig.MultiIndexNames,
-			Cols: dfConfig.Cols, ColsName: dfConfig.ColsName,
-			MultiCols: dfConfig.MultiCols, MultiColsNames: dfConfig.MultiColsNames,
+		tmp = config[0]
+		configuration = index.Config{
+			Index: tmp.Index, IndexName: tmp.IndexName,
+			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
+			Cols: tmp.Cols, ColsName: tmp.ColsName,
+			MultiCols: tmp.MultiCols, MultiColsNames: tmp.MultiColsNames,
 		}
 	}
 
@@ -43,23 +44,27 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	valuesLen := vals.Values.Len()
 
 	// Handling index
-	idx, err = index.NewFromConfig(valuesLen, idxColConfig)
+	idx, err = index.NewFromConfig(valuesLen, configuration)
 	if err != nil {
 		return nil, fmt.Errorf("dataframe.New(): %v", err)
 	}
 	//Handling columns
-	cols, err = index.NewColumnFromConfig(valuesLen, idxColConfig)
+	cols, err = index.NewColumnsFromConfig(len(data), configuration)
 	if err != nil {
 		return nil, fmt.Errorf("dataframe.New(): %v", err)
 	}
 
 	// Handling Series
 	for i := 0; i < len(data); i++ {
-		sName := fmt.Sprint(cols.Levels[0].Labels[i])
+		var sNameSlice []string
+		for _, col := range cols.Levels {
+			sNameSlice = append(sNameSlice, fmt.Sprint(col.Labels[i]))
+		}
+		sName := strings.Join(sNameSlice, " // ")
 		sConfig := series.Config{
-			Name: sName, DataType: dfConfig.DataType,
-			Index: dfConfig.Index, IndexName: dfConfig.IndexName,
-			MultiIndex: dfConfig.MultiIndex, MultiIndexNames: dfConfig.MultiIndexNames,
+			Name: sName, DataType: tmp.DataType,
+			Index: tmp.Index, IndexName: tmp.IndexName,
+			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 		}
 		n, err := series.New(data[i], sConfig)
 		if err != nil {

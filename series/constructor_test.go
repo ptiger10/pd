@@ -305,6 +305,18 @@ func TestNew_conversion(t *testing.T) {
 	}
 }
 
+func TestMustNew_success(t *testing.T) {
+	got := MustNew(1.0)
+	v, err := values.InterfaceFactory(1.0)
+	if err != nil {
+		t.Error(err)
+	}
+	idx := index.NewDefault(1)
+	want := &Series{values: v.Values, index: idx, datatype: options.Float64}
+	if !Equal(got, want) {
+		t.Errorf("MustNew() = %v, want %v", got, want)
+	}
+}
 func TestMustNew_fail(t *testing.T) {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
