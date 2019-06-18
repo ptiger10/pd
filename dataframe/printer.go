@@ -33,14 +33,14 @@ func (df *DataFrame) print() string {
 	// add buffer at beginning
 	header += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer())
 	// handle columns
-	for k := 0; k < df.Cols(); k++ {
+	for k := 0; k < df.NumCols(); k++ {
 		colStr := df.s[k].Name()
 		padding := df.s[k].MaxWidth()
 		if padding == options.GetDisplayMaxWidth() {
 			colStr = colStr[:len(colStr)-4] + "..."
 		}
 		header += fmt.Sprintf("%*v", padding, colStr)
-		if k != df.Cols()-1 {
+		if k != df.NumCols()-1 {
 			// add buffer to all columns except the last
 			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 		}
@@ -92,7 +92,7 @@ func (df *DataFrame) print() string {
 
 		// [START value printer]
 		var valStrs string
-		for k := 0; k < df.Cols(); k++ {
+		for k := 0; k < df.NumCols(); k++ {
 			valElem := df.s[k].Element(i)
 			var valStr string
 			padding := df.s[k].MaxWidth()
@@ -104,7 +104,7 @@ func (df *DataFrame) print() string {
 			if padding == options.GetDisplayMaxWidth() {
 				valStr = valStr[:len(valStr)-4] + "..."
 			}
-			if k != df.Cols()-1 {
+			if k != df.NumCols()-1 {
 				// add buffer to all columns except the last
 				valStr += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 			}

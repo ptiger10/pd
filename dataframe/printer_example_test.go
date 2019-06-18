@@ -48,3 +48,17 @@ func ExampleNew_mixed() {
 	// 2    5 baz
 	// datatype: mixed
 }
+
+func ExampleDataFrame_Col() {
+	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}}, Config{Cols: []interface{}{"qux", "corge"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df.Col("corge"))
+	// Output:
+	// 0    foo
+	// 1    bar
+	// 2    baz
+	// datatype: string
+	// name: corge
+}

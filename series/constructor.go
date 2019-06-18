@@ -85,13 +85,19 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	return s, err
 }
 
-// MustNew returns a new Series or logs an error and returns a blank Series.
+// MustNew returns a new Series or logs an error and returns an empty Series.
 func MustNew(data interface{}, config ...Config) *Series {
 	s, err := New(data, config...)
 	if err != nil {
 		if options.GetLogWarnings() {
 			log.Printf("dataframe.MustNew(): %v", err)
 		}
+		return newEmptySeries()
 	}
+	return s
+}
+
+func newEmptySeries() *Series {
+	s, _ := New(nil)
 	return s
 }

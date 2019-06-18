@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -85,6 +86,55 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	return df, err
 }
 
+func newEmptyDataFrame() *DataFrame {
+	df, _ := New(nil)
+	return df
+}
+
+// MustNew constructs a new DataFrame or logs an error and returns an empty DataFrame.
+func MustNew(data []interface{}, config ...Config) *DataFrame {
+	s, err := New(data, config...)
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("dataframe.MustNew(): %v", err)
+		}
+		return newEmptyDataFrame()
+	}
+	return s
+}
+
+func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, name string) *DataFrame {
+	if s == nil {
+		df, _ := New(nil)
+		return df
+	}
+	return &DataFrame{
+		s:     s,
+		index: idx,
+		cols:  cols,
+		name:  name,
+	}
+}
+
+// newSingleIndexSeries constructs a Series with a single-level index from values and index slices. Used to convert DataFrames to Series.
+func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
+	ret, err := series.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+	}
+	if len(values) != len(idx) {
+		return nil, fmt.Errorf("internal error: newFromSeries(): values must have same length as index: %d != %d", len(values), len(idx))
+	}
+	for i := 0; i < len(values); i++ {
+		n, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
+		if err != nil {
+			return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+		}
+		ret.InPlace.Join(n)
+	}
+	return ret, nil
+}
+
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
 func (df *DataFrame) ensureAlignment() error {
@@ -95,9 +145,9 @@ func (df *DataFrame) ensureAlignment() error {
 		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
 	}
 
-	if df.cols.Len() != df.Cols() {
+	if df.cols.Len() != df.NumCols() {
 		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
-			df.cols.Len(), df.Cols())
+			df.cols.Len(), df.NumCols())
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/series"
@@ -34,8 +35,8 @@ func (df *DataFrame) Rename(name string) {
 	df.name = name
 }
 
-// Cols returns the number of columsn in the DataFrame.
-func (df *DataFrame) Cols() int {
+// NumCols returns the number of columns in the DataFrame.
+func (df *DataFrame) NumCols() int {
 	if df.s == nil {
 		return 0
 	}
@@ -73,7 +74,7 @@ func (df *DataFrame) rowsIn(rowPositions []int) (*DataFrame, error) {
 		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
 	}
 	var seriesSlice []*series.Series
-	for i := 0; i < df.Cols(); i++ {
+	for i := 0; i < df.NumCols(); i++ {
 		s, err := df.s[i].SelectRows(rowPositions).Series()
 		if err != nil {
 			return nil, fmt.Errorf("dataframe.rowsIn() selecting rows within series (position %v): %v", i, err)
@@ -94,8 +95,8 @@ func (df *DataFrame) colsIn(colPositions []int) (*DataFrame, error) {
 	}
 	var seriesSlice []*series.Series
 	for _, pos := range colPositions {
-		if pos > df.Cols() {
-			return nil, fmt.Errorf("dataframe.colsIn(): invalid col position %d (max: %d)", pos, df.Cols()-1)
+		if pos > df.NumCols() {
+			return nil, fmt.Errorf("dataframe.colsIn(): invalid col position %d (max: %d)", pos, df.NumCols()-1)
 		}
 		seriesSlice = append(seriesSlice, df.s[pos])
 	}
@@ -108,22 +109,37 @@ func (df *DataFrame) colsIn(colPositions []int) (*DataFrame, error) {
 	return df, nil
 }
 
-func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, name string) *DataFrame {
-	if s == nil {
-		df, _ := New(nil)
-		return df
+// Equal returns true if two dataframes contain equivalent values.
+func Equal(df, df2 *DataFrame) bool {
+	if df.NumCols() != df2.NumCols() {
+		return false
 	}
-	return &DataFrame{
-		s:     s,
-		index: idx,
-		cols:  cols,
-		name:  name,
+	for i := 0; i < df.NumCols(); i++ {
+		if !series.Equal(df.s[i], df2.s[i]) {
+			return false
+		}
 	}
+	if !reflect.DeepEqual(df.index, df2.index) {
+		return false
+	}
+	if !reflect.DeepEqual(df.cols, df2.cols) {
+		return false
+	}
+	if df.name != df2.name {
+		return false
+	}
+	return true
 }
 
-// func (df *DataFrame) Col(label string) *Series {
-
-// }
+// Col returns the first Series with the specified column label at column level 0.
+func (df *DataFrame) Col(label string) *series.Series {
+	colPos, ok := df.cols.Levels[0].LabelMap[label]
+	if !ok {
+		log.Printf("df.Col(): invalid column label: %v not in labels", label)
+	}
+	df, _ = df.colsIn(colPos)
+	return df.s[0]
+}
 
 // DataTypes returns the DataTypes of the Series in the DataFrame.
 func (df *DataFrame) DataTypes() *series.Series {
@@ -139,25 +155,6 @@ func (df *DataFrame) DataTypes() *series.Series {
 		return nil
 	}
 	return s
-}
-
-// newSingleIndexSeries constructs a Series with a single-level index from values and index slices. Used to convert DataFrames to Series.
-func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
-	ret, err := series.New(nil)
-	if err != nil {
-		return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
-	}
-	if len(values) != len(idx) {
-		return nil, fmt.Errorf("internal error: newFromSeries(): values must have same length as index: %d != %d", len(values), len(idx))
-	}
-	for i := 0; i < len(values); i++ {
-		n, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
-		if err != nil {
-			return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
-		}
-		ret.InPlace.Join(n)
-	}
-	return ret, nil
 }
 
 // dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.

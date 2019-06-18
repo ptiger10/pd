@@ -35,15 +35,43 @@ func TestRowsIn(t *testing.T) {
 }
 
 func TestColsIn(t *testing.T) {
-	var err error
-	df, _ := New(
-		[]interface{}{[]string{"foo", "bar", "baz"}, []string{"qux", "quux", "corge"}},
-		Config{Cols: []interface{}{"foofoo", "barbar"}})
-	df, err = df.colsIn([]int{1})
+	df := MustNew(
+		[]interface{}{[]string{"foo"}, []string{"bar"}},
+		Config{Cols: []interface{}{"baz", "qux"}})
+	got, err := df.colsIn([]int{1})
 	if err != nil {
 		t.Errorf("colsIn(): %v", err)
 	}
-	fmt.Println(df)
+	want := MustNew([]interface{}{[]string{"bar"}}, Config{Cols: []interface{}{"qux"}})
+	if !Equal(got, want) {
+		t.Errorf("colsIn(): got %v, want %v", got, want)
+	}
+}
+
+func TestCol(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo"}, []string{"bar"}},
+		Config{Cols: []interface{}{"baz", "qux"}})
+	got := df.Col("qux")
+	want := series.MustNew([]string{"bar"}, series.Config{Name: "qux"})
+	if !series.Equal(got, want) {
+		t.Errorf("Col(): got %v, want %v", got, want)
+	}
+}
+
+func TestEqual(t *testing.T) {
+	df := MustNew(
+		[]interface{}{[]string{"foo"}, []string{"bar"}},
+		Config{Cols: []interface{}{"baz", "qux"}})
+	df2 := MustNew(
+		[]interface{}{[]string{"foo"}, []string{"bar"}},
+		Config{Cols: []interface{}{"baz", "qux"}})
+	if !Equal(df, df2) {
+		t.Errorf("Equal() did not return true for equivalent df")
+	}
+}
+
+func TestCols(t *testing.T) {
+
 }
 
 func TestDataType(t *testing.T) {
