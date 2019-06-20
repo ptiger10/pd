@@ -98,7 +98,7 @@ func (vals *float64Values) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *float64Values) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -261,7 +261,7 @@ func (vals *int64Values) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *int64Values) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -424,7 +424,7 @@ func (vals *stringValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *stringValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -587,7 +587,7 @@ func (vals *boolValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *boolValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -750,7 +750,7 @@ func (vals *dateTimeValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -913,7 +913,7 @@ func (vals *interfaceValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *interfaceValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}

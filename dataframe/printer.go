@@ -70,10 +70,11 @@ func (df *DataFrame) print() string {
 			if colLabel != "" {
 				prior = colLabel
 			}
-			colLevelRow = strings.TrimRight(colLevelRow, " ")
 			if k != df.NumCols()-1 {
 				// add buffer to all columns except the last
 				colLevelRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			} else {
+				colLevelRow = strings.TrimRight(colLevelRow, " ")
 			}
 		}
 		colLevelRows = append(colLevelRows, colLevelRow)

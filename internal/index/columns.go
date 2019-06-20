@@ -121,7 +121,7 @@ func (lvl *ColLevel) Refresh() {
 func (lvl *ColLevel) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
-		key := lvl.Labels[i]
+		key := fmt.Sprint(lvl.Labels[i])
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap

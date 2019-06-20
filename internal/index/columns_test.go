@@ -34,8 +34,8 @@ func TestNewColumnFromConfig(t *testing.T) {
 	wantLvl := ColLevel{
 		Name:     "baz",
 		Labels:   []interface{}{"foo", "bar"},
-		LabelMap: map[interface{}][]int{"foo": []int{0}, "bar": []int{1}}}
-	want := Columns{NameMap: map[interface{}][]int{"baz": []int{0}},
+		LabelMap: map[string][]int{"foo": []int{0}, "bar": []int{1}}}
+	want := Columns{NameMap: map[string][]int{"baz": []int{0}},
 		Levels: []ColLevel{wantLvl}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewColumnsFromConfig(): got %v, want %v", got.Levels[0], want.Levels[0])

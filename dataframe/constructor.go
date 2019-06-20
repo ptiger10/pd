@@ -62,7 +62,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		for _, col := range cols.Levels {
 			sNameSlice = append(sNameSlice, fmt.Sprint(col.Labels[i]))
 		}
-		sName := strings.Join(sNameSlice, " // ")
+		sName := strings.Join(sNameSlice, " | ")
 		sConfig := series.Config{
 			Name: sName, DataType: tmp.DataType,
 			Index: tmp.Index, IndexName: tmp.IndexName,

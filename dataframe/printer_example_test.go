@@ -241,6 +241,17 @@ func ExampleNew_float64_indexNamed_multicolsNamed() {
 	// name: foobar
 }
 
+func ExampleNew_float64_colsNamed_repeat_resume() {
+	df := MustNew([]interface{}{"qux", "waldo", "fred"},
+		Config{Name: "foobar", Cols: []interface{}{"quux", "quux", "foo"}})
+	fmt.Println(df)
+	// Output:
+	//      quux        foo
+	// 0     qux waldo fred
+	// datatype: string
+	// name: foobar
+}
+
 func ExampleDataFrame_Col() {
 	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}}, Config{Cols: []interface{}{"qux", "corge"}})
 	if err != nil {
@@ -253,4 +264,20 @@ func ExampleDataFrame_Col() {
 	// 2    baz
 	// datatype: string
 	// name: corge
+}
+
+// Selects the first column with this label from the first level
+func ExampleDataFrame_multiCol_col() {
+	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}},
+		Config{MultiCols: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df.Col("qux"))
+	// Output:
+	// 0    1
+	// 1    3
+	// 2    5
+	// datatype: float64
+	// name: qux | quux
 }

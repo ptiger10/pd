@@ -137,7 +137,7 @@ func Equal(df, df2 *DataFrame) bool {
 }
 
 // Col returns the first Series with the specified column label at column level 0.
-func (df *DataFrame) Col(label interface{}) *series.Series {
+func (df *DataFrame) Col(label string) *series.Series {
 	colPos, ok := df.cols.Levels[0].LabelMap[label]
 	if !ok {
 		log.Printf("df.Col(): invalid column label: %v not in labels", label)

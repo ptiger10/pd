@@ -17,7 +17,7 @@ type Level struct {
 }
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
-type LabelMap map[interface{}][]int
+type LabelMap map[string][]int
 
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
@@ -107,7 +107,7 @@ func (lvl *Level) maxWidth() int {
 func (lvl *Level) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
-		key := lvl.Labels.Element(i).Value
+		key := fmt.Sprint(lvl.Labels.Element(i).Value)
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap
