@@ -17,7 +17,7 @@ type Level struct {
 }
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
-type LabelMap map[string][]int
+type LabelMap map[interface{}][]int
 
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
@@ -87,9 +87,9 @@ func (lvl Level) Element(position int) Element {
 	}
 }
 
-// MaxWidth finds the max length of either the level name or the longest string in the LabelMap,
+// maxWidth finds the max length of either the level name or the longest string in the LabelMap,
 // for use in printing a Series or DataFrame
-func (lvl *Level) MaxWidth() int {
+func (lvl *Level) maxWidth() int {
 	var max int
 	for k := range lvl.LabelMap {
 		if length := len(fmt.Sprint(k)); length > max {
@@ -99,18 +99,15 @@ func (lvl *Level) MaxWidth() int {
 	if len(lvl.Name) > max {
 		max = len(lvl.Name)
 	}
-	if max > options.GetDisplayMaxWidth() {
-		max = options.GetDisplayMaxWidth()
-	}
 	return max
 }
 
-// updateLabelMap updates a single level's map of {label values: [label positions]}.
-// A level's label map is agnostic of the actual values in those positions.
+// updateLabelMap updates a single index level's map of {label values: [label positions]}.
+// A level's label map is unaware of the actual values in those positions.
 func (lvl *Level) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
-		key := fmt.Sprint(lvl.Labels.Element(i).Value)
+		key := lvl.Labels.Element(i).Value
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap

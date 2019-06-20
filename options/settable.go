@@ -6,7 +6,7 @@ var defaultOptions = struct {
 	displayElementWhitespaceBuffer int
 	displayIndexWhitespaceBuffer   int
 	displayFloatPrecision          int
-	displayRepeatedIndexLabels     bool
+	displayRepeatedLabels          bool
 	displayStringNullFiller        string
 	displayTimeFormat              string
 	stringNullValues               []string
@@ -17,7 +17,7 @@ var defaultOptions = struct {
 	displayElementWhitespaceBuffer,
 	displayIndexWhitespaceBuffer,
 	displayFloatPrecision,
-	displayRepeatedIndexLabels,
+	displayRepeatedLabels,
 	displayStringNullFiller,
 	displayTimeFormat,
 	stringNullValues,
@@ -31,7 +31,7 @@ func RestoreDefaults() {
 	SetDisplayElementWhitespaceBuffer(defaultOptions.displayElementWhitespaceBuffer)
 	SetDisplayIndexWhitespaceBuffer(defaultOptions.displayIndexWhitespaceBuffer)
 	SetDisplayFloatPrecision(defaultOptions.displayFloatPrecision)
-	SetDisplayRepeatedIndexLabels(defaultOptions.displayRepeatedIndexLabels)
+	SetDisplayRepeatedLabels(defaultOptions.displayRepeatedLabels)
 	SetDisplayStringNullFiller(defaultOptions.displayStringNullFiller)
 	SetDisplayTimeFormat(defaultOptions.displayTimeFormat)
 	SetStringNullValues(defaultOptions.stringNullValues)
@@ -43,7 +43,7 @@ var displayValuesWhitespaceBuffer = 4
 var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
 var displayFloatPrecision = 2
-var displayRepeatedIndexLabels = false
+var displayRepeatedLabels = false
 var displayStringNullFiller = "NaN"
 var displayTimeFormat = "1/2/2006T15:04:05"
 var stringNullValues = []string{"NaN", "n/a", "N/A", "", "nil"}
@@ -112,8 +112,8 @@ func GetDisplayFloatPrecision() int {
 	return displayFloatPrecision
 }
 
-// SetDisplayRepeatedIndexLabels sets DisplayRepeatedIndexLabels to boolean.
-// DisplayRepeatedIndexLabels is an option when printing a Series.
+// SetDisplayRepeatedLabels sets DisplayRepeatedLabels to boolean.
+// DisplayRepeatedLabels is an option when printing a Series.
 // If true, all index labels will be shown, like so:
 //
 // A 0    foo
@@ -131,13 +131,13 @@ func GetDisplayFloatPrecision() int {
 // C 1    baz
 //
 // NB: ellipsis not included in actual printing
-func SetDisplayRepeatedIndexLabels(boolean bool) {
-	displayRepeatedIndexLabels = boolean
+func SetDisplayRepeatedLabels(boolean bool) {
+	displayRepeatedLabels = boolean
 }
 
-// GetDisplayRepeatedIndexLabels returns DisplayRepeatedIndexLabels.
-func GetDisplayRepeatedIndexLabels() bool {
-	return displayRepeatedIndexLabels
+// GetDisplayRepeatedLabels returns DisplayRepeatedLabels.
+func GetDisplayRepeatedLabels() bool {
+	return displayRepeatedLabels
 }
 
 // SetDisplayStringNullFiller sets DisplayStringNullFiller to "s".

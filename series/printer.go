@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Series) String() string {
-	if s == nil {
+	if Equal(s, newEmptySeries()) {
 		return "Series{}"
 	}
 	return s.print()
@@ -21,9 +21,10 @@ func (s *Series) print() string {
 	var header string
 	var printer string
 	// [START header row]
+	maxIndexWidths := s.index.MaxWidths()
 	for j := 0; j < numLevels; j++ {
 		name := s.index.Levels[j].Name
-		padding := s.index.Levels[j].MaxWidth()
+		padding := maxIndexWidths[j]
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
@@ -47,7 +48,7 @@ func (s *Series) print() string {
 		for j := 0; j < numLevels; j++ {
 			var skip bool
 			var buffer string
-			padding := s.index.Levels[j].MaxWidth()
+			padding := maxIndexWidths[j]
 			idx := fmt.Sprint(elem.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last

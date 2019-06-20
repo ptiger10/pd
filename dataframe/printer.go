@@ -15,42 +15,71 @@ func (df *DataFrame) String() string {
 	return df.print()
 }
 
-// printer for DataFrame index, values, and columns
+// printer for DataFrame index, values, and columns.
+// Format (optional):
+// (indexName)
+// (multiLevelColumnName) (multiLevelColumns)
+// (columnName) columns
+// index value
+// Syntax:
+// i -> values
+// j -> index or column levels
+// k -> columns
 func (df *DataFrame) print() string {
 	numLevels := df.IndexLevels()
-	var header string
+	var indexNameRow string
 	var printer string
-	// [START header row]
+	// [START index name row]
+	maxIndexWidths := df.index.MaxWidths()
 	for j := 0; j < numLevels; j++ {
 		name := df.index.Levels[j].Name
-		padding := df.index.Levels[j].MaxWidth()
-		header += fmt.Sprintf("%*v", padding, name)
+		padding := maxIndexWidths[j]
+		indexNameRow += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
-			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			indexNameRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 		}
 	}
-	// add buffer at beginning
-	header += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer())
-	// handle columns
-	for k := 0; k < df.NumCols(); k++ {
-		colStr := df.s[k].Name()
-		padding := df.s[k].MaxWidth()
-		if padding == options.GetDisplayMaxWidth() {
-			colStr = colStr[:len(colStr)-4] + "..."
-		}
-		header += fmt.Sprintf("%*v", padding, colStr)
-		if k != df.NumCols()-1 {
-			// add buffer to all columns except the last
-			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
-		}
+	if !df.index.Unnamed() {
+		printer += indexNameRow + "\n"
 	}
-	// omit header line if empty
-	if strings.TrimSpace((header)) != "" {
-		printer += header + "\n"
-	}
+	// [END index name row]
 
-	// [END header row]
+	// [START column rows]
+	var colLevelRows []string
+	excl := df.makeExclusionsTable()
+	maxColWidths := df.maxColWidths(excl)
+	for j := 0; j < df.cols.NumLevels(); j++ {
+		colLevelRow := strings.Repeat(" ", len(indexNameRow)+options.GetDisplayValuesWhitespaceBuffer())
+		colName := df.cols.Levels[j].Name
+		namePadding := df.cols.MaxNameWidth()
+		colLevelRow += fmt.Sprintf("%*v", namePadding, colName)
+		if colName != "" {
+			colLevelRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+		}
+		var prior string
+		for k := 0; k < df.NumCols(); k++ {
+			colLabel := fmt.Sprint(df.cols.Levels[j].Labels[k])
+			if colLabel == prior && !options.GetDisplayRepeatedLabels() {
+				colLabel = ""
+				excl[j][k] = true
+				maxColWidths = df.maxColWidths(excl)
+			}
+			colPadding := maxColWidths[k]
+			colLevelRow += fmt.Sprintf("%*v", colPadding, colLabel)
+			if colLabel != "" {
+				prior = colLabel
+			}
+			colLevelRow = strings.TrimRight(colLevelRow, " ")
+			if k != df.NumCols()-1 {
+				// add buffer to all columns except the last
+				colLevelRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			}
+		}
+		colLevelRows = append(colLevelRows, colLevelRow)
+	}
+	printer += strings.Join(colLevelRows, "\n") + "\n"
+	// [END column rows]
 
 	// [START rows]
 	prior := make(map[int]string)
@@ -62,13 +91,13 @@ func (df *DataFrame) print() string {
 		for j := 0; j < numLevels; j++ {
 			var skip bool
 			var buffer string
-			padding := df.index.Levels[j].MaxWidth()
+			padding := maxIndexWidths[j]
 			idx := fmt.Sprint(idxElems.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
 				buffer = strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
 				// skip repeated label values if this is not the last index level
-				if prior[j] == idx {
+				if prior[j] == idx && !options.GetDisplayRepeatedLabels() {
 					skip = true
 					idx = ""
 				}
@@ -91,11 +120,16 @@ func (df *DataFrame) print() string {
 		// [END index printer]
 
 		// [START value printer]
+		newLine += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()+df.cols.MaxNameWidth())
+		if df.cols.MaxNameWidth() != 0 {
+			newLine += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+		}
+
 		var valStrs string
 		for k := 0; k < df.NumCols(); k++ {
 			valElem := df.s[k].Element(i)
 			var valStr string
-			padding := df.s[k].MaxWidth()
+			padding := maxColWidths[k]
 			if df.s[k].DataType() == string(options.DateTime) {
 				valStr = valElem.Value.(time.Time).Format(options.GetDisplayTimeFormat())
 			} else {
@@ -110,19 +144,16 @@ func (df *DataFrame) print() string {
 			}
 			valStrs += valStr
 		}
-
-		// add buffer at beginning
-		val := strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()) + valStrs
+		newLine += valStrs
 		// null string values must not return any trailing whitespace
-		if valStrs == "" {
-			val = strings.TrimSpace(val)
-		}
-		newLine += val
+		newLine = strings.TrimRight(newLine, " ")
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
-	printer += fmt.Sprintf("datatype: %s\n", df.dataType())
 	// [END rows]
+	if df.dataType() != "mixed" {
+		printer += fmt.Sprintf("datatype: %s\n", df.dataType())
+	}
 
 	if df.name != "" {
 		printer += fmt.Sprintf("name: %s\n", df.name)

@@ -96,10 +96,7 @@ func Test_LevelCopy(t *testing.T) {
 		t.Error("Level.Copy() did not copy Name")
 	}
 	if copyLvl.DataType != options.Int64 {
-		t.Error("Level.Copy() did not copy Kind")
-	}
-	if copyLvl.MaxWidth() != 1 {
-		t.Error("Level.Copy() did not copy Kind")
+		t.Error("Level.Copy() did not copy DataType")
 	}
 	if reflect.ValueOf(idxLvl.Labels).Pointer() == reflect.ValueOf(copyLvl.Labels).Pointer() {
 		t.Error("Level.Copy() returned original labels, want fresh copy")
@@ -130,8 +127,8 @@ func Test_RefreshLevel(t *testing.T) {
 		if !reflect.DeepEqual(lvl.LabelMap, test.wantLabelMap) {
 			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, test.wantLabelMap)
 		}
-		if lvl.MaxWidth() != test.wantLongest {
-			t.Errorf("Returned longest length %v, want %v", lvl.MaxWidth(), test.wantLongest)
+		if lvl.maxWidth() != test.wantLongest {
+			t.Errorf("Returned longest length %v, want %v", lvl.maxWidth(), test.wantLongest)
 		}
 	}
 }

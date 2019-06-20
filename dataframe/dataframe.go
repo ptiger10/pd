@@ -18,7 +18,7 @@ type DataFrame struct {
 }
 
 // Len returns the number of values in each Series of the DataFrame.
-func (df DataFrame) Len() int {
+func (df *DataFrame) Len() int {
 	if df.s == nil {
 		return 0
 	}
@@ -26,7 +26,7 @@ func (df DataFrame) Len() int {
 }
 
 // Name returns the DataFrame's name.
-func (df DataFrame) Name() string {
+func (df *DataFrame) Name() string {
 	return df.name
 }
 
@@ -46,6 +46,11 @@ func (df *DataFrame) NumCols() int {
 // IndexLevels returns the number of index levels in the DataFrame.
 func (df *DataFrame) IndexLevels() int {
 	return df.index.Len()
+}
+
+// ColLevels returns the number of column levels in the DataFrame.
+func (df *DataFrame) ColLevels() int {
+	return df.cols.NumLevels()
 }
 
 // Copy creates a new deep copy of a Series.
@@ -95,7 +100,7 @@ func (df *DataFrame) colsIn(colPositions []int) (*DataFrame, error) {
 	}
 	var seriesSlice []*series.Series
 	for _, pos := range colPositions {
-		if pos > df.NumCols() {
+		if pos >= df.NumCols() {
 			return nil, fmt.Errorf("dataframe.colsIn(): invalid col position %d (max: %d)", pos, df.NumCols()-1)
 		}
 		seriesSlice = append(seriesSlice, df.s[pos])
@@ -132,7 +137,7 @@ func Equal(df, df2 *DataFrame) bool {
 }
 
 // Col returns the first Series with the specified column label at column level 0.
-func (df *DataFrame) Col(label string) *series.Series {
+func (df *DataFrame) Col(label interface{}) *series.Series {
 	colPos, ok := df.cols.Levels[0].LabelMap[label]
 	if !ok {
 		log.Printf("df.Col(): invalid column label: %v not in labels", label)
@@ -164,4 +169,36 @@ func (df *DataFrame) dataType() string {
 		return df.s[0].DataType()
 	}
 	return "mixed"
+}
+
+// maxColWidths is the max characters in each column of a dataframe.
+// exclusions should mimic the shape of the columns exactly
+func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
+	var maxColWidths []int
+	if len(exclusions) != df.ColLevels() || len(exclusions) == 0 {
+		return nil
+	}
+	if len(exclusions[0]) != df.NumCols() {
+		return nil
+	}
+	for k := 0; k < df.NumCols(); k++ {
+		max := df.s[k].MaxWidth()
+		for j := 0; j < df.ColLevels(); j++ {
+			if !exclusions[j][k] {
+				if length := len(fmt.Sprint(df.cols.Levels[j].Labels[k])); length > max {
+					max = length
+				}
+			}
+		}
+		maxColWidths = append(maxColWidths, max)
+	}
+	return maxColWidths
+}
+
+func (df *DataFrame) makeExclusionsTable() [][]bool {
+	table := make([][]bool, df.ColLevels())
+	for row := range table {
+		table[row] = make([]bool, df.NumCols())
+	}
+	return table
 }

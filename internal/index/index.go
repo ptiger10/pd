@@ -163,8 +163,27 @@ func (idx *Index) Refresh() {
 	}
 }
 
-// NewFromConfig returns a new Index with length n using a config struct.
-func NewFromConfig(n int, config Config) (Index, error) {
+// Unnamed returns true if all index levels are unnamed
+func (idx Index) Unnamed() bool {
+	for _, lvl := range idx.Levels {
+		if lvl.Name != "" {
+			return false
+		}
+	}
+	return true
+}
+
+// MaxWidths returns the max number of characters in each level of an index.
+func (idx Index) MaxWidths() []int {
+	var maxWidths []int
+	for _, lvl := range idx.Levels {
+		maxWidths = append(maxWidths, lvl.maxWidth())
+	}
+	return maxWidths
+}
+
+// NewFromConfig returns a new Index with default length n using a config struct.
+func NewFromConfig(config Config, n int) (Index, error) {
 	var index Index
 	// both nil: return default index
 	if config.Index == nil && config.MultiIndex == nil {

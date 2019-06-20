@@ -30,6 +30,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		}
 		tmp = config[0]
 		configuration = index.Config{
+			Name:  tmp.Name,
 			Index: tmp.Index, IndexName: tmp.IndexName,
 			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 			Cols: tmp.Cols, ColsName: tmp.ColsName,
@@ -40,19 +41,19 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	// Values length
 	vals, err := values.InterfaceFactory(data[0])
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.New(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 	valuesLen := vals.Values.Len()
 
 	// Handling index
-	idx, err = index.NewFromConfig(valuesLen, configuration)
+	idx, err = index.NewFromConfig(configuration, valuesLen)
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.New(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 	//Handling columns
-	cols, err = index.NewColumnsFromConfig(len(data), configuration)
+	cols, err = index.NewColumnsFromConfig(configuration, len(data))
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.New(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 
 	// Handling Series
@@ -69,7 +70,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		}
 		n, err := series.New(data[i], sConfig)
 		if err != nil {
-			return nil, fmt.Errorf("dataframe.New(): %v", err)
+			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 		}
 		s = append(s, n)
 	}
@@ -77,10 +78,11 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		s:     s,
 		index: idx,
 		cols:  cols,
+		name:  configuration.Name,
 	}
 
 	if err := df.ensureAlignment(); err != nil {
-		return nil, fmt.Errorf("dataframe.New(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 
 	return df, err

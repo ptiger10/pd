@@ -6,7 +6,12 @@ import (
 )
 
 func ExampleNew_float64() {
-	df, err := New([]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}}, Config{Index: []string{"foo", "bar"}, Cols: []interface{}{"baz", "qux"}})
+	df, err := New(
+		[]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}},
+		Config{
+			Index: []string{"foo", "bar"},
+			Cols:  []interface{}{"baz", "qux"},
+		})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -16,37 +21,224 @@ func ExampleNew_float64() {
 	// foo      0 2.5
 	// bar    1.5   3
 	// datatype: float64
-	//
 }
 
-func ExampleNew_float64_multiCol() {
-	df, err := New([]interface{}{[]float64{0, 1}, []float64{2, 3}}, Config{Index: []string{"foo", "bar"}, Cols: []interface{}{"baz", "qux"}})
+func ExampleNew_string_indexUnnamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", Index: "baz"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(df)
 	// Output:
-	//	     year     2019
-	//       class     baz qux
-	// index
-	//   foo             0   2
-	//   bar             1   3
-	// datatype: float64
-	//
+	//          0   1
+	// baz    foo bar
+	// datatype: string
+	// name: foobar
 }
-
-func ExampleNew_mixed() {
-	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}})
+func ExampleNew_string_indexNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", Index: "baz", IndexName: "qux"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(df)
 	// Output:
-	//      0   1
-	// 0    1 foo
-	// 1    3 bar
-	// 2    5 baz
-	// datatype: mixed
+	// qux
+	//          0   1
+	// baz    foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multiIndexUnnamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", MultiIndex: []interface{}{"baz", "corge"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//                0   1
+	// baz corge    foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multiIndexNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", MultiIndex: []interface{}{"baz", "corge"}, MultiIndexNames: []string{"qux", "quux"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// qux  quux
+	//                0   1
+	// baz corge    foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_colsUnnamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", Cols: []interface{}{"baz", "qux"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//      baz qux
+	// 0    foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_colsNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", Cols: []interface{}{"baz", "qux"}, ColsName: "corge"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//      corge baz qux
+	// 0          foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multicolsUnnamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//      quux
+	//       baz qux
+	// 0     foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multicolsNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quax"}, {"baz", "qux"}}, MultiColsNames: []string{"corge", "grault"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//       corge quux quax
+	//      grault  baz  qux
+	// 0            foo  bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multicolsNamed_repeat() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}, MultiColsNames: []string{"corge", "grault"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//       corge quux
+	//      grault  baz qux
+	// 0            foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_indexNamed_colsUnnamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar",
+			Index: "baz", IndexName: "corge",
+			Cols: []interface{}{"quux", "qux"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// corge
+	//          quux qux
+	//   baz     foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_indexNamed_colsNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar",
+			Index: "baz", IndexName: "corge",
+			Cols: []interface{}{"quux", "qux"}, ColsName: "quuz"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// corge
+	//          quuz quux qux
+	//   baz          foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multiindexNamed_colsNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar",
+			MultiIndex: []interface{}{"baz", "garply"}, MultiIndexNames: []string{"corge", "grault"},
+			Cols: []interface{}{"quux", "qux"}, ColsName: "quuz"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// corge grault
+	//                 quuz quux qux
+	//   baz garply          foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_multiindexNamed_multicolsNamed() {
+	df, err := New([]interface{}{"foo", "bar"},
+		Config{Name: "foobar",
+			MultiIndex: []interface{}{"baz", "garply"}, MultiIndexNames: []string{"grault", "corge"},
+			MultiCols: [][]interface{}{{"fred", "fred"}, {"quux", "qux"}}, MultiColsNames: []string{"waldo", "quuz"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// grault  corge
+	//                  waldo fred
+	//                   quuz quux qux
+	//    baz garply           foo bar
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_float64_indexNamed_multicolsNamed() {
+	df, err := New([]interface{}{"qux", "waldo"},
+		Config{
+			Name:  "foobar",
+			Index: "foo", IndexName: "grault",
+			MultiCols: [][]interface{}{{"quux", "quux"}, {"bar", "baz"}}, MultiColsNames: []string{"quuz", "garply"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// grault
+	//             quuz quux
+	//           garply  bar   baz
+	//    foo            qux waldo
+	// datatype: string
+	// name: foobar
 }
 
 func ExampleDataFrame_Col() {

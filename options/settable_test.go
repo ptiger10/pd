@@ -46,12 +46,12 @@ func TestSetting(t *testing.T) {
 		t.Error("Unable to set/get DisplayFloatPrecision")
 	}
 
-	if GetDisplayRepeatedIndexLabels() != defaultOptions.displayRepeatedIndexLabels {
-		t.Errorf("Default setting not reading for DisplayRepeatedIndexLabels")
+	if GetDisplayRepeatedLabels() != defaultOptions.displayRepeatedLabels {
+		t.Errorf("Default setting not reading for DisplayRepeatedLabels")
 	}
-	SetDisplayRepeatedIndexLabels(true)
-	if GetDisplayRepeatedIndexLabels() != true {
-		t.Error("Unable to set/get DisplayRepeatedIndexLabels")
+	SetDisplayRepeatedLabels(true)
+	if GetDisplayRepeatedLabels() != true {
+		t.Error("Unable to set/get DisplayRepeatedLabels")
 	}
 
 	if GetDisplayStringNullFiller() != defaultOptions.displayStringNullFiller {

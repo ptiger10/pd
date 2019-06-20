@@ -119,3 +119,12 @@ func TestReplaceNil(t *testing.T) {
 		t.Errorf("Series.replace() returned %v, want %v", s, s2)
 	}
 }
+
+func TestMaxWidth(t *testing.T) {
+	s := MustNew([]string{"foo", "quux", "grault"}, Config{Name: "grapply"})
+	got := s.MaxWidth()
+	want := 6
+	if got != want {
+		t.Errorf("s.MaxWidth got %v, want %v", got, want)
+	}
+}

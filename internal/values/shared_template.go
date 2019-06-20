@@ -99,7 +99,7 @@ func (vals *valueTypeValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *valueTypeValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
+	if pos >= len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}

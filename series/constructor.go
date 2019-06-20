@@ -28,7 +28,7 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	// Handling config
 	if config != nil {
 		if len(config) > 1 {
-			return nil, fmt.Errorf("series.New(): can supply at most one Config (%d > 1)", len(config))
+			return newEmptySeries(), fmt.Errorf("series.New(): can supply at most one Config (%d > 1)", len(config))
 		}
 		tmp := config[0]
 		configuration = index.Config{
@@ -41,7 +41,7 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	// Handling values
 	factory, err := values.InterfaceFactory(data)
 	if err != nil {
-		return nil, fmt.Errorf("series.New(): %v", err)
+		return newEmptySeries(), fmt.Errorf("series.New(): %v", err)
 	}
 
 	// Handling index
@@ -50,9 +50,9 @@ func New(data interface{}, config ...Config) (*Series, error) {
 		idx = index.New()
 		// not empty data: use config
 	} else {
-		idx, err = index.NewFromConfig(lenValues, configuration)
+		idx, err = index.NewFromConfig(configuration, lenValues)
 		if err != nil {
-			return nil, fmt.Errorf("series.New(): %v", err)
+			return newEmptySeries(), fmt.Errorf("series.New(): %v", err)
 		}
 	}
 
@@ -67,7 +67,7 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	if configuration.DataType != options.None {
 		s.values, err = values.Convert(s.values, configuration.DataType)
 		if err != nil {
-			return nil, fmt.Errorf("series.New(): %v", err)
+			return newEmptySeries(), fmt.Errorf("series.New(): %v", err)
 		}
 		s.datatype = configuration.DataType
 	}
@@ -79,7 +79,7 @@ func New(data interface{}, config ...Config) (*Series, error) {
 
 	// Alignment check
 	if err := s.ensureAlignment(); err != nil {
-		return nil, fmt.Errorf("series.New(): %v", err)
+		return newEmptySeries(), fmt.Errorf("series.New(): %v", err)
 	}
 
 	return s, err

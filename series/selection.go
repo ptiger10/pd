@@ -37,7 +37,7 @@ func (s *Series) SelectRows(positions []int) Selection {
 
 // SelectLabels selects rows at the specified index labels (for index level 0).
 // Appends out-of-range errors to Selection.err.
-func (s *Series) SelectLabels(labels []string) Selection {
+func (s *Series) SelectLabels(labels []interface{}) Selection {
 	swappable := len(labels) == 2
 	var positions []int
 	var errList []string

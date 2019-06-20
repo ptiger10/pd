@@ -108,14 +108,19 @@ func (s *Series) mustIn(positions []int) *Series {
 
 // Equal compares whether two series are equivalent.
 func Equal(s1, s2 *Series) bool {
-	sameIndex := reflect.DeepEqual(s1.index, s2.index)
-	sameValues := reflect.DeepEqual(s1.values, s2.values)
-	sameName := s1.name == s2.name
-	sameKind := s1.datatype == s2.datatype
-	if sameIndex && sameValues && sameName && sameKind {
-		return true
+	if !reflect.DeepEqual(s1.values, s2.values) {
+		return false
 	}
-	return false
+	if !reflect.DeepEqual(s1.index, s2.index) {
+		return false
+	}
+	if s1.name != s2.name {
+		return false
+	}
+	if s1.datatype != s2.datatype {
+		return false
+	}
+	return true
 }
 
 // Len returns the number of Elements (i.e., Value/Null pairs) in the Series.
@@ -174,12 +179,6 @@ func (s *Series) MaxWidth() int {
 		if length := len(fmt.Sprint(v)); length > max {
 			max = length
 		}
-	}
-	if len(s.name) > max {
-		max = len(s.name)
-	}
-	if max > options.GetDisplayMaxWidth() {
-		max = options.GetDisplayMaxWidth()
 	}
 	return max
 }

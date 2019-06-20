@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 // Columns is a collection of column levels, plus name mappings.
@@ -36,6 +37,25 @@ func (cols Columns) Len() int {
 		return 0
 	}
 	return cols.Levels[0].Len()
+}
+
+// NumLevels returns the number of column levels.
+func (cols Columns) NumLevels() int {
+	return len(cols.Levels)
+}
+
+// MaxNameWidth returns the number of characters in the column name with the most characters.
+func (cols Columns) MaxNameWidth() int {
+	var max int
+	for k := range cols.NameMap {
+		if length := len(fmt.Sprint(k)); length > max {
+			max = length
+		}
+	}
+	if max > options.GetDisplayMaxWidth() {
+		max = options.GetDisplayMaxWidth()
+	}
+	return max
 }
 
 // UpdateNameMap updates the holistic index map of {index level names: [index level positions]}
@@ -101,7 +121,7 @@ func (lvl *ColLevel) Refresh() {
 func (lvl *ColLevel) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
-		key := fmt.Sprint(lvl.Labels[i])
+		key := lvl.Labels[i]
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap
@@ -134,8 +154,8 @@ func (cols Columns) Copy() Columns {
 	return colsCopy
 }
 
-// NewColumnsFromConfig returns new Columns with length n using a config struct.
-func NewColumnsFromConfig(n int, config Config) (Columns, error) {
+// NewColumnsFromConfig returns new Columns with default length n using a config struct.
+func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	var columns Columns
 
 	// both nil: return default index
@@ -193,11 +213,13 @@ func (cols Columns) In(colPositions []int) (Columns, error) {
 func (lvl ColLevel) In(positions []int) (ColLevel, error) {
 	var labels []interface{}
 	for _, pos := range positions {
-		if pos > lvl.Len() {
+		if pos >= lvl.Len() {
 			return ColLevel{}, fmt.Errorf("internal colLevel.In(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)
 		}
 		labels = append(labels, lvl.Labels[pos])
 	}
+	lvl.Labels = labels
+
 	lvl.Refresh()
 	return lvl, nil
 }
