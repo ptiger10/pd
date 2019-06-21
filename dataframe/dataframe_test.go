@@ -128,3 +128,14 @@ func TestMakeExclusionTable(t *testing.T) {
 		t.Errorf("df.MakeExclusionsTable() got %v, want %v", got, want)
 	}
 }
+
+func TestSubset(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}},
+		Config{Index: []string{"quux", "quuz"}})
+	got := df.Subset([]int{1})
+	want := MustNew([]interface{}{[]string{"bar"}, []string{"qux"}},
+		Config{Index: []string{"quuz"}})
+	if !Equal(got, want) {
+		t.Errorf("df.Subset() got %v, want %v", got, want)
+	}
+}

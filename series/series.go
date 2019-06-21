@@ -18,7 +18,6 @@ type Series struct {
 	datatype options.DataType
 	name     string
 	Apply    Apply
-	Filter   Filter
 	Index    Index
 	InPlace  InPlace
 }
@@ -68,7 +67,6 @@ func (s *Series) Copy() *Series {
 		name:     s.name,
 	}
 	copyS.Apply = Apply{s: copyS}
-	copyS.Filter = Filter{s: copyS}
 	copyS.Index = Index{s: copyS}
 	copyS.InPlace = InPlace{s: copyS}
 	return copyS

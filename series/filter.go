@@ -1,144 +1,157 @@
 package series
 
 import (
-	"fmt"
+	"log"
+	"strings"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
-// Filter contains filtering methods.
-type Filter struct {
-	s *Series
+// Subset returns a subset of a Series based on the supplied integer positions.
+func (s *Series) Subset(rows []int) *Series {
+	sub, err := s.in(rows)
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("s.Subset(): %v", err)
+		}
+	}
+	return sub
 }
 
-// Float64 filters
-func (f Filter) Float64(cmp func(float64) bool) (*Series, error) {
-	s, _ := f.s.in(f.s.valid())
+// CustomFilterFloat64 converts a Series to float values, applies a filter, and returns the rows where the condition is true.
+func (s *Series) CustomFilterFloat64(cmp func(float64) bool) []int {
 	var include []int
-	vals, ok := s.values.Vals().([]float64)
-	if !ok {
-		return nil, fmt.Errorf("float64 filter expects float64 values only, got %v", f.s.DataType())
-	}
+	vals := s.ToFloat64().values.Vals().([]float64)
 	for i, val := range vals {
 		if cmp(val) {
 			include = append(include, i)
 		}
 	}
-	return s.in(include)
+	return include
 }
 
-// Gt - Greater Than
-//
-// Applies to: Float, Int
-func (f Filter) Gt(comparison float64) (*Series, error) {
-	s, err := f.Float64(func(elem float64) bool {
+// CustomFilterString converts a Series to string values, applies a filter, and returns the rows where the condition is true.
+func (s *Series) CustomFilterString(cmp func(string) bool) []int {
+	var include []int
+	vals := s.ToString().values.Vals().([]string)
+	for i, val := range vals {
+		if cmp(val) {
+			include = append(include, i)
+		}
+	}
+	return include
+}
+
+// CustomFilterBool converts a Series to bool values, applies a filter, and returns the rows where the condition is true.
+func (s *Series) CustomFilterBool(cmp func(bool) bool) []int {
+	var include []int
+	vals := s.ToBool().values.Vals().([]bool)
+	for i, val := range vals {
+		if cmp(val) {
+			include = append(include, i)
+		}
+	}
+	return include
+}
+
+// CustomFilterDateTime converts a Series to datetime values, applies a filter, and returns the rows where the condition is true.
+func (s *Series) CustomFilterDateTime(cmp func(time.Time) bool) []int {
+	var include []int
+	vals := s.ToDateTime().values.Vals().([]time.Time)
+	for i, val := range vals {
+		if cmp(val) {
+			include = append(include, i)
+		}
+	}
+	return include
+}
+
+// Gt filter: Greater Than (numeric).
+func (s *Series) Gt(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
 		return elem > comparison
 	})
-	if err != nil {
-		return nil, fmt.Errorf("Filter.Gt(): %v", err)
-	}
-	return s, nil
 }
 
-// Gt - Greater Than
-//
-// Applies to: Float, Int
-// func (f Filter) Gt(comparison float64) func(float64) bool {
-// 	return func(elem float64) bool {
-// 		return elem > comparison
+// Gte filter: Greater Than or Equal To (numeric).
+func (s *Series) Gte(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
+		return elem >= comparison
+	})
+}
+
+// Lt filter - Less Than (numeric).
+func (s *Series) Lt(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
+		return elem < comparison
+	})
+}
+
+// Lte filter - Greater Than or Equal To (numeric).
+func (s *Series) Lte(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
+		return elem <= comparison
+	})
+}
+
+// Eq filter - Equal To (numeric).
+func (s *Series) Eq(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
+		return elem == comparison
+	})
+}
+
+// Neq filter - Not Equal To (numeric).
+func (s *Series) Neq(comparison float64) []int {
+	return s.CustomFilterFloat64(func(elem float64) bool {
+		return elem != comparison
+	})
+}
+
+// Contains filter - value contains substr (string).
+func (s *Series) Contains(substr string) []int {
+	return s.CustomFilterString(func(elem string) bool {
+		return strings.Contains(elem, substr)
+	})
+}
+
+// // In filter - value is contained within list (string).
+// func (s *Series) In(list []string) []int {
+// 	return func(elem string) bool {
+// 		for _, s := range list {
+// 			if elem == s {
+// 				return true
+// 			}
+// 		}
+// 		return false
 // 	}
 // }
 
-// Gt - Greater Than
-//
-// Applies to: Float, Int
-func Gt(comparison float64) func(float64) bool {
-	return func(elem float64) bool {
-		return elem > comparison
-	}
-}
-
-// Gte - Greater Than or Equal To
-//
-// Applies to: Float, Int
-func Gte(comparison float64) func(float64) bool {
-	return func(elem float64) bool {
-		return elem >= comparison
-	}
-}
-
-// Lt - Less Than
-//
-// Applies to: Float, Int
-func Lt(comparison float64) func(float64) bool {
-	return func(elem float64) bool {
-		return elem < comparison
-	}
-}
-
-// Lte - Less Than or Equal To
-//
-// Applies to: Float, Int
-func Lte(comparison float64) func(float64) bool {
-	return func(elem float64) bool {
-		return elem <= comparison
-	}
-}
-
-// Eq - Equal To
-//
-// Applies to: Float, Int
-func Eq(comparison float64) func(float64) bool {
-	return func(elem float64) bool {
-		return elem == comparison
-	}
-}
-
-// In - Contained within slice of strings
-//
-// Applies to: String
-func In(list []string) func(string) bool {
-	return func(elem string) bool {
-		for _, s := range list {
-			if elem == s {
-				return true
-			}
-		}
-		return false
-	}
-}
-
-// True - True, non-null value
-//
-// Applies to: Bool
-func True() func(bool) bool {
-	return func(elem bool) bool {
+// True filter - value is true (bool).
+func (s *Series) True() []int {
+	return s.CustomFilterBool(func(elem bool) bool {
 		return elem
-	}
+	})
 }
 
-// Before - Before a specific datetime
-//
-// Applies to time.Time
-func Before(t time.Time) func(time.Time) bool {
-	return func(elem time.Time) bool {
+// False filter - value is false (bool).
+func (s *Series) False() []int {
+	return s.CustomFilterBool(func(elem bool) bool {
+		return !elem
+	})
+}
+
+// Before filter - value is before a specific time (datetime).
+func (s *Series) Before(t time.Time) []int {
+	return s.CustomFilterDateTime(func(elem time.Time) bool {
 		return elem.Before(t)
-	}
+	})
 }
 
-// On - On a specific datetime
-//
-// Applies to time.Time
-func On(t time.Time) func(time.Time) bool {
-	return func(elem time.Time) bool {
-		return elem.Equal(t)
-	}
-}
-
-// After - After a specific datetime
-//
-// Applies to time.Time
-func After(t time.Time) func(time.Time) bool {
-	return func(elem time.Time) bool {
+// After filter - value is after a specific time (datetime).
+func (s *Series) After(t time.Time) []int {
+	return s.CustomFilterDateTime(func(elem time.Time) bool {
 		return elem.After(t)
-	}
+	})
 }

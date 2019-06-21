@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -201,4 +202,16 @@ func (df *DataFrame) makeExclusionsTable() [][]bool {
 		table[row] = make([]bool, df.NumCols())
 	}
 	return table
+}
+
+// Subset a DataFrame to include only the rows at supplied integer positions.
+func (df *DataFrame) Subset(rows []int) *DataFrame {
+	ret, err := df.rowsIn(rows)
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("dataframe.Subset(): %v", err)
+		}
+		return newEmptyDataFrame()
+	}
+	return ret
 }

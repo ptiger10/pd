@@ -72,7 +72,6 @@ func New(data interface{}, config ...Config) (*Series, error) {
 		s.datatype = configuration.DataType
 	}
 
-	s.Filter = Filter{s: s}
 	s.Index = Index{s: s}
 	s.InPlace = InPlace{s: s}
 	s.Apply = Apply{s: s}
