@@ -9,7 +9,7 @@ import (
 )
 
 func (df *DataFrame) String() string {
-	if df == nil {
+	if Equal(df, newEmptyDataFrame()) {
 		return "DataFrame{}"
 	}
 	return df.print()

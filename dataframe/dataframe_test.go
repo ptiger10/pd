@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -138,4 +139,15 @@ func TestSubset(t *testing.T) {
 	if !Equal(got, want) {
 		t.Errorf("df.Subset() got %v, want %v", got, want)
 	}
+}
+
+func TestSubset_Empty(t *testing.T) {
+	options.SetLogWarnings(false)
+	df := MustNew([]interface{}{[]string{"foo", "bar"}})
+	got := df.Subset([]int{})
+	want := newEmptyDataFrame()
+	if !Equal(got, want) {
+		t.Errorf("df.Subset() got %v, want %v", got, want)
+	}
+	options.SetLogWarnings(true)
 }

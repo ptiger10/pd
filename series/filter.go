@@ -15,13 +15,14 @@ func (s *Series) Subset(rows []int) *Series {
 		if options.GetLogWarnings() {
 			log.Printf("s.Subset(): %v", err)
 		}
+		return newEmptySeries()
 	}
 	return sub
 }
 
 // CustomFilterFloat64 converts a Series to float values, applies a filter, and returns the rows where the condition is true.
 func (s *Series) CustomFilterFloat64(cmp func(float64) bool) []int {
-	var include []int
+	include := make([]int, 0)
 	vals := s.ToFloat64().values.Vals().([]float64)
 	for i, val := range vals {
 		if cmp(val) {
@@ -33,7 +34,7 @@ func (s *Series) CustomFilterFloat64(cmp func(float64) bool) []int {
 
 // CustomFilterString converts a Series to string values, applies a filter, and returns the rows where the condition is true.
 func (s *Series) CustomFilterString(cmp func(string) bool) []int {
-	var include []int
+	include := make([]int, 0)
 	vals := s.ToString().values.Vals().([]string)
 	for i, val := range vals {
 		if cmp(val) {
@@ -45,7 +46,7 @@ func (s *Series) CustomFilterString(cmp func(string) bool) []int {
 
 // CustomFilterBool converts a Series to bool values, applies a filter, and returns the rows where the condition is true.
 func (s *Series) CustomFilterBool(cmp func(bool) bool) []int {
-	var include []int
+	include := make([]int, 0)
 	vals := s.ToBool().values.Vals().([]bool)
 	for i, val := range vals {
 		if cmp(val) {
@@ -57,7 +58,7 @@ func (s *Series) CustomFilterBool(cmp func(bool) bool) []int {
 
 // CustomFilterDateTime converts a Series to datetime values, applies a filter, and returns the rows where the condition is true.
 func (s *Series) CustomFilterDateTime(cmp func(time.Time) bool) []int {
-	var include []int
+	include := make([]int, 0)
 	vals := s.ToDateTime().values.Vals().([]time.Time)
 	for i, val := range vals {
 		if cmp(val) {
@@ -88,7 +89,7 @@ func (s *Series) Lt(comparison float64) []int {
 	})
 }
 
-// Lte filter - Greater Than or Equal To (numeric).
+// Lte filter - Less Than or Equal To (numeric).
 func (s *Series) Lte(comparison float64) []int {
 	return s.CustomFilterFloat64(func(elem float64) bool {
 		return elem <= comparison

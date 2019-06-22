@@ -78,18 +78,18 @@ func (s *Series) in(positions []int) (*Series, error) {
 		return s, fmt.Errorf("series internal alignment error: %v", err)
 	}
 	if positions == nil {
-		return nil, nil
+		return newEmptySeries(), nil
 	}
 
 	s = s.Copy()
 	values, err := s.values.In(positions)
 	if err != nil {
-		return nil, fmt.Errorf("series.In() selecting rows: %v", err)
+		return newEmptySeries(), fmt.Errorf("series.In() selecting rows: %v", err)
 	}
 	s.values = values
 	idx, err := s.index.In(positions)
 	if err != nil {
-		return nil, fmt.Errorf("series.In() selecting index labels: %v", err)
+		return newEmptySeries(), fmt.Errorf("series.In() selecting index labels: %v", err)
 	}
 	s.index = idx
 	return s, nil
@@ -99,7 +99,7 @@ func (s *Series) mustIn(positions []int) *Series {
 	s, err := s.in(positions)
 	if err != nil {
 		log.Printf("Internal error: %v\n", err)
-		return nil
+		return newEmptySeries()
 	}
 	return s
 }

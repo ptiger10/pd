@@ -77,19 +77,22 @@ func (df *DataFrame) Copy() *DataFrame {
 
 func (df *DataFrame) rowsIn(rowPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
-		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)
+	}
+	if len(rowPositions) == 0 {
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() no positions provided")
 	}
 	var seriesSlice []*series.Series
 	for i := 0; i < df.NumCols(); i++ {
 		s, err := df.s[i].SelectRows(rowPositions).Series()
 		if err != nil {
-			return nil, fmt.Errorf("dataframe.rowsIn() selecting rows within series (position %v): %v", i, err)
+			return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() selecting rows within series (position %v): %v", i, err)
 		}
 		seriesSlice = append(seriesSlice, s)
 	}
 	idx, err := df.index.In(rowPositions)
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.rowsIn() selecting index labels: %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() selecting index labels: %v", err)
 	}
 	df = newFromComponents(seriesSlice, idx, df.cols, df.name)
 	return df, nil
