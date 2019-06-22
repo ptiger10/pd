@@ -40,7 +40,7 @@ func (idx Index) In(rowPositions []int) (Index, error) {
 	for i, level := range idx.Levels {
 		idx.Levels[i].Labels, err = level.Labels.In(rowPositions)
 		if err != nil {
-			return Index{}, fmt.Errorf("internal index.In(): %v", err)
+			return Index{}, fmt.Errorf("selecting rows in index: %v", err)
 		}
 	}
 	idx.Refresh()
@@ -191,13 +191,13 @@ func NewFromConfig(config Config, n int) (Index, error) {
 	}
 	// both not nil: return error
 	if config.Index != nil && config.MultiIndex != nil {
-		return Index{}, fmt.Errorf("internal index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
 	// single index
 	if config.Index != nil {
 		newLevel, err := NewLevel(config.Index, config.IndexName)
 		if err != nil {
-			return Index{}, fmt.Errorf("internal index.NewFromConfig(): %v", err)
+			return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 		}
 		return New(newLevel), nil
 	}
@@ -206,7 +206,7 @@ func NewFromConfig(config Config, n int) (Index, error) {
 		// name misalignment
 		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
 			return Index{}, fmt.Errorf(
-				"internal index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
+				"internal/index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
 		var newLevels []Level
@@ -217,7 +217,7 @@ func NewFromConfig(config Config, n int) (Index, error) {
 			}
 			newLevel, err := NewLevel(config.MultiIndex[i], levelName)
 			if err != nil {
-				return Index{}, fmt.Errorf("internal index.NewFromConfig(): %v", err)
+				return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 			}
 			newLevels = append(newLevels, newLevel)
 		}

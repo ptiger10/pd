@@ -72,7 +72,7 @@ func (s *Series) Describe() {
 //
 // Applies to: All
 func (s *Series) ValueCounts() map[string]int {
-	valid, _ := s.in(s.valid())
+	valid, _ := s.selectByRows(s.valid())
 	if valid == nil {
 		return nil
 	}

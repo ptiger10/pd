@@ -89,8 +89,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 }
 
 func newEmptyDataFrame() *DataFrame {
-	df, _ := New(nil)
-	return df
+	return MustNew(nil)
 }
 
 // MustNew constructs a new DataFrame or logs an error and returns an empty DataFrame.
@@ -118,7 +117,7 @@ func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, 
 	}
 }
 
-// newSingleIndexSeries constructs a Series with a single-level index from values and index slices. Used to convert DataFrames to Series.
+// newSingleIndexSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
 func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
 	ret, err := series.New(nil)
 	if err != nil {

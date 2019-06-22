@@ -13,7 +13,7 @@ import (
 //
 // To return rows at one or more positions, use s.Select().Get())
 func (s *Series) At(pos int) (interface{}, error) {
-	sNew, err := s.in([]int{pos})
+	sNew, err := s.selectByRows([]int{pos})
 	if err != nil {
 		return nil, fmt.Errorf("At(): %v", err)
 	}
@@ -173,7 +173,7 @@ func (sel Selection) series() (*Series, error) {
 	if sel.levelPositions == nil {
 		sel.levelPositions = values.MakeIntRange(0, sel.s.index.Len())
 	}
-	s, _ := sel.s.in(sel.rowPositions)
+	s, _ := sel.s.selectByRows(sel.rowPositions)
 	s.index, _ = s.index.LevelsIn(sel.levelPositions)
 	return s, nil
 }

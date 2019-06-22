@@ -39,12 +39,12 @@ func Test_Math(t *testing.T) {
 				[]interface{}{[]float64{1, 3, 5}, []float64{-3, math.NaN(), -1}, []float64{-5, 0, 5}},
 				Config{Cols: []interface{}{"foo", "bar", "baz"}})
 			if err != nil {
-				t.Errorf("%v(): %v", tt.name, err)
+				t.Errorf("%v() error: %v", tt.name, err)
 			}
 			got := tt.fn(df)
 			want, _ := series.New(tt.want.data, tt.want.config)
 			if !series.Equal(got, want) {
-				t.Errorf("%v() = %v, want %v", tt.name, got, want)
+				t.Errorf("%v() got %v, want %v", tt.name, got, want)
 			}
 		})
 	}

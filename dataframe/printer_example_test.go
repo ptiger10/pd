@@ -281,3 +281,18 @@ func ExampleDataFrame_multiCol_col() {
 	// datatype: float64
 	// name: qux | quux
 }
+
+func ExampleDataFrame_subset() {
+	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}},
+		Config{MultiCols: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df.Subset([]int{0}))
+	// Output:
+	//       qux
+	//      quux quuz
+	// 0       1  foo
+	// datatype: float64
+	//  <nil>
+}

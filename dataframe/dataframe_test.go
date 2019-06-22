@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -29,14 +28,14 @@ func TestRowsIn(t *testing.T) {
 	df, err := New(
 		[]interface{}{[]string{"foo", "bar", "baz"}},
 		Config{Index: []string{"qux", "quux", "corge"}, Cols: []interface{}{"foofoo"}})
-	got, err := df.rowsIn([]int{0, 1})
+	got, err := df.selectByRows([]int{0, 1})
 	if err != nil {
-		t.Errorf("rowsIn(): %v", err)
+		t.Errorf("selectByRows(): %v", err)
 	}
 	want := MustNew([]interface{}{[]string{"foo", "bar"}},
 		Config{Index: []string{"qux", "quux"}, Cols: []interface{}{"foofoo"}})
 	if !Equal(got, want) {
-		t.Errorf("rowsIn(): got %v, want %v", got, want)
+		t.Errorf("selectByRows(): got %v, want %v", got, want)
 	}
 }
 
@@ -44,13 +43,13 @@ func TestColsIn(t *testing.T) {
 	df := MustNew(
 		[]interface{}{[]string{"foo"}, []string{"bar"}},
 		Config{Cols: []interface{}{"baz", "qux"}})
-	got, err := df.colsIn([]int{1})
+	got, err := df.selectByCols([]int{1})
 	if err != nil {
-		t.Errorf("colsIn(): %v", err)
+		t.Errorf("selectByCols(): %v", err)
 	}
 	want := MustNew([]interface{}{[]string{"bar"}}, Config{Cols: []interface{}{"qux"}})
 	if !Equal(got, want) {
-		t.Errorf("colsIn(): got %v, want %v", got, want)
+		t.Errorf("selectByCols(): got %v, want %v", got, want)
 	}
 }
 
@@ -131,23 +130,26 @@ func TestMakeExclusionTable(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
-	df := MustNew([]interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}},
-		Config{Index: []string{"quux", "quuz"}})
-	got := df.Subset([]int{1})
-	want := MustNew([]interface{}{[]string{"bar"}, []string{"qux"}},
-		Config{Index: []string{"quuz"}})
-	if !Equal(got, want) {
-		t.Errorf("df.Subset() got %v, want %v", got, want)
+	tests := []struct {
+		args    []int
+		want    *DataFrame
+		wantErr bool
+	}{
+		{[]int{0}, MustNew([]interface{}{"foo"}), false},
+		{[]int{1}, MustNew([]interface{}{"bar"}, Config{Index: 1}), false},
+		{[]int{0, 1}, MustNew([]interface{}{[]string{"foo", "bar"}}), false},
+		{[]int{1, 0}, MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []int{1, 0}}), false},
+		{[]int{}, newEmptyDataFrame(), true},
+		{[]int{3}, newEmptyDataFrame(), true},
 	}
-}
-
-func TestSubset_Empty(t *testing.T) {
-	options.SetLogWarnings(false)
-	df := MustNew([]interface{}{[]string{"foo", "bar"}})
-	got := df.Subset([]int{})
-	want := newEmptyDataFrame()
-	if !Equal(got, want) {
-		t.Errorf("df.Subset() got %v, want %v", got, want)
+	for _, tt := range tests {
+		df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
+		got, err := df.Subset(tt.args)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("s.Subset() error = %v, want %v for args %v", err, tt.wantErr, tt.args)
+		}
+		if !Equal(got, tt.want) {
+			t.Errorf("s.Subset() got %v, want %v for args %v", got, tt.want, tt.args)
+		}
 	}
-	options.SetLogWarnings(true)
 }

@@ -49,8 +49,8 @@ func (s *Series) dropRows(positions []int) (*Series, error) {
 // Drop drops the row at the specified integer position and returns a new Series.
 func (s *Series) Drop(pos int) (*Series, error) {
 	s = s.Copy()
-	s.InPlace.Drop(pos)
-	return s, nil
+	err := s.InPlace.Drop(pos)
+	return s, err
 }
 
 // DropNull drops all null values and modifies the Series in place.
@@ -97,12 +97,12 @@ func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
 		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
 			len(idx), ip.s.index.Len())
 	}
-	for i := 0; i < ip.s.index.Len(); i++ {
-		err := ip.s.index.Levels[i].Labels.Insert(pos, idx[i])
+	for j := 0; j < ip.s.index.Len(); j++ {
+		err := ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
 		if err != nil {
-			return fmt.Errorf("Series.Insert() with idx val %v at idx level %v: %v", val, i, err)
+			return fmt.Errorf("Series.Insert() into index: %v", err)
 		}
-		ip.s.index.Levels[i].Refresh()
+		ip.s.index.Levels[j].Refresh()
 	}
 	if err := ip.s.values.Insert(pos, val); err != nil {
 		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)

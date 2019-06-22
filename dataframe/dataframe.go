@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/ptiger10/pd/internal/index"
-	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -69,49 +68,45 @@ func (df *DataFrame) Copy() *DataFrame {
 		name:  df.name,
 	}
 	// dfCopy.Apply = Apply{s: copyS}
-	// dfCopy.Filter = Filter{s: copyS}
 	// dfCopy.Index = Index{s: copyS}
 	// dfCopy.InPlace = InPlace{s: copyS}
 	return dfCopy
 }
 
-func (df *DataFrame) rowsIn(rowPositions []int) (*DataFrame, error) {
+func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)
 	}
-	if len(rowPositions) == 0 {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() no positions provided")
+	idx, err := df.index.In(rowPositions)
+	if err != nil {
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.selectByRows(): %v", err)
 	}
 	var seriesSlice []*series.Series
 	for i := 0; i < df.NumCols(); i++ {
-		s, err := df.s[i].SelectRows(rowPositions).Series()
+		s, err := df.s[i].Subset(rowPositions)
 		if err != nil {
-			return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() selecting rows within series (position %v): %v", i, err)
+			return newEmptyDataFrame(), fmt.Errorf("dataframe.selectByRows(): %v", err)
 		}
 		seriesSlice = append(seriesSlice, s)
-	}
-	idx, err := df.index.In(rowPositions)
-	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.rowsIn() selecting index labels: %v", err)
 	}
 	df = newFromComponents(seriesSlice, idx, df.cols, df.name)
 	return df, nil
 }
 
-func (df *DataFrame) colsIn(colPositions []int) (*DataFrame, error) {
+func (df *DataFrame) selectByCols(colPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
 		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
 	}
 	var seriesSlice []*series.Series
 	for _, pos := range colPositions {
 		if pos >= df.NumCols() {
-			return nil, fmt.Errorf("dataframe.colsIn(): invalid col position %d (max: %d)", pos, df.NumCols()-1)
+			return nil, fmt.Errorf("dataframe.selectByCols(): invalid col position %d (max: %d)", pos, df.NumCols()-1)
 		}
 		seriesSlice = append(seriesSlice, df.s[pos])
 	}
 	columnsSlice, err := df.cols.In(colPositions)
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.colsIn(): %v", err)
+		return nil, fmt.Errorf("dataframe.selectByCols(): %v", err)
 	}
 
 	df = newFromComponents(seriesSlice, df.index, columnsSlice, df.name)
@@ -146,7 +141,7 @@ func (df *DataFrame) Col(label string) *series.Series {
 	if !ok {
 		log.Printf("df.Col(): invalid column label: %v not in labels", label)
 	}
-	df, _ = df.colsIn(colPos)
+	df, _ = df.selectByCols(colPos)
 	return df.s[0]
 }
 
@@ -208,13 +203,14 @@ func (df *DataFrame) makeExclusionsTable() [][]bool {
 }
 
 // Subset a DataFrame to include only the rows at supplied integer positions.
-func (df *DataFrame) Subset(rows []int) *DataFrame {
-	ret, err := df.rowsIn(rows)
-	if err != nil {
-		if options.GetLogWarnings() {
-			log.Printf("dataframe.Subset(): %v", err)
-		}
-		return newEmptyDataFrame()
+func (df *DataFrame) Subset(rowPositions []int) (*DataFrame, error) {
+	if len(rowPositions) == 0 {
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.Subset(): no valid rows provided")
 	}
-	return ret
+
+	sub, err := df.selectByRows(rowPositions)
+	if err != nil {
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.Subset(): %v", err)
+	}
+	return sub, nil
 }

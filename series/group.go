@@ -55,7 +55,7 @@ func (g Grouping) Group(label string) (*Series, error) {
 	if !ok {
 		return nil, fmt.Errorf("Grouping.Group(): %v not a valid group label", label)
 	}
-	s, err := g.s.in(group.Positions)
+	s, err := g.s.selectByRows(group.Positions)
 	if err != nil {
 		return nil, fmt.Errorf("Grouping.Group(): %v", err)
 	}

@@ -45,7 +45,7 @@ func (vals *float64Values) In(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -98,7 +98,7 @@ func (vals *float64Values) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *float64Values) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -208,7 +208,7 @@ func (vals *int64Values) In(rowPositions []int) (Values, error) {
 	var ret int64Values
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -261,7 +261,7 @@ func (vals *int64Values) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *int64Values) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -371,7 +371,7 @@ func (vals *stringValues) In(rowPositions []int) (Values, error) {
 	var ret stringValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -424,7 +424,7 @@ func (vals *stringValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *stringValues) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -534,7 +534,7 @@ func (vals *boolValues) In(rowPositions []int) (Values, error) {
 	var ret boolValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -587,7 +587,7 @@ func (vals *boolValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *boolValues) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -697,7 +697,7 @@ func (vals *dateTimeValues) In(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -750,7 +750,7 @@ func (vals *dateTimeValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}
@@ -860,7 +860,7 @@ func (vals *interfaceValues) In(rowPositions []int) (Values, error) {
 	var ret interfaceValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid integer position: %d (len: %v)", position, len(*vals))
+			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
 		}
 		ret = append(ret, (*vals)[position])
 	}
@@ -913,7 +913,7 @@ func (vals *interfaceValues) Drop(pos int) error {
 
 // Insert inserts a new Value/Null pair at an integer position.
 func (vals *interfaceValues) Insert(pos int, val interface{}) error {
-	if pos >= len(*vals) {
+	if pos > len(*vals) {
 		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
 	}
 	v := interfaceValue{val, false}

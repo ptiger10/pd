@@ -72,8 +72,8 @@ func (s *Series) Copy() *Series {
 	return copyS
 }
 
-// in copies a Series then subsets it to include only index items and values at the positions supplied
-func (s *Series) in(positions []int) (*Series, error) {
+// selectByRows copies a Series then subsets it to include only index items and values at the positions supplied
+func (s *Series) selectByRows(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
 		return s, fmt.Errorf("series internal alignment error: %v", err)
 	}
@@ -84,19 +84,19 @@ func (s *Series) in(positions []int) (*Series, error) {
 	s = s.Copy()
 	values, err := s.values.In(positions)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.In() selecting rows: %v", err)
+		return newEmptySeries(), fmt.Errorf("series.selectByRows() selecting rows: %v", err)
 	}
 	s.values = values
 	idx, err := s.index.In(positions)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.In() selecting index labels: %v", err)
+		return newEmptySeries(), fmt.Errorf("series.selectByRows(): %v", err)
 	}
 	s.index = idx
 	return s, nil
 }
 
 func (s *Series) mustIn(positions []int) *Series {
-	s, err := s.in(positions)
+	s, err := s.selectByRows(positions)
 	if err != nil {
 		log.Printf("Internal error: %v\n", err)
 		return newEmptySeries()
