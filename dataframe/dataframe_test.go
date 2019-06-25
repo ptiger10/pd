@@ -95,7 +95,7 @@ func TestMaxColWidth(t *testing.T) {
 	}{
 		{Config{}, []int{3, 4}},
 		{Config{Cols: []interface{}{"corge", "bar"}, ColsName: "grapply"}, []int{5, 4}},
-		{Config{MultiCols: [][]interface{}{{"corge", "bar"}, {"qux", "quuz"}}, MultiColsNames: []string{"grapply", "grault"}}, []int{5, 4}},
+		{Config{MultiCol: [][]interface{}{{"corge", "bar"}, {"qux", "quuz"}}, MultiColNames: []string{"grapply", "grault"}}, []int{5, 4}},
 	}
 
 	for _, tt := range tests {
@@ -111,7 +111,7 @@ func TestMaxColWidth(t *testing.T) {
 func TestMaxColWidthExclusions(t *testing.T) {
 	df := MustNew(
 		[]interface{}{[]string{"a", "b"}, []string{"c", "quux"}},
-		Config{MultiCols: [][]interface{}{{"waldo", "waldo"}, {"d", "e"}}})
+		Config{MultiCol: [][]interface{}{{"waldo", "waldo"}, {"d", "e"}}})
 	excl := [][]bool{{false, true}, {false, false}}
 	got := df.maxColWidths(excl)
 	want := []int{5, 4}
@@ -121,7 +121,7 @@ func TestMaxColWidthExclusions(t *testing.T) {
 }
 
 func TestMakeExclusionTable(t *testing.T) {
-	df := MustNew([]interface{}{"foo", "bar"}, Config{MultiCols: [][]interface{}{{"baz", "qux"}, {"quux", "quuz"}}})
+	df := MustNew([]interface{}{"foo", "bar"}, Config{MultiCol: [][]interface{}{{"baz", "qux"}, {"quux", "quuz"}}})
 	got := df.makeExclusionsTable()
 	want := [][]bool{{false, false}, {false, false}}
 	if !reflect.DeepEqual(got, want) {

@@ -108,9 +108,9 @@ func ExampleNew_string_colsNamed() {
 	// name: foobar
 }
 
-func ExampleNew_string_multicolsUnnamed() {
+func ExampleNew_string_multicolUnnamed() {
 	df, err := New([]interface{}{"foo", "bar"},
-		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}})
+		Config{Name: "foobar", MultiCol: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -123,9 +123,9 @@ func ExampleNew_string_multicolsUnnamed() {
 	// name: foobar
 }
 
-func ExampleNew_string_multicolsNamed() {
+func ExampleNew_string_multicolNamed() {
 	df, err := New([]interface{}{"foo", "bar"},
-		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quax"}, {"baz", "qux"}}, MultiColsNames: []string{"corge", "grault"}})
+		Config{Name: "foobar", MultiCol: [][]interface{}{{"quux", "quax"}, {"baz", "qux"}}, MultiColNames: []string{"corge", "grault"}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,9 +138,9 @@ func ExampleNew_string_multicolsNamed() {
 	// name: foobar
 }
 
-func ExampleNew_string_multicolsNamed_repeat() {
+func ExampleNew_string_multicolNamed_repeat() {
 	df, err := New([]interface{}{"foo", "bar"},
-		Config{Name: "foobar", MultiCols: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}, MultiColsNames: []string{"corge", "grault"}})
+		Config{Name: "foobar", MultiCol: [][]interface{}{{"quux", "quux"}, {"baz", "qux"}}, MultiColNames: []string{"corge", "grault"}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -204,11 +204,11 @@ func ExampleNew_string_multiindexNamed_colsNamed() {
 	// name: foobar
 }
 
-func ExampleNew_string_multiindexNamed_multicolsNamed() {
+func ExampleNew_string_multiindexNamed_multicolNamed() {
 	df, err := New([]interface{}{"foo", "bar"},
 		Config{Name: "foobar",
 			MultiIndex: []interface{}{"baz", "garply"}, MultiIndexNames: []string{"grault", "corge"},
-			MultiCols: [][]interface{}{{"fred", "fred"}, {"quux", "qux"}}, MultiColsNames: []string{"waldo", "quuz"}})
+			MultiCol: [][]interface{}{{"fred", "fred"}, {"quux", "qux"}}, MultiColNames: []string{"waldo", "quuz"}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -222,12 +222,12 @@ func ExampleNew_string_multiindexNamed_multicolsNamed() {
 	// name: foobar
 }
 
-func ExampleNew_float64_indexNamed_multicolsNamed() {
+func ExampleNew_float64_indexNamed_multicolNamed() {
 	df, err := New([]interface{}{"qux", "waldo"},
 		Config{
 			Name:  "foobar",
 			Index: "foo", IndexName: "grault",
-			MultiCols: [][]interface{}{{"quux", "quux"}, {"bar", "baz"}}, MultiColsNames: []string{"quuz", "garply"}})
+			MultiCol: [][]interface{}{{"quux", "quux"}, {"bar", "baz"}}, MultiColNames: []string{"quuz", "garply"}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -269,7 +269,7 @@ func ExampleDataFrame_Col() {
 // Selects the first column with this label from the first level
 func ExampleDataFrame_multiCol_col() {
 	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}},
-		Config{MultiCols: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
+		Config{MultiCol: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -284,7 +284,7 @@ func ExampleDataFrame_multiCol_col() {
 
 func ExampleDataFrame_subset() {
 	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}},
-		Config{MultiCols: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
+		Config{MultiCol: [][]interface{}{{"qux", "qux"}, {"quux", "quuz"}}})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -46,7 +46,7 @@ func (df *DataFrame) NumCols() int {
 
 // IndexLevels returns the number of index levels in the DataFrame.
 func (df *DataFrame) IndexLevels() int {
-	return df.index.Len()
+	return df.index.NumLevels()
 }
 
 // ColLevels returns the number of column levels in the DataFrame.

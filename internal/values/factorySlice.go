@@ -107,7 +107,7 @@ func makeRange(min, max int) []int64 {
 	return a
 }
 
-// MakeIntRange returns a sequential series of numbers, for use in creating a list of integer positions.
+// MakeIntRange returns a sequential series of numbers, for use in making default index labels.
 func MakeIntRange(min, max int) []int {
 	a := make([]int, max-min)
 	for i := range a {
@@ -116,20 +116,13 @@ func MakeIntRange(min, max int) []int {
 	return a
 }
 
-// MakeInterfaceRange returns a sequential series of numbers as type interface, for use in creating a list of integer positions.
+// MakeInterfaceRange returns a sequential series of numbers as an interface slice, for use in making default column labels.
 func MakeInterfaceRange(min, max int) []interface{} {
 	a := make([]interface{}, max-min)
 	for i := range a {
 		a[i] = min + i
 	}
 	return a
-}
-
-// NewDefaultValues returns a factory of []int64 values {0, 1, 2, ... n} for use in a default Series index.
-func NewDefaultValues(n int) Values {
-	defaultRange := makeRange(0, n)
-	v := newSliceInt64(defaultRange)
-	return v.Values
 }
 
 // [END utility slices]

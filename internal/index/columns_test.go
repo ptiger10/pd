@@ -12,8 +12,8 @@ func TestNewColumns(t *testing.T) {
 	type want struct {
 		columns      Columns
 		len          int
-		numlevels    int
-		maxnamewidth int
+		numLevels    int
+		maxNameWidth int
 	}
 	tests := []struct {
 		name string
@@ -23,7 +23,7 @@ func TestNewColumns(t *testing.T) {
 		{"empty", args{nil},
 			want{
 				columns: Columns{Levels: []ColLevel{ColLevel{Labels: nil}}, NameMap: LabelMap{"": []int{0}}},
-				len:     0, numlevels: 1, maxnamewidth: 0,
+				len:     0, numLevels: 1, maxNameWidth: 0,
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]interface{}{1, 2}, "foo")}},
@@ -53,12 +53,12 @@ func TestNewColumns(t *testing.T) {
 				t.Errorf("Columns.Len(): got %v, want %v", gotLen, tt.want.len)
 			}
 			gotLevels := got.NumLevels()
-			if gotLevels != tt.want.numlevels {
-				t.Errorf("Columns.NumLevels(): got %v, want %v", gotLevels, tt.want.numlevels)
+			if gotLevels != tt.want.numLevels {
+				t.Errorf("Columns.NumLevels(): got %v, want %v", gotLevels, tt.want.numLevels)
 			}
 			gotMaxWidth := got.MaxNameWidth()
-			if gotMaxWidth != tt.want.maxnamewidth {
-				t.Errorf("Columns.MaxWidth(): got %v, want %v", gotMaxWidth, tt.want.maxnamewidth)
+			if gotMaxWidth != tt.want.maxNameWidth {
+				t.Errorf("Columns.MaxWidth(): got %v, want %v", gotMaxWidth, tt.want.maxNameWidth)
 			}
 		})
 	}

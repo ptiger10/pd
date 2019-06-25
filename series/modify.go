@@ -36,7 +36,7 @@ func (ip InPlace) Len() int {
 // Swap swaps the selected rows in place.
 func (ip InPlace) Swap(i, j int) {
 	ip.s.values.Swap(i, j)
-	for lvl := 0; lvl < ip.s.index.Len(); lvl++ {
+	for lvl := 0; lvl < ip.s.index.NumLevels(); lvl++ {
 		ip.s.index.Levels[lvl].Labels.Swap(i, j)
 		ip.s.index.Levels[lvl].Refresh()
 	}
@@ -63,11 +63,11 @@ func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
 		return fmt.Errorf("Series.Insert(): %v", err)
 	}
 
-	if len(idx) != ip.s.index.Len() {
+	if len(idx) != ip.s.index.NumLevels() {
 		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
-			len(idx), ip.s.index.Len())
+			len(idx), ip.s.index.NumLevels())
 	}
-	for j := 0; j < ip.s.index.Len(); j++ {
+	for j := 0; j < ip.s.index.NumLevels(); j++ {
 		err := ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
 		if err != nil {
 			return fmt.Errorf("Series.Insert(): %v", err)
@@ -134,7 +134,7 @@ func (ip InPlace) dropMany(positions []int) error {
 
 // dropOne drops a row at a specified integer position and modifies the Series in place.
 func (ip InPlace) dropOne(pos int) error {
-	for i := 0; i < ip.s.index.Len(); i++ {
+	for i := 0; i < ip.s.index.NumLevels(); i++ {
 		// ducks errors safely due to index alignment check in dropMany
 		ip.s.index.Levels[i].Labels.Drop(pos)
 		ip.s.index.Levels[i].Refresh()

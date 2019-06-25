@@ -69,7 +69,7 @@ func (s *Series) GroupByIndex() Grouping {
 	for i := 0; i < s.Len(); i++ {
 		var levels []interface{}
 		var labels []string
-		for j := 0; j < s.index.Len(); j++ {
+		for j := 0; j < s.index.NumLevels(); j++ {
 			idx, err := s.Index.At(i, j)
 			if err != nil {
 				log.Printf("series.GroupByIndex(): %v", err)

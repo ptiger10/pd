@@ -34,7 +34,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 			Index: tmp.Index, IndexName: tmp.IndexName,
 			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 			Cols: tmp.Cols, ColsName: tmp.ColsName,
-			MultiCols: tmp.MultiCols, MultiColsNames: tmp.MultiColsNames,
+			MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
 		}
 	}
 
@@ -163,6 +163,6 @@ type Config struct {
 	MultiIndexNames []string
 	Cols            []interface{}
 	ColsName        string
-	MultiCols       [][]interface{}
-	MultiColsNames  []string
+	MultiCol        [][]interface{}
+	MultiColNames   []string
 }
