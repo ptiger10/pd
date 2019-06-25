@@ -1,18 +1,67 @@
 package pd
 
 import (
-	"log"
+	"fmt"
 
+	"github.com/ptiger10/pd/dataframe"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
-// Series is the default Series constructor.
-// For more configuration options (e.g., custom index), use pd/series.New()
-func Series(data interface{}) *series.Series {
-	s, err := series.New(data)
-	if err != nil {
-		log.Printf("pd.Series(): %v\n", err)
-		return nil
+// Series constructs a new Series.
+func Series(data interface{}, config ...Config) (*series.Series, error) {
+	tmp := Config{}
+	if config != nil {
+		if len(config) > 1 {
+			return series.MustNew(nil), fmt.Errorf("pd.Series(): can supply at most one Config (%d > 1)", len(config))
+		}
+		tmp = config[0]
 	}
-	return s
+	sConfig := series.Config{
+		Name:  tmp.Name,
+		Index: tmp.Index, IndexName: tmp.IndexName,
+		MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
+	}
+	s, err := series.New(data, sConfig)
+	if err != nil {
+		return series.MustNew(nil), fmt.Errorf("pd.Series(): %v", err)
+	}
+	return s, nil
+}
+
+// DataFrame constructs a new DataFrame.
+func DataFrame(data []interface{}, config ...Config) (*dataframe.DataFrame, error) {
+	tmp := Config{}
+	if config != nil {
+		if len(config) > 1 {
+			return dataframe.MustNew(nil), fmt.Errorf("pd.Series(): can supply at most one Config (%d > 1)", len(config))
+		}
+		tmp = config[0]
+	}
+	dfConfig := dataframe.Config{
+		Name: tmp.Name, DataType: tmp.DataType,
+		Index: tmp.Index, IndexName: tmp.IndexName,
+		MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
+		Cols: tmp.Cols, ColsName: tmp.ColsName,
+		MultiCols: tmp.MultiCols, MultiColsNames: tmp.MultiColsNames,
+	}
+	df, err := dataframe.New(data, dfConfig)
+	if err != nil {
+		return dataframe.MustNew(nil), fmt.Errorf("pd.DataFrame(): %v", err)
+	}
+	return df, nil
+}
+
+// Config customizes the construction of either a DataFrame or Series.
+type Config struct {
+	Name            string
+	DataType        options.DataType
+	Index           interface{}
+	IndexName       string
+	MultiIndex      []interface{}
+	MultiIndexNames []string
+	Cols            []interface{}
+	ColsName        string
+	MultiCols       [][]interface{}
+	MultiColsNames  []string
 }

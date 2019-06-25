@@ -245,10 +245,6 @@ func (s *Series) DropNull() *Series {
 	return s
 }
 
-// [END Copy]
-
-// [START type conversion methods]
-
 // ToFloat64 converts Series values to float64 and returns a new Series.
 func (s *Series) ToFloat64() *Series {
 	s = s.Copy()
@@ -291,4 +287,4 @@ func (s *Series) ToInterface() *Series {
 	return s
 }
 
-// [END type conversion methods]
+// [END Copy]

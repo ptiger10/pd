@@ -26,7 +26,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	// Handling config
 	if config != nil {
 		if len(config) > 1 {
-			return nil, fmt.Errorf("dataframe.New(): can supply at most one Config (%d > 1)", len(config))
+			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): can supply at most one Config (%d > 1)", len(config))
 		}
 		tmp = config[0]
 		configuration = index.Config{
