@@ -1,602 +1,521 @@
 package series
 
 import (
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
-func TestInsert(t *testing.T) {
+// Modify tests check both inplace and copy functionality in the same test, if both are available
+func TestRename(t *testing.T) {
+	s := MustNew("foo", Config{Name: "baz"})
+	want := "qux"
+	s.Rename(want)
+	got := s.Name()
+	if got != want {
+		t.Errorf("Rename() got %v, want %v", got, want)
+	}
+}
+
+func TestModify_Sort(t *testing.T) {
+	testDate1 := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
+	testDate2 := testDate1.Add(24 * time.Hour)
+	testDate3 := testDate2.Add(24 * time.Hour)
+
+	type args struct {
+		asc bool
+	}
+	type want struct {
+		series *Series
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"float",
+			MustNew([]float64{3, 5, 1}), args{true},
+			want{MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}})}},
+		{"float desc",
+			MustNew([]float64{3, 5, 1}), args{false},
+			want{MustNew([]float64{5, 3, 1}, Config{Index: []int{1, 0, 2}})}},
+
+		{"int",
+			MustNew([]int{3, 5, 1}), args{true},
+			want{MustNew([]int{1, 3, 5}, Config{Index: []int{2, 0, 1}})}},
+		{"int desc",
+			MustNew([]int{3, 5, 1}), args{false},
+			want{MustNew([]int{5, 3, 1}, Config{Index: []int{1, 0, 2}})}},
+
+		{"string",
+			MustNew([]string{"15", "3", "1"}), args{true},
+			want{MustNew([]string{"1", "15", "3"}, Config{Index: []int{2, 0, 1}})}},
+		{"string desc",
+			MustNew([]string{"15", "3", "1"}), args{false},
+			want{MustNew([]string{"3", "15", "1"}, Config{Index: []int{1, 0, 2}})}},
+
+		{"bool",
+			MustNew([]bool{false, true, false}), args{true},
+			want{MustNew([]bool{false, false, true}, Config{Index: []int{0, 2, 1}})}},
+		{"bool desc",
+			MustNew([]bool{false, true, false}), args{false},
+			want{MustNew([]bool{true, false, false}, Config{Index: []int{1, 0, 2}})}},
+
+		{"datetime",
+			MustNew([]time.Time{testDate2, testDate3, testDate1}), args{true},
+			want{MustNew([]time.Time{testDate1, testDate2, testDate3}, Config{Index: []int{2, 0, 1}})}},
+		{"datetime desc",
+			MustNew([]time.Time{testDate2, testDate3, testDate1}), args{false},
+			want{MustNew([]time.Time{testDate3, testDate2, testDate1}, Config{Index: []int{1, 0, 2}})}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			s.InPlace.Sort(tt.args.asc)
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.Sort() got %v, want %v", s, tt.want.series)
+			}
+
+			sCopy := sArchive.Sort(tt.args.asc)
+			if !Equal(sCopy, tt.want.series) {
+				t.Errorf("Series.Sort() got %v, want %v", sCopy, tt.want.series)
+			}
+			if Equal(sArchive, sCopy) {
+				t.Errorf("Series.Sort() retained access to original, want copy")
+			}
+		})
+	}
+}
+
+func TestModify_Swap(t *testing.T) {
+	type args struct {
+		i int
+		j int
+	}
+	var tests = []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"0,1", args{0, 1}, false},
+		{"1,0", args{1, 0}, false},
+		{"fail i", args{2, 0}, true},
+		{"fail j", args{0, 2}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := MustNew([]string{"foo", "bar"})
+			sArchive := s.Copy()
+			want := MustNew([]string{"bar", "foo"}, Config{Index: []int{1, 0}})
+
+			sCopy, err := sArchive.Swap(tt.args.i, tt.args.j)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Series.Swap() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+
+			// intentionally skip fail case
+			if !strings.Contains(tt.name, "fail") {
+				s.InPlace.Swap(tt.args.i, tt.args.j)
+				if !Equal(s, want) {
+					t.Errorf("InPlace.Swap() got %v, want %v", s, want)
+				}
+				if !Equal(sCopy, want) {
+					t.Errorf("Series.Swap() got %v, want %v", sCopy, want)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Sort() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestModify_Insert(t *testing.T) {
+	misaligned := MustNew([]string{"foo", "bar"})
+	misaligned.index.Levels[0].Labels.Drop(1)
+
 	type args struct {
 		pos int
 		val interface{}
 		idx []interface{}
 	}
 	type want struct {
-		values     interface{}
-		multiindex []interface{}
-		err        bool
+		series *Series
+		err    bool
 	}
 	var tests = []struct {
-		name string
-		args args
-		want want
+		name  string
+		input *Series
+		args  args
+		want  want
 	}{
-		{"0", args{0, "baz", []interface{}{"C", 3}},
-			want{[]string{"baz", "foo", "bar"}, []interface{}{[]string{"C", "A", "B"}, []int{3, 1, 2}}, false}},
-		{"1", args{1, "baz", []interface{}{"C", 3}},
-			want{[]string{"foo", "baz", "bar"}, []interface{}{[]string{"A", "C", "B"}, []int{1, 3, 2}}, false}},
-		{"2", args{2, "baz", []interface{}{"C", 3}},
-			want{[]string{"foo", "bar", "baz"}, []interface{}{[]string{"A", "B", "C"}, []int{1, 2, 3}}, false}},
-		{"wrong index length", args{2, "baz", []interface{}{"C"}},
-			want{nil, nil, true}},
-		{"invalid position", args{100, "baz", []interface{}{"C", 3}},
-			want{nil, nil, true}},
+		{"emptySeries",
+			newEmptySeries(),
+			args{0, "foo", []interface{}{"A"}},
+			want{series: MustNew("foo", Config{Index: "A"}), err: false}},
+		{"singleIndex",
+			MustNew([]string{"foo"}, Config{Index: "A"}),
+			args{0, "bar", []interface{}{"B"}},
+			want{series: MustNew([]string{"bar", "foo"}, Config{Index: []string{"B", "A"}}), err: false}},
+		{"multiIndex",
+			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			args{1, "bar", []interface{}{"B", 2}},
+			want{series: MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), err: false}},
+		{"fail: wrong index length",
+			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			args{1, "bar", []interface{}{"C"}},
+			want{nil, true}},
+		{"fail: invalid position",
+			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			args{3, "bar", []interface{}{"C", 3}},
+			want{nil, true}},
+		{"fail: misaligned series position",
+			misaligned,
+			args{3, "bar", []interface{}{"B"}},
+			want{nil, true}},
+		{"fail: invalid insertion into emptySeries",
+			newEmptySeries(),
+			args{0, complex64(1), []interface{}{"A"}},
+			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, _ := New([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}})
-			got, err := s.Insert(tt.args.pos, tt.args.val, tt.args.idx)
-			if (err != nil) != tt.want.err {
-				t.Errorf("s.Insert() error = %v, want %v", err, tt.want.err)
-			}
-			if err != nil {
-				return
-			}
-			want := MustNew(tt.want.values, Config{MultiIndex: tt.want.multiindex})
-			if !Equal(got, want) {
-				t.Errorf("s.Insert() returned %v, want %v", s, want)
-			}
-			if Equal(got, s) {
-				t.Error("s.insert() maintained reference to original Series, want fresh copy")
-			}
-		})
-	}
-}
-
-func TestAppend(t *testing.T) {
-	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}})
-	got := s.Append("baz", []interface{}{"C", 3})
-	want := MustNew([]string{"foo", "bar", "baz"},
-		Config{MultiIndex: []interface{}{[]string{"A", "B", "C"}, []int{1, 2, 3}}})
-	if !Equal(got, want) {
-		t.Errorf("s.insert() returned %v, want %v", s, want)
-	}
-	if Equal(got, s) {
-		t.Error("s.insert() maintained reference to original Series, want fresh copy")
-	}
-}
-
-func TestDrop(t *testing.T) {
-	type args struct {
-		pos int
-	}
-	type want struct {
-		values     interface{}
-		multiindex []interface{}
-		err        bool
-	}
-	var tests = []struct {
-		name string
-		args args
-		want want
-	}{
-		// {"0", args{0}, want{[]string{"bar"}, []interface{}{[]string{"B"}, []int{2}}, false}},
-		// {"1", args{1}, want{[]string{"foo"}, []interface{}{[]string{"A"}, []int{1}}, false}},
-		{"index out of range", args{2}, want{[]string{"foo"}, []interface{}{[]string{"A"}, []int{1}}, true}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := MustNew(
-				[]string{"foo", "bar"},
-				Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}})
-			got, err := s.Drop(tt.args.pos)
-			if (err != nil) != tt.want.err {
-				t.Errorf("s.Drop() error = %v, want %v", err, tt.want.err)
-				return
-			}
-			if err != nil {
-				return
-			}
-			want := MustNew(tt.want.values, Config{MultiIndex: tt.want.multiindex})
-			if !Equal(got, want) {
-				t.Errorf("s.Drop() returned %v, want %v", got, want)
-			}
-			if Equal(got, s) {
-				t.Error("s.Drop() maintained reference to original Series, want fresh copy")
-			}
-		})
-	}
-}
-
-func TestJoin(t *testing.T) {
-	s := MustNew([]int{1, 2, 3})
-	s2 := MustNew([]float64{4, 5, 6})
-	s3 := s.Join(s2)
-	want := MustNew([]int{1, 2, 3, 4, 5, 6}, Config{Index: []int{0, 1, 2, 0, 1, 2}})
-	if !Equal(s3, want) {
-		t.Errorf("s.Join() returned %v, want %v", s3, want)
-	}
-}
-
-func TestJoinEmpty(t *testing.T) {
-	s := MustNew(nil)
-	s2 := MustNew([]float64{4, 5, 6})
-	s3 := s.Join(s2)
-	want := MustNew([]float64{4, 5, 6}, Config{Index: []int{0, 1, 2}})
-	if !Equal(s3, want) {
-		t.Errorf("s.Join() returned %v, want %v", s3, want)
-	}
-}
-
-func TestInsertInPlace(t *testing.T) {
-	type args struct {
-		pos int
-		val interface{}
-		idx []interface{}
-	}
-	type want struct {
-		values     interface{}
-		multiindex []interface{}
-		err        bool
-	}
-	var tests = []struct {
-		name string
-		args args
-		want want
-	}{
-		{"0", args{0, "baz", []interface{}{"C", 3}},
-			want{[]string{"baz", "foo", "bar"}, []interface{}{[]string{"C", "A", "B"}, []int{3, 1, 2}}, false}},
-		{"1", args{1, "baz", []interface{}{"C", 3}},
-			want{[]string{"foo", "baz", "bar"}, []interface{}{[]string{"A", "C", "B"}, []int{1, 3, 2}}, false}},
-		{"2", args{2, "baz", []interface{}{"C", 3}},
-			want{[]string{"foo", "bar", "baz"}, []interface{}{[]string{"A", "B", "C"}, []int{1, 2, 3}}, false}},
-		{"wrong index length", args{2, "baz", []interface{}{"C"}},
-			want{nil, nil, true}},
-		{"invalid position", args{100, "baz", []interface{}{"C", 3}},
-			want{nil, nil, true}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s, _ := New([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}})
+			s := tt.input
+			sArchive := tt.input.Copy()
 			err := s.InPlace.Insert(tt.args.pos, tt.args.val, tt.args.idx)
 			if (err != nil) != tt.want.err {
-				t.Errorf("s.Insert() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.Insert() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if err != nil {
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(s, tt.want.series) {
+					t.Errorf("InPlace.Insert() got %v, want %v", s, tt.want.series)
+				}
+			}
+
+			sCopy, err := sArchive.Insert(tt.args.pos, tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Insert() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			want, _ := New(tt.want.values, Config{MultiIndex: tt.want.multiindex})
-			if !Equal(s, want) {
-				t.Errorf("s.Insert() returned %v, want %v", s, want)
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Insert() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Insert() retained access to original, want copy")
+				}
 			}
 		})
 	}
 }
 
-// func TestAppendInPlace(t *testing.T) {
-// 	var tests = []struct {
-// 		val  interface{}
-// 		idx  []interface{}
-// 		want *Series
-// 	}{
-// 		{"baz", []interface{}{"C", 3},
-// 			MustNew([]string{"foo", "bar", "baz"}, Idx([]string{"A", "B", "C"}), Idx([]int{1, 2, 3}))},
-// 	}
-// 	for _, test := range tests {
-// 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
-// 		s.InPlace.Append(test.val, test.idx)
-// 		if !Equal(s, test.want) {
-// 			t.Errorf("s.Append() returned %v, want %v", s, test.want)
-// 		}
-// 	}
-// }
+func TestModify_Append(t *testing.T) {
+	type args struct {
+		val interface{}
+		idx []interface{}
+	}
+	type want struct {
+		series *Series
+		err    bool
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"singleIndex",
+			MustNew([]string{"foo"}, Config{Index: []int{1}}),
+			args{val: "bar", idx: []interface{}{2}},
+			want{series: MustNew([]string{"foo", "bar"}, Config{Index: []int{1, 2}}), err: false}},
+		{"multiIndex",
+			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
+			args{"bar", []interface{}{"B", 2}},
+			want{MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), false}},
+		{"fail singleIndex: nil index values",
+			MustNew([]string{"foo"}, Config{Index: []int{1}}),
+			args{"bar", nil},
+			want{nil, true}},
+		{"fail multiIndex: insufficient index values",
+			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
+			args{"bar", []interface{}{"B"}},
+			want{nil, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			err := s.InPlace.Append(tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Append() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(s, tt.want.series) {
+					t.Errorf("InPlace.Append() got %v, want %v", s, tt.want.series)
+				}
+			}
+			sCopy, err := sArchive.Append(tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Append() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Append() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Append() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func TestDropInPlace(t *testing.T) {
-// 	var tests = []struct {
-// 		pos  int
-// 		want *Series
-// 	}{
-// 		{0, MustNew([]string{"bar"}, Idx([]string{"B"}), Idx([]int{2}))},
-// 		{1, MustNew([]string{"foo"}, Idx([]string{"A"}), Idx([]int{1}))},
-// 	}
-// 	for _, test := range tests {
-// 		s, _ := New([]string{"foo", "bar"}, Idx([]string{"A", "B"}), Idx([]int{1, 2}))
-// 		s.InPlace.Drop(test.pos)
-// 		if !Equal(s, test.want) {
-// 			t.Errorf("s.InPlace.Drop() returned %v, want %v", s, test.want)
-// 		}
-// 	}
-// }
+func TestModify_Set(t *testing.T) {
+	type args struct {
+		rowPositions []int
+		val          interface{}
+	}
+	type want struct {
+		series *Series
+		err    bool
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"singleRow",
+			MustNew("foo"), args{rowPositions: []int{0}, val: "bar"},
+			want{series: MustNew("bar"), err: false}},
+		{"multiRow",
+			MustNew("foo"), args{[]int{0}, "bar"},
+			want{MustNew("bar"), false}},
+		{"fail: invalid index singleRow",
+			MustNew("foo"), args{[]int{1}, "bar"},
+			want{MustNew("foo"), true}},
+		{"fail: partial success on multiRow",
+			MustNew("foo"), args{[]int{0, 2}, "bar"},
+			want{MustNew("foo"), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			err := s.InPlace.Set(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.series)
+			}
 
-// func TestDropNullInPlace(t *testing.T) {
-// 	s, _ := New([]string{"foo", "", "bar"})
-// 	s.InPlace.DropNull()
-// 	want, _ := New([]string{"foo", "bar"}, Idx([]int{0, 2}))
-// 	if !Equal(s, want) {
-// 		t.Errorf("s.insert() returned %v, want %v", s, want)
-// 	}
-// }
+			sCopy, err := sArchive.Set(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Set() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Set() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func Test_InPlace_Join(t *testing.T) {
-// 	s, _ := New([]int{1, 2, 3})
-// 	s2, _ := New([]float64{4, 5, 6})
-// 	s.InPlace.Join(s2)
-// 	want := MustNew([]int{1, 2, 3, 4, 5, 6}, Idx([]int{0, 1, 2, 0, 1, 2}))
-// 	if !Equal(s, want) {
-// 		t.Errorf("s.InPlace.Join() returned %v, want %v", s, want)
-// 	}
-// }
+func TestModify_Drop(t *testing.T) {
+	type args struct {
+		rowPositions []int
+	}
+	type want struct {
+		series *Series
+		err    bool
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"drop to 0",
+			MustNew("foo"), args{rowPositions: []int{0}},
+			want{series: newEmptySeries(), err: false}},
+		{"singleRow",
+			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1}},
+			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
+		{"multiRow",
+			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1, 2}},
+			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
+		{"multiRow reverse",
+			MustNew([]string{"foo", "bar", "baz"}), args{[]int{2, 1}},
+			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
+		{"fail: invalid index singleRow",
+			MustNew("foo"), args{[]int{1}},
+			want{MustNew("foo"), true}},
+		{"fail: partial success on multiRow",
+			MustNew([]string{"foo", "bar"}), args{[]int{0, 2}},
+			want{MustNew([]string{"foo", "bar"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			err := s.InPlace.Drop(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.series)
+			}
 
-// // func Test_InPlace_replace(t *testing.T) {
-// // 	s, _ := New(1, options.Name("foo"))
-// // 	s2, _ := New(2, options.Name("bar"))
-// // 	s.InPlace.s.replace(s2)
-// // 	if !Equal(s, *s2) {
-// // 		t.Errorf("s.InPlace.replace() returned %v, want %v", s, s2)
-// // 	}
-// // }
+			sCopy, err := sArchive.Drop(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Drop() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Drop() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Drop() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func Test_InPlace_Join_EmptyBase(t *testing.T) {
-// 	s, _ := New(nil)
-// 	s2, _ := New([]float64{4, 5, 6})
-// 	s.InPlace.Join(s2)
-// 	want := MustNew([]float64{4, 5, 6}, Idx([]int{0, 1, 2}))
-// 	if !Equal(s, want) {
-// 		t.Errorf("s.InPlace.Join() returned %v, want %v", s2, want)
-// 	}
-// }
+func TestModify_DropNull(t *testing.T) {
+	type want struct {
+		series *Series
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		want  want
+	}{
+		{"control: no null rows",
+			MustNew("foo"),
+			want{series: MustNew("foo")}},
+		{"null row",
+			MustNew([]string{"foo", "", "baz"}),
+			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}})}},
+		{"null row reverse",
+			MustNew([]string{"baz", "", "foo"}),
+			want{MustNew([]string{"baz", "foo"}, Config{Index: []int{0, 2}})}},
+		{"all null rows",
+			MustNew([]string{"", ""}),
+			want{newEmptySeries()}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			s.InPlace.DropNull()
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.DropNull() got %v, want %v", s, tt.want.series)
+			}
 
-// func Test_InPlace_Sort(t *testing.T) {
-// 	var tests = []struct {
-// 		desc string
-// 		orig *Series
-// 		asc  bool
-// 		want *Series
-// 	}{
-// 		{"float", MustNew([]float64{3, 5, 1}), true, MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1}))},
-// 		{"float reverse", MustNew([]float64{3, 5, 1}), false, MustNew([]float64{5, 3, 1}, Idx([]int{1, 0, 2}))},
+			sCopy := sArchive.DropNull()
+			if !Equal(sCopy, tt.want.series) {
+				t.Errorf("Series.DropNull() got %v, want %v", sCopy, tt.want.series)
+			}
+			if !strings.Contains(tt.name, "control") {
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.DropNull() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// 		{"int", MustNew([]int{3, 5, 1}), true, MustNew([]int{1, 3, 5}, Idx([]int{2, 0, 1}))},
-// 		{"int reverse", MustNew([]int{3, 5, 1}), false, MustNew([]int{5, 3, 1}, Idx([]int{1, 0, 2}))},
+func TestModifyInPlace_DatatypeConversion(t *testing.T) {
+	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	type args struct {
+		To (func(InPlace))
+	}
+	type want struct {
+		series   *Series
+		datatype options.DataType
+	}
+	var tests = []struct {
+		name string
+		args args
+		want want
+	}{
+		{"float", args{(InPlace).ToFloat64}, want{MustNew([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}), options.Float64}},
+		{"int", args{(InPlace).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
+		{"string", args{(InPlace).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
+		{"bool", args{(InPlace).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
+		{"datetime", args{(InPlace).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"control", args{(InPlace).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := MustNew([]interface{}{1.5, 1, "1", false, testDate})
+			tt.args.To(s.InPlace)
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.To... got %v, want %v", s, tt.want.series)
+			}
+			if s.datatype != tt.want.datatype {
+				t.Errorf("InPlace.To... got datatype %v, want %v", s.datatype, tt.want.datatype)
+			}
+		})
+	}
+}
 
-// 		{"string", MustNew([]string{"3", "5", "1"}), true, MustNew([]string{"1", "3", "5"}, Idx([]int{2, 0, 1}))},
-// 		{"string reverse", MustNew([]string{"3", "5", "1"}), false, MustNew([]string{"5", "3", "1"}, Idx([]int{1, 0, 2}))},
-
-// 		{"bool", MustNew([]bool{false, true, false}), true, MustNew([]bool{false, false, true}, Idx([]int{0, 2, 1}))},
-// 		{"bool reverse", MustNew([]bool{false, true, false}), false, MustNew([]bool{true, false, false}, Idx([]int{1, 0, 2}))},
-
-// 		{
-// 			"datetime",
-// 			MustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
-// 			true,
-// 			MustNew([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{2, 0, 1})),
-// 		},
-// 		{
-// 			"datetime reverse",
-// 			MustNew([]time.Time{time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
-// 			false,
-// 			MustNew([]time.Time{time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 2, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}, Idx([]int{1, 0, 2})),
-// 		},
-// 	}
-// 	for _, test := range tests {
-// 		s := test.orig
-// 		s.InPlace.Sort(test.asc)
-// 		if !Equal(s, test.want) {
-// 			t.Errorf("series.Sort() test %v returned %v, want %v", test.desc, s, test.want)
-// 		}
-// 	}
-// }
-
-// func Test_Index_Sort(t *testing.T) {
-// 	var tests = []struct {
-// 		desc string
-// 		orig *Series
-// 		asc  bool
-// 		want *Series
-// 	}{
-// 		{"float", MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), true, MustNew([]float64{3, 5, 1}, Idx([]int{0, 1, 2}))},
-// 		{"float reverse", MustNew([]float64{1, 3, 5}, Idx([]int{2, 0, 1})), false, MustNew([]float64{1, 5, 3}, Idx([]int{2, 1, 0}))},
-// 	}
-// 	for _, test := range tests {
-// 		s := test.orig
-// 		s.Index.Sort(test.asc)
-// 		if !Equal(s, test.want) {
-// 			t.Errorf("series.Index.Sort() test %v returned %v, want %v", test.desc, s, test.want)
-// 		}
-// 	}
-// }
-
-// // [START Convert tests]
-
-// func TestTo_Float(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToFloat64()
-// 	wantS, _ := New([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToFloat64() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Float64
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToFloat64() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.DataType() == s.DataType() {
-// 		t.Errorf("Conversion to float occurred in place, want copy only")
-// 	}
-// }
-
-// func TestTo_Int(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToInt64()
-// 	wantS, _ := New([]int64{1, 1.0, 1.0, 0, 1.5566688e+18})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToInt64() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Int64
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToInt64() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.DataType() == s.DataType() {
-// 		t.Errorf("Conversion to int occurred in place, want copy only")
-// 	}
-// }
-
-// func TestTo_String(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToString()
-// 	wantS, _ := New([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToString() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.String
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToString() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.DataType() == s.DataType() {
-// 		t.Errorf("Conversion to string occurred in place, want copy only")
-// 	}
-// }
-
-// func TestTo_Bool(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToBool()
-// 	wantS, _ := New([]bool{true, true, true, false, true})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToBool() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Bool
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToBool() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.DataType() == s.DataType() {
-// 		t.Errorf("Conversion to bool occurred in place, want copy only")
-// 	}
-// }
-
-// func TestTo_DateTime(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToDateTime()
-// 	wantS, _ := New([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToDateTime() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.DateTime
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.DataType() == s.DataType() {
-// 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
-// 	}
-// }
-
-// func TestTo_Interface(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.ToInterface()
-// 	wantS, _ := New([]interface{}{1.5, 1, "1", false, testDate})
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToDateTime() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Interface
-// 	if gotDataType := newS.datatype; gotDataType != wantDataType {
-// 		t.Errorf("s.ToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// }
-
-// func TestIndexTo_Float(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.Index.ToFloat64()
-// 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.ToFloat64() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Float64
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.ToFloat64() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
-// 		t.Errorf("Conversion to float occurred in place, want copy only")
-// 	}
-// }
-
-// func TestIndexTo_Int(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.Index.ToInt64()
-// 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]int64{1, 1, 1, 0, 1.5566688e+18}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.IndexToInt64() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Int64
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.IndexToInt64() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
-// 		t.Errorf("Conversion to int occurred in place, want copy only")
-// 	}
-// }
-
-// func TestIndexTo_String(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.Index.ToString()
-// 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.IndexToString() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.String
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.IndexToString() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
-// 		t.Errorf("Conversion to string occurred in place, want copy only")
-// 	}
-// }
-
-// func TestIndexTo_Bool(t *testing.T) {
-// 	// testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3}, Idx([]interface{}{1.5, 1, "1", false}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-
-// 	newS := s.Index.ToBool()
-// 	wantS, _ := New([]int{0, 1, 2, 3}, Idx([]bool{true, true, true, false}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.IndexToBool() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Bool
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.IndexToBool() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
-// 		t.Errorf("Conversion to bool occurred in place, want copy only")
-// 	}
-// }
-
-// func TestIndexTo_DateTime(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.Index.ToDateTime()
-// 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.IndexToDateTime() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.DateTime
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.IndexToDateTime() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// 	if newS.index.Levels[0].DataType == s.index.Levels[0].DataType {
-// 		t.Errorf("Conversion to DateTime occurred in place, want copy only")
-// 	}
-// }
-
-// func TestIndexTo_Interface(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	s, err := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	newS := s.Index.ToInterface()
-// 	wantS, _ := New([]int{0, 1, 2, 3, 4}, Idx([]interface{}{1.5, 1, "1", false, testDate}))
-// 	if !Equal(newS, wantS) {
-// 		t.Errorf("s.IndexToInterface() returned %v, want %v", newS, wantS)
-// 	}
-// 	wantDataType := options.Interface
-// 	if gotDataType := newS.index.Levels[0].DataType; gotDataType != wantDataType {
-// 		t.Errorf("s.IndexToInterface() returned kind %v, want %v", gotDataType, wantDataType)
-// 	}
-// }
-
-// func TestIndexAt(t *testing.T) {
-// 	s, _ := New([]int{0, 1, 2})
-// 	got, _ := s.Index.At(0, 0)
-// 	want := int64(0)
-// 	if got.(int64) != want {
-// 		t.Errorf("IndexAt() got %v, want %v", got, want)
-// 	}
-// }
-
-// func TestConvertIndexMulti(t *testing.T) {
-// 	var tests = []struct {
-// 		convertTo options.DataType
-// 		lvl       int
-// 	}{
-// 		{options.Float64, 0},
-// 		{options.Float64, 1},
-// 		{options.Int, 0},
-// 		{options.Int, 1},
-// 		{options.String, 0},
-// 		{options.String, 1},
-// 		{options.Bool, 0},
-// 		{options.Bool, 1},
-// 		{options.DateTime, 0},
-// 		{options.DateTime, 1},
-// 	}
-// 	for _, test := range tests {
-// 		s, err := New([]interface{}{1, 2, 3}, Idx([]int{1, 2, 3}), Idx([]int{10, 20, 30}))
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
-// 		newS, err := s.IndexLevelTo(test.lvl, test.convertTo)
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
-// 		if newS.index.Levels[test.lvl].DataType != test.convertTo {
-// 			t.Errorf("Conversion of Series with multiIndex level %v to %v returned %v, want %v", test.lvl, test.convertTo, newS.index.Levels[test.lvl].DataType, test.convertTo)
-// 		}
-// 		// excludes Int because the original test Index is int
-// 		if test.convertTo != options.Int {
-// 			if s.index.Levels[test.lvl].DataType == newS.index.Levels[test.lvl].DataType {
-// 				t.Errorf("Conversion to %v occurred in place, want copy only", test.convertTo)
-// 			}
-// 		}
-// 	}
-// }
-
-// // [END Convert tests]
-
-// func TestRename(t *testing.T) {
-// 	s, _ := New("foo", IndexLevel{Labels: "bar", Name: "baz"})
-// 	// s, _ := New("foo", Idx("bar", options.Name("baz")))
-// 	fmt.Println(s)
-// 	s.Rename("qux")
-// 	fmt.Println(s)
-// }
+func TestModify_DatatypeConversion(t *testing.T) {
+	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	type args struct {
+		To (func(*Series) *Series)
+	}
+	type want struct {
+		series   *Series
+		datatype options.DataType
+	}
+	var tests = []struct {
+		name string
+		args args
+		want want
+	}{
+		{"float", args{(*Series).ToFloat64}, want{MustNew([]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}), options.Float64}},
+		{"int", args{(*Series).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
+		{"string", args{(*Series).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
+		{"bool", args{(*Series).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
+		{"datetime", args{(*Series).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"control: interface", args{(*Series).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := MustNew([]interface{}{1.5, 1, "1", false, testDate})
+			got := tt.args.To(s)
+			if !Equal(got, tt.want.series) {
+				t.Errorf("Series.To... got %v, want %v", got, tt.want.series)
+			}
+			if got.datatype != tt.want.datatype {
+				t.Errorf("Series.To... got datatype %v, want %v", got.datatype, tt.want.datatype)
+			}
+			if !strings.Contains(tt.name, "control") {
+				if s.DataType() == got.DataType() {
+					t.Errorf("Series.To... retained access to original, want copy")
+				}
+			}
+		})
+	}
+}

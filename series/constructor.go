@@ -97,6 +97,22 @@ func MustNew(data interface{}, config ...Config) *Series {
 }
 
 func newEmptySeries() *Series {
-	s, _ := New(nil)
+	s := MustNew(nil)
 	return s
+}
+
+// Copy creates a new deep copy of a Series.
+func (s *Series) Copy() *Series {
+	idx := s.index.Copy()
+	valsCopy := s.values.Copy()
+	copyS := &Series{
+		values:   valsCopy,
+		index:    idx,
+		datatype: s.datatype,
+		name:     s.name,
+	}
+	copyS.Apply = Apply{s: copyS}
+	copyS.Index = Index{s: copyS}
+	copyS.InPlace = InPlace{s: copyS}
+	return copyS
 }

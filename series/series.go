@@ -56,22 +56,6 @@ func (s *Series) DataType() string {
 	return fmt.Sprint(s.datatype)
 }
 
-// Copy creates a new deep copy of a Series.
-func (s *Series) Copy() *Series {
-	idx := s.index.Copy()
-	valsCopy := s.values.Copy()
-	copyS := &Series{
-		values:   valsCopy,
-		index:    idx,
-		datatype: s.datatype,
-		name:     s.name,
-	}
-	copyS.Apply = Apply{s: copyS}
-	copyS.Index = Index{s: copyS}
-	copyS.InPlace = InPlace{s: copyS}
-	return copyS
-}
-
 // selectByRows copies a Series then subsets it to include only index items and values at the positions supplied
 func (s *Series) selectByRows(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
@@ -95,7 +79,7 @@ func (s *Series) selectByRows(positions []int) (*Series, error) {
 	return s, nil
 }
 
-func (s *Series) mustIn(positions []int) *Series {
+func (s *Series) mustSelectRows(positions []int) *Series {
 	s, err := s.selectByRows(positions)
 	if err != nil {
 		log.Printf("Internal error: %v\n", err)
@@ -184,9 +168,4 @@ func (s *Series) MaxWidth() int {
 // Name returns the Series' name.
 func (s Series) Name() string {
 	return s.name
-}
-
-// Rename the Series.
-func (s *Series) Rename(name string) {
-	s.name = name
 }

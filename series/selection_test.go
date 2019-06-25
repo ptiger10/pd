@@ -1,15 +1,40 @@
 package series
 
-// import (
-// 	"testing"
-// )
+import (
+	"os"
+	"testing"
 
-// // func TestMain(m *testing.M) {
-// // 	options.SetLogWarnings(false)
-// // 	exitCode := m.Run()
-// // 	options.RestoreDefaults()
-// // 	os.Exit(exitCode)
-// // }
+	"github.com/ptiger10/pd/options"
+)
+
+func TestMain(m *testing.M) {
+	options.SetLogWarnings(false)
+	exitCode := m.Run()
+	options.RestoreDefaults()
+	os.Exit(exitCode)
+}
+
+// func TestSelectors(t *testing.T) {
+// 	type args struct {
+
+// 	}
+// 	tests := []struct{
+
+// 	}
+// }
+
+func Test_XS(t *testing.T) {
+
+	s := MustNew([]float64{1, 2}, Config{MultiIndex: []interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}}})
+	got, err := s.XS([]int{1}, []int{1})
+	if err != nil {
+		t.Error(err)
+	}
+	want := MustNew(2.0, Config{Index: "qux"})
+	if !Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
 
 // func TestAt_singleIdx(t *testing.T) {
 // 	var tests = []struct {
@@ -337,21 +362,5 @@ package series
 // // 		if !Equal(origS, s) {
 // // 			t.Errorf("selection.Swap() modifying Series in place instead of returning new")
 // // 		}
-// // 	}
-// // }
-
-// // func TestSelect_Set(t *testing.T) {
-// // 	s, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
-// // 	origS, _ := New([]int{0, 1, 2}, Idx([]int{0, 1, 2}, options.Name("foo")), Idx([]string{"A", "B", "C"}, options.Name("bar")))
-// // 	sel := s.Select(options.ByRows([]int{0, 1, 2}))
-// // 	newS, err := sel.Set(5)
-// // 	if err != nil {
-// // 		t.Errorf("selection.Set() %v", err)
-// // 	}
-// // 	if !Equal(origS, s) {
-// // 		t.Errorf("selection.Set() modifying Series in place instead of returning new")
-// // 	}
-// // 	if newS.Element(0).Value != int64(5) || newS.Element(1).Value != int64(5) || newS.Element(2).Value != int64(5) {
-// // 		t.Errorf("selection.Set() did not set all values")
 // // 	}
 // // }

@@ -23,7 +23,7 @@ func (g Grouping) Sum() *Series {
 	s, _ := New(nil)
 	for _, group := range g.Groups() {
 		positions := g.groups[group].Positions
-		sum := g.s.mustIn(positions).Sum()
+		sum := g.s.mustSelectRows(positions).Sum()
 		newS := MustNew(sum, Config{MultiIndex: g.groups[group].IndexLevels})
 		s.InPlace.Join(newS)
 	}

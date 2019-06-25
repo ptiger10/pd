@@ -23,7 +23,7 @@ func TestDataTypes(t *testing.T) {
 	}
 }
 
-func TestRowsIn(t *testing.T) {
+func TestSelectRows(t *testing.T) {
 	var err error
 	df, err := New(
 		[]interface{}{[]string{"foo", "bar", "baz"}},
@@ -39,7 +39,7 @@ func TestRowsIn(t *testing.T) {
 	}
 }
 
-func TestColsIn(t *testing.T) {
+func TestSelectCols(t *testing.T) {
 	df := MustNew(
 		[]interface{}{[]string{"foo"}, []string{"bar"}},
 		Config{Cols: []interface{}{"baz", "qux"}})

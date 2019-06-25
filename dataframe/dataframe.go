@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
@@ -139,7 +140,11 @@ func Equal(df, df2 *DataFrame) bool {
 func (df *DataFrame) Col(label string) *series.Series {
 	colPos, ok := df.cols.Levels[0].LabelMap[label]
 	if !ok {
-		log.Printf("df.Col(): invalid column label: %v not in labels", label)
+		if options.GetLogWarnings() {
+			log.Printf("df.Col(): invalid column label: %v not in labels", label)
+		}
+		s, _ := series.New(nil)
+		return s
 	}
 	df, _ = df.selectByCols(colPos)
 	return df.s[0]

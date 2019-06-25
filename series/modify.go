@@ -2,34 +2,205 @@ package series
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/ptiger10/pd/options"
 )
 
-// [START Sort interface]
-func (s *Series) Swap(i, j int) {
-	s.values.Swap(i, j)
-	for lvl := 0; lvl < s.index.Len(); lvl++ {
-		s.index.Levels[lvl].Labels.Swap(i, j)
-		s.index.Levels[lvl].Refresh()
+// Rename the Series.
+func (s *Series) Rename(name string) {
+	s.name = name
+}
+
+// [START InPlace]
+
+// InPlace contains methods for modifying a Series in place.
+type InPlace struct {
+	s *Series
+}
+
+// Sort sorts the series by its values and modifies the Series in place.
+func (ip InPlace) Sort(asc bool) {
+	if asc {
+		sort.Stable(ip)
+	} else {
+		sort.Stable(sort.Reverse(ip))
 	}
 }
 
-func (s *Series) Less(i, j int) bool {
-	return s.values.Less(i, j)
+// Len returns the length of the underlying Series (required by Sort interface)
+func (ip InPlace) Len() int {
+	return ip.s.Len()
 }
 
-// [END Sort interface]
+// Swap swaps the selected rows in place.
+func (ip InPlace) Swap(i, j int) {
+	ip.s.values.Swap(i, j)
+	for lvl := 0; lvl < ip.s.index.Len(); lvl++ {
+		ip.s.index.Levels[lvl].Labels.Swap(i, j)
+		ip.s.index.Levels[lvl].Refresh()
+	}
+}
 
-// [START return new Series]
+func (ip InPlace) Less(i, j int) bool {
+	return ip.s.values.Less(i, j)
+}
+
+// Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
+// If the original Series is empty, replaces it with a new Series.
+func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
+	// Handling empty Series
+	if Equal(ip.s, newEmptySeries()) {
+		newS, err := New(val, Config{MultiIndex: idx})
+		if err != nil {
+			return fmt.Errorf("Series.Insert(): inserting into empty Series requires creating a new Series: %v", err)
+		}
+		ip.s.replace(newS)
+		return nil
+	}
+
+	if err := ip.s.ensureAlignment(); err != nil {
+		return fmt.Errorf("Series.Insert(): %v", err)
+	}
+
+	if len(idx) != ip.s.index.Len() {
+		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
+			len(idx), ip.s.index.Len())
+	}
+	for j := 0; j < ip.s.index.Len(); j++ {
+		err := ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
+		if err != nil {
+			return fmt.Errorf("Series.Insert(): %v", err)
+		}
+		ip.s.index.Levels[j].Refresh()
+	}
+	// ducks error safely due to index alignment check
+	ip.s.values.Insert(pos, val)
+	return nil
+}
+
+// Append adds a row at a specified integer position and modifies the Series in place.
+func (ip InPlace) Append(val interface{}, idx []interface{}) error {
+	err := ip.s.InPlace.Insert(ip.s.Len(), val, idx)
+	if err != nil {
+		return fmt.Errorf("Series.Append(): %v", err)
+	}
+	return nil
+}
+
+// Set sets all the values in the specified rows to val and modifies the Series in place.
+// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
+func (ip InPlace) Set(rowPositions []int, val interface{}) error {
+	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("Series.Set(): %v", err)
+	}
+	// ducks error safely due to index alignment check
+	for _, row := range rowPositions {
+		ip.s.values.Set(row, val)
+	}
+	return nil
+}
+
+// Drop drops the row at the specified integer position and modifies the Series in place.
+// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
+func (ip InPlace) Drop(rowPositions []int) error {
+	if err := ip.dropMany(rowPositions); err != nil {
+		return fmt.Errorf("Series.Drop(): %v", err)
+	}
+	return nil
+}
+
+// DropNull drops all null values and modifies the Series in place.
+func (ip InPlace) DropNull() {
+	ip.dropMany(ip.s.null())
+	return
+}
+
+// dropMany drops multiple rows and modifies the Series in place.
+func (ip InPlace) dropMany(positions []int) error {
+	if err := ip.s.ensureRowPositions(positions); err != nil {
+		return err
+	}
+	// ducks error safely due to index alignment check
+	sort.IntSlice(positions).Sort()
+	for i, position := range positions {
+		ip.s.InPlace.dropOne(position - i)
+	}
+	if ip.Len() == 0 {
+		ip.s.replace(newEmptySeries())
+	}
+	return nil
+}
+
+// dropOne drops a row at a specified integer position and modifies the Series in place.
+func (ip InPlace) dropOne(pos int) error {
+	for i := 0; i < ip.s.index.Len(); i++ {
+		// ducks errors safely due to index alignment check in dropMany
+		ip.s.index.Levels[i].Labels.Drop(pos)
+		ip.s.index.Levels[i].Refresh()
+	}
+	ip.s.values.Drop(pos)
+	return nil
+}
+
+// ToFloat64 converts Series values to float64 in place.
+func (ip InPlace) ToFloat64() {
+	ip.s.values = ip.s.values.ToFloat64()
+	ip.s.datatype = options.Float64
+}
+
+// ToInt64 converts Series values to int64 in place.
+func (ip InPlace) ToInt64() {
+	ip.s.values = ip.s.values.ToInt64()
+	ip.s.datatype = options.Int64
+}
+
+// ToString converts Series values to string in place.
+func (ip InPlace) ToString() {
+	ip.s.values = ip.s.values.ToString()
+	ip.s.datatype = options.String
+}
+
+// ToBool converts Series values to bool in place.
+func (ip InPlace) ToBool() {
+	ip.s.values = ip.s.values.ToBool()
+	ip.s.datatype = options.Bool
+}
+
+// ToDateTime converts Series values to datetime in place.
+func (ip InPlace) ToDateTime() {
+	ip.s.values = ip.s.values.ToDateTime()
+	ip.s.datatype = options.DateTime
+}
+
+// ToInterface converts Series values to interface in place.
+func (ip InPlace) ToInterface() {
+	ip.s.values = ip.s.values.ToInterface()
+	ip.s.datatype = options.Interface
+}
+
+// [END InPlace]
+
+// [START Copy]
 
 // Sort sorts the series by its values and returns a new Series.
 func (s *Series) Sort(asc bool) *Series {
 	s = s.Copy()
 	s.InPlace.Sort(asc)
 	return s
+}
+
+// Swap swaps the selected rows and returns a new Series.
+func (s *Series) Swap(i, j int) (*Series, error) {
+	s = s.Copy()
+	if i >= s.Len() {
+		return newEmptySeries(), fmt.Errorf("invalid position: %d (max %v)", i, s.Len()-1)
+	}
+	if j >= s.Len() {
+		return newEmptySeries(), fmt.Errorf("invalid position: %d (max %v)", j, s.Len()-1)
+	}
+	s.InPlace.Swap(i, j)
+	return s, nil
 }
 
 // Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
@@ -39,17 +210,31 @@ func (s *Series) Insert(pos int, val interface{}, idx []interface{}) (*Series, e
 	return s, err
 }
 
-// dropRows drops multiple rows and returns a new Series
-func (s *Series) dropRows(positions []int) (*Series, error) {
+// Append adds a row at the end and returns a new Series.
+func (s *Series) Append(val interface{}, idx []interface{}) (*Series, error) {
+	s, err := s.Insert(s.Len(), val, idx)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("Series.Append(): %v", err)
+	}
+	return s, nil
+}
+
+// Set sets all the values in the specified rows to val and returns a new Series.
+func (s *Series) Set(rowPositions []int, val interface{}) (*Series, error) {
 	s = s.Copy()
-	s.InPlace.dropRows(positions)
+	for _, row := range rowPositions {
+		err := s.values.Set(row, val)
+		if err != nil {
+			return newEmptySeries(), fmt.Errorf("s.Set() for val %v: %v", val, err)
+		}
+	}
 	return s, nil
 }
 
 // Drop drops the row at the specified integer position and returns a new Series.
-func (s *Series) Drop(pos int) (*Series, error) {
+func (s *Series) Drop(positions []int) (*Series, error) {
 	s = s.Copy()
-	err := s.InPlace.Drop(pos)
+	err := s.InPlace.Drop(positions)
 	return s, err
 }
 
@@ -60,334 +245,50 @@ func (s *Series) DropNull() *Series {
 	return s
 }
 
-// Append adds a row at the end and returns a new Series.
-func (s *Series) Append(val interface{}, idx []interface{}) *Series {
-	s, _ = s.Insert(s.Len(), val, idx)
-	return s
-}
-
-// Join converts s2 to the same type as the base Series (s), appends s2 to the end, and returns a new Series.
-func (s *Series) Join(s2 *Series) *Series {
-	s = s.Copy()
-	s.InPlace.Join(s2)
-	return s
-}
-
-// [END return new Series]
-
-// [START modify in place]
-
-// InPlace contains methods for modifying a Series in place.
-type InPlace struct {
-	s *Series
-}
-
-// Sort sorts the series by its values and modifies the Series in place.
-func (ip InPlace) Sort(asc bool) {
-	if asc {
-		sort.Stable(ip.s)
-	} else {
-		sort.Stable(sort.Reverse(ip.s))
-	}
-}
-
-// Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
-func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
-	if len(idx) != ip.s.index.Len() {
-		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
-			len(idx), ip.s.index.Len())
-	}
-	for j := 0; j < ip.s.index.Len(); j++ {
-		err := ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
-		if err != nil {
-			return fmt.Errorf("Series.Insert() into index: %v", err)
-		}
-		ip.s.index.Levels[j].Refresh()
-	}
-	if err := ip.s.values.Insert(pos, val); err != nil {
-		return fmt.Errorf("Series.Insert() with val %v: %v", val, err)
-	}
-	return nil
-}
-
-// dropRows drops multiple rows
-func (ip InPlace) dropRows(positions []int) error {
-	sort.IntSlice(positions).Sort()
-	for i, position := range positions {
-		err := ip.s.InPlace.Drop(position - i)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Drop drops a row at a specified integer position and modifies the Series in place.
-func (ip InPlace) Drop(pos int) error {
-	for i := 0; i < ip.s.index.Len(); i++ {
-		err := ip.s.index.Levels[i].Labels.Drop(pos)
-		if err != nil {
-			return fmt.Errorf("Series.Drop(): %v", err)
-		}
-		ip.s.index.Levels[i].Refresh()
-	}
-	if err := ip.s.values.Drop(pos); err != nil {
-		return fmt.Errorf("Series.Drop(): %v", err)
-	}
-	return nil
-}
-
-// DropNull drops all null values and modifies the Series in place.
-func (ip InPlace) DropNull() {
-	ip.dropRows(ip.s.null())
-	return
-}
-
-// Append adds a row at a specified integer position and modifies the Series in place.
-func (ip InPlace) Append(val interface{}, idx []interface{}) {
-	_ = ip.s.InPlace.Insert(ip.s.Len(), val, idx)
-	return
-}
-
-// Join converts s2 to the same type as the base Series (s), appends s2 to the end, and modifies s in place.
-func (ip InPlace) Join(s2 *Series) {
-	if ip.s == nil || ip.s.datatype == options.None {
-		ip.s.replace(s2)
-		return
-	}
-	for i := 0; i < s2.Len(); i++ {
-		elem := s2.Element(i)
-		ip.s.InPlace.Append(elem.Value, elem.Labels)
-	}
-}
-
-// [END modify in place]
+// [END Copy]
 
 // [START type conversion methods]
 
 // ToFloat64 converts Series values to float64 and returns a new Series.
 func (s *Series) ToFloat64() *Series {
 	s = s.Copy()
-	s.values = s.values.ToFloat64()
-	s.datatype = options.Float64
+	s.InPlace.ToFloat64()
 	return s
 }
 
 // ToInt64 converts Series values to int64 and returns a new Series.
 func (s *Series) ToInt64() *Series {
 	s = s.Copy()
-	s.values = s.values.ToInt64()
-	s.datatype = options.Int64
-
+	s.InPlace.ToInt64()
 	return s
 }
 
 // ToString converts Series values to string and returns a new Series.
 func (s *Series) ToString() *Series {
 	s = s.Copy()
-	s.values = s.values.ToString()
-	s.datatype = options.String
+	s.InPlace.ToString()
 	return s
 }
 
 // ToBool converts Series values to bool and returns a new Series.
 func (s *Series) ToBool() *Series {
 	s = s.Copy()
-	s.values = s.values.ToBool()
-	s.datatype = options.Bool
+	s.InPlace.ToBool()
 	return s
 }
 
 // ToDateTime converts Series values to time.Time and returns a new Series.
 func (s *Series) ToDateTime() *Series {
 	s = s.Copy()
-	s.values = s.values.ToDateTime()
-	s.datatype = options.DateTime
+	s.InPlace.ToDateTime()
 	return s
 }
 
 // ToInterface converts Series values to interface and returns a new Series.
 func (s *Series) ToInterface() *Series {
 	s = s.Copy()
-	s.values = s.values.ToInterface()
-	s.datatype = options.Interface
+	s.InPlace.ToInterface()
 	return s
 }
 
 // [END type conversion methods]
-
-// [START Index modifications]
-
-// Index contains index selection and conversion
-type Index struct {
-	s *Series
-}
-
-// Levels returns the number of levels in the index
-func (idx Index) Levels() int {
-	return idx.s.index.Len()
-}
-
-// Len returns the number of items in each level of the index.
-func (idx Index) Len() int {
-	if len(idx.s.index.Levels) == 0 {
-		return 0
-	}
-	return idx.s.index.Levels[0].Len()
-}
-
-// Swap swaps two labels at index level 0 and modifies the index in place.
-func (idx Index) Swap(i, j int) {
-	idx.s.Swap(i, j)
-}
-
-// Less compares two elements and returns true if the first is less than the second.
-func (idx Index) Less(i, j int) bool {
-	return idx.s.index.Levels[0].Labels.Less(i, j)
-}
-
-// Sort sorts the index by index level 0 and modifies the Series in place.
-func (idx Index) Sort(asc bool) {
-	if asc {
-		sort.Stable(idx)
-	} else {
-		sort.Stable(sort.Reverse(idx))
-	}
-}
-
-// At returns the index value at a specified index level and integer position.
-func (idx Index) At(position int, level int) (interface{}, error) {
-	if level >= idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	if position >= idx.s.Len() {
-		return nil, fmt.Errorf("invalid position: %d (len: %v)", position, idx.s.Len())
-	}
-	elem := idx.s.Element(position)
-	return elem.Labels[level], nil
-}
-
-func (s *Series) rename(name string) {
-	s = s.Copy()
-	s.index.Levels[0].Name = name
-}
-
-// LevelToFloat64 converts the labels at a specified index level to float64 and returns a new Series.
-func (idx Index) LevelToFloat64(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToFloat64()
-	return s, nil
-}
-
-// ToFloat64 converts the labels at index level 0 to float64 and returns a new Series.
-func (idx Index) ToFloat64() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToFloat64(0)
-	return s
-}
-
-// LevelToInt64 converts the labels at a specified index level to int64 and returns a new Series.
-func (idx Index) LevelToInt64(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInt64()
-	return s, nil
-}
-
-// ToInt64 converts the labels at index level 0 to int64 and returns a new Series.
-func (idx Index) ToInt64() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToInt64(0)
-	return s
-}
-
-// LevelToString converts the labels at a specified index level to string and returns a new Series.
-func (idx Index) LevelToString(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToString()
-	return s, nil
-}
-
-// ToString converts the labels at index level 0 to string and returns a new Series.
-func (idx Index) ToString() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToString(0)
-	return s
-}
-
-// LevelToBool converts the labels at a specified index level to bool and returns a new Series.
-func (idx Index) LevelToBool(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToBool()
-	return s, nil
-}
-
-// ToBool converts the labels at index level 0 to bool and returns a new Series.
-func (idx Index) ToBool() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToBool(0)
-	return s
-}
-
-// LevelToDateTime converts the labels at a specified index level to DateTime and returns a new Series.
-func (idx Index) LevelToDateTime(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToDateTime()
-	return s, nil
-}
-
-// ToDateTime converts the labels at index level 0 to DateTime and returns a new Series.
-func (idx Index) ToDateTime() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToDateTime(0)
-	return s
-}
-
-// LevelToInterface converts the labels at a specified index level to interface and returns a new Series.
-func (idx Index) LevelToInterface(level int) (*Series, error) {
-	if level > idx.s.index.Len() {
-		return nil, fmt.Errorf("invalid index level: %d (len: %v)", level, idx.s.index.Len())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInterface()
-	return s, nil
-}
-
-// ToInterface converts the labels at index level 0 to interface and returns a new Series.
-func (idx Index) ToInterface() *Series {
-	if idx.s.index.Len() == 0 {
-		log.Println("Cannot convert empty index")
-		return nil
-	}
-	s, _ := idx.LevelToInterface(0)
-	return s
-}

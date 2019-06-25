@@ -64,25 +64,6 @@ func TestDatatype(t *testing.T) {
 	}
 }
 
-func Test_Copy(t *testing.T) {
-	s, _ := New("foo")
-	s.name = "foo"
-	sOrig, _ := New("foo")
-	sOrig.name = "foo"
-	sCopy := s.Copy()
-	sCopy.index.Levels[0].Labels.Set(0, 5)
-	sCopy.values.Set(0, "bar")
-	sCopy.name = "foobar"
-	sCopy.index.Refresh()
-	want, _ := New("bar", Config{Index: 5, Name: "foobar"})
-	if !Equal(sCopy, want) {
-		t.Errorf("s.Copy() returned %v, want %v", sCopy.index, want.index)
-	}
-	if !Equal(s, sOrig) || Equal(s, sCopy) {
-		t.Errorf("s.copy() retained references to original, want fresh copy")
-	}
-}
-
 func Test_Equals(t *testing.T) {
 	s, err := New("foo", Config{Index: "bar", Name: "baz"})
 	if err != nil {
