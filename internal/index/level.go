@@ -66,7 +66,7 @@ func (lvl Level) Len() int {
 	return lvl.Labels.Len()
 }
 
-// NewDefaultLevel creates an unnamed index level with range labels (0, 1, 2, ...n)
+// NewDefaultLevel creates an index level with range labels (0, 1, 2, ...n) and optional name.
 func NewDefaultLevel(n int, name string) Level {
 	v := values.NewDefaultValues(n)
 	level := newLevel(v, options.Int64, name)

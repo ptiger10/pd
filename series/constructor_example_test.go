@@ -3,9 +3,11 @@ package series
 import (
 	"fmt"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
-func ExampleSeries_empty() {
+func ExampleSeries_empty_series() {
 	s := newEmptySeries()
 	fmt.Println(s)
 	// Output:
@@ -24,7 +26,7 @@ func ExampleNew_string() {
 }
 
 func ExampleNew_string_named() {
-	s, _ := New([]string{"foo", "bar", "", "baz"}, Config{Name: "foobar"})
+	s := MustNew([]string{"foo", "bar", "", "baz"}, Config{Name: "foobar"})
 	fmt.Println(s)
 	// Output:
 	// 0    foo
@@ -36,7 +38,7 @@ func ExampleNew_string_named() {
 }
 
 func ExampleNew_named_later() {
-	s, _ := New(
+	s := MustNew(
 		[]string{"foo", "bar", "", "baz"},
 	)
 	s.Rename("foobar")
@@ -52,7 +54,7 @@ func ExampleNew_named_later() {
 }
 
 func ExampleNew_string_singleIdx() {
-	s, _ := New([]string{"foo", "bar", "", "baz"}, Config{Index: []int{100, 101, 102, 103}})
+	s := MustNew([]string{"foo", "bar", "", "baz"}, Config{Index: []int{100, 101, 102, 103}})
 	fmt.Println(s)
 
 	// Output:
@@ -64,7 +66,7 @@ func ExampleNew_string_singleIdx() {
 }
 
 func ExampleNew_string_multiIdx() {
-	s, _ := New(
+	s := MustNew(
 		[]string{"foo", "bar", "", "baz"},
 		Config{MultiIndex: []interface{}{[]int{0, 1, 2, 3}, []int{100, 101, 102, 103}}})
 	fmt.Println(s)
@@ -78,7 +80,7 @@ func ExampleNew_string_multiIdx() {
 }
 
 func ExampleNew_string_multiIdx_named_sequential_repeating() {
-	s, _ := New(
+	s := MustNew(
 		[]string{"foo", "bar", "", "baz"},
 		Config{
 			Name:            "foobar",
@@ -99,7 +101,7 @@ func ExampleNew_string_multiIdx_named_sequential_repeating() {
 }
 
 func ExampleNew_nonsequential_repeating() {
-	s, _ := New(
+	s := MustNew(
 		[]string{"foo", "bar", "", "baz", "qux", "quux"},
 		Config{
 			Name:            "foobar",
@@ -122,7 +124,7 @@ func ExampleNew_nonsequential_repeating() {
 }
 
 func ExampleNew_partially_named_indexes() {
-	s, _ := New(
+	s := MustNew(
 		[]string{"foo", "bar"},
 		Config{
 			MultiIndex: []interface{}{
@@ -141,8 +143,8 @@ func ExampleNew_partially_named_indexes() {
 	// name: foobar
 }
 
-func ExampleNew_datetime() {
-	s, _ := New([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)})
+func ExampleNew_datetime_single() {
+	s := MustNew([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)})
 	fmt.Println(s)
 
 	// Output:
@@ -150,8 +152,37 @@ func ExampleNew_datetime() {
 	// datatype: dateTime
 }
 
+func ExampleNew_config_nameOnly() {
+	s := MustNew([]string{"foo", "bar"}, Config{Name: "baz"})
+	fmt.Println(s)
+	// Output:
+	// 0    foo
+	// 1    bar
+	// datatype: string
+	// name: baz
+}
+
+func ExampleNew_config_indexName() {
+	s := MustNew([]string{"foo", "bar"}, Config{IndexName: "baz"})
+	fmt.Println(s)
+	// Output:
+	// baz
+	//   0    foo
+	//   1    bar
+	// datatype: string
+}
+
+func ExampleNew_config_datatype() {
+	s := MustNew([]interface{}{"1", "foo"}, Config{DataType: options.Float64})
+	fmt.Println(s)
+	// Output:
+	// 0    1
+	// 1    NaN
+	// datatype: float64
+}
+
 func ExampleElem_valid() {
-	s, _ := New("foo")
+	s := MustNew("foo")
 	fmt.Println(s.Element(0))
 
 	// Output:
@@ -162,7 +193,7 @@ func ExampleElem_valid() {
 }
 
 func ExampleElem_null() {
-	s, _ := New("")
+	s := MustNew("")
 	fmt.Println(s.Element(0))
 
 	// Output:

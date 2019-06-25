@@ -18,7 +18,7 @@ func Series(data interface{}, config ...Config) (*series.Series, error) {
 		tmp = config[0]
 	}
 	sConfig := series.Config{
-		Name:  tmp.Name,
+		Name: tmp.Name, DataType: tmp.DataType,
 		Index: tmp.Index, IndexName: tmp.IndexName,
 		MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 	}

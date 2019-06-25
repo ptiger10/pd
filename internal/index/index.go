@@ -33,8 +33,8 @@ func NewDefault(length int) Index {
 	return New(level)
 }
 
-// In returns a new index with all the labels located at the specified integer positions
-func (idx Index) In(rowPositions []int) (Index, error) {
+// Subset returns a new index with all the labels located at the specified integer positions
+func (idx Index) Subset(rowPositions []int) (Index, error) {
 	var err error
 	idx = idx.Copy()
 	for i, level := range idx.Levels {
@@ -47,8 +47,8 @@ func (idx Index) In(rowPositions []int) (Index, error) {
 	return idx, nil
 }
 
-// LevelsIn returns a copy of the index with only those levels located at specified integer positions
-func (idx Index) LevelsIn(levelPositions []int) (Index, error) {
+// SubsetLevels returns a copy of the index with only those levels located at specified integer positions
+func (idx Index) SubsetLevels(levelPositions []int) (Index, error) {
 	idx = idx.Copy()
 	var lvls []Level
 	for _, pos := range levelPositions {
@@ -187,7 +187,8 @@ func NewFromConfig(config Config, n int) (Index, error) {
 	var index Index
 	// both nil: return default index
 	if config.Index == nil && config.MultiIndex == nil {
-		return NewDefault(n), nil
+		lvl := NewDefaultLevel(n, config.IndexName)
+		return New(lvl), nil
 	}
 	// both not nil: return error
 	if config.Index != nil && config.MultiIndex != nil {
@@ -236,6 +237,6 @@ type Config struct {
 	MultiIndexNames []string
 	Cols            []interface{}
 	ColsName        string
-	MultiCols       [][]interface{}
-	MultiColsNames  []string
+	MultiCol        [][]interface{}
+	MultiColNames   []string
 }

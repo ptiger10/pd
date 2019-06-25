@@ -7,8 +7,8 @@ import (
 
 func Test_New_Empty(t *testing.T) {
 	idx := New()
-	if idx.Len() != 0 {
-		t.Error("Len() of empty index did not return 0")
+	if l := idx.Len(); l != 1 {
+		t.Errorf("Len() of empty index returned %v, want 1", l)
 	}
 }
 

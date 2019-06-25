@@ -78,7 +78,7 @@ func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)
 	}
-	idx, err := df.index.In(rowPositions)
+	idx, err := df.index.Subset(rowPositions)
 	if err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe.selectByRows(): %v", err)
 	}
@@ -105,7 +105,7 @@ func (df *DataFrame) selectByCols(colPositions []int) (*DataFrame, error) {
 		}
 		seriesSlice = append(seriesSlice, df.s[pos])
 	}
-	columnsSlice, err := df.cols.In(colPositions)
+	columnsSlice, err := df.cols.Subset(colPositions)
 	if err != nil {
 		return nil, fmt.Errorf("dataframe.selectByCols(): %v", err)
 	}

@@ -71,7 +71,7 @@ func (s *Series) selectByRows(positions []int) (*Series, error) {
 		return newEmptySeries(), fmt.Errorf("series.selectByRows() selecting rows: %v", err)
 	}
 	s.values = values
-	idx, err := s.index.In(positions)
+	idx, err := s.index.Subset(positions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("series.selectByRows(): %v", err)
 	}

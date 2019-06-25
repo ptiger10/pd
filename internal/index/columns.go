@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ptiger10/pd/internal/values"
-	"github.com/ptiger10/pd/options"
 )
 
 // Columns is a collection of column levels, plus name mappings.
@@ -28,14 +27,11 @@ func NewColumns(levels ...ColLevel) Columns {
 
 // NewDefaultColumns returns a new Columns collection with default range labels (0, 1, 2, ... n).
 func NewDefaultColumns(n int) Columns {
-	return NewColumns(NewDefaultColLevel(n))
+	return NewColumns(NewDefaultColLevel(n, ""))
 }
 
 // Len returns the number of labels in every level of the column.
 func (cols Columns) Len() int {
-	if len(cols.Levels) == 0 {
-		return 0
-	}
 	return cols.Levels[0].Len()
 }
 
@@ -52,9 +48,6 @@ func (cols Columns) MaxNameWidth() int {
 			max = length
 		}
 	}
-	if max > options.GetDisplayMaxWidth() {
-		max = options.GetDisplayMaxWidth()
-	}
 	return max
 }
 
@@ -70,9 +63,6 @@ func (cols *Columns) updateNameMap() {
 // Refresh updates the global name map and the label mappings at every level.
 // Should be called after Series selection or index modification
 func (cols *Columns) Refresh() {
-	if cols.Len() == 0 {
-		return
-	}
 	cols.updateNameMap()
 	for i := 0; i < len(cols.Levels); i++ {
 		cols.Levels[i].Refresh()
@@ -87,10 +77,10 @@ type ColLevel struct {
 	LabelMap LabelMap
 }
 
-// NewDefaultColLevel returns []string values {"0", "1", "2", ... n} for use in default DataFrame columns.
-func NewDefaultColLevel(n int) ColLevel {
+// NewDefaultColLevel creates a column level with range labels (0, 1, 2, ...n) and optional name.
+func NewDefaultColLevel(n int, name string) ColLevel {
 	colsInt := values.MakeInterfaceRange(0, n)
-	return NewColLevel(colsInt, "")
+	return NewColLevel(colsInt, name)
 }
 
 // NewColLevel returns a Columns level with updated label map.
@@ -159,12 +149,14 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	var columns Columns
 
 	// both nil: return default index
-	if config.Cols == nil && config.MultiCols == nil {
-		return NewDefaultColumns(n), nil
+	if config.Cols == nil && config.MultiCol == nil {
+		cols := NewDefaultColLevel(n, config.ColsName)
+		return NewColumns(cols), nil
+
 	}
 	// both not nil: return error
-	if config.Cols != nil && config.MultiCols != nil {
-		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCols is ambiguous; supply one or the other")
+	if config.Cols != nil && config.MultiCol != nil {
+		return NewColumns(), fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
 	}
 	// single-level Columns
 	if config.Cols != nil {
@@ -173,19 +165,19 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	}
 
 	// multi-level Columns
-	if config.MultiCols != nil {
-		if config.MultiColsNames != nil && len(config.MultiColsNames) != len(config.MultiCols) {
-			return Columns{}, fmt.Errorf(
-				"columnFactory(): if MultiColsNames is not nil, it must must have same length as MultiCols: %d != %d",
-				len(config.MultiColsNames), len(config.MultiCols))
+	if config.MultiCol != nil {
+		if config.MultiColNames != nil && len(config.MultiColNames) != len(config.MultiCol) {
+			return NewColumns(), fmt.Errorf(
+				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",
+				len(config.MultiColNames), len(config.MultiCol))
 		}
 		var newLevels []ColLevel
-		for i := 0; i < len(config.MultiCols); i++ {
+		for i := 0; i < len(config.MultiCol); i++ {
 			var levelName string
-			if i < len(config.MultiColsNames) {
-				levelName = config.MultiColsNames[i]
+			if i < len(config.MultiColNames) {
+				levelName = config.MultiColNames[i]
 			}
-			newLevel := NewColLevel(config.MultiCols[i], levelName)
+			newLevel := NewColLevel(config.MultiCol[i], levelName)
 			newLevels = append(newLevels, newLevel)
 		}
 		columns = NewColumns(newLevels...)
@@ -193,14 +185,14 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	return columns, nil
 }
 
-// In returns a new Columns with all the column levels located at the specified integer positions
-func (cols Columns) In(colPositions []int) (Columns, error) {
+// Subset returns a new Columns with all the column levels located at the specified integer positions
+func (cols Columns) Subset(colPositions []int) (Columns, error) {
 	cols = cols.Copy()
 	var lvls []ColLevel
 	for _, lvl := range cols.Levels {
-		lvl, err := lvl.In(colPositions)
+		lvl, err := lvl.Subset(colPositions)
 		if err != nil {
-			return Columns{}, fmt.Errorf("internal columns.In(): %v", err)
+			return Columns{}, fmt.Errorf("internal columns.Subset(): %v", err)
 		}
 		lvls = append(lvls, lvl)
 	}
@@ -209,12 +201,12 @@ func (cols Columns) In(colPositions []int) (Columns, error) {
 	return cols, nil
 }
 
-// In returns the label values in a column level at specified integer positions.
-func (lvl ColLevel) In(positions []int) (ColLevel, error) {
+// Subset returns the label values in a column level at specified integer positions.
+func (lvl ColLevel) Subset(positions []int) (ColLevel, error) {
 	var labels []interface{}
 	for _, pos := range positions {
 		if pos >= lvl.Len() {
-			return ColLevel{}, fmt.Errorf("internal colLevel.In(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)
+			return ColLevel{}, fmt.Errorf("internal colLevel.Subset(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)
 		}
 		labels = append(labels, lvl.Labels[pos])
 	}
