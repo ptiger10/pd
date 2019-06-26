@@ -181,7 +181,7 @@ func ExampleNew_config_datatype() {
 	// datatype: float64
 }
 
-func ExampleElem_valid() {
+func ExampleElement_valid_printer() {
 	s := MustNew("foo")
 	fmt.Println(s.Element(0))
 
@@ -192,7 +192,7 @@ func ExampleElem_valid() {
 	// LabelTypes: [int64]
 }
 
-func ExampleElem_null() {
+func ExampleElement_null_printer() {
 	s := MustNew("")
 	fmt.Println(s.Element(0))
 

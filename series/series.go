@@ -44,7 +44,7 @@ func (el Element) String() string {
 	return printStr
 }
 
-// Element returns information about the value and index labels at this position.
+// Element returns information about the value and index labels at this position but panics if an out-of-range position is provided.
 func (s *Series) Element(position int) Element {
 	elem := s.values.Element(position)
 	idxElems := s.index.Elements(position)
@@ -66,7 +66,7 @@ func (s *Series) selectByRows(positions []int) (*Series, error) {
 	}
 
 	s = s.Copy()
-	values, err := s.values.In(positions)
+	values, err := s.values.Subset(positions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("series.selectByRows() selecting rows: %v", err)
 	}

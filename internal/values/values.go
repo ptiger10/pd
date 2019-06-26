@@ -9,7 +9,7 @@ import (
 type Values interface {
 	Len() int                      // number of Value/Null structs
 	Vals() interface{}             // a slice of values in their native form, ready for type assertion
-	In([]int) (Values, error)      // a new Values object comprised of the Value/Null pairs at one or more integer positions
+	Subset([]int) (Values, error)  // a new Values object comprised of the Value/Null pairs at one or more integer positions
 	Element(int) Elem              // Value/Null pair at an integer position
 	Set(int, interface{}) error    // overwrite the value/null struct at an integer position
 	Copy() Values                  // clone the Values

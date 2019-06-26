@@ -108,8 +108,8 @@ func TestNewColumnFromConfig(t *testing.T) {
 			args{Config{Cols: []interface{}{"foo", "bar"}, ColsName: "baz"}, 2},
 			want{NewColumns(NewColLevel([]interface{}{"foo", "bar"}, "baz")), false}},
 		{"multiLevel",
-			args{Config{MultiCol: [][]interface{}{{"foo", "bar"}, {"bar", "baz"}}, MultiColNames: []string{"baz", "qux"}}, 2},
-			want{NewColumns(NewColLevel([]interface{}{"foo", "bar"}, "baz"), NewColLevel([]interface{}{"bar", "baz"}, "qux")), false}},
+			args{Config{MultiCol: [][]interface{}{{"foo", "bar"}, {"baz", "qux"}}, MultiColNames: []string{"quux", "quuz"}}, 2},
+			want{NewColumns(NewColLevel([]interface{}{"foo", "bar"}, "quux"), NewColLevel([]interface{}{"baz", "qux"}, "quuz")), false}},
 		{"fail: both not nil",
 			args{Config{
 				Cols:     []interface{}{"foo"},

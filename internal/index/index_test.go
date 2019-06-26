@@ -1,6 +1,9 @@
 package index
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -23,7 +26,8 @@ func TestNew(t *testing.T) {
 		len       int
 		numLevels int
 		maxWidths []int
-		unnamed bool
+		unnamed   bool
+		datatypes []options.DataType
 	}
 	tests := []struct {
 		name string
@@ -33,7 +37,7 @@ func TestNew(t *testing.T) {
 		{"empty", args{nil},
 			want{
 				index: Index{Levels: []Level{Level{Labels: labelsEmpty, LabelMap: LabelMap{}}}, NameMap: LabelMap{"": []int{0}}},
-				len:   0, numLevels: 1, maxWidths: []int{0}, unnamed: true,
+				len:   0, numLevels: 1, maxWidths: []int{0}, unnamed: true, datatypes: []options.DataType{options.None},
 			}},
 		{"one level",
 			args{[]Level{MustNewLevel([]int{1, 2}, "foo")}},
@@ -41,9 +45,9 @@ func TestNew(t *testing.T) {
 				index: Index{
 					Levels:  []Level{Level{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
 					NameMap: LabelMap{"foo": []int{0}}},
-				len: 2, numLevels: 1, maxWidths: []int{3}, unnamed: false,
+				len: 2, numLevels: 1, maxWidths: []int{3}, unnamed: false, datatypes: []options.DataType{options.Int64},
 			}},
-		{"two cols",
+		{"two levels",
 			args{[]Level{MustNewLevel([]int{1, 2}, "foo"), MustNewLevel([]int{1, 2}, "corge")}},
 			want{
 				index: Index{
@@ -51,7 +55,7 @@ func TestNew(t *testing.T) {
 						Level{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels},
 						Level{Name: "corge", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
 					NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
-				len: 2, numLevels: 2, maxWidths: []int{3, 5}, unnamed: false,
+				len: 2, numLevels: 2, maxWidths: []int{3, 5}, unnamed: false, datatypes: []options.DataType{options.Int64, options.Int64},
 			}},
 	}
 	for _, tt := range tests {
@@ -76,6 +80,66 @@ func TestNew(t *testing.T) {
 			if !reflect.DeepEqual(gotUnnamed, tt.want.unnamed) {
 				t.Errorf("Index.GotUnnamed(): got %v, want %v", gotUnnamed, tt.want.unnamed)
 			}
+			gotDataTypes := got.DataTypes()
+			if !reflect.DeepEqual(gotDataTypes, tt.want.datatypes) {
+				t.Errorf("Index.GotDataTypes(): got %v, want %v", gotDataTypes, tt.want.datatypes)
+			}
+		})
+	}
+}
+
+func TestNewFromConfig(t *testing.T) {
+	type args struct {
+		config Config
+		n      int
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{"both nil and unnamed",
+			args{Config{}, 2},
+			want{NewDefault(2), false}},
+		{"both nil but named",
+			args{Config{IndexName: "foo"}, 2},
+			want{New(NewDefaultLevel(2, "foo")), false}},
+		{"singleIndex",
+			args{Config{Index: []string{"foo", "bar"}, IndexName: "baz"}, 2},
+			want{New(MustNewLevel([]string{"foo", "bar"}, "baz")), false}},
+		{"multiIndex",
+			args{Config{MultiIndex: []interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}}, MultiIndexNames: []string{"quux", "quuz"}}, 2},
+			want{New(MustNewLevel([]string{"foo", "bar"}, "quux"), MustNewLevel([]string{"baz", "qux"}, "quuz")), false}},
+		{"fail: singleIndex unsupported type",
+			args{Config{Index: complex64(1)}, 2},
+			want{New(), true}},
+		{"fail: multiIndex unsupported type",
+			args{Config{MultiIndex: []interface{}{complex64(1)}}, 2},
+			want{New(), true}},
+		{"fail: both not nil",
+			args{Config{
+				Index:      "foo",
+				MultiIndex: []interface{}{"foo"}}, 2},
+			want{New(), true}},
+		{"fail: wrong multiindex names length",
+			args{Config{
+				MultiIndex:      []interface{}{"foo"},
+				MultiIndexNames: []string{"bar", "baz"}}, 2},
+			want{New(), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewFromConfig(tt.args.config, tt.args.n)
+			if (err != nil) != tt.want.err {
+				t.Errorf("NewFromConfig() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(got, tt.want.index) {
+				t.Errorf("NewFromConfig(): got %v, want %v", got, tt.want.index)
+			}
 		})
 	}
 }
@@ -97,24 +161,6 @@ func Test_NewDefault(t *testing.T) {
 	}
 }
 
-func Test_NewMulti(t *testing.T) {
-	lvl1, err := NewLevel([]int64{0, 1, 2}, "")
-	if err != nil {
-		t.Error(err)
-	}
-	lvl2, err := NewLevel([]int64{100, 101, 102}, "")
-	if err != nil {
-		t.Error(err)
-	}
-	index := New(lvl1, lvl2)
-	gotLen := len(index.Levels)
-	wantLen := 2
-	if gotLen != wantLen {
-		t.Errorf("Returned %d index levels, want %d", gotLen, wantLen)
-	}
-
-}
-
 func Test_Copy(t *testing.T) {
 	idx := New(MustNewLevel([]int{1, 2, 3}, ""))
 	copyIdx := idx.Copy()
@@ -128,36 +174,152 @@ func Test_Copy(t *testing.T) {
 	}
 }
 
-func Test_Drop_oneLevel(t *testing.T) {
-	idx := New(MustNewLevel([]int{1, 2, 3}, ""))
-	err := idx.Drop(0)
-	if err != nil {
-		t.Errorf("idx.Drop(): %v", err)
-	}
-	want := New(MustNewLevel([]int{1, 2, 3}, ""))
-	if !reflect.DeepEqual(idx, want) {
-		t.Errorf("idx.Drop() for one level returned %v, want %v", idx, want)
-	}
-}
-
-func Test_Drop_multilevel(t *testing.T) {
-	idx := New(MustNewLevel([]int{1, 2, 3}, ""), MustNewLevel([]int{4, 5, 6}, ""))
-	idx.Drop(1)
-	want := New(MustNewLevel([]int{1, 2, 3}, ""))
-	if !reflect.DeepEqual(idx, want) {
-		t.Errorf("idx.Drop() for multilevel returned %v, want %v", idx, want)
+func TestMustNew_fail(t *testing.T) {
+	options.RestoreDefaults()
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer func() {
+		log.SetOutput(os.Stderr)
+	}()
+	MustNewLevel(complex64(1), "")
+	if buf.String() == "" {
+		t.Errorf("MustNew() returned no log message, want log due to fail")
 	}
 }
 
-func Test_Droplevels(t *testing.T) {
-	idx := New(MustNewLevel([]int{1, 2, 3}, ""), MustNewLevel([]int{4, 5, 6}, ""), MustNewLevel([]int{7, 8, 9}, ""))
-	err := idx.dropLevels([]int{2, 0})
-	if err != nil {
-		t.Errorf("idx.Droplevels(): %v", err)
+func Test_Nil(t *testing.T) {
+	idx := Index{}
+	_ = idx.Aligned()
+	_ = idx.Copy()
+	_ = idx.Len()
+	idx.Refresh()
+}
+
+func TestAligned(t *testing.T) {
+	vals, _ := values.InterfaceFactory([]int{1})
+	labels1 := vals.Values
+	vals2, _ := values.InterfaceFactory([]int{1, 2})
+	labels2 := vals2.Values
+
+	tests := []struct {
+		name  string
+		input Index
+		err   bool
+	}{
+		{"aligned", Index{Levels: []Level{Level{Labels: labels1}, Level{Labels: labels1}}}, false},
+		{"fail: misaligned", Index{Levels: []Level{Level{Labels: labels1}, Level{Labels: labels2}}}, true},
 	}
-	want := New(MustNewLevel([]int{4, 5, 6}, ""))
-	if !reflect.DeepEqual(idx, want) {
-		t.Errorf("idx.Drop() for multilevel returned %v, want %v", idx, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.Aligned()
+			if (err != nil) != tt.err {
+				t.Errorf("Aligned() got %v, want %v", err, tt.err)
+			}
+		})
+	}
+}
+
+func TestSubset(t *testing.T) {
+	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
+	subsetLvl := MustNewLevel([]string{"foo", "bar"}, "")
+	single := New(lvl)
+	multi := New(lvl, lvl)
+	singleSubset := New(subsetLvl)
+	multiSubset := New(subsetLvl, subsetLvl)
+
+	type args struct {
+		pos   []int
+		index Index
+		fn    func(Index, []int) (Index, error)
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+
+		{"subsetRows singleIndex",
+			args{[]int{0, 1}, single, Index.Subset},
+			want{singleSubset, false}},
+		{"subsetRows multiIndex",
+			args{[]int{0, 1}, multi, Index.Subset},
+			want{multiSubset, false}},
+		{"subsetLevels",
+			args{[]int{0}, multi, Index.SubsetLevels},
+			want{single, false}},
+		{"fail: subsetRows no args",
+			args{[]int{}, single, Index.Subset},
+			want{New(), true}},
+		{"fail: subsetLevels no args",
+			args{[]int{}, multi, Index.SubsetLevels},
+			want{New(), true}},
+		{"fail: subsetRows invalid",
+			args{[]int{1, 3}, multi, Index.Subset},
+			want{New(), true}},
+		{"fail: subsetLevels invalid",
+			args{[]int{1, 3}, multi, Index.SubsetLevels},
+			want{New(), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.args.fn(tt.args.index, tt.args.pos)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Subset() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(got, tt.want.index) {
+				t.Errorf("Subset(): got %v, want %v", got, tt.want.index)
+			}
+		})
+	}
+}
+
+func TestElements(t *testing.T) {
+	idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, "a"), MustNewLevel([]int64{1, 2, 3}, "b"))
+	got := idx.Elements(0)
+	want := Elements{Labels: []interface{}{"foo", int64(1)}, DataTypes: []options.DataType{options.String, options.Int64}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Elements(): got %#v, want %#v", got, want)
+	}
+
+}
+
+// [START Modify tests]
+func TestDropLevel(t *testing.T) {
+	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
+	single := New(lvl)
+	multi := New(lvl, lvl)
+
+	type args struct {
+		pos int
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name  string
+		input Index
+		args  args
+		want  want
+	}{
+		{"one level: no change", single, args{0}, want{single, false}},
+		{"two levels", multi, args{0}, want{single, false}},
+		{"fail: invalid", multi, args{2}, want{multi, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.DropLevel(tt.args.pos)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DropLevel() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("DropLevel(): got %v, want %v", tt.input, tt.want.index)
+			}
+		})
 	}
 }
 
@@ -183,82 +345,6 @@ func Test_RefreshIndex(t *testing.T) {
 	}
 	if idx.Levels[0].Name != wantName {
 		t.Errorf("Returned name %v, want %v", idx.Levels[0].Name, wantName)
-	}
-}
-
-func TestLevel(t *testing.T) {
-	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	var tests = []struct {
-		data       interface{}
-		wantLabels values.Values
-		wantKind   options.DataType
-		wantName   string
-	}{
-		{
-			data:       []float64{0, 1, 2},
-			wantLabels: MustNewLevel([]float64{0, 1, 2}, "").Labels,
-			wantKind:   options.Float64,
-			wantName:   "test",
-		},
-		{
-			data:       []int{0, 1, 2},
-			wantLabels: MustNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   options.Int64,
-			wantName:   "test",
-		},
-		{
-			data:       []uint{0, 1, 2},
-			wantLabels: MustNewLevel([]int64{0, 1, 2}, "").Labels,
-			wantKind:   options.Int64,
-			wantName:   "test",
-		},
-		{
-			data:       []string{"0", "1", "2"},
-			wantLabels: MustNewLevel([]string{"0", "1", "2"}, "").Labels,
-			wantKind:   options.String,
-			wantName:   "test",
-		},
-		{
-			data:       []bool{true, true, false},
-			wantLabels: MustNewLevel([]bool{true, true, false}, "").Labels,
-			wantKind:   options.Bool,
-			wantName:   "test",
-		},
-		{
-			data:       []time.Time{testDate},
-			wantLabels: MustNewLevel([]time.Time{testDate}, "").Labels,
-			wantKind:   options.DateTime,
-			wantName:   "test",
-		},
-		{
-			data:       []interface{}{1.5, 1, "", false, testDate},
-			wantLabels: MustNewLevel([]interface{}{1.5, 1, "", false, testDate}, "").Labels,
-			wantKind:   options.Interface,
-			wantName:   "test",
-		},
-	}
-	for _, test := range tests {
-		lvl, err := NewLevel(test.data, "test")
-		if err != nil {
-			t.Errorf("Unable to construct level from %v: %v", test.data, err)
-		}
-		if !reflect.DeepEqual(lvl.Labels, test.wantLabels) {
-			t.Errorf("%T test returned labels %#v, want %#v", test.data, lvl.Labels, test.wantLabels)
-		}
-		if lvl.DataType != test.wantKind {
-			t.Errorf("%T test returned kind %v, want %v", test.data, lvl.DataType, test.wantKind)
-		}
-		if lvl.Name != test.wantName {
-			t.Errorf("%T test returned name %v, want %v", test.data, lvl.Name, test.wantName)
-		}
-	}
-}
-
-func TestLevel_Unsupported(t *testing.T) {
-	data := []complex64{1, 2, 3}
-	_, err := NewLevel(data, "")
-	if err == nil {
-		t.Errorf("Returned nil error, expected error due to unsupported type %T", data)
 	}
 }
 

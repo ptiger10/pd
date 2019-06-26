@@ -25,6 +25,47 @@ func NewColumns(levels ...ColLevel) Columns {
 	return cols
 }
 
+// NewColumnsFromConfig returns new Columns with default length n using a config struct.
+func NewColumnsFromConfig(config Config, n int) (Columns, error) {
+	var columns Columns
+
+	// both nil: return default index
+	if config.Cols == nil && config.MultiCol == nil {
+		cols := NewDefaultColLevel(n, config.ColsName)
+		return NewColumns(cols), nil
+
+	}
+	// both not nil: return error
+	if config.Cols != nil && config.MultiCol != nil {
+		return NewColumns(), fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
+	}
+	// single-level Columns
+	if config.Cols != nil {
+		newLevel := NewColLevel(config.Cols, config.ColsName)
+		columns = NewColumns(newLevel)
+	}
+
+	// multi-level Columns
+	if config.MultiCol != nil {
+		if config.MultiColNames != nil && len(config.MultiColNames) != len(config.MultiCol) {
+			return NewColumns(), fmt.Errorf(
+				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",
+				len(config.MultiColNames), len(config.MultiCol))
+		}
+		var newLevels []ColLevel
+		for i := 0; i < len(config.MultiCol); i++ {
+			var levelName string
+			if i < len(config.MultiColNames) {
+				levelName = config.MultiColNames[i]
+			}
+			newLevel := NewColLevel(config.MultiCol[i], levelName)
+			newLevels = append(newLevels, newLevel)
+		}
+		columns = NewColumns(newLevels...)
+	}
+	return columns, nil
+}
+
 // NewDefaultColumns returns a new Columns collection with default range labels (0, 1, 2, ... n).
 func NewDefaultColumns(n int) Columns {
 	return NewColumns(NewDefaultColLevel(n, ""))
@@ -142,47 +183,6 @@ func (cols Columns) Copy() Columns {
 		colsCopy.Levels = append(colsCopy.Levels, cols.Levels[i].Copy())
 	}
 	return colsCopy
-}
-
-// NewColumnsFromConfig returns new Columns with default length n using a config struct.
-func NewColumnsFromConfig(config Config, n int) (Columns, error) {
-	var columns Columns
-
-	// both nil: return default index
-	if config.Cols == nil && config.MultiCol == nil {
-		cols := NewDefaultColLevel(n, config.ColsName)
-		return NewColumns(cols), nil
-
-	}
-	// both not nil: return error
-	if config.Cols != nil && config.MultiCol != nil {
-		return NewColumns(), fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
-	}
-	// single-level Columns
-	if config.Cols != nil {
-		newLevel := NewColLevel(config.Cols, config.ColsName)
-		columns = NewColumns(newLevel)
-	}
-
-	// multi-level Columns
-	if config.MultiCol != nil {
-		if config.MultiColNames != nil && len(config.MultiColNames) != len(config.MultiCol) {
-			return NewColumns(), fmt.Errorf(
-				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",
-				len(config.MultiColNames), len(config.MultiCol))
-		}
-		var newLevels []ColLevel
-		for i := 0; i < len(config.MultiCol); i++ {
-			var levelName string
-			if i < len(config.MultiColNames) {
-				levelName = config.MultiColNames[i]
-			}
-			newLevel := NewColLevel(config.MultiCol[i], levelName)
-			newLevels = append(newLevels, newLevel)
-		}
-		columns = NewColumns(newLevels...)
-	}
-	return columns, nil
 }
 
 // Subset returns a new Columns with all the column levels located at the specified integer positions

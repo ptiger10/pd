@@ -3,7 +3,6 @@ package index
 import (
 	"fmt"
 	"log"
-	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
@@ -40,11 +39,7 @@ type Config struct {
 	MultiColNames   []string
 }
 
-// Element is a single Element in an index level.
-type Element struct {
-	Label    interface{}
-	DataType options.DataType
-}
+// [START constructors]
 
 // New receives one or more Levels and returns a new Index.
 // Expects that Levels already have .LabelMap and .Longest set.
@@ -68,7 +63,6 @@ func NewDefault(length int) Index {
 
 // NewFromConfig returns a new Index with default length n using a config struct.
 func NewFromConfig(config Config, n int) (Index, error) {
-	var index Index
 	// both nil: return default index
 	if config.Index == nil && config.MultiIndex == nil {
 		lvl := NewDefaultLevel(n, config.IndexName)
@@ -76,21 +70,13 @@ func NewFromConfig(config Config, n int) (Index, error) {
 	}
 	// both not nil: return error
 	if config.Index != nil && config.MultiIndex != nil {
-		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
-	}
-	// single index
-	if config.Index != nil {
-		newLevel, err := NewLevel(config.Index, config.IndexName)
-		if err != nil {
-			return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
-		}
-		return New(newLevel), nil
+		return New(), fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
 	// multi index
 	if config.MultiIndex != nil {
 		// name misalignment
 		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
-			return Index{}, fmt.Errorf(
+			return New(), fmt.Errorf(
 				"internal/index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
@@ -102,13 +88,30 @@ func NewFromConfig(config Config, n int) (Index, error) {
 			}
 			newLevel, err := NewLevel(config.MultiIndex[i], levelName)
 			if err != nil {
-				return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
+				return New(), fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 			}
 			newLevels = append(newLevels, newLevel)
 		}
 		return New(newLevels...), nil
 	}
-	return index, nil
+	// default: single index
+	newLevel, err := NewLevel(config.Index, config.IndexName)
+	if err != nil {
+		return New(), fmt.Errorf("internal/index.NewFromConfig(): %v", err)
+	}
+	return New(newLevel), nil
+}
+
+// Copy returns a deep copy of each index level
+func (idx Index) Copy() Index {
+	idxCopy := Index{NameMap: LabelMap{}}
+	for k, v := range idx.NameMap {
+		idxCopy.NameMap[k] = v
+	}
+	for i := 0; i < len(idx.Levels); i++ {
+		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i].Copy())
+	}
+	return idxCopy
 }
 
 // NewDefaultLevel creates an index level with range labels (0, 1, 2, ...n) and optional name.
@@ -133,16 +136,56 @@ func NewLevel(data interface{}, name string) (Level, error) {
 func MustNewLevel(data interface{}, name string) Level {
 	lvl, err := NewLevel(data, name)
 	if err != nil {
-		log.Fatalf("MustNewLevel returned an error: %v", err)
+		if options.GetLogWarnings() {
+			log.Printf("MustNewLevel returned an error: %v", err)
+		}
+		lvl, _ := NewLevel(nil, "")
+		return lvl
 	}
 	return lvl
 }
+
+// Copy copies an Index Level
+func (lvl Level) Copy() Level {
+	lvlCopy := Level{}
+	lvlCopy = lvl
+	lvlCopy.Labels = lvlCopy.Labels.Copy()
+	lvlCopy.LabelMap = make(LabelMap)
+	for k, v := range lvl.LabelMap {
+		lvlCopy.LabelMap[k] = v
+	}
+	return lvlCopy
+}
+
+// [END Constructors]
+
+// [START Element]
+
+// Elements refer to all the elements at the same position across all levels of an index.
+type Elements struct {
+	Labels    []interface{}
+	DataTypes []options.DataType
+}
+
+// Elements returns all the index elements at an integer position.
+func (idx Index) Elements(position int) Elements {
+	var labels []interface{}
+	var datatypes []options.DataType
+	for _, lvl := range idx.Levels {
+		label := lvl.Labels.Element(position).Value
+		labels = append(labels, label)
+		datatypes = append(datatypes, lvl.DataType)
+	}
+	return Elements{labels, datatypes}
+}
+
+// [END Element]
 
 // [START Index]
 
 // Len returns the number of labels in every level of the index.
 func (idx Index) Len() int {
-	if len(idx.Levels) == 0 {
+	if idx.NumLevels() == 0 {
 		return 0
 	}
 	return idx.Levels[0].Len()
@@ -151,18 +194,6 @@ func (idx Index) Len() int {
 // NumLevels returns the number of levels in the index.
 func (idx Index) NumLevels() int {
 	return len(idx.Levels)
-}
-
-// Aligned ensures that all index levels have the same length.
-func (idx Index) Aligned() error {
-	lvl0 := idx.Levels[0].Len()
-	for i := 1; i < idx.NumLevels(); i++ {
-		if cmpLvl := idx.Levels[i].Len(); lvl0 != cmpLvl {
-			return fmt.Errorf("index.Aligned(): index level %v must have same number of labels as level 0, %d != %d",
-				i, cmpLvl, lvl0)
-		}
-	}
-	return nil
 }
 
 // Unnamed returns true if all index levels are unnamed
@@ -184,71 +215,6 @@ func (idx Index) MaxWidths() []int {
 	return maxWidths
 }
 
-// Subset returns a new index with all the labels located at the specified integer positions
-func (idx Index) Subset(rowPositions []int) (Index, error) {
-	var err error
-	idx = idx.Copy()
-	for i, level := range idx.Levels {
-		idx.Levels[i].Labels, err = level.Labels.In(rowPositions)
-		if err != nil {
-			return Index{}, fmt.Errorf("selecting rows in index: %v", err)
-		}
-	}
-	idx.Refresh()
-	return idx, nil
-}
-
-// SubsetLevels returns a copy of the index with only those levels located at specified integer positions
-func (idx Index) SubsetLevels(levelPositions []int) (Index, error) {
-	idx = idx.Copy()
-	var lvls []Level
-	for _, pos := range levelPositions {
-		if pos >= len(idx.Levels) {
-			return Index{}, fmt.Errorf("error indexing index levels: level %d is out of range", pos)
-		}
-		lvls = append(lvls, idx.Levels[pos])
-	}
-	newIdx := New(lvls...)
-	return newIdx, nil
-}
-
-// Copy returns a deep copy of each index level
-func (idx Index) Copy() Index {
-	idxCopy := Index{NameMap: LabelMap{}}
-	for k, v := range idx.NameMap {
-		idxCopy.NameMap[k] = v
-	}
-	for i := 0; i < len(idx.Levels); i++ {
-		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i].Copy())
-	}
-	return idxCopy
-}
-
-// Drop drops an index level and modifies the Index in-place. If there one or fewer levels, does nothing.
-func (idx *Index) Drop(level int) error {
-	if idx.Len() <= 1 {
-		return nil
-	}
-	if level >= idx.Len() {
-		return fmt.Errorf("invalid level: %v (max: %v)", level, idx.Len())
-	}
-	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
-	idx.Refresh()
-	return nil
-}
-
-// dropLevels drops multiple rows
-func (idx *Index) dropLevels(positions []int) error {
-	sort.IntSlice(positions).Sort()
-	for i, position := range positions {
-		err := idx.Drop(position - i)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // DataTypes returns a slice of the DataTypes at each level of the index
 func (idx Index) DataTypes() []options.DataType {
 	var idxDataTypes []options.DataType
@@ -258,22 +224,92 @@ func (idx Index) DataTypes() []options.DataType {
 	return idxDataTypes
 }
 
-// Elements returns all the index elements at an integer position.
-func (idx Index) Elements(position int) Elements {
-	var labels []interface{}
-	var datatypes []options.DataType
-	for _, lvl := range idx.Levels {
-		elem := lvl.Element(position)
-		labels = append(labels, elem.Label)
-		datatypes = append(datatypes, elem.DataType)
+// Aligned ensures that all index levels have the same length.
+func (idx Index) Aligned() error {
+	if idx.NumLevels() == 0 {
+		return nil
 	}
-	return Elements{labels, datatypes}
+	lvl0 := idx.Levels[0].Len()
+	for i := 1; i < idx.NumLevels(); i++ {
+		if cmpLvl := idx.Levels[i].Len(); lvl0 != cmpLvl {
+			return fmt.Errorf("index.Aligned(): index level %v must have same number of labels as level 0, %d != %d",
+				i, cmpLvl, lvl0)
+		}
+	}
+	return nil
 }
 
-// Elements refer to all the elements at the same position across all levels of an index.
-type Elements struct {
-	Labels    []interface{}
-	DataTypes []options.DataType
+func (idx Index) ensureRowPositions(rowPositions []int) error {
+	if len(rowPositions) == 0 {
+		return fmt.Errorf("no rows provided")
+	}
+
+	len := idx.Len()
+	for _, pos := range rowPositions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+func (idx Index) ensureLevelPositions(levelPositions []int) error {
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("no levels provided")
+	}
+
+	len := idx.NumLevels()
+	for _, pos := range levelPositions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// Subset returns a new index with all the labels located at the specified integer positions
+func (idx Index) Subset(rowPositions []int) (Index, error) {
+	err := idx.ensureRowPositions(rowPositions)
+	if err != nil {
+		return New(), fmt.Errorf("index.Subset(): %v", err)
+	}
+
+	idx = idx.Copy()
+	for i, level := range idx.Levels {
+		// duck error safely because tested in bulk above
+		idx.Levels[i].Labels, _ = level.Labels.Subset(rowPositions)
+	}
+	idx.Refresh()
+	return idx, nil
+}
+
+// SubsetLevels returns a copy of the index with only those levels located at specified integer positions
+func (idx Index) SubsetLevels(levelPositions []int) (Index, error) {
+	err := idx.ensureLevelPositions(levelPositions)
+	if err != nil {
+		return New(), fmt.Errorf("index.SubsetLevels(): %v", err)
+	}
+
+	var lvls []Level
+	for _, pos := range levelPositions {
+		// duck error safely because tested in bulk above
+		lvls = append(lvls, idx.Levels[pos])
+	}
+	newIdx := New(lvls...)
+	return newIdx, nil
+}
+
+// DropLevel drops an index level and modifies the Index in-place. If there is only one level, does nothing.
+func (idx *Index) DropLevel(level int) error {
+	if idx.NumLevels() == 1 {
+		return nil
+	}
+	if level >= idx.NumLevels() {
+		return fmt.Errorf("invalid level: %v (max: %v)", level, idx.Len())
+	}
+	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
+	idx.Refresh()
+	return nil
 }
 
 // updateNameMap updates the holistic index map of {index level names: [index level positions]}
@@ -286,13 +322,10 @@ func (idx *Index) updateNameMap() {
 }
 
 // Refresh updates the global name map and the label mappings at every level.
-// Should be called after Series selection or index modification
+// Should be called after index modification
 func (idx *Index) Refresh() {
-	if idx.Len() == 0 {
-		return
-	}
 	idx.updateNameMap()
-	for i := 0; i < len(idx.Levels); i++ {
+	for i := 0; i < idx.NumLevels(); i++ {
 		idx.Levels[i].Refresh()
 	}
 }
@@ -301,29 +334,9 @@ func (idx *Index) Refresh() {
 
 // [START index level]
 
-// Copy copies an Index Level
-func (lvl Level) Copy() Level {
-	lvlCopy := Level{}
-	lvlCopy = lvl
-	lvlCopy.Labels = lvlCopy.Labels.Copy()
-	lvlCopy.LabelMap = make(LabelMap)
-	for k, v := range lvl.LabelMap {
-		lvlCopy.LabelMap[k] = v
-	}
-	return lvlCopy
-}
-
 // Len returns the number of labels in the level
 func (lvl Level) Len() int {
 	return lvl.Labels.Len()
-}
-
-// Element returns an Element at an integer position within an index level.
-func (lvl Level) Element(position int) Element {
-	return Element{
-		Label:    lvl.Labels.Element(position).Value,
-		DataType: lvl.DataType,
-	}
 }
 
 // maxWidth finds the max length of either the level name or the longest string in the LabelMap,
@@ -354,9 +367,6 @@ func (lvl *Level) updateLabelMap() {
 
 // Refresh updates all the label mappings value within a level.
 func (lvl *Level) Refresh() {
-	if lvl.Labels == nil {
-		return
-	}
 	lvl.updateLabelMap()
 }
 

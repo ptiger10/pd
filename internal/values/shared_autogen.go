@@ -40,8 +40,8 @@ func (vals *float64Values) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *float64Values) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *float64Values) Subset(rowPositions []int) (Values, error) {
 	var ret float64Values
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
@@ -203,8 +203,8 @@ func (vals *int64Values) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *int64Values) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *int64Values) Subset(rowPositions []int) (Values, error) {
 	var ret int64Values
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
@@ -366,8 +366,8 @@ func (vals *stringValues) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *stringValues) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *stringValues) Subset(rowPositions []int) (Values, error) {
 	var ret stringValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
@@ -529,8 +529,8 @@ func (vals *boolValues) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *boolValues) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *boolValues) Subset(rowPositions []int) (Values, error) {
 	var ret boolValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
@@ -692,8 +692,8 @@ func (vals *dateTimeValues) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *dateTimeValues) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *dateTimeValues) Subset(rowPositions []int) (Values, error) {
 	var ret dateTimeValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
@@ -855,8 +855,8 @@ func (vals *interfaceValues) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *interfaceValues) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *interfaceValues) Subset(rowPositions []int) (Values, error) {
 	var ret interfaceValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {

@@ -11,7 +11,7 @@ import (
 
 // an interface of valid (non-null) values; appropriate for type assertion
 func (s *Series) validVals() interface{} {
-	valid, _ := s.values.In(s.valid())
+	valid, _ := s.values.Subset(s.valid())
 	return valid.Vals()
 }
 

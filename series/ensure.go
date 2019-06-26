@@ -66,7 +66,7 @@ func (s *Series) ensureAlignment() error {
 
 // returns an error if any row position does not exist
 func (s *Series) ensureRowPositions(positions []int) error {
-	_, err := s.values.In(positions)
+	_, err := s.values.Subset(positions)
 	if err != nil {
 		return fmt.Errorf("ensureRowPositions(): %v", err)
 	}

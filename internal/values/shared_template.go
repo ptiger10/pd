@@ -41,8 +41,8 @@ func (vals *valueTypeValues) Swap(i, j int) {
 	(*vals)[i], (*vals)[j] = (*vals)[j], (*vals)[i]
 }
 
-// In returns the values located at specific index positions.
-func (vals *valueTypeValues) In(rowPositions []int) (Values, error) {
+// Subset returns the values located at specific index positions.
+func (vals *valueTypeValues) Subset(rowPositions []int) (Values, error) {
 	var ret valueTypeValues
 	for _, position := range rowPositions {
 		if position >= len(*vals) {
