@@ -70,13 +70,13 @@ func NewFromConfig(config Config, n int) (Index, error) {
 	}
 	// both not nil: return error
 	if config.Index != nil && config.MultiIndex != nil {
-		return New(), fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
+		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
 	// multi index
 	if config.MultiIndex != nil {
 		// name misalignment
 		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
-			return New(), fmt.Errorf(
+			return Index{}, fmt.Errorf(
 				"internal/index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
@@ -88,7 +88,7 @@ func NewFromConfig(config Config, n int) (Index, error) {
 			}
 			newLevel, err := NewLevel(config.MultiIndex[i], levelName)
 			if err != nil {
-				return New(), fmt.Errorf("internal/index.NewFromConfig(): %v", err)
+				return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 			}
 			newLevels = append(newLevels, newLevel)
 		}
@@ -97,7 +97,7 @@ func NewFromConfig(config Config, n int) (Index, error) {
 	// default: single index
 	newLevel, err := NewLevel(config.Index, config.IndexName)
 	if err != nil {
-		return New(), fmt.Errorf("internal/index.NewFromConfig(): %v", err)
+		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 	}
 	return New(newLevel), nil
 }
@@ -271,7 +271,7 @@ func (idx Index) ensureLevelPositions(levelPositions []int) error {
 func (idx Index) Subset(rowPositions []int) (Index, error) {
 	err := idx.ensureRowPositions(rowPositions)
 	if err != nil {
-		return New(), fmt.Errorf("index.Subset(): %v", err)
+		return Index{}, fmt.Errorf("index.Subset(): %v", err)
 	}
 
 	idx = idx.Copy()
@@ -287,7 +287,7 @@ func (idx Index) Subset(rowPositions []int) (Index, error) {
 func (idx Index) SubsetLevels(levelPositions []int) (Index, error) {
 	err := idx.ensureLevelPositions(levelPositions)
 	if err != nil {
-		return New(), fmt.Errorf("index.SubsetLevels(): %v", err)
+		return Index{}, fmt.Errorf("index.SubsetLevels(): %v", err)
 	}
 
 	var lvls []Level

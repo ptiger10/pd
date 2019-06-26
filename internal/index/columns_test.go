@@ -114,12 +114,12 @@ func TestNewColumnFromConfig(t *testing.T) {
 			args{Config{
 				Cols:     []interface{}{"foo"},
 				MultiCol: [][]interface{}{{"foo"}}}, 2},
-			want{NewColumns(), true}},
+			want{Columns{}, true}},
 		{"fail: wrong multiindex names length",
 			args{Config{
 				MultiCol:      [][]interface{}{{"foo"}},
 				MultiColNames: []string{"foo", "bar"}}, 2},
-			want{NewColumns(), true}},
+			want{Columns{}, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -132,7 +132,14 @@ func TestNewColumnFromConfig(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestColumns_Nil(t *testing.T) {
+	cols := Columns{}
+	_ = cols.Copy()
+	_ = cols.Len()
+	_ = cols.NumLevels()
+	cols.Refresh()
 }
 
 func TestCols_Refresh(t *testing.T) {
@@ -160,7 +167,7 @@ func TestCols_Subset(t *testing.T) {
 	}{
 		{"pass 0", []int{0}, NewColumns(NewColLevel([]interface{}{"foo"}, "baz"), NewColLevel([]interface{}{"qux"}, "corge")), false},
 		{"pass 1", []int{1}, NewColumns(NewColLevel([]interface{}{"bar"}, "baz"), NewColLevel([]interface{}{"quux"}, "corge")), false},
-		{"out of range", []int{2}, Columns{}, true},
+		{"fail: out of range", []int{2}, Columns{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

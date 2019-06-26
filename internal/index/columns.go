@@ -37,7 +37,7 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	}
 	// both not nil: return error
 	if config.Cols != nil && config.MultiCol != nil {
-		return NewColumns(), fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
+		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
 	}
 	// single-level Columns
 	if config.Cols != nil {
@@ -48,7 +48,7 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	// multi-level Columns
 	if config.MultiCol != nil {
 		if config.MultiColNames != nil && len(config.MultiColNames) != len(config.MultiCol) {
-			return NewColumns(), fmt.Errorf(
+			return Columns{}, fmt.Errorf(
 				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",
 				len(config.MultiColNames), len(config.MultiCol))
 		}
@@ -73,6 +73,9 @@ func NewDefaultColumns(n int) Columns {
 
 // Len returns the number of labels in every level of the column.
 func (cols Columns) Len() int {
+	if cols.NumLevels() == 0 {
+		return 0
+	}
 	return cols.Levels[0].Len()
 }
 

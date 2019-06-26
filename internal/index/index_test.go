@@ -116,20 +116,20 @@ func TestNewFromConfig(t *testing.T) {
 			want{New(MustNewLevel([]string{"foo", "bar"}, "quux"), MustNewLevel([]string{"baz", "qux"}, "quuz")), false}},
 		{"fail: singleIndex unsupported type",
 			args{Config{Index: complex64(1)}, 2},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: multiIndex unsupported type",
 			args{Config{MultiIndex: []interface{}{complex64(1)}}, 2},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: both not nil",
 			args{Config{
 				Index:      "foo",
 				MultiIndex: []interface{}{"foo"}}, 2},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: wrong multiindex names length",
 			args{Config{
 				MultiIndex:      []interface{}{"foo"},
 				MultiIndexNames: []string{"bar", "baz"}}, 2},
-			want{New(), true}},
+			want{Index{}, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,12 +187,22 @@ func TestMustNew_fail(t *testing.T) {
 	}
 }
 
-func Test_Nil(t *testing.T) {
+func TestIndex_Nil(t *testing.T) {
 	idx := Index{}
 	_ = idx.Aligned()
 	_ = idx.Copy()
 	_ = idx.Len()
+	_ = idx.NumLevels()
 	idx.Refresh()
+}
+
+func TestElements(t *testing.T) {
+	idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, "a"), MustNewLevel([]int64{1, 2, 3}, "b"))
+	got := idx.Elements(0)
+	want := Elements{Labels: []interface{}{"foo", int64(1)}, DataTypes: []options.DataType{options.String, options.Int64}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Elements(): got %#v, want %#v", got, want)
+	}
 }
 
 func TestAligned(t *testing.T) {
@@ -253,16 +263,16 @@ func TestSubset(t *testing.T) {
 			want{single, false}},
 		{"fail: subsetRows no args",
 			args{[]int{}, single, Index.Subset},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: subsetLevels no args",
 			args{[]int{}, multi, Index.SubsetLevels},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: subsetRows invalid",
 			args{[]int{1, 3}, multi, Index.Subset},
-			want{New(), true}},
+			want{Index{}, true}},
 		{"fail: subsetLevels invalid",
 			args{[]int{1, 3}, multi, Index.SubsetLevels},
-			want{New(), true}},
+			want{Index{}, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -277,17 +287,6 @@ func TestSubset(t *testing.T) {
 	}
 }
 
-func TestElements(t *testing.T) {
-	idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, "a"), MustNewLevel([]int64{1, 2, 3}, "b"))
-	got := idx.Elements(0)
-	want := Elements{Labels: []interface{}{"foo", int64(1)}, DataTypes: []options.DataType{options.String, options.Int64}}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Elements(): got %#v, want %#v", got, want)
-	}
-
-}
-
-// [START Modify tests]
 func TestDropLevel(t *testing.T) {
 	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
 	single := New(lvl)
