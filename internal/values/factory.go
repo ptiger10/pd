@@ -67,10 +67,6 @@ func ScalarFactory(data interface{}) (Factory, error) {
 		val := newDateTime(data.(time.Time))
 		ret = Factory{&dateTimeValues{val}, options.DateTime}
 
-	// case interface{}:
-	// 	val := newInterface(data.(interface{}))
-	// 	ret = Factory{&interfaceValues{val}, options.Interface}
-
 	default:
 		ret = Factory{}
 		return ret, fmt.Errorf("Type %T not supported", data)
@@ -186,15 +182,6 @@ func sliceUIntToSliceInt64(data interface{}) []int64 {
 // [END interface converters]
 
 // [START utility slices]
-
-// makeRange returns a sequential series of numbers, for use in the default Series index constructor.
-func makeRange(min, max int) []int64 {
-	a := make([]int64, max-min)
-	for i := range a {
-		a[i] = int64(min + i)
-	}
-	return a
-}
 
 // MakeIntRange returns a sequential series of numbers, for use in making default index labels.
 func MakeIntRange(min, max int) []int {

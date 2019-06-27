@@ -53,6 +53,7 @@ func (val boolValue) toBool() boolValue {
 	return val
 }
 
+// !null: 1/1/1970; null: time.Time{}
 func (val boolValue) toDateTime() dateTimeValue {
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	if val.null {

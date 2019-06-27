@@ -243,3 +243,19 @@ func TestSliceConstructor_Unsupported(t *testing.T) {
 		t.Errorf("Returned nil error, expected error due to unsupported type %T", data)
 	}
 }
+
+func TestMakeIntRange(t *testing.T) {
+	got := MakeIntRange(0, 3)
+	want := []int{0, 1, 2}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("MakeIntRange(): got %v, want %v", got, want)
+	}
+}
+
+func TestMakeInterfaceRange(t *testing.T) {
+	got := MakeInterfaceRange(0, 3)
+	want := []interface{}{0, 1, 2}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("MakeIntRange(): got %v, want %v", got, want)
+	}
+}

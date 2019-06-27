@@ -64,7 +64,7 @@ func (val interfaceValue) toFloat64() float64Value {
 	case time.Time:
 		return newDateTime(val.v.(time.Time)).toFloat64()
 	}
-	return float64Value{}
+	return float64Value{math.NaN(), true}
 }
 
 func (val interfaceValue) toInt64() int64Value {
@@ -88,7 +88,7 @@ func (val interfaceValue) toInt64() int64Value {
 	case time.Time:
 		return newDateTime(val.v.(time.Time)).toInt64()
 	}
-	return int64Value{}
+	return int64Value{0, true}
 }
 
 func (val interfaceValue) toBool() boolValue {
@@ -112,7 +112,7 @@ func (val interfaceValue) toBool() boolValue {
 	case time.Time:
 		return newDateTime(val.v.(time.Time)).toBool()
 	}
-	return boolValue{}
+	return boolValue{false, true}
 }
 
 func (val interfaceValue) toDateTime() dateTimeValue {
@@ -136,7 +136,7 @@ func (val interfaceValue) toDateTime() dateTimeValue {
 	case time.Time:
 		return newDateTime(val.v.(time.Time))
 	}
-	return dateTimeValue{}
+	return dateTimeValue{time.Time{}, true}
 }
 
 func (val interfaceValue) toInterface() interfaceValue {
