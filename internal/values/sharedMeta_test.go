@@ -56,6 +56,9 @@ func TestMeta(t *testing.T) {
 	vals.Drop(0)
 	vals.Insert(0, "foo")
 
+	vals.Set(0, complex64(1))
+	vals.Insert(0, complex64(1))
+
 	v := interfaceValue{"foo", false}
 	v.tovalueType()
 }

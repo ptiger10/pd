@@ -76,7 +76,11 @@ func (vals *valueTypeValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *valueTypeValues) Set(position int, newVal interface{}) {
+func (vals *valueTypeValues) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("valueTypeValues.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -84,6 +88,7 @@ func (vals *valueTypeValues) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.tovalueType()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -92,9 +97,13 @@ func (vals *valueTypeValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *valueTypeValues) Insert(pos int, val interface{}) {
+func (vals *valueTypeValues) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("valueTypeValues.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]valueTypeValue{v.tovalueType()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts valueTypeValues to floatValues.

@@ -75,7 +75,11 @@ func (vals *float64Values) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *float64Values) Set(position int, newVal interface{}) {
+func (vals *float64Values) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("Float64Values.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -83,6 +87,7 @@ func (vals *float64Values) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toFloat64()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -91,9 +96,13 @@ func (vals *float64Values) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *float64Values) Insert(pos int, val interface{}) {
+func (vals *float64Values) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("Float64Values.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]float64Value{v.toFloat64()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts float64Values to floatValues.
@@ -228,7 +237,11 @@ func (vals *int64Values) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *int64Values) Set(position int, newVal interface{}) {
+func (vals *int64Values) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("Int64Values.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -236,6 +249,7 @@ func (vals *int64Values) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toInt64()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -244,9 +258,13 @@ func (vals *int64Values) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *int64Values) Insert(pos int, val interface{}) {
+func (vals *int64Values) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("Int64Values.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]int64Value{v.toInt64()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts int64Values to floatValues.
@@ -381,7 +399,11 @@ func (vals *stringValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *stringValues) Set(position int, newVal interface{}) {
+func (vals *stringValues) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("StringValues.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -389,6 +411,7 @@ func (vals *stringValues) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toString()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -397,9 +420,13 @@ func (vals *stringValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *stringValues) Insert(pos int, val interface{}) {
+func (vals *stringValues) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("StringValues.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]stringValue{v.toString()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts stringValues to floatValues.
@@ -534,7 +561,11 @@ func (vals *boolValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *boolValues) Set(position int, newVal interface{}) {
+func (vals *boolValues) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("BoolValues.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -542,6 +573,7 @@ func (vals *boolValues) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toBool()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -550,9 +582,13 @@ func (vals *boolValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *boolValues) Insert(pos int, val interface{}) {
+func (vals *boolValues) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("BoolValues.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]boolValue{v.toBool()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts boolValues to floatValues.
@@ -687,7 +723,11 @@ func (vals *dateTimeValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *dateTimeValues) Set(position int, newVal interface{}) {
+func (vals *dateTimeValues) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("DateTimeValues.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -695,6 +735,7 @@ func (vals *dateTimeValues) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toDateTime()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -703,9 +744,13 @@ func (vals *dateTimeValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *dateTimeValues) Insert(pos int, val interface{}) {
+func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("DateTimeValues.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]dateTimeValue{v.toDateTime()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts dateTimeValues to floatValues.
@@ -840,7 +885,11 @@ func (vals *interfaceValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *interfaceValues) Set(position int, newVal interface{}) {
+func (vals *interfaceValues) Set(position int, newVal interface{}) error {
+	if _, err := InterfaceFactory(newVal); err != nil {
+		return fmt.Errorf("InterfaceValues.Set(): %v", err)
+	}
+
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -848,6 +897,7 @@ func (vals *interfaceValues) Set(position int, newVal interface{}) {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toInterface()
+	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -856,9 +906,13 @@ func (vals *interfaceValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *interfaceValues) Insert(pos int, val interface{}) {
+func (vals *interfaceValues) Insert(pos int, val interface{}) error {
+	if _, err := InterfaceFactory(val); err != nil {
+		return fmt.Errorf("InterfaceValues.Insert(): %v", err)
+	}
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]interfaceValue{v.toInterface()}, (*vals)[pos:]...)...)
+	return nil
 }
 
 // ToFloat converts interfaceValues to floatValues.

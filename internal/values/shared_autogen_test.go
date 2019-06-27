@@ -84,6 +84,17 @@ func TestSharedFloat64(t *testing.T) {
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
 	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+
 }
 
 // TestSharedInt64 tests shared int64 interface methods
@@ -160,6 +171,16 @@ func TestSharedInt64(t *testing.T) {
 	wantInsert := &int64Values{int64Value{1, false}, int64Value{2, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
+	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
 	}
 }
 
@@ -238,6 +259,16 @@ func TestSharedString(t *testing.T) {
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
 	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
 }
 
 // TestSharedBool tests shared bool interface methods
@@ -314,6 +345,16 @@ func TestSharedBool(t *testing.T) {
 	wantInsert := &boolValues{boolValue{false, false}, boolValue{true, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
+	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
 	}
 }
 
@@ -394,6 +435,16 @@ func TestSharedDateTime(t *testing.T) {
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
 	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
 }
 
 // TestSharedInterface tests shared interface{} interface methods
@@ -470,6 +521,16 @@ func TestSharedInterface(t *testing.T) {
 	wantInsert := &interfaceValues{interfaceValue{false, false}, interfaceValue{true, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
+	}
+
+	var err error
+	err = vals.Set(0, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
+	}
+	err = vals.Insert(1, complex64(1))
+	if err == nil {
+		t.Errorf("Insert() error = nil, want err")
 	}
 
 }
