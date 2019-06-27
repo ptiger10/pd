@@ -1,18 +1,15 @@
 package series
 
 import (
-	"os"
 	"testing"
-
-	"github.com/ptiger10/pd/options"
 )
 
-func TestMain(m *testing.M) {
-	options.SetLogWarnings(false)
-	exitCode := m.Run()
-	options.RestoreDefaults()
-	os.Exit(exitCode)
-}
+// func TestMain(m *testing.M) {
+// 	options.SetLogWarnings(false)
+// 	exitCode := m.Run()
+// 	options.RestoreDefaults()
+// 	os.Exit(exitCode)
+// }
 
 // func TestSelectors(t *testing.T) {
 // 	type args struct {

@@ -280,7 +280,7 @@ func TestModify_Append(t *testing.T) {
 
 func TestModify_Set(t *testing.T) {
 	type args struct {
-		rowPositions []int
+		rowPositions int
 		val          interface{}
 	}
 	type want struct {
@@ -294,16 +294,10 @@ func TestModify_Set(t *testing.T) {
 		want  want
 	}{
 		{"singleRow",
-			MustNew("foo"), args{rowPositions: []int{0}, val: "bar"},
+			MustNew("foo"), args{rowPositions: 0, val: "bar"},
 			want{series: MustNew("bar"), err: false}},
-		{"multiRow",
-			MustNew("foo"), args{[]int{0}, "bar"},
-			want{MustNew("bar"), false}},
 		{"fail: invalid index singleRow",
-			MustNew("foo"), args{[]int{1}, "bar"},
-			want{MustNew("foo"), true}},
-		{"fail: partial success on multiRow",
-			MustNew("foo"), args{[]int{0, 2}, "bar"},
+			MustNew("foo"), args{1, "bar"},
 			want{MustNew("foo"), true}},
 	}
 	for _, tt := range tests {
@@ -336,7 +330,119 @@ func TestModify_Set(t *testing.T) {
 	}
 }
 
+func TestModify_SetRows(t *testing.T) {
+	type args struct {
+		rowPositions []int
+		val          interface{}
+	}
+	type want struct {
+		series *Series
+		err    bool
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"singleRow",
+			MustNew("foo"), args{rowPositions: []int{0}, val: "bar"},
+			want{series: MustNew("bar"), err: false}},
+		{"multiRow",
+			MustNew([]string{"foo", "bar"}), args{[]int{0, 1}, "baz"},
+			want{MustNew([]string{"baz", "baz"}), false}},
+		{"fail: invalid index singleRow",
+			MustNew("foo"), args{[]int{1}, "bar"},
+			want{MustNew("foo"), true}},
+		{"fail: partial success on multiRow",
+			MustNew("foo"), args{[]int{0, 2}, "bar"},
+			want{MustNew("foo"), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			err := s.InPlace.SetRows(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.series)
+			}
+
+			sCopy, err := sArchive.SetRows(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Set() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Set() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
 func TestModify_Drop(t *testing.T) {
+	type args struct {
+		rowPositions int
+	}
+	type want struct {
+		series *Series
+		err    bool
+	}
+	var tests = []struct {
+		name  string
+		input *Series
+		args  args
+		want  want
+	}{
+		{"drop to 0",
+			MustNew("foo"), args{rowPositions: 0},
+			want{series: newEmptySeries(), err: false}},
+		{"singleRow",
+			MustNew([]string{"foo", "bar", "baz"}), args{1},
+			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
+		{"fail: invalid index singleRow",
+			MustNew("foo"), args{1},
+			want{MustNew("foo"), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			err := s.InPlace.Drop(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.series) {
+				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.series)
+			}
+
+			sCopy, err := sArchive.Drop(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Series.Drop() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want.series) {
+					t.Errorf("Series.Drop() got %v, want %v", sCopy, tt.want.series)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.Drop() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestModify_DropRows(t *testing.T) {
 	type args struct {
 		rowPositions []int
 	}
@@ -373,7 +479,7 @@ func TestModify_Drop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := tt.input
 			sArchive := tt.input.Copy()
-			err := s.InPlace.Drop(tt.args.rowPositions)
+			err := s.InPlace.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
 				return
@@ -382,7 +488,7 @@ func TestModify_Drop(t *testing.T) {
 				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.series)
 			}
 
-			sCopy, err := sArchive.Drop(tt.args.rowPositions)
+			sCopy, err := sArchive.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Series.Drop() error = %v, want %v", err, tt.want.err)
 				return

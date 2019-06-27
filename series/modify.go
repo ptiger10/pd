@@ -12,6 +12,13 @@ func (s *Series) Rename(name string) {
 	s.name = name
 }
 
+func (s *Series) replace(s2 *Series) {
+	s.name = s2.name
+	s.datatype = s2.datatype
+	s.values = s2.values
+	s.index = s2.index
+}
+
 // [START InPlace]
 
 // InPlace contains methods for modifying a Series in place.
@@ -89,11 +96,20 @@ func (ip InPlace) Append(val interface{}, idx []interface{}) error {
 	return nil
 }
 
-// Set sets all the values in the specified rows to val and modifies the Series in place.
-// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
-func (ip InPlace) Set(rowPositions []int, val interface{}) error {
-	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
+// Set sets the values in the specified row to val and modifies the Series in place.
+func (ip InPlace) Set(row int, val interface{}) error {
+	if err := ip.s.ensureRowPositions([]int{row}); err != nil {
 		return fmt.Errorf("Series.Set(): %v", err)
+	}
+	ip.s.values.Set(row, val)
+	return nil
+}
+
+// SetRows sets all the values in the specified rows to val and modifies the Series in place.
+// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
+func (ip InPlace) SetRows(rowPositions []int, val interface{}) error {
+	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("Series.SetRows(): %v", err)
 	}
 
 	for _, row := range rowPositions {
@@ -103,10 +119,18 @@ func (ip InPlace) Set(rowPositions []int, val interface{}) error {
 }
 
 // Drop drops the row at the specified integer position and modifies the Series in place.
-// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
-func (ip InPlace) Drop(rowPositions []int) error {
-	if err := ip.dropMany(rowPositions); err != nil {
+func (ip InPlace) Drop(row int) error {
+	if err := ip.dropMany([]int{row}); err != nil {
 		return fmt.Errorf("Series.Drop(): %v", err)
+	}
+	return nil
+}
+
+// DropRows drops the rows at the specified integer position and modifies the Series in place.
+// If an error would be encountered in any row position, the entire operation is cancelled before it starts.
+func (ip InPlace) DropRows(rowPositions []int) error {
+	if err := ip.dropMany(rowPositions); err != nil {
+		return fmt.Errorf("Series.DropRows(): %v", err)
 	}
 	return nil
 }
@@ -133,14 +157,14 @@ func (ip InPlace) dropMany(positions []int) error {
 }
 
 // dropOne drops a row at a specified integer position and modifies the Series in place.
-func (ip InPlace) dropOne(pos int) error {
+// Should be called via dropMany to catch errors.
+func (ip InPlace) dropOne(pos int) {
 	for i := 0; i < ip.s.index.NumLevels(); i++ {
-		// ducks errors safely due to index alignment check in dropMany
 		ip.s.index.Levels[i].Labels.Drop(pos)
 		ip.s.index.Levels[i].Refresh()
 	}
 	ip.s.values.Drop(pos)
-	return nil
+	return
 }
 
 // ToFloat64 converts Series values to float64 in place.
@@ -219,23 +243,31 @@ func (s *Series) Append(val interface{}, idx []interface{}) (*Series, error) {
 	return s, nil
 }
 
-// Set sets all the values in the specified rows to val and returns a new Series.
-func (s *Series) Set(rowPositions []int, val interface{}) (*Series, error) {
-	err := s.ensureRowPositions(rowPositions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Set(): %v", err)
-	}
+// Set sets the value in the specified rows to val and returns a new Series.
+func (s *Series) Set(row int, val interface{}) (*Series, error) {
 	s = s.Copy()
-	for _, row := range rowPositions {
-		s.values.Set(row, val)
-	}
-	return s, nil
+	err := s.InPlace.Set(row, val)
+	return s, err
+}
+
+// SetRows sets all the values in the specified rows to val and returns a new Series.
+func (s *Series) SetRows(rowPositions []int, val interface{}) (*Series, error) {
+	s = s.Copy()
+	err := s.InPlace.SetRows(rowPositions, val)
+	return s, err
 }
 
 // Drop drops the row at the specified integer position and returns a new Series.
-func (s *Series) Drop(positions []int) (*Series, error) {
+func (s *Series) Drop(row int) (*Series, error) {
 	s = s.Copy()
-	err := s.InPlace.Drop(positions)
+	err := s.InPlace.Drop(row)
+	return s, err
+}
+
+// DropRows drops the rows at the specified integer position and returns a new Series.
+func (s *Series) DropRows(positions []int) (*Series, error) {
+	s = s.Copy()
+	err := s.InPlace.DropRows(positions)
 	return s, err
 }
 

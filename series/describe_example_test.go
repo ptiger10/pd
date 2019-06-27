@@ -1,6 +1,7 @@
 package series
 
 import (
+	"fmt"
 	"math"
 	"time"
 )
@@ -137,4 +138,33 @@ func ExampleSeries_Describe_interface() {
 	// valid    3
 	//  null    1
 	//datatype: interface
+}
+
+// [START additional structs]
+
+func ExampleElement_valid_printer() {
+	s := MustNew("foo")
+	fmt.Println(s.Element(0))
+	// Output:
+	//      Value: foo
+	//       Null: false
+	//     Labels: [0]
+	// LabelTypes: [int64]
+}
+
+func ExampleElement_null_printer() {
+	s := MustNew("")
+	fmt.Println(s.Element(0))
+	// Output:
+	//      Value: NaN
+	//       Null: true
+	//     Labels: [0]
+	// LabelTypes: [int64]
+}
+
+func ExampleIndex_valid_printer() {
+	s := MustNew([]string{"foo", "bar", "baz"})
+	fmt.Println(s.Index)
+	// Output:
+	// {Index | Len: 3, NumLevels: 1}
 }

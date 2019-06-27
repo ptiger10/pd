@@ -74,7 +74,6 @@ func New(data interface{}, config ...Config) (*Series, error) {
 
 	s.Index = Index{s: s}
 	s.InPlace = InPlace{s: s}
-	s.Apply = Apply{s: s}
 
 	// Alignment check
 	if err := s.ensureAlignment(); err != nil {
@@ -111,7 +110,6 @@ func (s *Series) Copy() *Series {
 		datatype: s.datatype,
 		name:     s.name,
 	}
-	copyS.Apply = Apply{s: copyS}
 	copyS.Index = Index{s: copyS}
 	copyS.InPlace = InPlace{s: copyS}
 	return copyS

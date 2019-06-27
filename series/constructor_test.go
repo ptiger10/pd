@@ -161,12 +161,9 @@ func TestMustNew(t *testing.T) {
 	}
 }
 func TestMustNew_fail(t *testing.T) {
-	options.RestoreDefaults()
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	defer func() {
-		log.SetOutput(os.Stderr)
-	}()
+	defer log.SetOutput(os.Stderr)
 	MustNew(complex64(1))
 	if buf.String() == "" {
 		t.Errorf("MustNew() returned no log message, want log due to fail")

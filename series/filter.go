@@ -1,23 +1,9 @@
 package series
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
-
-// Subset returns a subset of a Series based on the supplied integer positions.
-func (s *Series) Subset(rowPositions []int) (*Series, error) {
-	if len(rowPositions) == 0 {
-		return newEmptySeries(), fmt.Errorf("series.Subset(): no valid rows provided")
-	}
-
-	sub, err := s.selectByRows(rowPositions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.Subset(): %v", err)
-	}
-	return sub, nil
-}
 
 // CustomFilterFloat64 converts a Series to float values, applies a filter, and returns the rows where the condition is true.
 func (s *Series) CustomFilterFloat64(cmp func(float64) bool) []int {

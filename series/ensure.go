@@ -56,10 +56,10 @@ func ensureDateTime(vals interface{}) []time.Time {
 // or if there is a mismatch between the number of values and index items
 func (s *Series) ensureAlignment() error {
 	if err := s.index.Aligned(); err != nil {
-		return fmt.Errorf("series out of alignment: %v", err)
+		return fmt.Errorf("out of alignment: %v", err)
 	}
 	if labels := s.index.Levels[0].Len(); s.Len() != labels {
-		return fmt.Errorf("series out of alignment: series must have same number of values as index labels (%d != %d)", s.Len(), labels)
+		return fmt.Errorf("out of alignment: series must have same number of values as index labels (%d != %d)", s.Len(), labels)
 	}
 	return nil
 }

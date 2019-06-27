@@ -259,14 +259,14 @@ func (idx Index) SubsetLevels(levelPositions []int) Index {
 	return newIdx
 }
 
-// Set sets the value at the specified index row and level to val and modifies the Index in-place.
+// Set sets the value at the specified index row and level to val and modifies the Index in place.
 func (idx *Index) Set(row int, level int, val interface{}) {
 	idx.Levels[level].Labels.Set(row, val)
 	idx.Levels[level].Refresh()
 	return
 }
 
-// DropLevel drops an index level and modifies the Index in-place. If there is only one level, does nothing.
+// DropLevel drops an index level and modifies the Index in place. If there is only one level, does nothing.
 func (idx *Index) DropLevel(level int) {
 	if idx.NumLevels() == 1 {
 		return

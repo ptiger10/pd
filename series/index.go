@@ -49,20 +49,20 @@ func (idx Index) NumLevels() int {
 }
 
 // At returns the index value at a specified row position and index level but returns nil if either integer is out of range.
-func (idx Index) At(position int, level int) interface{} {
+func (idx Index) At(row int, level int) interface{} {
 	if level >= idx.NumLevels() {
 		if options.GetLogWarnings() {
 			log.Printf("s.Index.At(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 		}
 		return nil
 	}
-	if position >= idx.Len() {
+	if row >= idx.Len() {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.At(): invalid position: %d (max: %v)", position, idx.Len()-1)
+			log.Printf("s.Index.At(): invalid row: %d (max: %v)", row, idx.Len()-1)
 		}
 		return nil
 	}
-	elem := idx.s.Element(position)
+	elem := idx.s.Element(row)
 	return elem.Labels[level]
 }
 
@@ -72,15 +72,17 @@ func (idx Index) RenameLevel(level int, name string) error {
 		return fmt.Errorf("s.Index.RenameLevel(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 	}
 	idx.s.index.Levels[level].Name = name
+	idx.s.index.Refresh()
 	return nil
 }
 
-// Values returns an interface{}, ready for type assertion, of all values at the specified index level.
+// Values returns an interface{}, ready for type assertion, of all values at the specified index level, but returns nil if level is out of range.
 func (idx Index) Values(level int) interface{} {
 	if level >= idx.NumLevels() {
 		if options.GetLogWarnings() {
 			log.Printf("s.Index.Values(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 		}
+		return nil
 	}
 	return idx.s.index.Levels[level].Labels.Vals()
 }
@@ -145,7 +147,25 @@ func (idx Index) InsertLevel(pos int, values interface{}, name string) (*Series,
 	return s, nil
 }
 
+func (idx Index) ensureRowPositions(rowPositions []int) error {
+	if len(rowPositions) == 0 {
+		return fmt.Errorf("no rows provided")
+	}
+
+	len := idx.Len()
+	for _, pos := range rowPositions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
 func (idx Index) ensureLevelPositions(levelPositions []int) error {
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("no levels provided")
+	}
+
 	for _, pos := range levelPositions {
 		if pos >= idx.NumLevels() {
 			return fmt.Errorf("invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
@@ -154,18 +174,30 @@ func (idx Index) ensureLevelPositions(levelPositions []int) error {
 	return nil
 }
 
-// SetLevels sets all the labels at one or more index levels to a given value.
-func (idx Index) SetLevels(levelPositions []int, label interface{}) (*Series, error) {
-	err := idx.ensureLevelPositions(levelPositions)
+// Set sets the label at the specified index row and level to val.
+func (idx Index) Set(row int, level int, val interface{}) (*Series, error) {
+	var err error
+	err = idx.ensureRowPositions([]int{row})
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.SetLevels(): %v", err)
+		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
+	}
+
+	err = idx.ensureLevelPositions([]int{level})
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
 	}
 	s := idx.s.Copy()
-	for j := 0; j < idx.NumLevels(); j++ {
-		for i := 0; i < idx.Len(); i++ {
-			s.index.Levels[j].Labels.Set(i, label)
-		}
+	s.index.Set(row, level, val)
+	return s, nil
+}
+
+// DropLevel drops the specified index level.
+func (idx Index) DropLevel(level int) (*Series, error) {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
+	s := idx.s.Copy()
+	s.index.DropLevel(level)
 	return s, nil
 }
 
@@ -224,6 +256,20 @@ func (idx Index) Subset(levelPositions []int) (*Series, error) {
 		levels = append(levels, s.index.Levels[position])
 	}
 	s.index.Levels = levels
+	s.index.Refresh()
+	return s, nil
+}
+
+// Flip replaces the Series values with the labels at the supplied index level, and vice versa.
+func (idx Index) Flip(level int) (*Series, error) {
+	err := idx.ensureLevelPositions([]int{level})
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.Flip(): %v", err)
+	}
+	s := idx.s.Copy()
+	s.index.Levels[level].Labels, s.values = s.values, s.index.Levels[level].Labels
+	s.index.Levels[level].Name, s.name = s.name, s.index.Levels[level].Name
+	s.index.Levels[level].DataType, s.datatype = s.datatype, s.index.Levels[level].DataType
 	s.index.Refresh()
 	return s, nil
 }

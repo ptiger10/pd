@@ -1,6 +1,9 @@
 package series
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestJoin(t *testing.T) {
 	s := MustNew([]int{1, 2, 3})
@@ -20,6 +23,12 @@ func TestJoinEmpty(t *testing.T) {
 	if !Equal(s3, want) {
 		t.Errorf("s.Join() returned %v, want %v", s3, want)
 	}
+}
+
+func TestLookupSeries(t *testing.T) {
+	s := MustNew([]float64{4, 5})
+	s2 := MustNew([]string{"foo", "Bar", "baz"})
+	fmt.Println(s.LookupSeries(s2))
 }
 
 // func Test_InPlace_Join(t *testing.T) {

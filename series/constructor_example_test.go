@@ -180,25 +180,3 @@ func ExampleNew_config_datatype() {
 	// 1    NaN
 	// datatype: float64
 }
-
-func ExampleElement_valid_printer() {
-	s := MustNew("foo")
-	fmt.Println(s.Element(0))
-
-	// Output:
-	//      Value: foo
-	//       Null: false
-	//     Labels: [0]
-	// LabelTypes: [int64]
-}
-
-func ExampleElement_null_printer() {
-	s := MustNew("")
-	fmt.Println(s.Element(0))
-
-	// Output:
-	//      Value: NaN
-	//       Null: true
-	//     Labels: [0]
-	// LabelTypes: [int64]
-}
