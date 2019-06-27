@@ -52,6 +52,7 @@ func TestMeta(t *testing.T) {
 
 	vals.Subset([]int{0})
 	vals.Set(0, "bar")
+	vals.Set(0, "")
 	vals.Drop(0)
 	vals.Insert(0, "foo")
 

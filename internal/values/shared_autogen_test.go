@@ -63,14 +63,17 @@ func TestSharedFloat64(t *testing.T) {
 	}
 
 	vals.Set(0, 5)
-
 	wantSet := &float64Values{float64Value{5, false}, float64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	vals.Drop(0)
+	vals.Set(0, "")
+	if elem := vals.Element(0); !math.IsNaN(elem.Value.(float64)) || elem.Null != true {
+		t.Errorf("Set() on null value did not return null values")
+	}
 
+	vals.Drop(0)
 	wantDrop := &float64Values{float64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
@@ -139,6 +142,12 @@ func TestSharedInt64(t *testing.T) {
 	wantSet := &int64Values{int64Value{5, false}, int64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
+	}
+
+	vals.Set(0, "")
+	wantSet = &int64Values{int64Value{0, true}, int64Value{1, false}}
+	if !reflect.DeepEqual(vals, wantSet) {
+		t.Errorf("Set() on null value got %v, want %v", vals, wantSet)
 	}
 
 	vals.Drop(0)
@@ -212,6 +221,12 @@ func TestSharedString(t *testing.T) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
+	vals.Set(0, "")
+	wantSet = &stringValues{stringValue{"NaN", true}, stringValue{"bar", false}}
+	if !reflect.DeepEqual(vals, wantSet) {
+		t.Errorf("Set() on null value got %v, want %v", vals, wantSet)
+	}
+
 	vals.Drop(0)
 	wantDrop := &stringValues{stringValue{"bar", false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
@@ -281,6 +296,12 @@ func TestSharedBool(t *testing.T) {
 	wantSet := &boolValues{boolValue{false, false}, boolValue{false, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
+	}
+
+	vals.Set(0, "")
+	wantSet = &boolValues{boolValue{false, true}, boolValue{false, false}}
+	if !reflect.DeepEqual(vals, wantSet) {
+		t.Errorf("Set() on null value got %v, want %v", vals, wantSet)
 	}
 
 	vals.Drop(0)
@@ -353,7 +374,13 @@ func TestSharedDateTime(t *testing.T) {
 	vals.Set(0, dt1)
 	wantSet := &dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
-		t.Errorf("Set() got %v, want %v", vals, wantSet)
+		t.Errorf("Set() on null value got %v, want %v", vals, wantSet)
+	}
+
+	vals.Set(0, "")
+	wantSet = &dateTimeValues{dateTimeValue{time.Time{}, true}, dateTimeValue{dt1, false}}
+	if !reflect.DeepEqual(vals, wantSet) {
+		t.Errorf("Set() on null values got %v, want %v", vals, wantSet)
 	}
 
 	vals.Drop(0)
@@ -425,6 +452,12 @@ func TestSharedInterface(t *testing.T) {
 	wantSet := &interfaceValues{interfaceValue{false, false}, interfaceValue{false, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
+	}
+
+	vals.Set(0, "")
+	wantSet = &interfaceValues{interfaceValue{"", true}, interfaceValue{false, false}}
+	if !reflect.DeepEqual(vals, wantSet) {
+		t.Errorf("Set() on null values got %v, want %v", vals, wantSet)
 	}
 
 	vals.Drop(0)

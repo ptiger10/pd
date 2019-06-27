@@ -239,34 +239,6 @@ func (idx Index) Aligned() error {
 	return nil
 }
 
-func (idx Index) ensureRowPositions(rowPositions []int) error {
-	if len(rowPositions) == 0 {
-		return fmt.Errorf("no rows provided")
-	}
-
-	len := idx.Len()
-	for _, pos := range rowPositions {
-		if pos >= len {
-			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
-		}
-	}
-	return nil
-}
-
-func (idx Index) ensureLevelPositions(levelPositions []int) error {
-	if len(levelPositions) == 0 {
-		return fmt.Errorf("no levels provided")
-	}
-
-	len := idx.NumLevels()
-	for _, pos := range levelPositions {
-		if pos >= len {
-			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
-		}
-	}
-	return nil
-}
-
 // Subset returns a new index with all the labels located at the specified integer positions
 func (idx Index) Subset(rowPositions []int) Index {
 	idx = idx.Copy()
@@ -285,6 +257,13 @@ func (idx Index) SubsetLevels(levelPositions []int) Index {
 	}
 	newIdx := New(lvls...)
 	return newIdx
+}
+
+// Set sets the value at the specified index row and level to val and modifies the Index in-place.
+func (idx *Index) Set(row int, level int, val interface{}) {
+	idx.Levels[level].Labels.Set(row, val)
+	idx.Levels[level].Refresh()
+	return
 }
 
 // DropLevel drops an index level and modifies the Index in-place. If there is only one level, does nothing.

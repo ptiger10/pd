@@ -271,6 +271,38 @@ func TestSubset(t *testing.T) {
 	}
 }
 
+func TestSet(t *testing.T) {
+	type args struct {
+		row   int
+		level int
+		val   interface{}
+	}
+	type want struct {
+		index Index
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{"string", args{0, 0, "corge"},
+			want{New(MustNewLevel([]string{"corge", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, ""))}},
+		{"null string", args{0, 0, ""},
+			want{New(MustNewLevel([]string{"NaN", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, ""))}},
+		{"float", args{2, 1, 1.5},
+			want{New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "1.5"}, ""))}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, ""))
+			idx.Set(tt.args.row, tt.args.level, tt.args.val)
+			if !reflect.DeepEqual(idx, tt.want.index) {
+				t.Errorf("Set(): got %v, want %v", idx, tt.want.index)
+			}
+		})
+	}
+}
+
 func TestDropLevel(t *testing.T) {
 	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
 	single := New(lvl)

@@ -77,7 +77,12 @@ func (vals *valueTypeValues) Copy() Values {
 
 // Set overwrites a Value/Null pair at an integer position.
 func (vals *valueTypeValues) Set(position int, newVal interface{}) {
-	v := interfaceValue{newVal, false}
+	var v interfaceValue
+	if isNullInterface(newVal) {
+		v = interfaceValue{newVal, true}
+	} else {
+		v = interfaceValue{newVal, false}
+	}
 	(*vals)[position] = v.tovalueType()
 }
 
