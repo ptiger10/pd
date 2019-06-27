@@ -76,11 +76,7 @@ func (vals *valueTypeValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *valueTypeValues) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("valueTypeValues.Set(): %v", err)
-	}
-
+func (vals *valueTypeValues) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -88,7 +84,6 @@ func (vals *valueTypeValues) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.tovalueType()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.

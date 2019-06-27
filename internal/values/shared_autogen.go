@@ -75,11 +75,7 @@ func (vals *float64Values) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *float64Values) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("Float64Values.Set(): %v", err)
-	}
-
+func (vals *float64Values) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -87,7 +83,6 @@ func (vals *float64Values) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toFloat64()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -233,11 +228,7 @@ func (vals *int64Values) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *int64Values) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("Int64Values.Set(): %v", err)
-	}
-
+func (vals *int64Values) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -245,7 +236,6 @@ func (vals *int64Values) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toInt64()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -391,11 +381,7 @@ func (vals *stringValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *stringValues) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("StringValues.Set(): %v", err)
-	}
-
+func (vals *stringValues) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -403,7 +389,6 @@ func (vals *stringValues) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toString()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -549,11 +534,7 @@ func (vals *boolValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *boolValues) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("BoolValues.Set(): %v", err)
-	}
-
+func (vals *boolValues) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -561,7 +542,6 @@ func (vals *boolValues) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toBool()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -707,11 +687,7 @@ func (vals *dateTimeValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *dateTimeValues) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("DateTimeValues.Set(): %v", err)
-	}
-
+func (vals *dateTimeValues) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -719,7 +695,6 @@ func (vals *dateTimeValues) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toDateTime()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
@@ -865,11 +840,7 @@ func (vals *interfaceValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *interfaceValues) Set(position int, newVal interface{}) error {
-	if _, err := InterfaceFactory(newVal); err != nil {
-		return fmt.Errorf("InterfaceValues.Set(): %v", err)
-	}
-
+func (vals *interfaceValues) Set(position int, newVal interface{}) {
 	var v interfaceValue
 	if isNullInterface(newVal) {
 		v = interfaceValue{newVal, true}
@@ -877,7 +848,6 @@ func (vals *interfaceValues) Set(position int, newVal interface{}) error {
 		v = interfaceValue{newVal, false}
 	}
 	(*vals)[position] = v.toInterface()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
