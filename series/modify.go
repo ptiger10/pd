@@ -95,7 +95,7 @@ func (ip InPlace) Set(rowPositions []int, val interface{}) error {
 	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
 		return fmt.Errorf("Series.Set(): %v", err)
 	}
-	// ducks error safely due to index alignment check
+
 	for _, row := range rowPositions {
 		ip.s.values.Set(row, val)
 	}
@@ -122,7 +122,6 @@ func (ip InPlace) dropMany(positions []int) error {
 	if err := ip.s.ensureRowPositions(positions); err != nil {
 		return err
 	}
-	// ducks error safely due to index alignment check
 	sort.IntSlice(positions).Sort()
 	for i, position := range positions {
 		ip.s.InPlace.dropOne(position - i)

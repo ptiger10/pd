@@ -268,47 +268,33 @@ func (idx Index) ensureLevelPositions(levelPositions []int) error {
 }
 
 // Subset returns a new index with all the labels located at the specified integer positions
-func (idx Index) Subset(rowPositions []int) (Index, error) {
-	err := idx.ensureRowPositions(rowPositions)
-	if err != nil {
-		return Index{}, fmt.Errorf("index.Subset(): %v", err)
-	}
-
+func (idx Index) Subset(rowPositions []int) Index {
 	idx = idx.Copy()
 	for i, level := range idx.Levels {
 		idx.Levels[i].Labels = level.Labels.Subset(rowPositions)
 	}
 	idx.Refresh()
-	return idx, nil
+	return idx
 }
 
 // SubsetLevels returns a copy of the index with only those levels located at specified integer positions
-func (idx Index) SubsetLevels(levelPositions []int) (Index, error) {
-	err := idx.ensureLevelPositions(levelPositions)
-	if err != nil {
-		return Index{}, fmt.Errorf("index.SubsetLevels(): %v", err)
-	}
-
+func (idx Index) SubsetLevels(levelPositions []int) Index {
 	var lvls []Level
 	for _, pos := range levelPositions {
-		// duck error safely because tested in bulk above
 		lvls = append(lvls, idx.Levels[pos])
 	}
 	newIdx := New(lvls...)
-	return newIdx, nil
+	return newIdx
 }
 
 // DropLevel drops an index level and modifies the Index in-place. If there is only one level, does nothing.
-func (idx *Index) DropLevel(level int) error {
+func (idx *Index) DropLevel(level int) {
 	if idx.NumLevels() == 1 {
-		return nil
-	}
-	if level >= idx.NumLevels() {
-		return fmt.Errorf("invalid level: %v (max: %v)", level, idx.Len())
+		return
 	}
 	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
 	idx.Refresh()
-	return nil
+	return
 }
 
 // updateNameMap updates the holistic index map of {index level names: [index level positions]}

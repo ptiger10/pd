@@ -240,11 +240,10 @@ func TestSubset(t *testing.T) {
 	type args struct {
 		pos   []int
 		index Index
-		fn    func(Index, []int) (Index, error)
+		fn    func(Index, []int) Index
 	}
 	type want struct {
 		index Index
-		err   bool
 	}
 	tests := []struct {
 		name string
@@ -254,32 +253,17 @@ func TestSubset(t *testing.T) {
 
 		{"subsetRows singleIndex",
 			args{[]int{0, 1}, single, Index.Subset},
-			want{singleSubset, false}},
+			want{singleSubset}},
 		{"subsetRows multiIndex",
 			args{[]int{0, 1}, multi, Index.Subset},
-			want{multiSubset, false}},
+			want{multiSubset}},
 		{"subsetLevels",
 			args{[]int{0}, multi, Index.SubsetLevels},
-			want{single, false}},
-		{"fail: subsetRows no args",
-			args{[]int{}, single, Index.Subset},
-			want{Index{}, true}},
-		{"fail: subsetLevels no args",
-			args{[]int{}, multi, Index.SubsetLevels},
-			want{Index{}, true}},
-		{"fail: subsetRows invalid",
-			args{[]int{1, 3}, multi, Index.Subset},
-			want{Index{}, true}},
-		{"fail: subsetLevels invalid",
-			args{[]int{1, 3}, multi, Index.SubsetLevels},
-			want{Index{}, true}},
+			want{single}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.args.fn(tt.args.index, tt.args.pos)
-			if (err != nil) != tt.want.err {
-				t.Errorf("Subset() error = %v, want %v", err, tt.want.err)
-			}
+			got := tt.args.fn(tt.args.index, tt.args.pos)
 			if !reflect.DeepEqual(got, tt.want.index) {
 				t.Errorf("Subset(): got %v, want %v", got, tt.want.index)
 			}
@@ -297,7 +281,6 @@ func TestDropLevel(t *testing.T) {
 	}
 	type want struct {
 		index Index
-		err   bool
 	}
 	tests := []struct {
 		name  string
@@ -305,16 +288,12 @@ func TestDropLevel(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"one level: no change", single, args{0}, want{single, false}},
-		{"two levels", multi, args{0}, want{single, false}},
-		{"fail: invalid", multi, args{2}, want{multi, true}},
+		{"one level: no change", single, args{0}, want{single}},
+		{"two levels", multi, args{0}, want{single}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.input.DropLevel(tt.args.pos)
-			if (err != nil) != tt.want.err {
-				t.Errorf("DropLevel() error = %v, want %v", err, tt.want.err)
-			}
+			tt.input.DropLevel(tt.args.pos)
 			if !reflect.DeepEqual(tt.input, tt.want.index) {
 				t.Errorf("DropLevel(): got %v, want %v", tt.input, tt.want.index)
 			}

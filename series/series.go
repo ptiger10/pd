@@ -70,11 +70,7 @@ func (s *Series) selectByRows(positions []int) (*Series, error) {
 
 	s = s.Copy()
 	s.values = s.values.Subset(positions)
-	idx, err := s.index.Subset(positions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.selectByRows(): %v", err)
-	}
-	s.index = idx
+	s.index = s.index.Subset(positions)
 	return s, nil
 }
 

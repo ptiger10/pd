@@ -2,7 +2,6 @@ package series
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 )
@@ -70,11 +69,7 @@ func (s *Series) GroupByIndex() Grouping {
 		var levels []interface{}
 		var labels []string
 		for j := 0; j < s.index.NumLevels(); j++ {
-			idx, err := s.Index.At(i, j)
-			if err != nil {
-				log.Printf("series.GroupByIndex(): %v", err)
-				return Grouping{}
-			}
+			idx := s.Index.At(i, j)
 			levels = append(levels, idx)
 			labels = append(labels, fmt.Sprint(idx))
 		}

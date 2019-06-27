@@ -110,17 +110,6 @@ func (idx Index) ByLevelNames(names []string) []int {
 	return include
 }
 
-// Subset returns the Series with the specified index levels only.
-func (idx Index) Subset(levelPositions []int) (*Series, error) {
-	s := idx.s.Copy()
-	index, err := idx.s.index.SubsetLevels(levelPositions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.Subset(): %v", err)
-	}
-	s.index = index
-	return s, nil
-}
-
 // // SelectLabels selects rows at the specified index labels (for index level 0).
 // // Appends out-of-range errors to Selection.err.
 // func (s *Series) SelectLabels(labels []string) Selection {
