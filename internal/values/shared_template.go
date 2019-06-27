@@ -97,13 +97,9 @@ func (vals *valueTypeValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *valueTypeValues) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("valueTypeValues.Insert(): %v", err)
-	}
+func (vals *valueTypeValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]valueTypeValue{v.tovalueType()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts valueTypeValues to floatValues.

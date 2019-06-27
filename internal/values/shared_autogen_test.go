@@ -90,10 +90,6 @@ func TestSharedFloat64(t *testing.T) {
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}
-	err = vals.Insert(1, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
 
 }
 
@@ -175,10 +171,6 @@ func TestSharedInt64(t *testing.T) {
 
 	var err error
 	err = vals.Set(0, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
-	err = vals.Insert(1, complex64(1))
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}
@@ -265,10 +257,6 @@ func TestSharedString(t *testing.T) {
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}
-	err = vals.Insert(1, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
 }
 
 // TestSharedBool tests shared bool interface methods
@@ -349,10 +337,6 @@ func TestSharedBool(t *testing.T) {
 
 	var err error
 	err = vals.Set(0, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
-	err = vals.Insert(1, complex64(1))
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}
@@ -441,10 +425,6 @@ func TestSharedDateTime(t *testing.T) {
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}
-	err = vals.Insert(1, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
 }
 
 // TestSharedInterface tests shared interface{} interface methods
@@ -525,10 +505,6 @@ func TestSharedInterface(t *testing.T) {
 
 	var err error
 	err = vals.Set(0, complex64(1))
-	if err == nil {
-		t.Errorf("Insert() error = nil, want err")
-	}
-	err = vals.Insert(1, complex64(1))
 	if err == nil {
 		t.Errorf("Insert() error = nil, want err")
 	}

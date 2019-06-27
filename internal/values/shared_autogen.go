@@ -96,13 +96,9 @@ func (vals *float64Values) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *float64Values) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("Float64Values.Insert(): %v", err)
-	}
+func (vals *float64Values) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]float64Value{v.toFloat64()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts float64Values to floatValues.
@@ -258,13 +254,9 @@ func (vals *int64Values) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *int64Values) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("Int64Values.Insert(): %v", err)
-	}
+func (vals *int64Values) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]int64Value{v.toInt64()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts int64Values to floatValues.
@@ -420,13 +412,9 @@ func (vals *stringValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *stringValues) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("StringValues.Insert(): %v", err)
-	}
+func (vals *stringValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]stringValue{v.toString()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts stringValues to floatValues.
@@ -582,13 +570,9 @@ func (vals *boolValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *boolValues) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("BoolValues.Insert(): %v", err)
-	}
+func (vals *boolValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]boolValue{v.toBool()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts boolValues to floatValues.
@@ -744,13 +728,9 @@ func (vals *dateTimeValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *dateTimeValues) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("DateTimeValues.Insert(): %v", err)
-	}
+func (vals *dateTimeValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]dateTimeValue{v.toDateTime()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts dateTimeValues to floatValues.
@@ -906,13 +886,9 @@ func (vals *interfaceValues) Drop(pos int) {
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *interfaceValues) Insert(pos int, val interface{}) error {
-	if _, err := InterfaceFactory(val); err != nil {
-		return fmt.Errorf("InterfaceValues.Insert(): %v", err)
-	}
+func (vals *interfaceValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]interfaceValue{v.toInterface()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts interfaceValues to floatValues.
