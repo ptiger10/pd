@@ -9,16 +9,16 @@ import (
 // The Values interface is the primary means of handling a collection of values.
 // The same interface and value types are used for both Series values and Index labels
 type Values interface {
-	Len() int                      // number of Value/Null structs
-	Vals() interface{}             // a slice of values in their native form, ready for type assertion
-	Subset([]int) (Values, error)  // a new Values object comprised of the Value/Null pairs at one or more integer positions
-	Element(int) Elem              // Value/Null pair at an integer position
-	Set(int, interface{}) error    // overwrite the value/null struct at an integer position
-	Copy() Values                  // clone the Values
-	Insert(int, interface{}) error // insert a Value/Null pair at an integer position
-	Drop(int) error                // drop a Value/Null pair at an integer position
-	Swap(i, j int)                 // swap two values - necessary for sorting
-	Less(i, j int) bool            // compare two values and return the lesser - required for sorting
+	Len() int                // number of Value/Null structs
+	Vals() interface{}       // a slice of values in their native form, ready for type assertion
+	Subset([]int) Values     // a new Values object comprised of the Value/Null pairs at one or more integer positions
+	Element(int) Elem        // Value/Null pair at an integer position
+	Set(int, interface{})    // overwrite the value/null struct at an integer position
+	Copy() Values            // clone the Values
+	Insert(int, interface{}) // insert a Value/Null pair at an integer position
+	Drop(int)                // drop a Value/Null pair at an integer position
+	Swap(i, j int)           // swap two values - necessary for sorting
+	Less(i, j int) bool      // compare two values and return the lesser - required for sorting
 
 	ToFloat64() Values
 	ToInt64() Values

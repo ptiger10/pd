@@ -49,6 +49,19 @@ func (ip InPlace) Less(i, j int) bool {
 // Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
 // If the original Series is empty, replaces it with a new Series.
 func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
+	// Handling errors
+	if err := ip.s.ensureAlignment(); err != nil {
+		return fmt.Errorf("Series.Insert(): %v", err)
+	}
+	if len(idx) != ip.s.index.NumLevels() {
+		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
+			len(idx), ip.s.index.NumLevels())
+	}
+
+	if pos > ip.Len() {
+		return fmt.Errorf("Series.Insert(): invalid position: %d (max %v)", pos, ip.Len())
+	}
+
 	// Handling empty Series
 	if Equal(ip.s, newEmptySeries()) {
 		newS, err := New(val, Config{MultiIndex: idx})
@@ -59,22 +72,10 @@ func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
 		return nil
 	}
 
-	if err := ip.s.ensureAlignment(); err != nil {
-		return fmt.Errorf("Series.Insert(): %v", err)
-	}
-
-	if len(idx) != ip.s.index.NumLevels() {
-		return fmt.Errorf("Series.Insert() len(idx) must equal number of index levels: supplied %v want %v",
-			len(idx), ip.s.index.NumLevels())
-	}
 	for j := 0; j < ip.s.index.NumLevels(); j++ {
-		err := ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
-		if err != nil {
-			return fmt.Errorf("Series.Insert(): %v", err)
-		}
+		ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
 		ip.s.index.Levels[j].Refresh()
 	}
-	// ducks error safely due to index alignment check
 	ip.s.values.Insert(pos, val)
 	return nil
 }
@@ -221,12 +222,13 @@ func (s *Series) Append(val interface{}, idx []interface{}) (*Series, error) {
 
 // Set sets all the values in the specified rows to val and returns a new Series.
 func (s *Series) Set(rowPositions []int, val interface{}) (*Series, error) {
+	err := s.ensureRowPositions(rowPositions)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Set(): %v", err)
+	}
 	s = s.Copy()
 	for _, row := range rowPositions {
-		err := s.values.Set(row, val)
-		if err != nil {
-			return newEmptySeries(), fmt.Errorf("s.Set() for val %v: %v", val, err)
-		}
+		s.values.Set(row, val)
 	}
 	return s, nil
 }

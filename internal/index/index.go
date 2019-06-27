@@ -276,8 +276,7 @@ func (idx Index) Subset(rowPositions []int) (Index, error) {
 
 	idx = idx.Copy()
 	for i, level := range idx.Levels {
-		// duck error safely because tested in bulk above
-		idx.Levels[i].Labels, _ = level.Labels.Subset(rowPositions)
+		idx.Levels[i].Labels = level.Labels.Subset(rowPositions)
 	}
 	idx.Refresh()
 	return idx, nil

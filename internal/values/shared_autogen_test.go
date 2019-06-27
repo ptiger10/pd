@@ -50,10 +50,7 @@ func TestSharedFloat64(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("Float64Values.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &float64Values{float64Value{1, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -65,49 +62,24 @@ func TestSharedFloat64(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, 5)
-	if err != nil {
-		t.Errorf("Float64Values.Set() %v", err)
-	}
+	vals.Set(0, 5)
+
 	wantSet := &float64Values{float64Value{5, false}, float64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("Float64Values.Drop() %v", err)
-	}
+	vals.Drop(0)
+
 	wantDrop := &float64Values{float64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, 2)
-	if err != nil {
-		t.Errorf("Float64Values.Insert() %v", err)
-	}
+	vals.Insert(1, 2)
 	wantInsert := &float64Values{float64Value{1, false}, float64Value{2, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("Float64Values.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("Float64Values.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("Float64Values.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("Float64Values.Insert() %v", err)
 	}
 }
 
@@ -151,10 +123,7 @@ func TestSharedInt64(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("Int64Values.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &int64Values{int64Value{1, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -166,49 +135,22 @@ func TestSharedInt64(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, 5)
-	if err != nil {
-		t.Errorf("Int64Values.Set() %v", err)
-	}
+	vals.Set(0, 5)
 	wantSet := &int64Values{int64Value{5, false}, int64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("Int64Values.Drop() %v", err)
-	}
+	vals.Drop(0)
 	wantDrop := &int64Values{int64Value{1, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, 2)
-	if err != nil {
-		t.Errorf("Int64Values.Insert() %v", err)
-	}
+	vals.Insert(1, 2)
 	wantInsert := &int64Values{int64Value{1, false}, int64Value{2, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("Int64Values.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("Int64Values.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("Int64Values.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("Int64Values.Insert() %v", err)
 	}
 }
 
@@ -252,10 +194,7 @@ func TestSharedString(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("StringValues.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &stringValues{stringValue{"bar", false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -267,49 +206,22 @@ func TestSharedString(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, "baz")
-	if err != nil {
-		t.Errorf("StringValues.Set() %v", err)
-	}
+	vals.Set(0, "baz")
 	wantSet := &stringValues{stringValue{"baz", false}, stringValue{"bar", false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("StringValues.Drop() %v", err)
-	}
+	vals.Drop(0)
 	wantDrop := &stringValues{stringValue{"bar", false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, "foo")
-	if err != nil {
-		t.Errorf("StringValues.Insert() %v", err)
-	}
+	vals.Insert(1, "foo")
 	wantInsert := &stringValues{stringValue{"bar", false}, stringValue{"foo", false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("StringValues.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("StringValues.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("StringValues.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("StringValues.Insert() %v", err)
 	}
 }
 
@@ -353,10 +265,7 @@ func TestSharedBool(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("BoolValues.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &boolValues{boolValue{false, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -368,49 +277,22 @@ func TestSharedBool(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, false)
-	if err != nil {
-		t.Errorf("BoolValues.Set() %v", err)
-	}
+	vals.Set(0, false)
 	wantSet := &boolValues{boolValue{false, false}, boolValue{false, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("BoolValues.Drop() %v", err)
-	}
+	vals.Drop(0)
 	wantDrop := &boolValues{boolValue{false, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, true)
-	if err != nil {
-		t.Errorf("BoolValues.Insert() %v", err)
-	}
+	vals.Insert(1, true)
 	wantInsert := &boolValues{boolValue{false, false}, boolValue{true, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("BoolValues.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("BoolValues.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("BoolValues.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("BoolValues.Insert() %v", err)
 	}
 }
 
@@ -456,10 +338,7 @@ func TestSharedDateTime(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("DateTimeValues.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &dateTimeValues{dateTimeValue{dt1, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -471,49 +350,22 @@ func TestSharedDateTime(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, dt1)
-	if err != nil {
-		t.Errorf("DateTimeValues.Set() %v", err)
-	}
+	vals.Set(0, dt1)
 	wantSet := &dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt1, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("DateTimeValues.Drop() %v", err)
-	}
+	vals.Drop(0)
 	wantDrop := &dateTimeValues{dateTimeValue{dt1, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, dt2)
-	if err != nil {
-		t.Errorf("DateTimeValues.Insert() %v", err)
-	}
+	vals.Insert(1, dt2)
 	wantInsert := &dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt2, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("DateTimeValues.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("DateTimeValues.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("DateTimeValues.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("DateTimeValues.Insert() %v", err)
 	}
 }
 
@@ -557,10 +409,7 @@ func TestSharedInterface(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
-	subset, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("InterfaceValues.Subset() %v", err)
-	}
+	subset := vals.Subset([]int{0})
 	wantSubset := &interfaceValues{interfaceValue{false, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
 		t.Errorf("Subset() got %v, want %v", subset, wantSubset)
@@ -572,50 +421,24 @@ func TestSharedInterface(t *testing.T) {
 		t.Errorf("Swap() got %v, want %v", vals, wantSwap)
 	}
 
-	err = vals.Set(0, false)
-	if err != nil {
-		t.Errorf("InterfaceValues.Set() %v", err)
-	}
+	vals.Set(0, false)
 	wantSet := &interfaceValues{interfaceValue{false, false}, interfaceValue{false, false}}
 	if !reflect.DeepEqual(vals, wantSet) {
 		t.Errorf("Set() got %v, want %v", vals, wantSet)
 	}
 
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("InterfaceValues.Drop() %v", err)
-	}
+	vals.Drop(0)
 	wantDrop := &interfaceValues{interfaceValue{false, false}}
 	if !reflect.DeepEqual(vals, wantDrop) {
 		t.Errorf("Drop() got %v, want %v", vals, wantDrop)
 	}
 
-	err = vals.Insert(1, true)
-	if err != nil {
-		t.Errorf("InterfaceValues.Insert() %v", err)
-	}
+	vals.Insert(1, true)
 	wantInsert := &interfaceValues{interfaceValue{false, false}, interfaceValue{true, false}}
 	if !reflect.DeepEqual(vals, wantInsert) {
 		t.Errorf("Insert() got %v, want %v", vals, wantInsert)
 	}
 
-	// Should return errors
-	_, err = vals.Subset([]int{10})
-	if err == nil {
-		t.Errorf("InterfaceValues.Subset() error = nil, want err")
-	}
-	err = vals.Set(10, "bar")
-	if err == nil {
-		t.Errorf("InterfaceValues.Set() %v", err)
-	}
-	err = vals.Drop(10)
-	if err == nil {
-		t.Errorf("InterfaceValues.Drop() %v", err)
-	}
-	err = vals.Insert(10, "bar")
-	if err == nil {
-		t.Errorf("InterfaceValues.Insert() %v", err)
-	}
 }
 
 // [START conversion tests]

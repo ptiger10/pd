@@ -59,21 +59,20 @@ func (s *Series) DataType() string {
 // selectByRows copies a Series then subsets it to include only index items and values at the positions supplied
 func (s *Series) selectByRows(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
-		return s, fmt.Errorf("series internal alignment error: %v", err)
+		return newEmptySeries(), fmt.Errorf("series internal alignment error: %v", err)
 	}
 	if positions == nil {
 		return newEmptySeries(), nil
 	}
+	if err := s.ensureRowPositions(positions); err != nil {
+		return newEmptySeries(), fmt.Errorf("s.selectByRows(): %v", err)
+	}
 
 	s = s.Copy()
-	values, err := s.values.Subset(positions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.selectByRows() selecting rows: %v", err)
-	}
-	s.values = values
+	s.values = s.values.Subset(positions)
 	idx, err := s.index.Subset(positions)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.selectByRows(): %v", err)
+		return newEmptySeries(), fmt.Errorf("s.selectByRows(): %v", err)
 	}
 	s.index = idx
 	return s, nil

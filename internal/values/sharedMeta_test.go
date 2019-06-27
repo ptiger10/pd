@@ -50,40 +50,10 @@ func TestMeta(t *testing.T) {
 	vals.ToDateTime()
 	vals.ToInterface()
 
-	_, err := vals.Subset([]int{0})
-	if err != nil {
-		t.Errorf("valueTypeValues.Subset() %v", err)
-	}
-	err = vals.Set(0, "bar")
-	if err != nil {
-		t.Errorf("valueTypeValues.Set() %v", err)
-	}
-	err = vals.Drop(0)
-	if err != nil {
-		t.Errorf("valueTypeValues.Drop() %v", err)
-	}
-	err = vals.Insert(0, "foo")
-	if err != nil {
-		t.Errorf("valueTypeValues.Insert() %v", err)
-	}
-
-	// Should return errors
-	_, err = vals.Subset([]int{1})
-	if err == nil {
-		t.Errorf("valueTypeValues.Subset() error = nil, want err")
-	}
-	err = vals.Set(1, "bar")
-	if err == nil {
-		t.Errorf("valueTypeValues.Set() %v", err)
-	}
-	err = vals.Drop(1)
-	if err == nil {
-		t.Errorf("valueTypeValues.Drop() %v", err)
-	}
-	err = vals.Insert(2, "bar")
-	if err == nil {
-		t.Errorf("valueTypeValues.Insert() %v", err)
-	}
+	vals.Subset([]int{0})
+	vals.Set(0, "bar")
+	vals.Drop(0)
+	vals.Insert(0, "foo")
 
 	v := interfaceValue{"foo", false}
 	v.tovalueType()

@@ -27,6 +27,7 @@ func Series(data interface{}, config ...Config) (*series.Series, error) {
 		return series.MustNew(nil), fmt.Errorf("pd.Series(): %v", err)
 	}
 	return s, nil
+
 }
 
 // DataFrame constructs a new DataFrame.
@@ -43,7 +44,7 @@ func DataFrame(data []interface{}, config ...Config) (*dataframe.DataFrame, erro
 		Index: tmp.Index, IndexName: tmp.IndexName,
 		MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 		Cols: tmp.Cols, ColsName: tmp.ColsName,
-		MultiCols: tmp.MultiCols, MultiColsNames: tmp.MultiColsNames,
+		MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
 	}
 	df, err := dataframe.New(data, dfConfig)
 	if err != nil {
@@ -62,6 +63,6 @@ type Config struct {
 	MultiIndexNames []string
 	Cols            []interface{}
 	ColsName        string
-	MultiCols       [][]interface{}
-	MultiColsNames  []string
+	MultiCol        [][]interface{}
+	MultiColNames   []string
 }

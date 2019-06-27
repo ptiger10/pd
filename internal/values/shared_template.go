@@ -42,15 +42,12 @@ func (vals *valueTypeValues) Swap(i, j int) {
 }
 
 // Subset returns the values located at specific index positions.
-func (vals *valueTypeValues) Subset(rowPositions []int) (Values, error) {
+func (vals *valueTypeValues) Subset(rowPositions []int) Values {
 	var ret valueTypeValues
 	for _, position := range rowPositions {
-		if position >= len(*vals) {
-			return nil, fmt.Errorf("invalid row position %d (max: %v)", position, len(*vals)-1)
-		}
 		ret = append(ret, (*vals)[position])
 	}
-	return &ret, nil
+	return &ret
 }
 
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
@@ -79,32 +76,20 @@ func (vals *valueTypeValues) Copy() Values {
 }
 
 // Set overwrites a Value/Null pair at an integer position.
-func (vals *valueTypeValues) Set(position int, newVal interface{}) error {
-	if position >= len(*vals) {
-		return fmt.Errorf("unable to set value at position %v: index out of range", position)
-	}
+func (vals *valueTypeValues) Set(position int, newVal interface{}) {
 	v := interfaceValue{newVal, false}
 	(*vals)[position] = v.tovalueType()
-	return nil
 }
 
 // Drop drops the Value/Null pair at an integer position.
-func (vals *valueTypeValues) Drop(pos int) error {
-	if pos >= len(*vals) {
-		return fmt.Errorf("unable to drop value at position %v: index out of range", pos)
-	}
+func (vals *valueTypeValues) Drop(pos int) {
 	*vals = append((*vals)[:pos], (*vals)[pos+1:]...)
-	return nil
 }
 
 // Insert inserts a new Value/Null pair at an integer position.
-func (vals *valueTypeValues) Insert(pos int, val interface{}) error {
-	if pos > len(*vals) {
-		return fmt.Errorf("unable to insert value at position %v: index out of range", pos)
-	}
+func (vals *valueTypeValues) Insert(pos int, val interface{}) {
 	v := interfaceValue{val, false}
 	*vals = append((*vals)[:pos], append([]valueTypeValue{v.tovalueType()}, (*vals)[pos:]...)...)
-	return nil
 }
 
 // ToFloat converts valueTypeValues to floatValues.

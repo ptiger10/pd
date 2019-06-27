@@ -40,17 +40,18 @@ func (s *Series) XS(rowPositions []int, levelPositions []int) (*Series, error) {
 
 // Set sets all the index labels values in the specified levels to val and returns a new Series.
 func (idx Index) Set(levelPositions []int, val interface{}) (*Series, error) {
-	s := idx.s.Copy()
 	err := idx.s.ensureAlignment()
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
 	}
+	err = idx.s.ensureLevelPositions(levelPositions)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
+	}
+	s := idx.s.Copy()
 	for _, level := range levelPositions {
 		for i := 0; i < s.Len(); i++ {
-			err := s.index.Levels[level].Labels.Set(i, val)
-			if err != nil {
-				return newEmptySeries(), fmt.Errorf("s.Set() for val %v: %v", val, err)
-			}
+			s.index.Levels[level].Labels.Set(i, val)
 		}
 	}
 	return s, nil
