@@ -78,10 +78,7 @@ func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)
 	}
-	idx, err := df.index.Subset(rowPositions)
-	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.selectByRows(): %v", err)
-	}
+	idx := df.index.Subset(rowPositions)
 	var seriesSlice []*series.Series
 	for i := 0; i < df.NumCols(); i++ {
 		s, err := df.s[i].Subset(rowPositions)
