@@ -76,17 +76,6 @@ func TestSubset(t *testing.T) {
 	}
 }
 
-func TestMustSelectRows_fail(t *testing.T) {
-	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	defer log.SetOutput(os.Stderr)
-	s := MustNew("foo")
-	s.mustSelectRows([]int{10})
-	if buf.String() == "" {
-		t.Errorf("MustNew() returned no log message, want log due to fail")
-	}
-}
-
 func TestSeries_At(t *testing.T) {
 	type args struct {
 		position int

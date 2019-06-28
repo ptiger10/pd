@@ -294,7 +294,7 @@ func (s *Series) UniqueVals() []string {
 //
 // Applies to: All
 func (s *Series) ValueCounts() map[string]int {
-	valid, _ := s.selectByRows(s.valid())
+	valid, _ := s.subsetRows(s.valid())
 	vals := valid.all()
 	counter := make(map[string]int)
 	for _, val := range vals {

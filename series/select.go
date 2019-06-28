@@ -14,28 +14,19 @@ func (s *Series) Element(position int) Element {
 	return Element{elem.Value, elem.Null, idxElems.Labels, idxElems.DataTypes}
 }
 
-// selectByRows copies a Series then subsets it to include only index items and values at the positions supplied
-func (s *Series) selectByRows(positions []int) (*Series, error) {
+// subsetRows copies a Series then subsets it to include only index items and values at the positions supplied
+func (s *Series) subsetRows(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
 		return newEmptySeries(), fmt.Errorf("series internal alignment error: %v", err)
 	}
 	if err := s.ensureRowPositions(positions); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.selectByRows(): %v", err)
+		return newEmptySeries(), fmt.Errorf("s.subsetRows(): %v", err)
 	}
 
 	s = s.Copy()
 	s.values = s.values.Subset(positions)
 	s.index = s.index.Subset(positions)
 	return s, nil
-}
-
-func (s *Series) mustSelectRows(positions []int) *Series {
-	s, err := s.selectByRows(positions)
-	if err != nil {
-		log.Printf("Internal error: %v\n", err)
-		return newEmptySeries()
-	}
-	return s
 }
 
 // Subset returns a subset of a Series based on the supplied integer positions.
@@ -47,7 +38,7 @@ func (s *Series) Subset(rowPositions []int) (*Series, error) {
 		return newEmptySeries(), fmt.Errorf("series.Subset(): no valid rows provided")
 	}
 
-	sub, err := s.selectByRows(rowPositions)
+	sub, err := s.subsetRows(rowPositions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("series.Subset(): %v", err)
 	}
@@ -77,7 +68,7 @@ func (s *Series) XS(rowPositions []int, levelPositions []int) (*Series, error) {
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.XS() rows: %v", err)
 	}
-	s, err = s.Index.Subset(levelPositions)
+	s, err = s.Index.SubsetLevels(levelPositions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.XS() index levels: %v", err)
 	}

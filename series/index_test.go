@@ -625,7 +625,7 @@ func TestIndex_SelectNames(t *testing.T) {
 	}
 }
 
-func TestIndex_Subset(t *testing.T) {
+func TestIndex_SubsetLevels(t *testing.T) {
 	s := MustNew("foo", Config{MultiIndex: []interface{}{"bar", "baz", "qux"}})
 	type fields struct {
 		s *Series
@@ -654,7 +654,7 @@ func TestIndex_Subset(t *testing.T) {
 			idx := Index{
 				s: tt.fields.s,
 			}
-			got, err := idx.Subset(tt.args.levelPositions)
+			got, err := idx.SubsetLevels(tt.args.levelPositions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.Subset() error = %v, wantErr %v", err, tt.wantErr)
 				return

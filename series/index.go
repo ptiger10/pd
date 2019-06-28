@@ -159,6 +159,22 @@ func (idx Index) ensureLevelPositions(levelPositions []int) error {
 	return nil
 }
 
+// SubsetLevels returns a Series with only the specified index levels.
+func (idx Index) SubsetLevels(levelPositions []int) (*Series, error) {
+	err := idx.ensureLevelPositions(levelPositions)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.SubsetLevels(): %v", err)
+	}
+	s := idx.s.Copy()
+	levels := make([]index.Level, 0)
+	for _, position := range levelPositions {
+		levels = append(levels, s.index.Levels[position])
+	}
+	s.index.Levels = levels
+	s.index.Refresh()
+	return s, nil
+}
+
 // Set sets the label at the specified index row and level to val. First converts val to be the same type as the index level.
 func (idx Index) Set(row int, level int, val interface{}) (*Series, error) {
 	s := idx.s.Copy()
@@ -230,22 +246,6 @@ func (idx Index) SelectNames(names []string) []int {
 		include = append(include, v...)
 	}
 	return include
-}
-
-// Subset returns a Series with only the specified index levels.
-func (idx Index) Subset(levelPositions []int) (*Series, error) {
-	err := idx.ensureLevelPositions(levelPositions)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.Subset(): %v", err)
-	}
-	s := idx.s.Copy()
-	levels := make([]index.Level, 0)
-	for _, position := range levelPositions {
-		levels = append(levels, s.index.Levels[position])
-	}
-	s.index.Levels = levels
-	s.index.Refresh()
-	return s, nil
 }
 
 // Flip replaces the Series values with the labels at the supplied index level, and vice versa.
