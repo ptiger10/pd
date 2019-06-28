@@ -3,6 +3,7 @@ package index
 import (
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
@@ -273,9 +274,15 @@ func (idx Index) ensureRowPositions(rowPositions []int) error {
 	return nil
 }
 
-func (idx Index) ensureLevelPosition(level int) error {
-	if level >= idx.NumLevels() {
-		return fmt.Errorf("invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+func (idx Index) ensureLevelPositions(levelPositions []int) error {
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("no levels provided")
+	}
+
+	for _, pos := range levelPositions {
+		if pos >= idx.NumLevels() {
+			return fmt.Errorf("invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
+		}
 	}
 	return nil
 }
@@ -285,7 +292,7 @@ func (idx *Index) Set(row int, level int, val interface{}) error {
 	if err := idx.ensureRowPositions([]int{row}); err != nil {
 		return fmt.Errorf("index.Set(): %v", err)
 	}
-	if err := idx.ensureLevelPosition(level); err != nil {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("index.Set(): %v", err)
 	}
 	if _, err := values.InterfaceFactory(val); err != nil {
@@ -302,7 +309,7 @@ func (idx *Index) SetRows(rowPositions []int, level int, val interface{}) error 
 	if err := idx.ensureRowPositions(rowPositions); err != nil {
 		return fmt.Errorf("index.Set(): %v", err)
 	}
-	if err := idx.ensureLevelPosition(level); err != nil {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("index.Set(): %v", err)
 	}
 	if _, err := values.InterfaceFactory(val); err != nil {
@@ -315,14 +322,36 @@ func (idx *Index) SetRows(rowPositions []int, level int, val interface{}) error 
 	return nil
 }
 
-// DropLevel drops an index level and modifies the Index in place. If there is only one level, does nothing.
-func (idx *Index) DropLevel(level int) {
+// dropLevel drops an index level.
+func (idx *Index) dropLevel(level int) {
 	if idx.NumLevels() == 1 {
 		return
 	}
 	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
-	idx.Refresh()
 	return
+}
+
+// DropLevel drops an index level and modifies the Index in place. If there is only one level, does nothing.
+func (idx *Index) DropLevel(level int) error {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("index.DropLevel(): %v", err)
+	}
+	idx.dropLevel(level)
+	idx.Refresh()
+	return nil
+}
+
+// DropLevels drops the specified index levels and modifies the Index in place. If there is only one level, does nothing.
+func (idx *Index) DropLevels(levelPositions []int) error {
+	if err := idx.ensureLevelPositions(levelPositions); err != nil {
+		return fmt.Errorf("index.DropLevels(): %v", err)
+	}
+	sort.IntSlice(levelPositions).Sort()
+	for j, position := range levelPositions {
+		idx.dropLevel(position - j)
+	}
+	idx.Refresh()
+	return nil
 }
 
 // updateNameMap updates the holistic index map of {index level names: [index level positions]}

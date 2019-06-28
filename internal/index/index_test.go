@@ -304,7 +304,7 @@ func TestSet(t *testing.T) {
 			idx := tt.input.Copy()
 			err := idx.Set(tt.args.row, tt.args.level, tt.args.val)
 			if (err != nil) != tt.want.err {
-				t.Errorf("Index.Set() error = %v, want %v", err, tt.want.err)
+				t.Errorf("Set() error = %v, want %v", err, tt.want.err)
 			}
 			if !reflect.DeepEqual(idx, tt.want.index) {
 				t.Errorf("Set(): got %v, want %v", idx, tt.want.index)
@@ -352,7 +352,7 @@ func TestSetRows(t *testing.T) {
 			idx := tt.input.Copy()
 			err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
 			if (err != nil) != tt.want.err {
-				t.Errorf("Index.Set() error = %v, want %v", err, tt.want.err)
+				t.Errorf("Set() error = %v, want %v", err, tt.want.err)
 			}
 			if !reflect.DeepEqual(idx, tt.want.index) {
 				t.Errorf("Set(): got %v, want %v", idx, tt.want.index)
@@ -371,6 +371,7 @@ func TestDropLevel(t *testing.T) {
 	}
 	type want struct {
 		index Index
+		err   bool
 	}
 	tests := []struct {
 		name  string
@@ -378,14 +379,55 @@ func TestDropLevel(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"one level: no change", single, args{0}, want{single}},
-		{"two levels", multi, args{0}, want{single}},
+		{"one level: no change", single, args{0}, want{single, false}},
+		{"two levels", multi, args{0}, want{single, false}},
+		{"fail: invalid", single, args{10}, want{single, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.input.DropLevel(tt.args.pos)
+			err := tt.input.DropLevel(tt.args.pos)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DropLevel() error = %v, want %v", err, tt.want.err)
+			}
 			if !reflect.DeepEqual(tt.input, tt.want.index) {
 				t.Errorf("DropLevel(): got %v, want %v", tt.input, tt.want.index)
+			}
+		})
+	}
+}
+
+func TestDropLevels(t *testing.T) {
+	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
+	single := New(lvl)
+	multi := New(lvl, lvl)
+
+	type args struct {
+		pos []int
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name  string
+		input Index
+		args  args
+		want  want
+	}{
+		{"one level: no change", single, args{[]int{0}}, want{single, false}},
+		{"two levels", multi, args{[]int{0}}, want{single, false}},
+		{"fail: invalid", single, args{[]int{10}}, want{single, true}},
+		{"fail: partial invalid", single, args{[]int{0, 10}}, want{single, true}},
+		{"fail: no rows", single, args{[]int{}}, want{single, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.DropLevels(tt.args.pos)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DropLevels() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("DropLevels(): got %v, want %v", tt.input, tt.want.index)
 			}
 		})
 	}
