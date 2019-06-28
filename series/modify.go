@@ -14,6 +14,7 @@ func (s *Series) Rename(name string) {
 	s.name = name
 }
 
+// replace one Series with another in place.
 func (s *Series) replace(s2 *Series) {
 	s.name = s2.name
 	s.datatype = s2.datatype
