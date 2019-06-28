@@ -19,9 +19,6 @@ func (s *Series) selectByRows(positions []int) (*Series, error) {
 	if err := s.ensureAlignment(); err != nil {
 		return newEmptySeries(), fmt.Errorf("series internal alignment error: %v", err)
 	}
-	if positions == nil {
-		return newEmptySeries(), nil
-	}
 	if err := s.ensureRowPositions(positions); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.selectByRows(): %v", err)
 	}
@@ -43,6 +40,9 @@ func (s *Series) mustSelectRows(positions []int) *Series {
 
 // Subset returns a subset of a Series based on the supplied integer positions.
 func (s *Series) Subset(rowPositions []int) (*Series, error) {
+	if rowPositions == nil {
+		return newEmptySeries(), fmt.Errorf("series.Subset(): rowPositions cannot be nil")
+	}
 	if len(rowPositions) == 0 {
 		return newEmptySeries(), fmt.Errorf("series.Subset(): no valid rows provided")
 	}
@@ -84,49 +84,45 @@ func (s *Series) XS(rowPositions []int, levelPositions []int) (*Series, error) {
 	return s, nil
 }
 
-// SelectLabel returns the integer location of the first row with the specified index label at the specified level, or -1 if the label does not exist.
-func (s *Series) SelectLabel(label string, level int) int {
+// SelectLabel returns the integer location of the first row in index level 0 with the supplied label, or -1 if the label does not exist.
+func (s *Series) SelectLabel(label string) int {
+	if s.index.NumLevels() == 0 {
+		if options.GetLogWarnings() {
+			log.Println("Series.SelectLabel(): index has no length")
+		}
+		return -1
+	}
 	val, ok := s.index.Levels[0].LabelMap[label]
 	if !ok {
 		if options.GetLogWarnings() {
-			log.Printf("Series.SelectLabel(): %v not in label map", label)
+			log.Printf("Series.SelectLabel(): %v not in label map\n", label)
 		}
 		return -1
 	}
 	return val[0]
 }
 
-// SelectLabels returns the integer locations of all rows with the specified index label at the specified level.
+// SelectLabels returns the integer locations of all rows with the supplied labels within the supplied level.
+// If an error is encountered, returns a new slice of 0 length.
 func (s *Series) SelectLabels(labels []string, level int) []int {
 	empty := make([]int, 0)
+	err := s.ensureLevelPositions([]int{level})
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("Series.SelectLabels(): %v", err)
+		}
+		return empty
+	}
 	include := make([]int, 0)
 	for _, label := range labels {
-		val, ok := s.index.Levels[0].LabelMap[label]
+		val, ok := s.index.Levels[level].LabelMap[label]
 		if !ok {
 			if options.GetLogWarnings() {
-				log.Printf("s.Index.ByLabels(): %v not in label map", label)
+				log.Printf("Series.SelectLabels(): %v not in label map", label)
 			}
 			return empty
 		}
 		include = append(include, val...)
 	}
 	return include
-}
-
-// [START string/datetime description methods]
-
-// ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
-//
-// Applies to: All
-func (s *Series) ValueCounts() map[string]int {
-	valid, _ := s.selectByRows(s.valid())
-	if valid == nil {
-		return nil
-	}
-	vals := valid.all()
-	counter := make(map[string]int)
-	for _, val := range vals {
-		counter[fmt.Sprint(val)]++
-	}
-	return counter
 }

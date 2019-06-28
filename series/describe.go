@@ -65,7 +65,8 @@ func (s *Series) Describe() {
 	// duck errors because constructor called internally
 	s = MustNew(values, Config{Name: s.name, Index: idx})
 	s.datatype = dt
-	fmt.Println(s)
+	n := s.String()
+	fmt.Println(n)
 	return
 
 }
@@ -141,7 +142,12 @@ func (s *Series) print() string {
 		// [START value printer]
 		var valStr string
 		if s.datatype == options.DateTime {
-			valStr = elem.Value.(time.Time).Format(options.GetDisplayTimeFormat())
+			v, ok := elem.Value.(time.Time)
+			if ok {
+				valStr = v.Format(options.GetDisplayTimeFormat())
+			} else {
+				valStr = fmt.Sprint(elem.Value)
+			}
 		} else {
 			valStr = fmt.Sprint(elem.Value)
 		}
@@ -149,9 +155,6 @@ func (s *Series) print() string {
 		// add buffer at beginning
 		val := strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()) + valStr
 		// null string values must not return any trailing whitespace
-		if valStr == "" {
-			val = strings.TrimSpace(val)
-		}
 		newLine += val
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
@@ -205,9 +208,6 @@ func Equal(s1, s2 *Series) bool {
 
 // Len returns the number of Elements (i.e., Value/Null pairs) in the Series.
 func (s *Series) Len() int {
-	if s.values == nil {
-		return 0
-	}
 	return s.values.Len()
 }
 
@@ -268,13 +268,23 @@ func (s *Series) UniqueVals() []string {
 	ret := make([]string, 0)
 	valid, _ := s.Subset(s.valid())
 	counter := valid.ValueCounts()
-	if counter == nil {
-		return ret
-	}
 	for k := range counter {
 		ret = append(ret, k)
 	}
 	return ret
+}
+
+// ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
+//
+// Applies to: All
+func (s *Series) ValueCounts() map[string]int {
+	valid, _ := s.selectByRows(s.valid())
+	vals := valid.all()
+	counter := make(map[string]int)
+	for _, val := range vals {
+		counter[fmt.Sprint(val)]++
+	}
+	return counter
 }
 
 // Earliest returns the earliest non-null time.Time{} in the Series
@@ -318,5 +328,3 @@ func (s *Series) Latest() time.Time {
 
 	}
 }
-
-// [END string/datetime description methods]

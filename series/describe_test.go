@@ -1,43 +1,12 @@
 package series
 
 import (
-	"reflect"
 	"testing"
+	"time"
 
 	"github.com/ptiger10/pd/options"
 )
 
-func TestElement(t *testing.T) {
-	s, err := New([]string{"", "valid"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}})
-	if err != nil {
-		t.Error(err)
-	}
-	var tests = []struct {
-		position int
-		wantVal  interface{}
-		wantNull bool
-		wantIdx  []interface{}
-	}{
-		{0, "NaN", true, []interface{}{"A", int64(1)}},
-		{1, "valid", false, []interface{}{"B", int64(2)}},
-	}
-	wantIdxTypes := []options.DataType{options.String, options.Int64}
-	for _, test := range tests {
-		got := s.Element(test.position)
-		if got.Value != test.wantVal {
-			t.Errorf("Element returned value %v, want %v", got.Value, test.wantVal)
-		}
-		if got.Null != test.wantNull {
-			t.Errorf("Element returned bool %v, want %v", got.Null, test.wantNull)
-		}
-		if !reflect.DeepEqual(got.Labels, test.wantIdx) {
-			t.Errorf("Element returned index %#v, want %#v", got.Labels, test.wantIdx)
-		}
-		if !reflect.DeepEqual(got.LabelTypes, wantIdxTypes) {
-			t.Errorf("Element returned kind %v, want %v", got.LabelTypes, wantIdxTypes)
-		}
-	}
-}
 func TestDatatype(t *testing.T) {
 	var tests = []struct {
 		datatype options.DataType
@@ -107,5 +76,17 @@ func TestMaxWidth(t *testing.T) {
 	want := 6
 	if got != want {
 		t.Errorf("s.MaxWidth got %v, want %v", got, want)
+	}
+}
+
+func TestDescribe_unsupported(t *testing.T) {
+	s := MustNew([]float64{1, 2, 3})
+	tm := s.Earliest()
+	if (time.Time{}) != tm {
+		t.Errorf("Earliest() got %v, want time.Time{} for unsupported type", tm)
+	}
+	tm = s.Latest()
+	if (time.Time{}) != tm {
+		t.Errorf("Latest() got %v, want time.Time{} for unsupported type", tm)
 	}
 }

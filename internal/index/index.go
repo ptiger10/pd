@@ -243,8 +243,8 @@ func (idx Index) Aligned() error {
 // Subset returns a new index with all the labels located at the specified integer positions
 func (idx Index) Subset(rowPositions []int) Index {
 	idx = idx.Copy()
-	for i, level := range idx.Levels {
-		idx.Levels[i].Labels = level.Labels.Subset(rowPositions)
+	for i := 0; i < idx.NumLevels(); i++ {
+		idx.Levels[i].Labels = idx.Levels[i].Labels.Subset(rowPositions)
 	}
 	idx.Refresh()
 	return idx

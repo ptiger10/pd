@@ -152,6 +152,19 @@ func ExampleNew_datetime_single() {
 	// datatype: dateTime
 }
 
+func ExampleNew_datetime_manyRows() {
+	s := MustNew([]time.Time{
+		time.Date(2019, 5, 1, 15, 9, 30, 30, time.UTC),
+		time.Date(2019, 5, 2, 15, 15, 55, 55, time.UTC),
+	})
+	fmt.Println(s)
+
+	// Output:
+	// 0    5/1/2019T15:09:30
+	// 1    5/2/2019T15:15:55
+	// datatype: dateTime
+}
+
 func ExampleNew_config_nameOnly() {
 	s := MustNew([]string{"foo", "bar"}, Config{Name: "baz"})
 	fmt.Println(s)

@@ -105,7 +105,8 @@ func ExampleSeries_Describe_datetime() {
 	s, _ := New([]time.Time{
 		time.Date(2019, 4, 18, 15, 0, 0, 0, time.UTC),
 		time.Date(2019, 4, 19, 15, 0, 0, 0, time.UTC),
-		time.Time{}})
+		time.Time{},
+	})
 	s.Describe()
 	// Output:
 	//      len    3
@@ -114,7 +115,7 @@ func ExampleSeries_Describe_datetime() {
 	//   unique    2
 	// earliest    2019-04-18 15:00:00 +0000 UTC
 	//   latest    2019-04-19 15:00:00 +0000 UTC
-	//datatype: time.Time
+	//datatype: dateTime
 }
 
 func ExampleSeries_Describe_datetime_empty() {
@@ -127,7 +128,7 @@ func ExampleSeries_Describe_datetime_empty() {
 	//   unique    0
 	// earliest    0001-01-01 00:00:00 +0000 UTC
 	//   latest    0001-01-01 00:00:00 +0000 UTC
-	//datatype: time.Time
+	//datatype: dateTime
 }
 
 func ExampleSeries_Describe_interface() {
