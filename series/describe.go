@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -123,11 +124,14 @@ func (s *Series) print() string {
 				}
 			}
 
-			printStr := fmt.Sprintf("%*v", padding, idx)
 			// elide index string if longer than the max allowable width
-			if padding == options.GetDisplayMaxWidth() {
-				printStr = printStr[:len(printStr)-4] + "..."
+			if padding >= options.GetDisplayMaxWidth() {
+				padding = options.GetDisplayMaxWidth()
 			}
+			if len(idx) >= options.GetDisplayMaxWidth() {
+				idx = idx[:options.GetDisplayMaxWidth()-3] + "..."
+			}
+			printStr := fmt.Sprintf("%*v", padding, idx)
 
 			newLine += printStr + buffer
 
@@ -140,6 +144,9 @@ func (s *Series) print() string {
 		// [END index printer]
 
 		// [START value printer]
+		// add buffer at beginning
+		newLine += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer())
+
 		var valStr string
 		if s.datatype == options.DateTime {
 			v, ok := elem.Value.(time.Time)
@@ -152,10 +159,14 @@ func (s *Series) print() string {
 			valStr = fmt.Sprint(elem.Value)
 		}
 
-		// add buffer at beginning
-		val := strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()) + valStr
-		// null string values must not return any trailing whitespace
-		newLine += val
+		padding := s.MaxWidth()
+		if padding >= options.GetDisplayMaxWidth() {
+			padding = options.GetDisplayMaxWidth()
+		}
+		if len(valStr) >= options.GetDisplayMaxWidth() {
+			valStr = valStr[:options.GetDisplayMaxWidth()-3] + "..."
+		}
+		newLine += fmt.Sprintf("%*v", padding, valStr)
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
@@ -328,3 +339,83 @@ func (s *Series) Latest() time.Time {
 
 	}
 }
+
+// [START ensure methods]
+
+// appropriate for numeric data only ([]float64 or []int64)
+func ensureFloatFromNumerics(vals interface{}) []float64 {
+	var data []float64
+	if ints, ok := vals.([]int64); ok {
+		data = convertIntToFloat(ints)
+	} else if floats, ok := vals.([]float64); ok {
+		data = floats
+	} else {
+		log.Printf("Internal error: ensureFloatFromNumerics has received an unallowable value: %v", vals)
+		return nil
+	}
+	return data
+}
+
+func convertIntToFloat(vals []int64) []float64 {
+	var ret []float64
+	for _, val := range vals {
+		ret = append(ret, float64(val))
+	}
+	return ret
+}
+
+func ensureBools(vals interface{}) []bool {
+	if bools, ok := vals.([]bool); ok {
+		return bools
+	}
+	log.Printf("Internal error: ensureBools has received an unallowable value: %v", vals)
+	return nil
+}
+
+func ensureDateTime(vals interface{}) []time.Time {
+	if datetime, ok := vals.([]time.Time); ok {
+		return datetime
+	}
+	log.Printf("Internal error: ensureDateTime has received an unallowable value: %v", vals)
+	return nil
+}
+
+// returns an error if any index levels have different lengths
+// or if there is a mismatch between the number of values and index items
+func (s *Series) ensureAlignment() error {
+	if err := s.index.Aligned(); err != nil {
+		return fmt.Errorf("out of alignment: %v", err)
+	}
+	if labels := s.index.Levels[0].Len(); s.Len() != labels {
+		return fmt.Errorf("out of alignment: series must have same number of values as index labels (%d != %d)", s.Len(), labels)
+	}
+	return nil
+}
+
+// returns an error if any row position does not exist
+func (s *Series) ensureRowPositions(positions []int) error {
+	if len(positions) == 0 {
+		return fmt.Errorf("no valid rows")
+	}
+
+	len := s.Len()
+	for _, pos := range positions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// returns an error if any level position does not exist
+func (s *Series) ensureLevelPositions(positions []int) error {
+	for _, pos := range positions {
+		len := s.index.NumLevels()
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// [END ensure methods]

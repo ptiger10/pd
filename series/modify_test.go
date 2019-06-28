@@ -136,6 +136,7 @@ func TestModify_Swap(t *testing.T) {
 }
 
 func TestModify_Insert(t *testing.T) {
+	multi := MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}})
 	misaligned := MustNew([]string{"foo", "bar"})
 	misaligned.index.Levels[0].Labels.Drop(1)
 
@@ -163,22 +164,30 @@ func TestModify_Insert(t *testing.T) {
 			args{0, "bar", []interface{}{"B"}},
 			want{series: MustNew([]string{"bar", "foo"}, Config{Index: []string{"B", "A"}}), err: false}},
 		{"multiIndex",
-			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			multi,
 			args{1, "bar", []interface{}{"B", 2}},
 			want{series: MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), err: false}},
 		{"fail: wrong index length",
-			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			multi,
 			args{1, "bar", []interface{}{"C"}},
 			want{nil, true}},
 		{"fail: invalid position",
-			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}}),
+			multi,
 			args{3, "bar", []interface{}{"C", 3}},
 			want{nil, true}},
 		{"fail: misaligned series position",
 			misaligned,
 			args{3, "bar", []interface{}{"B"}},
 			want{nil, true}},
-		{"fail: invalid insertion into emptySeries",
+		{"fail: unsupported index value",
+			MustNew([]string{"foo"}, Config{Index: "A"}),
+			args{0, "bar", []interface{}{complex64(1)}},
+			want{nil, true}},
+		{"fail: unsupported series value",
+			MustNew([]string{"foo"}, Config{Index: "A"}),
+			args{0, complex64(1), []interface{}{"A"}},
+			want{nil, true}},
+		{"fail: unsupported value inserting into empty series",
 			newEmptySeries(),
 			args{0, complex64(1), []interface{}{"A"}},
 			want{nil, true}},
@@ -298,6 +307,9 @@ func TestModify_Set(t *testing.T) {
 			want{series: MustNew("bar"), err: false}},
 		{"fail: invalid index singleRow",
 			MustNew("foo"), args{1, "bar"},
+			want{MustNew("foo"), true}},
+		{"fail: unsupported value",
+			MustNew("foo"), args{0, complex64(1)},
 			want{MustNew("foo"), true}},
 	}
 	for _, tt := range tests {

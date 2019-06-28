@@ -1,6 +1,9 @@
 package series
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"testing"
 	"time"
 
@@ -90,3 +93,31 @@ func TestDescribe_unsupported(t *testing.T) {
 		t.Errorf("Latest() got %v, want time.Time{} for unsupported type", tm)
 	}
 }
+
+// [START ensure tests]
+func TestEnsureTypes(t *testing.T) {
+	defer log.SetOutput(os.Stderr)
+	vals := []interface{}{1, 2, 3}
+
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	ensureFloatFromNumerics(vals)
+	if buf.String() == "" {
+		t.Errorf("ensureNumerics() returned no log message, want log due to fail")
+	}
+	buf.Reset()
+
+	ensureDateTime(vals)
+	if buf.String() == "" {
+		t.Errorf("ensureDateTime() returned no log message, want log due to fail")
+	}
+	buf.Reset()
+
+	ensureBools(vals)
+	if buf.String() == "" {
+		t.Errorf("ensureBools() returned no log message, want log due to fail")
+	}
+	buf.Reset()
+}
+
+// [END ensure tests]

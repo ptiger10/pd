@@ -193,3 +193,23 @@ func ExampleNew_config_datatype() {
 	// 1    NaN
 	// datatype: float64
 }
+
+func ExampleNew_maxwidth_index() {
+	s := MustNew([]string{"foo", "bar"}, Config{Index: []string{"This is a very long index item. Very long indeed.", "qux"}, IndexName: "baz"})
+	fmt.Println(s)
+	// Output:
+	//                       baz
+	// This is a very long in...    foo
+	//                       qux    bar
+	// datatype: string
+}
+
+func ExampleNew_maxwidth_value() {
+	s := MustNew([]string{"This is a very long index item. Very long indeed.", "foo"})
+	_ = s.String()
+	fmt.Println(s)
+	// Output:
+	// 0    This is a very long in...
+	// 1                          foo
+	//datatype: string
+}
