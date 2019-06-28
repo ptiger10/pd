@@ -80,7 +80,7 @@ func TestSetting(t *testing.T) {
 		t.Error("Unable to set/get LogWarnings")
 	}
 	RestoreDefaults()
-	if GetDisplayMaxWidth() != 25 {
+	if GetDisplayMaxWidth() != 35 {
 		t.Error("Unable to restore default for DisplayMaxWidth")
 	}
 	if GetLogWarnings() != true {

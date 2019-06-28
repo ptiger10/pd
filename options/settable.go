@@ -38,7 +38,7 @@ func RestoreDefaults() {
 	SetLogWarnings(defaultOptions.logWarnings)
 }
 
-var displayMaxWidth = 25
+var displayMaxWidth = 35
 var displayValuesWhitespaceBuffer = 4
 var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
