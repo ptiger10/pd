@@ -12,26 +12,68 @@ import (
 	"github.com/ptiger10/pd/internal/index"
 )
 
-// func TestIndex_Sort(t *testing.T) {
-// 	var tests = []struct {
-// 		desc  string
-// 		input *Series
-// 		asc   bool
-// 		want  *Series
-// 	}{
-// 		{"float", MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}}), true,
-// 			MustNew([]float64{3, 5, 1}, Config{Index: []int{0, 1, 2}})},
-// 		{"float reverse", MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}}), false,
-// 			MustNew([]float64{1, 5, 3}, Config{Index: []int{2, 1, 0}})},
-// 	}
-// 	for _, tt := range tests {
-// 		s := tt.input
-// 		s.Index.Sort(tt.asc)
-// 		if !Equal(s, tt.want) {
-// 			t.Errorf("Index.Sort() test %v got %v, want %v", tt.desc, s, tt.want)
-// 		}
-// 	}
-// }
+func TestIndex_Less(t *testing.T) {
+	s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{2, 0, 1, 1}})
+	tests := []struct {
+		i    int
+		j    int
+		want bool
+	}{
+		{0, 1, false},
+		{0, 2, false},
+		{1, 2, true},
+		{2, 3, false},
+	}
+	for _, tt := range tests {
+		idx := Index{s: s}
+		got := idx.Less(tt.i, tt.j)
+		if got != tt.want {
+			t.Errorf("Index.Less() got %v, want %v", got, tt.want)
+		}
+	}
+}
+
+func TestIndex_Swap(t *testing.T) {
+	s := MustNew([]int{1, 2}, Config{Index: []int{2, 0}})
+	tests := []struct {
+		i    int
+		j    int
+		want *Series
+	}{
+		{0, 1, MustNew([]int{2, 1}, Config{Index: []int{0, 2}})},
+		{1, 0, MustNew([]int{2, 1}, Config{Index: []int{0, 2}})},
+	}
+	for _, tt := range tests {
+		idx := Index{s: s.Copy()}
+		idx.Swap(tt.i, tt.j)
+		if !Equal(idx.s, tt.want) {
+			t.Errorf("Index.Swap() got %v, want %v", idx.s, tt.want)
+		}
+	}
+}
+
+func TestIndex_Sort(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input *Series
+		asc   bool
+		want  *Series
+	}{
+		{"float", MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}}), true,
+			MustNew([]float64{3, 5, 1}, Config{Index: []int{0, 1, 2}})},
+		{"float reverse", MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}}), false,
+			MustNew([]float64{1, 5, 3}, Config{Index: []int{2, 1, 0}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{s: tt.input}
+			got := idx.Sort(tt.asc)
+			if !Equal(got, tt.want) {
+				t.Errorf("Index.Sort() got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestIndex_Describe(t *testing.T) {
 	singleDefault := MustNew([]string{"foo", "bar", "baz"})

@@ -6,3 +6,4 @@ Makefile
 notebooks/
 profile.out
 debug
+go.sum

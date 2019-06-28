@@ -16,18 +16,20 @@ type Index struct {
 	s *Series
 }
 
-// Sort sorts the index by index level 0 and modifies the Series in place.
-func (idx Index) Sort(asc bool) {
+// Sort sorts the index by index level 0 and returns a new index.
+func (idx Index) Sort(asc bool) *Series {
+	idx = idx.s.Copy().Index
 	if asc {
 		sort.Stable(idx)
 	} else {
 		sort.Stable(sort.Reverse(idx))
 	}
+	return idx.s
 }
 
 // Swap swaps two labels at index level 0 and modifies the index in place.
 func (idx Index) Swap(i, j int) {
-	idx.s.Swap(i, j)
+	idx.s.InPlace.Swap(i, j)
 }
 
 // Less compares two elements and returns true if the first is less than the second.
