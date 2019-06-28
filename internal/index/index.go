@@ -259,13 +259,59 @@ func (idx Index) SubsetLevels(levelPositions []int) Index {
 	return newIdx
 }
 
+func (idx Index) ensureRowPositions(rowPositions []int) error {
+	if len(rowPositions) == 0 {
+		return fmt.Errorf("no rows provided")
+	}
+
+	len := idx.Len()
+	for _, pos := range rowPositions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+func (idx Index) ensureLevelPosition(level int) error {
+	if level >= idx.NumLevels() {
+		return fmt.Errorf("invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+	}
+	return nil
+}
+
 // Set sets the value at the specified index row and level to val and modifies the Index in place.
 func (idx *Index) Set(row int, level int, val interface{}) error {
-	err := idx.Levels[level].Labels.Set(row, val)
-	if err != nil {
+	if err := idx.ensureRowPositions([]int{row}); err != nil {
 		return fmt.Errorf("index.Set(): %v", err)
 	}
+	if err := idx.ensureLevelPosition(level); err != nil {
+		return fmt.Errorf("index.Set(): %v", err)
+	}
+	if _, err := values.InterfaceFactory(val); err != nil {
+		return fmt.Errorf("index.Set(): %v", err)
+	}
+
+	idx.Levels[level].Labels.Set(row, val)
 	idx.Levels[level].Refresh()
+	return nil
+}
+
+// SetRows sets the value at the specified index rows and level to val and modifies the Index in place.
+func (idx *Index) SetRows(rowPositions []int, level int, val interface{}) error {
+	if err := idx.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("index.Set(): %v", err)
+	}
+	if err := idx.ensureLevelPosition(level); err != nil {
+		return fmt.Errorf("index.Set(): %v", err)
+	}
+	if _, err := values.InterfaceFactory(val); err != nil {
+		return fmt.Errorf("index.Set(): %v", err)
+	}
+	for _, row := range rowPositions {
+		idx.Levels[level].Labels.Set(row, val)
+		idx.Levels[level].Refresh()
+	}
 	return nil
 }
 
