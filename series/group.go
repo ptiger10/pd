@@ -49,16 +49,14 @@ func (g Grouping) Groups() []string {
 }
 
 // Group returns the Series with the given group label, or an error if that label does not exist.
-func (g Grouping) Group(label string) (*Series, error) {
+func (g Grouping) Group(label string) *Series {
 	group, ok := g.groups[label]
 	if !ok {
-		return nil, fmt.Errorf("Grouping.Group(): %v not a valid group label", label)
+		return newEmptySeries()
 	}
-	s, err := g.s.selectByRows(group.Positions)
-	if err != nil {
-		return nil, fmt.Errorf("Grouping.Group(): %v", err)
-	}
-	return s, nil
+	// ducks error because groups positions are assumed to be safe for Series selection
+	s, _ := g.s.selectByRows(group.Positions)
+	return s
 }
 
 // GroupByIndex groups a Series by all of its index levels.

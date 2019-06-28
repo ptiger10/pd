@@ -23,9 +23,9 @@ func ExampleSeries_Describe_float() {
 	s, _ := New([]float64{1, math.NaN(), 2, 3, 4, 5, math.NaN(), 6, 7, 8, 9})
 	s.Describe()
 	// Output:
-	//   len    11
-	// valid    9
-	//  null    2
+	//   len      11
+	// valid       9
+	//  null       2
 	//  mean    5.00
 	//   min    1.00
 	//   25%    2.50
@@ -39,9 +39,9 @@ func ExampleSeries_Describe_float_empty() {
 	s, _ := New([]float64{})
 	s.Describe()
 	// Output:
-	//   len    0
-	// valid    0
-	//  null    0
+	//   len      0
+	// valid      0
+	//  null      0
 	//  mean    NaN
 	//   min    NaN
 	//   25%    NaN
@@ -55,9 +55,9 @@ func ExampleSeries_Describe_int() {
 	s, _ := New([]int64{1, 2, 3, 4, 5, 6, 7, 8, 9})
 	s.Describe()
 	// Output:
-	//   len    9
-	// valid    9
-	//  null    0
+	//   len       9
+	// valid       9
+	//  null       0
 	//  mean    5.00
 	//   min    1.00
 	//   25%    2.50
@@ -93,9 +93,9 @@ func ExampleSeries_Describe_bool() {
 	s, _ := New([]bool{true, false, false})
 	s.Describe()
 	// Output:
-	//   len    3
-	// valid    3
-	//  null    0
+	//   len       3
+	// valid       3
+	//  null       0
 	//   sum    1.00
 	//  mean    0.33
 	//datatype: bool
@@ -109,10 +109,10 @@ func ExampleSeries_Describe_datetime() {
 	})
 	s.Describe()
 	// Output:
-	//      len    3
-	//    valid    2
-	//     null    1
-	//   unique    2
+	//      len                                3
+	//    valid                                2
+	//     null                                1
+	//   unique                                2
 	// earliest    2019-04-18 15:00:00 +0000 UTC
 	//   latest    2019-04-19 15:00:00 +0000 UTC
 	//datatype: dateTime
@@ -122,10 +122,10 @@ func ExampleSeries_Describe_datetime_empty() {
 	s, _ := New([]time.Time{time.Time{}})
 	s.Describe()
 	// Output:
-	//      len    1
-	//    valid    0
-	//     null    1
-	//   unique    0
+	//      len                                1
+	//    valid                                0
+	//     null                                1
+	//   unique                                0
 	// earliest    0001-01-01 00:00:00 +0000 UTC
 	//   latest    0001-01-01 00:00:00 +0000 UTC
 	//datatype: dateTime

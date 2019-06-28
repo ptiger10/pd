@@ -113,11 +113,11 @@ func ExampleNew_nonsequential_repeating() {
 
 	// Output:
 	// id  code
-	//  0 10000    foo
-	//    10100    bar
-	//  1 10200    NaN
-	//    10300    baz
-	//  0 10400    qux
+	//  0 10000     foo
+	//    10100     bar
+	//  1 10200     NaN
+	//    10300     baz
+	//  0 10400     qux
 	//    10500    quux
 	// datatype: string
 	// name: foobar
@@ -189,27 +189,27 @@ func ExampleNew_config_datatype() {
 	s := MustNew([]interface{}{"1", "foo"}, Config{DataType: options.Float64})
 	fmt.Println(s)
 	// Output:
-	// 0    1
+	// 0      1
 	// 1    NaN
 	// datatype: float64
 }
 
 func ExampleNew_maxwidth_index() {
-	s := MustNew([]string{"foo", "bar"}, Config{Index: []string{"This is a very long index item. Very long indeed.", "qux"}, IndexName: "baz"})
+	s := MustNew([]string{"foo", "bar"}, Config{Index: []string{"This is a very long index row. Very long indeed.", "qux"}, IndexName: "baz"})
 	fmt.Println(s)
 	// Output:
-	//                       baz
-	// This is a very long in...    foo
-	//                       qux    bar
+	//                                 baz
+	// This is a very long index row. V...    foo
+	//                                 qux    bar
 	// datatype: string
 }
 
 func ExampleNew_maxwidth_value() {
-	s := MustNew([]string{"This is a very long index item. Very long indeed.", "foo"})
+	s := MustNew([]string{"This is a very long index row. Very long indeed.", "foo"})
 	_ = s.String()
 	fmt.Println(s)
 	// Output:
-	// 0    This is a very long in...
-	// 1                          foo
+	// 0    This is a very long index row. V...
+	// 1                                    foo
 	//datatype: string
 }

@@ -260,6 +260,11 @@ func (s *Series) all() []interface{} {
 func (s *Series) MaxWidth() int {
 	var max int
 	for _, v := range s.all() {
+		if s.datatype == options.DateTime {
+			if val, ok := v.(time.Time); ok {
+				v = val.Format(options.GetDisplayTimeFormat())
+			}
+		}
 		if length := len(fmt.Sprint(v)); length > max {
 			max = length
 		}
