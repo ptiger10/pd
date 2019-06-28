@@ -12,7 +12,6 @@ type Series struct {
 	values   values.Values
 	datatype options.DataType
 	name     string
-	Apply    Apply
 	Index    Index
 	InPlace  InPlace
 }

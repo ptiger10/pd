@@ -11,7 +11,7 @@ func ExampleSeries_empty_series() {
 	s := newEmptySeries()
 	fmt.Println(s)
 	// Output:
-	// Series{}
+	// {Empty Series}
 }
 
 func ExampleNew_string() {

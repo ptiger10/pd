@@ -72,7 +72,7 @@ func (s *Series) Describe() {
 
 func (s *Series) String() string {
 	if Equal(s, newEmptySeries()) {
-		return "Series{}"
+		return "{Empty Series}"
 	}
 	return s.print()
 }

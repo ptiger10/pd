@@ -2,32 +2,34 @@ package series
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
 
-func TestSubset(t *testing.T) {
-	tests := []struct {
-		args    []int
-		want    *Series
-		wantErr bool
-	}{
-		{[]int{0}, MustNew("foo"), false},
-		{[]int{1}, MustNew("bar", Config{Index: 1}), false},
-		{[]int{0, 1}, MustNew([]string{"foo", "bar"}), false},
-		{[]int{1, 0}, MustNew([]string{"bar", "foo"}, Config{Index: []int{1, 0}}), false},
-		{[]int{}, newEmptySeries(), true},
-		{[]int{3}, newEmptySeries(), true},
+func TestApply_zscore(t *testing.T) {
+	s := MustNew([]float64{1, 2, 3})
+	got := s.Apply(func(val interface{}) interface{} {
+		v, ok := val.(float64)
+		if !ok {
+			return ""
+		}
+		return ((v - s.Mean()) / s.Std())
+	})
+	want := MustNew([]float64{-1.224744871391589, 0, 1.224744871391589})
+	if !Equal(got, want) {
+		t.Errorf("Apply() returned %v, want %v", got, want)
 	}
-	for _, tt := range tests {
-		s := MustNew([]string{"foo", "bar", "baz"})
-		got, err := s.Subset(tt.args)
-		if (err != nil) != tt.wantErr {
-			t.Errorf("s.Subset() error = %v, want %v for args %v", err, tt.wantErr, tt.args)
-		}
-		if !Equal(got, tt.want) {
-			t.Errorf("s.Subset() got %v, want %v for args %v", got, tt.want, tt.args)
-		}
+}
+
+func TestApply_zscore_riskier(t *testing.T) {
+	s := MustNew([]float64{1, 2, 3})
+	got := s.Apply(func(val interface{}) interface{} {
+		return (val.(float64) - s.Mean()) / s.Std()
+	})
+	want := MustNew([]float64{-1.224744871391589, 0, 1.224744871391589})
+	if !Equal(got, want) {
+		t.Errorf("Apply() returned %v, want %v", got, want)
 	}
 }
 
@@ -103,5 +105,61 @@ func TestFilterString(t *testing.T) {
 	want := []int{1, 2}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("s.Contains() got %v, want %v", got, want)
+	}
+
+	got = s.InList([]string{"foo", "bar"})
+	want = []int{0, 1}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.In() got %v, want %v", got, want)
+	}
+}
+
+func TestFilter_float(t *testing.T) {
+	s := MustNew([]float64{1, 2, 3})
+	got := s.Filter(func(val interface{}) bool {
+		v, ok := val.(float64)
+		if !ok {
+			return false
+		}
+		if v > 2 {
+			return true
+		}
+		return false
+	})
+	want := []int{2}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.Filter() got %v, want %v", got, want)
+	}
+}
+
+func TestFilter_string(t *testing.T) {
+	s := MustNew([]string{"bamboo", "leaves", "taboo"})
+	got := s.Filter(func(val interface{}) bool {
+		v, ok := val.(string)
+		if !ok {
+			return false
+		}
+		if strings.HasSuffix(v, "boo") {
+			return true
+		}
+		return false
+	})
+	want := []int{0, 2}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.Filter() got %v, want %v", got, want)
+	}
+}
+
+func TestFilter_string_riskier(t *testing.T) {
+	s := MustNew([]string{"bamboo", "leaves", "taboo"})
+	got := s.Filter(func(val interface{}) bool {
+		if strings.HasSuffix(val.(string), "boo") {
+			return true
+		}
+		return false
+	})
+	want := []int{0, 2}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.Filter() got %v, want %v", got, want)
 	}
 }

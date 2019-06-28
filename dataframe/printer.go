@@ -10,7 +10,7 @@ import (
 
 func (df *DataFrame) String() string {
 	if Equal(df, newEmptyDataFrame()) {
-		return "DataFrame{}"
+		return "{Empty DataFrame}"
 	}
 	return df.print()
 }
