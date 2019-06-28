@@ -3,6 +3,7 @@ package series
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestSubset(t *testing.T) {
@@ -37,12 +38,12 @@ func TestFilterFloat64(t *testing.T) {
 		arg  float64
 		want []int
 	}{
-		{"Gt", (*Series).Gt, 2, []int{2}},
-		{"Gte", (*Series).Gte, 2, []int{1, 2}},
-		{"Lt", (*Series).Lt, 2, []int{0}},
-		{"Lte", (*Series).Lte, 2, []int{0, 1}},
-		{"Eq", (*Series).Eq, 2, []int{1}},
-		{"Neq", (*Series).Neq, 2, []int{0, 2}},
+		{"GT", (*Series).GT, 2, []int{2}},
+		{"GTE", (*Series).GTE, 2, []int{1, 2}},
+		{"LT", (*Series).LT, 2, []int{0}},
+		{"LTE", (*Series).LTE, 2, []int{0, 1}},
+		{"EQ", (*Series).EQ, 2, []int{1}},
+		{"NEQ", (*Series).NEQ, 2, []int{0, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -50,6 +51,47 @@ func TestFilterFloat64(t *testing.T) {
 			got := tt.fn(s, tt.arg)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("s.Filter() got %v, want %v for arg %v", got, tt.want, tt.arg)
+			}
+		})
+	}
+}
+
+func TestFilterBool(t *testing.T) {
+	tests := []struct {
+		name string
+		fn   func(*Series) []int
+		want []int
+	}{
+		{"True", (*Series).True, []int{1}},
+		{"False", (*Series).False, []int{0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := MustNew([]bool{false, true})
+			got := tt.fn(s)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("s.Filter() got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFilterDateTime(t *testing.T) {
+	tests := []struct {
+		name string
+		fn   func(*Series, time.Time) []int
+		arg  time.Time
+		want []int
+	}{
+		{"Before", (*Series).Before, time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC), []int{0}},
+		{"After", (*Series).After, time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC), []int{1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := MustNew([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 3, 1, 0, 0, 0, 0, time.UTC)})
+			got := tt.fn(s, tt.arg)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("s.Filter() got %v, want %v", got, tt.want)
 			}
 		})
 	}

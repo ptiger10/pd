@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/ptiger10/pd/internal/values"
+
 	"github.com/ptiger10/pd/options"
 )
 
@@ -56,6 +58,16 @@ func (ip InPlace) Less(i, j int) bool {
 // Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
 // If the original Series is empty, replaces it with a new Series.
 func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
+	// Handling empty Series
+	if Equal(ip.s, newEmptySeries()) {
+		newS, err := New(val, Config{MultiIndex: idx})
+		if err != nil {
+			return fmt.Errorf("Series.Insert(): inserting into empty Series requires creating a new Series: %v", err)
+		}
+		ip.s.replace(newS)
+		return nil
+	}
+
 	// Handling errors
 	if err := ip.s.ensureAlignment(); err != nil {
 		return fmt.Errorf("Series.Insert(): %v", err)
@@ -69,21 +81,22 @@ func (ip InPlace) Insert(pos int, val interface{}, idx []interface{}) error {
 		return fmt.Errorf("Series.Insert(): invalid position: %d (max %v)", pos, ip.Len())
 	}
 
-	// Handling empty Series
-	if Equal(ip.s, newEmptySeries()) {
-		newS, err := New(val, Config{MultiIndex: idx})
-		if err != nil {
-			return fmt.Errorf("Series.Insert(): inserting into empty Series requires creating a new Series: %v", err)
+	for _, v := range idx {
+		if _, err := values.InterfaceFactory(v); err != nil {
+			return fmt.Errorf("Series.Insert(): %v", err)
 		}
-		ip.s.replace(newS)
-		return nil
+	}
+	if _, err := values.InterfaceFactory(val); err != nil {
+		return fmt.Errorf("Series.Insert(): %v", err)
 	}
 
+	// Insertion once errors have been handled
 	for j := 0; j < ip.s.index.NumLevels(); j++ {
 		ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
 		ip.s.index.Levels[j].Refresh()
 	}
 	ip.s.values.Insert(pos, val)
+
 	return nil
 }
 
@@ -96,19 +109,26 @@ func (ip InPlace) Append(val interface{}, idx []interface{}) error {
 	return nil
 }
 
-// Set sets the values in the specified row to val and modifies the Series in place.
+// Set sets the values in the specified row to val and modifies the Series in place. First converts val to be the same type as the index level.
 func (ip InPlace) Set(row int, val interface{}) error {
 	if err := ip.s.ensureRowPositions([]int{row}); err != nil {
+		return fmt.Errorf("Series.Set(): %v", err)
+	}
+
+	if _, err := values.InterfaceFactory(val); err != nil {
 		return fmt.Errorf("Series.Set(): %v", err)
 	}
 	ip.s.values.Set(row, val)
 	return nil
 }
 
-// SetRows sets all the values in the specified rows to val and modifies the Series in place.
+// SetRows sets all the values in the specified rows to val and modifies the Series in place. First converts val to be the same type as the index level.
 // If an error would be encountered in any row position, the entire operation is cancelled before it starts.
 func (ip InPlace) SetRows(rowPositions []int, val interface{}) error {
 	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("Series.SetRows(): %v", err)
+	}
+	if _, err := values.InterfaceFactory(val); err != nil {
 		return fmt.Errorf("Series.SetRows(): %v", err)
 	}
 

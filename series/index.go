@@ -108,10 +108,7 @@ func (idx Index) DropNull(level int) (*Series, error) {
 		return newEmptySeries(), fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 	}
 	s := idx.s.Copy()
-	err := s.InPlace.dropMany(idx.null(level))
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.DropNull(): %v", err)
-	}
+	s.InPlace.dropMany(idx.null(level))
 	return s, nil
 }
 
@@ -147,20 +144,6 @@ func (idx Index) InsertLevel(pos int, values interface{}, name string) (*Series,
 	return s, nil
 }
 
-func (idx Index) ensureRowPositions(rowPositions []int) error {
-	if len(rowPositions) == 0 {
-		return fmt.Errorf("no rows provided")
-	}
-
-	len := idx.Len()
-	for _, pos := range rowPositions {
-		if pos >= len {
-			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
-		}
-	}
-	return nil
-}
-
 func (idx Index) ensureLevelPositions(levelPositions []int) error {
 	if len(levelPositions) == 0 {
 		return fmt.Errorf("no levels provided")
@@ -174,20 +157,23 @@ func (idx Index) ensureLevelPositions(levelPositions []int) error {
 	return nil
 }
 
-// Set sets the label at the specified index row and level to val.
+// Set sets the label at the specified index row and level to val. First converts val to be the same type as the index level.
 func (idx Index) Set(row int, level int, val interface{}) (*Series, error) {
-	var err error
-	err = idx.ensureRowPositions([]int{row})
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
-	}
-
-	err = idx.ensureLevelPositions([]int{level})
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
-	}
 	s := idx.s.Copy()
-	s.index.Set(row, level, val)
+	err := s.index.Set(row, level, val)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
+	}
+	return s, nil
+}
+
+// SetRows sets the label at the specified index rows and level to val. First converts val to be the same type as the index level.
+func (idx Index) SetRows(rows []int, level int, val interface{}) (*Series, error) {
+	s := idx.s.Copy()
+	err := s.index.SetRows(rows, level, val)
+	if err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.SetRows(): %v", err)
+	}
 	return s, nil
 }
 

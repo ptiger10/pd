@@ -151,9 +151,6 @@ func (s *Series) Std() float64 {
 	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(vals)
-		if len(data) == 0 {
-			return math.NaN()
-		}
 		std, err := stats.StandardDeviation(data)
 		if err != nil {
 			return math.NaN()
