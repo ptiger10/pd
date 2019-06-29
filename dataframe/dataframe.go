@@ -165,7 +165,7 @@ func (df *DataFrame) DataTypes() *series.Series {
 
 // dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
 func (df *DataFrame) dataType() string {
-	uniqueTypes := df.DataTypes().UniqueVals()
+	uniqueTypes := df.DataTypes().Unique()
 	if len(uniqueTypes) == 1 {
 		return df.s[0].DataType()
 	}
