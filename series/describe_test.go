@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/ptiger10/pd/options"
 )
 
-func TestDatatype(t *testing.T) {
+func TestSeries_DataType(t *testing.T) {
 	var tests = []struct {
 		datatype options.DataType
 		expected string
@@ -36,7 +37,7 @@ func TestDatatype(t *testing.T) {
 	}
 }
 
-func Test_Equals(t *testing.T) {
+func TestSeries_Equal(t *testing.T) {
 	s, err := New("foo", Config{Index: "bar", Name: "baz"})
 	if err != nil {
 		t.Error(err)
@@ -64,7 +65,7 @@ func Test_Equals(t *testing.T) {
 	}
 }
 
-func TestReplaceNil(t *testing.T) {
+func TestSeries_ReplaceNil(t *testing.T) {
 	s := MustNew(nil)
 	s2 := MustNew([]int{1, 2})
 	s.replace(s2)
@@ -73,7 +74,16 @@ func TestReplaceNil(t *testing.T) {
 	}
 }
 
-func TestMaxWidth(t *testing.T) {
+func TestSeries_Values(t *testing.T) {
+	s := MustNew([]string{"foo", "bar", "baz"})
+	got := s.Values()
+	want := []interface{}{"foo", "bar", "baz"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("s.Values() got %v, want %v", got, want)
+	}
+}
+
+func TestSeries_MaxWidth(t *testing.T) {
 	s := MustNew([]string{"foo", "quux", "grault"}, Config{Name: "grapply"})
 	got := s.MaxWidth()
 	want := 6
@@ -82,7 +92,7 @@ func TestMaxWidth(t *testing.T) {
 	}
 }
 
-func TestDescribe_unsupported(t *testing.T) {
+func TestSeries_Describe_unsupported(t *testing.T) {
 	s := MustNew([]float64{1, 2, 3})
 	tm := s.Earliest()
 	if (time.Time{}) != tm {
@@ -95,7 +105,7 @@ func TestDescribe_unsupported(t *testing.T) {
 }
 
 // [START ensure tests]
-func TestEnsureTypes(t *testing.T) {
+func TestSeries_EnsureTypes_fail(t *testing.T) {
 	defer log.SetOutput(os.Stderr)
 	vals := []interface{}{1, 2, 3}
 

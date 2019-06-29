@@ -244,10 +244,8 @@ func (s *Series) null() []int {
 	return ret
 }
 
-// all returns only the Value fields for the collection of Value/Null structs as an interface slice.
-//
-// Caution: This operation excludes the Null field but retains any null values.
-func (s *Series) all() []interface{} {
+// Values returns all the values (including null values) in the Series as an interface slice.
+func (s *Series) Values() []interface{} {
 	var ret []interface{}
 	for i := 0; i < s.Len(); i++ {
 		ret = append(ret, s.values.Element(i).Value)
@@ -259,7 +257,7 @@ func (s *Series) all() []interface{} {
 // For use in printing Series and DataFrames.
 func (s *Series) MaxWidth() int {
 	var max int
-	for _, v := range s.all() {
+	for _, v := range s.Values() {
 		if s.datatype == options.DateTime {
 			if val, ok := v.(time.Time); ok {
 				v = val.Format(options.GetDisplayTimeFormat())
@@ -291,11 +289,9 @@ func (s *Series) UniqueVals() []string {
 }
 
 // ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
-//
-// Applies to: All
 func (s *Series) ValueCounts() map[string]int {
 	valid, _ := s.subsetRows(s.valid())
-	vals := valid.all()
+	vals := valid.Values()
 	counter := make(map[string]int)
 	for _, val := range vals {
 		counter[fmt.Sprint(val)]++
@@ -303,9 +299,8 @@ func (s *Series) ValueCounts() map[string]int {
 	return counter
 }
 
-// Earliest returns the earliest non-null time.Time{} in the Series
-//
-// Applies to: time.Time. If inapplicable, defaults to time.Time{}.
+// Earliest returns the earliest non-null time.Time{} in the Series.
+// If applied to anything other than dateTime, return time.Time{}.
 func (s *Series) Earliest() time.Time {
 	earliest := time.Time{}
 	vals := s.validVals()
@@ -324,9 +319,8 @@ func (s *Series) Earliest() time.Time {
 	}
 }
 
-// Latest returns the latest non-null time.Time{} in the Series
-//
-// Applies to: time.Time. If inapplicable, defaults to time.Time{}.
+// Latest returns the latest non-null time.Time{} in the Series.
+// If applied to anything other than dateTime, return time.Time{}.
 func (s *Series) Latest() time.Time {
 	latest := time.Time{}
 	vals := s.validVals()

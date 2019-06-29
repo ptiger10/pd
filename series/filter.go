@@ -36,7 +36,7 @@ import (
 // 		return (val.(float64) - s.Mean()) / s.Std()
 // 	})
 func (s *Series) Apply(fn func(interface{}) interface{}) *Series {
-	vals := s.all()
+	vals := s.Values()
 	newVals := make([]interface{}, 0)
 	for _, val := range vals {
 		newVal := fn(val)
@@ -85,7 +85,7 @@ func (s *Series) Apply(fn func(interface{}) interface{}) *Series {
 // 		return false
 // 	})
 func (s *Series) Filter(cmp func(interface{}) bool) []int {
-	vals := s.all()
+	vals := s.Values()
 	include := make([]int, 0)
 	for i, val := range vals {
 		if cmp(val) {
