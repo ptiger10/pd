@@ -11,6 +11,7 @@ var defaultOptions = struct {
 	displayTimeFormat              string
 	stringNullValues               []string
 	logWarnings                    bool
+	async                          bool
 }{
 	displayMaxWidth,
 	displayValuesWhitespaceBuffer,
@@ -22,6 +23,7 @@ var defaultOptions = struct {
 	displayTimeFormat,
 	stringNullValues,
 	logWarnings,
+	async,
 }
 
 // RestoreDefaults resets options back to their default setting
@@ -36,6 +38,7 @@ func RestoreDefaults() {
 	SetDisplayTimeFormat(defaultOptions.displayTimeFormat)
 	SetStringNullValues(defaultOptions.stringNullValues)
 	SetLogWarnings(defaultOptions.logWarnings)
+	SetAsync(defaultOptions.async)
 }
 
 var displayMaxWidth = 35
@@ -48,6 +51,7 @@ var displayStringNullFiller = "NaN"
 var displayTimeFormat = "1/2/2006T15:04:05"
 var stringNullValues = []string{"NaN", "n/a", "N/A", "", "nil"}
 var logWarnings = true
+var async = true
 
 // SetDisplayMaxWidth sets DisplayMaxWidth to n characters.
 // DisplayMaxWidth is an option when printing a Series.
@@ -185,4 +189,16 @@ func SetLogWarnings(boolean bool) {
 // GetLogWarnings returns LogWarnings.
 func GetLogWarnings() bool {
 	return logWarnings
+}
+
+// SetAsync sets Async to boolean.
+// Async is an option for executing certain operations over multiple groups (e.g., math on Groupings or Columns) as goroutines instead of synchronously.
+// If true, eligible operations are split into goroutines and merged back together.
+func SetAsync(boolean bool) {
+	async = boolean
+}
+
+// GetAsync returns Async.
+func GetAsync() bool {
+	return async
 }

@@ -75,10 +75,22 @@ func TestSetting(t *testing.T) {
 		t.Error("Unable to set/get StringNullValues")
 	}
 
+	if GetLogWarnings() != defaultOptions.logWarnings {
+		t.Errorf("Default setting not reading for LogWarnings")
+	}
 	SetLogWarnings(false)
 	if GetLogWarnings() != false {
 		t.Error("Unable to set/get LogWarnings")
 	}
+
+	if GetAsync() != defaultOptions.async {
+		t.Errorf("Default setting not reading for Async")
+	}
+	SetAsync(false)
+	if GetAsync() != false {
+		t.Error("Unable to set/get Async")
+	}
+
 	RestoreDefaults()
 	if GetDisplayMaxWidth() != 35 {
 		t.Error("Unable to restore default for DisplayMaxWidth")
