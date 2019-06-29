@@ -26,6 +26,16 @@ func ExampleNew_string() {
 	// datatype: string
 }
 
+func ExampleNew_float_precision() {
+	s := MustNew([]float64{1.5555, 2.666666})
+	fmt.Println(s)
+	// Output:
+	// 0    1.55
+	// 1    2.66
+
+	// datatype: float644
+}
+
 func ExampleNew_string_named() {
 	s := MustNew([]string{"foo", "bar", "", "baz"}, Config{Name: "foobar"})
 	fmt.Println(s)

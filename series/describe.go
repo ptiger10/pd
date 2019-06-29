@@ -154,6 +154,13 @@ func (s *Series) print() string {
 			} else {
 				valStr = fmt.Sprint(elem.Value)
 			}
+			// } else if s.datatype == options.Float64 {
+			// 	v, ok := elem.Value.(float64)
+			// 	if ok {
+			// 		valStr = fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), v)
+			// 	} else {
+			// 		valStr = fmt.Sprint(elem.Value)
+			// 	}
 		} else {
 			valStr = fmt.Sprint(elem.Value)
 		}
