@@ -27,13 +27,13 @@ func ExampleNew_string() {
 }
 
 func ExampleNew_float_precision() {
-	s := MustNew([]float64{1.5555, 2.666666})
+	s := MustNew([]float64{1.5511, 2.6611})
 	fmt.Println(s)
 	// Output:
 	// 0    1.55
 	// 1    2.66
 	//
-	// datatype: float644
+	// datatype: float64
 }
 
 func ExampleNew_string_named() {
@@ -211,8 +211,8 @@ func ExampleNew_config_datatype() {
 	s := MustNew([]interface{}{"1", "foo"}, Config{DataType: options.Float64})
 	fmt.Println(s)
 	// Output:
-	// 0      1
-	// 1    NaN
+	// 0    1.00
+	// 1     NaN
 	//
 	// datatype: float64
 }

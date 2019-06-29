@@ -154,13 +154,13 @@ func (s *Series) print() string {
 			} else {
 				valStr = fmt.Sprint(elem.Value)
 			}
-			// } else if s.datatype == options.Float64 {
-			// 	v, ok := elem.Value.(float64)
-			// 	if ok {
-			// 		valStr = fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), v)
-			// 	} else {
-			// 		valStr = fmt.Sprint(elem.Value)
-			// 	}
+		} else if s.datatype == options.Float64 {
+			v, ok := elem.Value.(float64)
+			if ok {
+				valStr = fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), v)
+			} else {
+				valStr = fmt.Sprint(elem.Value)
+			}
 		} else {
 			valStr = fmt.Sprint(elem.Value)
 		}
@@ -266,12 +266,23 @@ func (s *Series) Values() []interface{} {
 func (s *Series) MaxWidth() int {
 	var max int
 	for _, v := range s.Values() {
+		var length int
 		if s.datatype == options.DateTime {
 			if val, ok := v.(time.Time); ok {
-				v = val.Format(options.GetDisplayTimeFormat())
+				length = len(val.Format(options.GetDisplayTimeFormat()))
+			} else {
+				length = len(fmt.Sprint(v))
 			}
+		} else if s.datatype == options.Float64 {
+			if val, ok := v.(float64); ok {
+				length = len(fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), val))
+			} else {
+				length = len(fmt.Sprint(v))
+			}
+		} else {
+			length = len(fmt.Sprint(v))
 		}
-		if length := len(fmt.Sprint(v)); length > max {
+		if length > max {
 			max = length
 		}
 	}
