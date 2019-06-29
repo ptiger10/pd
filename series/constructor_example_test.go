@@ -22,6 +22,7 @@ func ExampleNew_string() {
 	// 1    bar
 	// 2    NaN
 	// 3    baz
+
 	// datatype: string
 }
 
@@ -33,6 +34,7 @@ func ExampleNew_string_named() {
 	// 1    bar
 	// 2    NaN
 	// 3    baz
+
 	// datatype: string
 	// name: foobar
 }
@@ -49,6 +51,7 @@ func ExampleNew_named_later() {
 	// 1    bar
 	// 2    NaN
 	// 3    baz
+
 	// datatype: string
 	// name: foobar
 }
@@ -62,6 +65,7 @@ func ExampleNew_string_singleIdx() {
 	// 101    bar
 	// 102    NaN
 	// 103    baz
+
 	// datatype: string
 }
 
@@ -76,6 +80,7 @@ func ExampleNew_string_multiIdx() {
 	// 1 101    bar
 	// 2 102    NaN
 	// 3 103    baz
+
 	// datatype: string
 }
 
@@ -96,6 +101,7 @@ func ExampleNew_string_multiIdx_named_sequential_repeating() {
 	//    10100    bar
 	//  1 10200    NaN
 	//    10300    baz
+
 	// datatype: string
 	// name: foobar
 }
@@ -119,6 +125,7 @@ func ExampleNew_nonsequential_repeating() {
 	//    10300     baz
 	//  0 10400     qux
 	//    10500    quux
+
 	// datatype: string
 	// name: foobar
 }
@@ -139,6 +146,7 @@ func ExampleNew_partially_named_indexes() {
 	//    code
 	// 0 10000    foo
 	// 1 10100    bar
+
 	// datatype: string
 	// name: foobar
 }
@@ -149,6 +157,7 @@ func ExampleNew_datetime_single() {
 
 	// Output:
 	// 0    1/1/2019T00:00:00
+
 	// datatype: dateTime
 }
 
@@ -162,6 +171,7 @@ func ExampleNew_datetime_manyRows() {
 	// Output:
 	// 0    5/1/2019T15:09:30
 	// 1    5/2/2019T15:15:55
+
 	// datatype: dateTime
 }
 
@@ -171,6 +181,7 @@ func ExampleNew_config_nameOnly() {
 	// Output:
 	// 0    foo
 	// 1    bar
+
 	// datatype: string
 	// name: baz
 }
@@ -182,6 +193,7 @@ func ExampleNew_config_indexName() {
 	// baz
 	//   0    foo
 	//   1    bar
+
 	// datatype: string
 }
 
@@ -191,6 +203,7 @@ func ExampleNew_config_datatype() {
 	// Output:
 	// 0      1
 	// 1    NaN
+
 	// datatype: float64
 }
 
@@ -201,6 +214,7 @@ func ExampleNew_maxwidth_index() {
 	//                                 baz
 	// This is a very long index row. V...    foo
 	//                                 qux    bar
+
 	// datatype: string
 }
 
@@ -211,5 +225,6 @@ func ExampleNew_maxwidth_value() {
 	// Output:
 	// 0    This is a very long index row. V...
 	// 1                                    foo
+
 	//datatype: string
 }

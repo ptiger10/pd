@@ -15,8 +15,9 @@ func ExampleSeries_Describe_scalarString() {
 	//  valid    1
 	//   null    0
 	// unique    1
-	//datatype: string
-	//name: bar
+
+	// datatype: string
+	// name: bar
 }
 
 func ExampleSeries_Describe_float() {
@@ -32,7 +33,8 @@ func ExampleSeries_Describe_float() {
 	//   50%    5.00
 	//   75%    7.50
 	//   max    9.00
-	//datatype: float64
+
+	// datatype: float64
 }
 
 func ExampleSeries_Describe_float_empty() {
@@ -48,7 +50,8 @@ func ExampleSeries_Describe_float_empty() {
 	//   50%    NaN
 	//   75%    NaN
 	//   max    NaN
-	//datatype: float64
+
+	// datatype: float64
 }
 
 func ExampleSeries_Describe_int() {
@@ -64,7 +67,8 @@ func ExampleSeries_Describe_int() {
 	//   50%    5.00
 	//   75%    7.50
 	//   max    9.00
-	//datatype: int64
+
+	// datatype: int64
 }
 
 func ExampleSeries_Describe_string() {
@@ -75,7 +79,8 @@ func ExampleSeries_Describe_string() {
 	//  valid    3
 	//   null    1
 	// unique    2
-	//datatype: string
+
+	// datatype: string
 }
 
 func ExampleSeries_Describe_string_empty() {
@@ -86,7 +91,8 @@ func ExampleSeries_Describe_string_empty() {
 	//  valid    0
 	//   null    2
 	// unique    0
-	//datatype: string
+
+	// datatype: string
 }
 
 func ExampleSeries_Describe_bool() {
@@ -98,7 +104,8 @@ func ExampleSeries_Describe_bool() {
 	//  null       0
 	//   sum    1.00
 	//  mean    0.33
-	//datatype: bool
+
+	// datatype: bool
 }
 
 func ExampleSeries_Describe_datetime() {
@@ -115,7 +122,8 @@ func ExampleSeries_Describe_datetime() {
 	//   unique                                2
 	// earliest    2019-04-18 15:00:00 +0000 UTC
 	//   latest    2019-04-19 15:00:00 +0000 UTC
-	//datatype: dateTime
+
+	// datatype: dateTime
 }
 
 func ExampleSeries_Describe_datetime_empty() {
@@ -128,7 +136,8 @@ func ExampleSeries_Describe_datetime_empty() {
 	//   unique                                0
 	// earliest    0001-01-01 00:00:00 +0000 UTC
 	//   latest    0001-01-01 00:00:00 +0000 UTC
-	//datatype: dateTime
+
+	// datatype: dateTime
 }
 
 func ExampleSeries_Describe_interface() {
@@ -138,7 +147,8 @@ func ExampleSeries_Describe_interface() {
 	//   len    4
 	// valid    3
 	//  null    1
-	//datatype: interface
+
+	// datatype: interface
 }
 
 // [START additional structs]

@@ -39,7 +39,7 @@ func (s *Series) Describe() {
 		idx = []string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"}
 
 	case options.String:
-		unique := fmt.Sprint(len(s.UniqueVals()))
+		unique := fmt.Sprint(len(s.Unique()))
 		values = []string{length, valid, null, unique}
 		idx = []string{"len", "valid", "null", "unique"}
 
@@ -51,7 +51,7 @@ func (s *Series) Describe() {
 		idx = []string{"len", "valid", "null", "sum", "mean"}
 
 	case options.DateTime:
-		unique := fmt.Sprint(len(s.UniqueVals()))
+		unique := fmt.Sprint(len(s.Unique()))
 		earliest := fmt.Sprint(s.Earliest())
 		latest := fmt.Sprint(s.Latest())
 		values = []string{length, valid, null, unique, earliest, latest}
@@ -66,8 +66,7 @@ func (s *Series) Describe() {
 	// duck errors because constructor called internally
 	s = MustNew(values, Config{Name: s.name, Index: idx})
 	s.datatype = dt
-	n := s.String()
-	fmt.Println(n)
+	fmt.Println(s)
 	return
 
 }
@@ -170,11 +169,13 @@ func (s *Series) print() string {
 		// Concatenate line onto printer string
 		printer += fmt.Sprintln(newLine)
 	}
+	// [END rows]
+	if s.datatype != options.None || s.name != "" {
+		printer += "\n"
+	}
 	if s.datatype != options.None {
 		printer += fmt.Sprintf("datatype: %s\n", s.datatype)
 	}
-	// [END rows]
-
 	if s.name != "" {
 		printer += fmt.Sprintf("name: %s\n", s.name)
 	}
@@ -275,10 +276,8 @@ func (s Series) Name() string {
 	return s.name
 }
 
-// UniqueVals returns a de-duplicated list of all non-null values (as []string) that appear in the Series.
-//
-// Applies to: All
-func (s *Series) UniqueVals() []string {
+// Unique returns a de-duplicated list of all non-null values (as []string) that appear in the Series.
+func (s *Series) Unique() []string {
 	ret := make([]string, 0)
 	valid, _ := s.Subset(s.valid())
 	counter := valid.ValueCounts()
