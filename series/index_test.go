@@ -378,7 +378,8 @@ func TestIndex_SwapLevels(t *testing.T) {
 }
 
 func TestIndex_InsertLevel(t *testing.T) {
-	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}}})
+	s := MustNew([]string{"foo", "bar"}, Config{
+		MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}}})
 	type fields struct {
 		s *Series
 	}
@@ -422,6 +423,49 @@ func TestIndex_InsertLevel(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Index.InsertLevel() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIndex_AppendLevel(t *testing.T) {
+	s := MustNew([]string{"foo", "bar"}, Config{
+		MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}}})
+	type fields struct {
+		s *Series
+	}
+	type args struct {
+		values interface{}
+		name   string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *Series
+		wantErr bool
+	}{
+		{name: "pass", fields: fields{s}, args: args{[]string{"corge", "fred"}, ""},
+			want: MustNew([]string{"foo", "bar"}, Config{
+				MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}, []string{"corge", "fred"}}}),
+			wantErr: false},
+		{"fail: unsupported value", fields{s}, args{[]complex64{1, 2}, ""},
+			newEmptySeries(), true},
+		{"fail: misaligned length", fields{s}, args{"corge", ""},
+			newEmptySeries(), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{
+				s: tt.fields.s,
+			}
+			got, err := idx.AppendLevel(tt.args.values, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Index.AppendLevel() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Index.AppendLevel() = %v, want %v", got, tt.want)
 			}
 		})
 	}
