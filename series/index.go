@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -70,19 +71,32 @@ func (idx Index) At(row int, level int) interface{} {
 
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
 func (idx Index) RenameLevel(level int, name string) error {
-	if level >= idx.NumLevels() {
-		return fmt.Errorf("s.Index.RenameLevel(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("s.Index.RenameLevel(): %v", err)
 	}
 	idx.s.index.Levels[level].Name = name
 	idx.s.index.Refresh()
 	return nil
 }
 
+// Reindex converts an index level to a default range []int{0, 1, 2,...n}
+func (idx Index) Reindex(level int) error {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("s.Index.Reindex(): %v", err)
+	}
+	// ducks error because inputs are controlled
+	idxVals := values.MakeIntRange(0, idx.Len())
+	newLvl := index.MustNewLevel(idxVals, idx.s.index.Levels[level].Name)
+	idx.s.index.Levels[level] = newLvl
+	idx.s.index.Refresh()
+	return nil
+}
+
 // Values returns an interface{}, ready for type assertion, of all values at the specified index level, but returns nil if level is out of range.
 func (idx Index) Values(level int) interface{} {
-	if level >= idx.NumLevels() {
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.Values(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+			log.Printf("s.Index.Values(): %v\n", err)
 		}
 		return nil
 	}
@@ -116,11 +130,11 @@ func (idx Index) DropNull(level int) (*Series, error) {
 
 // SwapLevels swaps two levels in the index.
 func (idx Index) SwapLevels(i, j int) (*Series, error) {
-	if i >= idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid index level: %d (max: %v)", i, idx.NumLevels()-1)
+	if err := idx.ensureLevelPositions([]int{i}); err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
 	}
-	if j >= idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid index level: %d (max: %v)", j, idx.NumLevels()-1)
+	if err := idx.ensureLevelPositions([]int{j}); err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid j: %v", err)
 	}
 	s := idx.s.Copy()
 	s.index.Levels[i], s.index.Levels[j] = s.index.Levels[j], s.index.Levels[i]

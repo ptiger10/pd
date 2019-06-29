@@ -184,6 +184,7 @@ func sliceUIntToSliceInt64(data interface{}) []int64 {
 // [START utility slices]
 
 // MakeIntRange returns a sequential series of numbers, for use in making default index labels.
+// Includes min and excludes max.
 func MakeIntRange(min, max int) []int {
 	a := make([]int, max-min)
 	for i := range a {

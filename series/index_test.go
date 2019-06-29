@@ -267,6 +267,37 @@ func TestIndex_RenameLevel(t *testing.T) {
 	}
 }
 
+func TestIndex_Reindex(t *testing.T) {
+	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"bar", "baz"}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}})
+	type args struct {
+		level int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Series
+		wantErr bool
+	}{
+		{name: "pass 0", args: args{0},
+			want:    MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]int64{0, 1}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}}),
+			wantErr: false},
+		{"fail invalid level", args{10}, s, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{
+				s: s.Copy(),
+			}
+			if err := idx.Reindex(tt.args.level); (err != nil) != tt.wantErr {
+				t.Errorf("Index.Reindex() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !Equal(idx.s, tt.want) {
+				t.Errorf("Index.Reindex(): got %v, want %v", idx.s, tt.want)
+			}
+		})
+	}
+}
+
 func TestIndex_DropNull(t *testing.T) {
 
 	type args struct {
