@@ -1,13 +1,19 @@
 package series
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/ptiger10/pd/options"
 
 	"github.com/ptiger10/pd/internal/index"
 )
 
-func Test_Group_Sum(t *testing.T) {
+func TestGrouping_Math(t *testing.T) {
 	s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
 	tests := []struct {
 		name  string
@@ -15,7 +21,8 @@ func Test_Group_Sum(t *testing.T) {
 		fn    func(Grouping) *Series
 		want  *Series
 	}{
-		{"fail: empty", newEmptySeries(), Grouping.Sum, newEmptySeries()},
+		{name: "fail: empty", input: newEmptySeries(), fn: Grouping.Sum,
+			want: newEmptySeries()},
 		{"sum", s, Grouping.Sum,
 			MustNew([]float64{3, 7}, Config{Index: []int{1, 2}})},
 		{"mean", s, Grouping.Mean,
@@ -32,10 +39,18 @@ func Test_Group_Sum(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := tt.input.GroupByIndex()
+			// Test Asynchronously
 			got := tt.fn(g)
 			if !Equal(got, tt.want) {
 				t.Errorf("s.GroupByIndex math operation returned %v, want %v", got, tt.want)
 			}
+			// Test Synchronously
+			options.SetAsync(false)
+			gotSync := tt.fn(g)
+			if !Equal(gotSync, tt.want) {
+				t.Errorf("s.GroupByIndex synchronous math operation returned %v, want %v", gotSync, tt.want)
+			}
+			options.RestoreDefaults()
 		})
 	}
 }
@@ -64,47 +79,72 @@ func Test_Group(t *testing.T) {
 	}
 }
 
-func Test_Group_Sum_extended(t *testing.T) {
-	s, _ := New([]int{1, 2, 3, 4, 5, 6, 7, 8}, Config{
-		MultiIndex: []interface{}{[]string{"foo", "foo", "bar", "bar", "foo", "foo", "bar", "bar"}, []int{1, 2, 1, 2, 1, 2, 1, 2}},
-	})
-	g := s.GroupByIndex()
-	got := g.Sum()
-	want, _ := New([]float64{10, 12, 6, 8}, Config{
-		MultiIndex: []interface{}{[]string{"bar", "bar", "foo", "foo"}, []int{1, 2, 1, 2}},
-	})
-	if !Equal(got, want) {
-		t.Errorf("s.GroupByIndex.Sum() returned %v, want %v", got, want)
-	}
-}
-
 func TestSeries_GroupByIndex(t *testing.T) {
 	lvl1 := index.MustNewLevel(1, "")
 	lvl2 := index.MustNewLevel(2, "")
+	multi := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 1, 2}, []int{2, 2, 1}}})
+	type args struct {
+		levelPositions []int
+	}
 	tests := []struct {
 		name  string
 		input *Series
+		args  args
 		want  map[string]*group
 	}{
-		{name: "single", input: MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{1, 1, 2}}),
+		{name: "single no args",
+			input: MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{1, 1, 2}}),
+			args:  args{[]int{}},
 			want: map[string]*group{
 				"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
 				"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
 			}},
-
-		{name: "multi",
-			input: MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 1, 2}, []int{2, 2, 1}}}),
-			want: map[string]*group{
+		{"multi no args",
+			multi,
+			args{[]int{}},
+			map[string]*group{
 				"1 2": &group{Positions: []int{0, 1}, Index: index.New(lvl1, lvl2)},
 				"2 1": &group{Positions: []int{2}, Index: index.New(lvl2, lvl1)},
 			}},
+		{"multi one level",
+			multi,
+			args{[]int{0}},
+			map[string]*group{
+				"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
+				"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
+			}},
+		{"multi two levels reversed",
+			multi,
+			args{[]int{1, 0}},
+			map[string]*group{
+				"2 1": &group{Positions: []int{0, 1}, Index: index.New(lvl2, lvl1)},
+				"1 2": &group{Positions: []int{2}, Index: index.New(lvl1, lvl2)},
+			}},
+		{"fail: invalid level",
+			multi,
+			args{[]int{10}},
+			newEmptyGrouping().groups},
+		{"fail: partial invalid level",
+			multi,
+			args{[]int{0, 10}},
+			newEmptyGrouping().groups},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
 			s := tt.input.Copy()
-			got := s.GroupByIndex().groups
+			got := s.GroupByIndex(tt.args.levelPositions...).groups
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Series.GroupByIndex() = %#v, want %#v", got, tt.want)
+			}
+
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("Series.At() returned no log message, want log due to fail")
+				}
 			}
 		})
 	}

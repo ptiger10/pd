@@ -2,9 +2,12 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/ptiger10/pd/options"
 
 	"github.com/ptiger10/pd/internal/index"
 )
@@ -18,6 +21,26 @@ type Grouping struct {
 type group struct {
 	Index     index.Index
 	Positions []int
+}
+
+func (grp *group) copy() *group {
+	pos := make([]int, 0)
+	for _, p := range grp.Positions {
+		pos = append(pos, p)
+	}
+	return &group{Positions: pos, Index: grp.Index.Copy()}
+}
+
+// copy a grouping
+func (g Grouping) copy() Grouping {
+	grps := make(map[string]*group)
+	for k, v := range g.groups {
+		grps[k] = v.copy()
+	}
+	return Grouping{
+		s:      g.s.Copy(),
+		groups: grps,
+	}
 }
 
 // Sum for each group in the Grouping.
@@ -53,9 +76,21 @@ func (g Grouping) Std() *Series {
 var wg sync.WaitGroup
 
 func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
+	g = g.copy()
 	if g.Len() == 0 {
 		return newEmptySeries()
 	}
+
+	// synchronous option
+	if !options.GetAsync() {
+		ret := newEmptySeries()
+		for _, group := range g.Groups() {
+			s := g.math(group, fn)
+			ret.InPlace.Join(s)
+		}
+		return ret
+	}
+
 	ch := make(chan calcReturn, g.Len())
 	for i, group := range g.Groups() {
 		wg.Add(1)
@@ -71,6 +106,7 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 	sort.Slice(container, func(i, j int) bool {
 		return container[i].n < container[j].n
 	})
+
 	s := newEmptySeries()
 	for _, result := range container {
 		s.InPlace.Join(&result.s)
@@ -85,15 +121,20 @@ type calcReturn struct {
 }
 
 func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*Series) float64) {
-	positions := g.groups[group].Positions
-	// ducks error because group positions are assumed to be in Series
-	s, _ := g.s.subsetRows(positions)
-	calc := fn(s)
-	newS := MustNew(calc)
-	newS.index = g.groups[group].Index
-	ret := calcReturn{s: *newS, n: n}
+	s := g.math(group, fn)
+	ret := calcReturn{s: *s, n: n}
 	ch <- ret
 	wg.Done()
+}
+
+func (g Grouping) math(group string, fn func(*Series) float64) *Series {
+	positions := g.groups[group].Positions
+	// ducks error because group positions are assumed to be in Series
+	rows, _ := g.s.subsetRows(positions)
+	calc := fn(rows)
+	s := MustNew(calc)
+	s.index = g.groups[group].Index
+	return s
 }
 
 // Groups returns all valid group labels in the Grouping.
@@ -122,9 +163,26 @@ func (g Grouping) Group(label string) *Series {
 	return s
 }
 
-// GroupByIndex groups a Series by all of its index levels.
-func (s *Series) GroupByIndex() Grouping {
+func newEmptyGrouping() Grouping {
 	groups := make(map[string]*group)
+	s := newEmptySeries()
+	return Grouping{s: s, groups: groups}
+}
+
+// GroupByIndex groups a Series by one or more of its index levels. If no int is provided, all index levels are used.
+func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
+	groups := make(map[string]*group)
+	if len(levelPositions) != 0 {
+		var err error
+		s, err = s.Index.SubsetLevels(levelPositions)
+		if err != nil {
+			if options.GetLogWarnings() {
+				log.Printf("s.GroupByIndex() %v\n", err)
+			}
+			return newEmptyGrouping()
+		}
+	}
+
 	for i := 0; i < s.Len(); i++ {
 		row, _ := s.subsetRows([]int{i})
 		labels := row.Element(0).Labels
