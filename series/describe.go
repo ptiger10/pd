@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -91,7 +92,7 @@ func (s *Series) print() string {
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
-			header += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			header += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 		}
 	}
 	// omit header line if empty
@@ -115,7 +116,7 @@ func (s *Series) print() string {
 			idx := fmt.Sprint(elem.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
-				buffer = strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+				buffer = strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 				// skip repeated label values if this is not the last index level
 				if prior[j] == idx {
 					skip = true
@@ -144,7 +145,7 @@ func (s *Series) print() string {
 
 		// [START value printer]
 		// add buffer at beginning
-		newLine += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer())
+		newLine += strings.Repeat(" ", values.GetDisplayValuesWhitespaceBuffer())
 
 		var valStr string
 		if s.datatype == options.DateTime {
@@ -198,7 +199,7 @@ func (el Element) String() string {
 		[]interface{}{"LabelTypes", el.LabelTypes},
 	} {
 		// LabelTypes is 10 characters wide, so left padding set to 10
-		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", options.GetDisplayElementWhitespaceBuffer()), pair[1])
+		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", values.GetDisplayElementWhitespaceBuffer()), pair[1])
 	}
 	return printStr
 }

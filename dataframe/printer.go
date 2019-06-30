@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -37,7 +38,7 @@ func (df *DataFrame) print() string {
 		indexNameRow += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last
-			indexNameRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			indexNameRow += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 		}
 	}
 	if !df.index.Unnamed() {
@@ -50,12 +51,12 @@ func (df *DataFrame) print() string {
 	excl := df.makeExclusionsTable()
 	maxColWidths := df.maxColWidths(excl)
 	for j := 0; j < df.cols.NumLevels(); j++ {
-		colLevelRow := strings.Repeat(" ", len(indexNameRow)+options.GetDisplayValuesWhitespaceBuffer())
+		colLevelRow := strings.Repeat(" ", len(indexNameRow)+values.GetDisplayValuesWhitespaceBuffer())
 		colName := df.cols.Levels[j].Name
 		namePadding := df.cols.MaxNameWidth()
 		colLevelRow += fmt.Sprintf("%*v", namePadding, colName)
 		if colName != "" {
-			colLevelRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			colLevelRow += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 		}
 		var prior string
 		for k := 0; k < df.NumCols(); k++ {
@@ -72,7 +73,7 @@ func (df *DataFrame) print() string {
 			}
 			if k != df.NumCols()-1 {
 				// add buffer to all columns except the last
-				colLevelRow += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+				colLevelRow += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 			} else {
 				colLevelRow = strings.TrimRight(colLevelRow, " ")
 			}
@@ -96,7 +97,7 @@ func (df *DataFrame) print() string {
 			idx := fmt.Sprint(idxElems.Labels[j])
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
-				buffer = strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+				buffer = strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 				// skip repeated label values if this is not the last index level
 				if prior[j] == idx && !options.GetDisplayRepeatedLabels() {
 					skip = true
@@ -121,9 +122,9 @@ func (df *DataFrame) print() string {
 		// [END index printer]
 
 		// [START value printer]
-		newLine += strings.Repeat(" ", options.GetDisplayValuesWhitespaceBuffer()+df.cols.MaxNameWidth())
+		newLine += strings.Repeat(" ", values.GetDisplayValuesWhitespaceBuffer()+df.cols.MaxNameWidth())
 		if df.cols.MaxNameWidth() != 0 {
-			newLine += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+			newLine += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 		}
 
 		var valStrs string
@@ -141,7 +142,7 @@ func (df *DataFrame) print() string {
 			}
 			if k != df.NumCols()-1 {
 				// add buffer to all columns except the last
-				valStr += strings.Repeat(" ", options.GetDisplayIndexWhitespaceBuffer())
+				valStr += strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
 			}
 			valStrs += valStr
 		}

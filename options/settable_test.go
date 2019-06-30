@@ -5,37 +5,13 @@ import (
 	"testing"
 )
 
-func TestSetting(t *testing.T) {
+func TestSettableOptions(t *testing.T) {
 	if GetDisplayMaxWidth() != defaultOptions.displayMaxWidth {
 		t.Errorf("Default setting not reading for DisplayMaxWidth")
 	}
 	SetDisplayMaxWidth(15)
 	if GetDisplayMaxWidth() != 15 {
 		t.Error("Unable to set/get DisplayMaxWidth")
-	}
-
-	if GetDisplayIndexWhitespaceBuffer() != defaultOptions.displayIndexWhitespaceBuffer {
-		t.Errorf("Default setting not reading for DisplayIndexWhitespaceBuffer")
-	}
-	SetDisplayIndexWhitespaceBuffer(5)
-	if GetDisplayIndexWhitespaceBuffer() != 5 {
-		t.Error("Unable to set/get DisplayIndexWhitespaceBuffer")
-	}
-
-	if GetDisplayValuesWhitespaceBuffer() != defaultOptions.displayValuesWhitespaceBuffer {
-		t.Errorf("Default setting not reading for DisplayValuesWhitespaceBuffer")
-	}
-	SetDisplayValuesWhitespaceBuffer(10)
-	if GetDisplayValuesWhitespaceBuffer() != 10 {
-		t.Error("Unable to set/get DisplayValuesWhitespaceBuffer")
-	}
-
-	if GetDisplayElementWhitespaceBuffer() != defaultOptions.displayElementWhitespaceBuffer {
-		t.Errorf("Default setting not reading for DisplayElementWhitespaceBuffer")
-	}
-	SetDisplayElementWhitespaceBuffer(10)
-	if GetDisplayElementWhitespaceBuffer() != 10 {
-		t.Error("Unable to set/get DisplayElementWhitespaceBuffer")
 	}
 
 	if GetDisplayFloatPrecision() != defaultOptions.displayFloatPrecision {
