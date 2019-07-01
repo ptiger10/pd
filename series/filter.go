@@ -3,6 +3,8 @@ package series
 import (
 	"strings"
 	"time"
+
+	"github.com/ptiger10/pd/internal/values"
 )
 
 // Apply a callback function to every value in a Series and return a new Series.
@@ -36,17 +38,23 @@ import (
 // 		return (val.(float64) - s.Mean()) / s.Std()
 // 	})
 func (s *Series) Apply(fn func(interface{}) interface{}) *Series {
-	vals := s.Values()
+	ret := s.Copy()
+	ret.InPlace.Apply(fn)
+	return ret
+}
+
+// Apply a callback function to every value in a Series and modify the Series in place.
+func (ip InPlace) Apply(fn func(interface{}) interface{}) {
+	vals := ip.s.Values()
 	newVals := make([]interface{}, 0)
 	for _, val := range vals {
 		newVal := fn(val)
 		newVals = append(newVals, newVal)
 	}
-	// ducks error because []interface{} as arg in New constructor cannot trigger unsupported error
-	ret, _ := New(newVals, Config{DataType: s.datatype})
-	ret.index = s.index
-
-	return ret
+	// ducks error because []interface{} as arg in InterfaceFactory cannot trigger unsupported error
+	vf, _ := values.InterfaceFactory(newVals)
+	ret, _ := values.Convert(vf.Values, ip.s.datatype)
+	ip.s.values = ret
 }
 
 // Filter a Series using a callback function test.

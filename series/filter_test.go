@@ -7,9 +7,11 @@ import (
 	"time"
 )
 
-func TestApply_zscore(t *testing.T) {
+func TestApply(t *testing.T) {
 	s := MustNew([]float64{1, 2, 3})
-	got := s.Apply(func(val interface{}) interface{} {
+	sArchive := s.Copy()
+
+	s.InPlace.Apply(func(val interface{}) interface{} {
 		v, ok := val.(float64)
 		if !ok {
 			return ""
@@ -17,12 +19,26 @@ func TestApply_zscore(t *testing.T) {
 		return ((v - s.Mean()) / s.Std())
 	})
 	want := MustNew([]float64{-1.224744871391589, 0, 1.224744871391589})
-	if !Equal(got, want) {
-		t.Errorf("Apply() returned %v, want %v", got, want)
+	if !Equal(s, want) {
+		t.Errorf("InPlace.Apply() returned %v, want %v", s, want)
+	}
+
+	sCopy := sArchive.Apply(func(val interface{}) interface{} {
+		v, ok := val.(float64)
+		if !ok {
+			return ""
+		}
+		return ((v - sArchive.Mean()) / sArchive.Std())
+	})
+	if !Equal(sCopy, want) {
+		t.Errorf("Apply() returned %v, want %v", sCopy, want)
+	}
+	if Equal(sArchive, sCopy) {
+		t.Errorf("Apply() retained access to original, want copy")
 	}
 }
 
-func TestApply_zscore_riskier(t *testing.T) {
+func TestApply_riskier(t *testing.T) {
 	s := MustNew([]float64{1, 2, 3})
 	got := s.Apply(func(val interface{}) interface{} {
 		return (val.(float64) - s.Mean()) / s.Std()
@@ -99,7 +115,7 @@ func TestFilterDateTime(t *testing.T) {
 	}
 }
 
-func TestFilterString(t *testing.T) {
+func TestFilter_Contains(t *testing.T) {
 	s := MustNew([]string{"foo", "bar", "baz"})
 	got := s.Contains("ba")
 	want := []int{1, 2}
