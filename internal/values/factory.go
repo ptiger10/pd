@@ -193,6 +193,25 @@ func MakeIntRange(min, max int) []int {
 	return a
 }
 
+// MakeIntRangeInclusive returns a sequential series of numbers, for use in making default index labels.
+// Includes start and end.
+func MakeIntRangeInclusive(start, end int) []int {
+	var ret []int
+	if start <= end {
+		ret = make([]int, (end-start)+1)
+		for i := range ret {
+			ret[i] = start + i
+		}
+	} else {
+		ret = make([]int, (start-end)+1)
+		for i := range ret {
+			ret[i] = start - i
+		}
+	}
+
+	return ret
+}
+
 // MakeInterfaceRange returns a sequential series of numbers as an interface slice, for use in making default column labels.
 func MakeInterfaceRange(min, max int) []interface{} {
 	a := make([]interface{}, max-min)

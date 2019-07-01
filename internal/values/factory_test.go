@@ -252,6 +252,30 @@ func TestMakeIntRange(t *testing.T) {
 	}
 }
 
+func TestMakeIntRangeInclusive(t *testing.T) {
+	type args struct {
+		start int
+		end   int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{"ascending", args{0, 3}, []int{0, 1, 2, 3}},
+		{"descending", args{3, 0}, []int{3, 2, 1, 0}},
+		{"equal", args{1, 1}, []int{1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := MakeIntRangeInclusive(tt.args.start, tt.args.end)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MakeIntRange(): got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMakeInterfaceRange(t *testing.T) {
 	got := MakeInterfaceRange(0, 3)
 	want := []interface{}{0, 1, 2}

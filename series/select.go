@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ptiger10/pd/internal/values"
+
 	"github.com/ptiger10/pd/options"
 )
 
@@ -60,6 +62,19 @@ func (s *Series) At(position int) interface{} {
 	}
 	elem := s.Element(position)
 	return elem.Value
+}
+
+// Range subsets the Series from start (inclusive) to end (exclusive) and returns a new Series.
+// If an invalid position is provided, returns empty Series.
+func (s *Series) Range(start int, end int) *Series {
+	rowPositions := values.MakeIntRangeInclusive(start, end)
+	if err := s.ensureRowPositions(rowPositions); err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("s.Range(): %v", err)
+		}
+		return newEmptySeries()
+	}
+	return s.subsetRows(rowPositions)
 }
 
 // [END Series methods]

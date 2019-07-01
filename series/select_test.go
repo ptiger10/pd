@@ -126,6 +126,45 @@ func TestSeries_At(t *testing.T) {
 	}
 }
 
+func TestRange(t *testing.T) {
+	s := MustNew([]string{"foo", "bar", "baz"})
+	type args struct {
+		start int
+		end   int
+	}
+	tests := []struct {
+		name  string
+		input *Series
+		args  args
+		want  *Series
+	}{
+		{name: "ascending", input: s, args: args{start: 0, end: 2}, want: MustNew([]string{"foo", "bar", "baz"})},
+		{"single", s, args{1, 1}, MustNew([]string{"bar"}, Config{Index: []int{1}})},
+		{"partial", s, args{1, 2}, MustNew([]string{"bar", "baz"}, Config{Index: []int{1, 2}})},
+		{"descending", s, args{2, 0}, MustNew([]string{"baz", "bar", "foo"}, Config{Index: []int{2, 1, 0}})},
+		{"fail: partial invalid", s, args{10, 0}, MustNew(newEmptySeries)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			got := tt.input.Range(tt.args.start, tt.args.end)
+			if !Equal(got, tt.want) {
+				t.Errorf("Series.InPlace.Subset() got %v, want %v", s, tt.want)
+			}
+
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("Series.At() returned no log message, want log due to fail")
+				}
+			}
+		})
+
+	}
+}
+
 func TestSeries_XS(t *testing.T) {
 	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 2, 3}, []string{"qux", "quux", "quuz"}}})
 	type args struct {
