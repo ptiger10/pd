@@ -3,6 +3,7 @@ package series
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -17,6 +18,17 @@ type Index struct {
 	s *Series
 }
 
+func (idx Index) String() string {
+	printer := fmt.Sprintf("{Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
+	printer += "Methods:\n"
+	t := reflect.TypeOf(Index{})
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		printer += fmt.Sprintln(method.Name)
+	}
+	return printer
+}
+
 // Sort sorts the index by index level 0 and returns a new index.
 func (idx Index) Sort(asc bool) *Series {
 	idx = idx.s.Copy().Index
@@ -28,12 +40,12 @@ func (idx Index) Sort(asc bool) *Series {
 	return idx.s
 }
 
-// Swap swaps two labels at index level 0 and modifies the index in place.
+// Swap swaps two labels at index level 0 and modifies the index in place. Required by Sort interface.
 func (idx Index) Swap(i, j int) {
 	idx.s.InPlace.Swap(i, j)
 }
 
-// Less compares two elements and returns true if the first is less than the second.
+// Less compares two elements and returns true if the first is less than the second. Required by Sort interface.
 func (idx Index) Less(i, j int) bool {
 	return idx.s.index.Levels[0].Labels.Less(i, j)
 }
@@ -92,19 +104,13 @@ func (idx Index) Reindex(level int) error {
 	return nil
 }
 
-// Values returns an interface{}, ready for type assertion, of all values at the specified index level, but returns nil if level is out of range.
-func (idx Index) Values(level int) interface{} {
-	if err := idx.ensureLevelPositions([]int{level}); err != nil {
-		if options.GetLogWarnings() {
-			log.Printf("s.Index.Values(): %v\n", err)
-		}
-		return nil
+// Values returns an []interface{} of the values at each level of the index
+func (idx Index) Values() []interface{} {
+	var ret []interface{}
+	for i := 0; i < idx.NumLevels(); i++ {
+		ret = append(ret, idx.s.index.Levels[i].Labels.Vals())
 	}
-	return idx.s.index.Levels[level].Labels.Vals()
-}
-
-func (idx Index) String() string {
-	return fmt.Sprintf("{Index | Len: %d, NumLevels: %d}", idx.Len(), idx.NumLevels())
+	return ret
 }
 
 // null returns the integer position of all null labels in this index level.

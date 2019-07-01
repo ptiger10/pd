@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -27,6 +28,17 @@ func (s *Series) replace(s2 *Series) {
 // InPlace contains methods for modifying a Series in place.
 type InPlace struct {
 	s *Series
+}
+
+func (ip InPlace) String() string {
+	var printer string
+	printer += "InPlace Handler\n"
+	t := reflect.TypeOf(InPlace{})
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		printer += fmt.Sprintln(method.Name)
+	}
+	return printer
 }
 
 // Sort sorts the series by its values and modifies the Series in place.

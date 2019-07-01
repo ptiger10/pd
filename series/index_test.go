@@ -79,15 +79,13 @@ func TestIndex_Describe(t *testing.T) {
 	singleDefault := MustNew([]string{"foo", "bar", "baz"})
 	multiConfig := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 2, 3}, []string{"qux", "quux", "quuz"}}})
 	type args struct {
-		atRow     int
-		atLevel   int
-		valsLevel int
+		atRow   int
+		atLevel int
 	}
 	type want struct {
 		len       int
 		numLevels int
 		at        interface{}
-		vals      interface{}
 	}
 	tests := []struct {
 		name  string
@@ -95,11 +93,11 @@ func TestIndex_Describe(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"single default", singleDefault, args{2, 0, 0}, want{3, 1, int64(2), []int64{0, 1, 2}}},
-		{"multi from config", multiConfig, args{2, 1, 1}, want{3, 2, "quuz", []string{"qux", "quux", "quuz"}}},
-		{"soft fail: at invalid row", singleDefault, args{10, 0, 0}, want{3, 1, nil, []int64{0, 1, 2}}},
-		{"soft fail: at invalid level", singleDefault, args{2, 10, 0}, want{3, 1, nil, []int64{0, 1, 2}}},
-		{"soft fail: values invalid level", singleDefault, args{2, 0, 10}, want{3, 1, int64(2), nil}},
+		{name: "single default", input: singleDefault, args: args{atRow: 2, atLevel: 0},
+			want: want{len: 3, numLevels: 1, at: int64(2)}},
+		{"multi from config", multiConfig, args{2, 1}, want{3, 2, "quuz"}},
+		{"soft fail: at invalid row", singleDefault, args{10, 0}, want{3, 1, nil}},
+		{"soft fail: at invalid level", singleDefault, args{2, 10}, want{3, 1, nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,17 +124,21 @@ func TestIndex_Describe(t *testing.T) {
 			if gotAt != wantAt {
 				t.Errorf("Index.At(): got %v, want %v", gotAt, wantAt)
 			}
-			gotVals := idx.Values(tt.args.valsLevel)
-			wantVals := tt.want.vals
-			if !reflect.DeepEqual(gotVals, wantVals) {
-				t.Errorf("Index.Values(): got %v, want %v", gotVals, wantVals)
-			}
 			if strings.Contains(tt.name, "fail:") {
 				if buf.String() == "" {
 					t.Errorf("Index operation returned no log message, want log due to fail")
 				}
 			}
 		})
+	}
+}
+
+func TestIndex_Values(t *testing.T) {
+	want := []interface{}{[]int64{1, 2, 3}, []string{"qux", "quux", "quuz"}}
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: want})
+	got := s.Index.Values()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Index.Values(): got %#v, want %#v", got, want)
 	}
 }
 

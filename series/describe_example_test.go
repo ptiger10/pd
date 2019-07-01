@@ -178,4 +178,61 @@ func ExampleIndex_valid_printer() {
 	fmt.Println(s.Index)
 	// Output:
 	// {Index | Len: 3, NumLevels: 1}
+	// Methods:
+	// AppendLevel
+	// At
+	// DropLevel
+	// DropLevels
+	// DropNull
+	// Flip
+	// InsertLevel
+	// Len
+	// Less
+	// LevelToBool
+	// LevelToDateTime
+	// LevelToFloat64
+	// LevelToInt64
+	// LevelToInterface
+	// LevelToString
+	// NumLevels
+	// Reindex
+	// RenameLevel
+	// SelectName
+	// SelectNames
+	// Set
+	// SetRows
+	// Sort
+	// String
+	// SubsetLevels
+	// Swap
+	// SwapLevels
+	// Values
+}
+
+func ExampleInPlace_method_list() {
+	s := MustNew("foo")
+	fmt.Println(s.InPlace)
+	// Output:
+	// {InPlace Handler}
+	// Methods:
+	// Append
+	// Drop
+	// DropNull
+	// DropRows
+	// Insert
+	// Join
+	// Len
+	// Less
+	// Set
+	// SetRows
+	// Sort
+	// String
+	// Subset
+	// Swap
+	// ToBool
+	// ToDateTime
+	// ToFloat64
+	// ToInt64
+	// ToInterface
+	// ToString
 }
