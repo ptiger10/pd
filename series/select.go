@@ -64,13 +64,13 @@ func (s *Series) At(position int) interface{} {
 	return elem.Value
 }
 
-// Range subsets the Series from start (inclusive) to end (exclusive) and returns a new Series.
+// From subsets the Series from start to end (inclusive) and returns a new Series.
 // If an invalid position is provided, returns empty Series.
-func (s *Series) Range(start int, end int) *Series {
+func (s *Series) From(start int, end int) *Series {
 	rowPositions := values.MakeIntRangeInclusive(start, end)
 	if err := s.ensureRowPositions(rowPositions); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("s.Range(): %v", err)
+			log.Printf("s.From(): %v", err)
 		}
 		return newEmptySeries()
 	}

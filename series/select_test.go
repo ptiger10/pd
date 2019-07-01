@@ -126,7 +126,7 @@ func TestSeries_At(t *testing.T) {
 	}
 }
 
-func TestRange(t *testing.T) {
+func TestFrom(t *testing.T) {
 	s := MustNew([]string{"foo", "bar", "baz"})
 	type args struct {
 		start int
@@ -150,14 +150,14 @@ func TestRange(t *testing.T) {
 			log.SetOutput(&buf)
 			defer log.SetOutput(os.Stderr)
 
-			got := tt.input.Range(tt.args.start, tt.args.end)
+			got := tt.input.From(tt.args.start, tt.args.end)
 			if !Equal(got, tt.want) {
-				t.Errorf("Series.InPlace.Subset() got %v, want %v", s, tt.want)
+				t.Errorf("Series.From() got %v, want %v", s, tt.want)
 			}
 
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
-					t.Errorf("Series.At() returned no log message, want log due to fail")
+					t.Errorf("Series.From() returned no log message, want log due to fail")
 				}
 			}
 		})
