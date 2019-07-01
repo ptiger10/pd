@@ -55,30 +55,6 @@ func TestGrouping_Math(t *testing.T) {
 	}
 }
 
-func Test_Group(t *testing.T) {
-	type args struct {
-		label string
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Series
-	}{
-		{name: "pass", args: args{"1"}, want: MustNew([]int{1, 2}, Config{Index: []int{1, 1}})},
-		{name: "fail", args: args{"100"}, want: newEmptySeries()},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
-			g := s.GroupByIndex()
-			got := g.Group(tt.args.label)
-			if !Equal(got, tt.want) {
-				t.Errorf("Grouping.Group() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestSeries_GroupByIndex(t *testing.T) {
 	lvl1 := index.MustNewLevel(1, "")
 	lvl2 := index.MustNewLevel(2, "")
@@ -146,6 +122,40 @@ func TestSeries_GroupByIndex(t *testing.T) {
 					t.Errorf("Series.GroupByIndex() returned no log message, want log due to fail")
 				}
 			}
+		})
+	}
+}
+
+func Test_Group(t *testing.T) {
+	type args struct {
+		label string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Series
+	}{
+		{name: "pass", args: args{"1"}, want: MustNew([]int{1, 2}, Config{Index: []int{1, 1}})},
+		{name: "fail", args: args{"100"}, want: newEmptySeries()},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
+			g := s.GroupByIndex()
+			got := g.Group(tt.args.label)
+			if !Equal(got, tt.want) {
+				t.Errorf("Grouping.Group() = %v, want %v", got, tt.want)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("Grouping.Group() returned no log message, want log due to fail")
+				}
+			}
+
 		})
 	}
 }

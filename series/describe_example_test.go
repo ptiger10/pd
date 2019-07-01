@@ -215,5 +215,4 @@ func ExampleGrouping_method_list() {
 	fmt.Println(g)
 	// Output:
 	// {Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
-	//
 }

@@ -131,6 +131,9 @@ func (g Grouping) Len() int {
 func (g Grouping) Group(label string) *Series {
 	group, ok := g.groups[label]
 	if !ok {
+		if options.GetLogWarnings() {
+			log.Printf("s.Grouping.Group(): label %v not in g.Groups()", label)
+		}
 		return newEmptySeries()
 	}
 	s := g.s.subsetRows(group.Positions)
