@@ -143,9 +143,24 @@ func TestSeries_GroupByIndex(t *testing.T) {
 
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
-					t.Errorf("Series.At() returned no log message, want log due to fail")
+					t.Errorf("Series.GroupByIndex() returned no log message, want log due to fail")
 				}
 			}
 		})
+	}
+}
+
+func TestGrouping_Nth(t *testing.T) {
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 1, 2}, []int{2, 2, 1}}})
+	g := s.GroupByIndex()
+	gotFirst := g.First()
+	wantFirst := MustNew([]string{"foo", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 2}, []int{2, 1}}})
+	if !Equal(gotFirst, wantFirst) {
+		t.Errorf("Grouping.First() = %#v, want %#v", gotFirst, wantFirst)
+	}
+	gotLast := g.Last()
+	wantLast := MustNew([]string{"bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 2}, []int{2, 1}}})
+	if !Equal(gotLast, wantLast) {
+		t.Errorf("Grouping.Last() = %#v, want %#v", gotLast, wantLast)
 	}
 }

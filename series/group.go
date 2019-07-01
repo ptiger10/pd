@@ -43,36 +43,6 @@ func (g Grouping) copy() Grouping {
 	}
 }
 
-// Sum for each group in the Grouping.
-func (g Grouping) Sum() *Series {
-	return g.asyncMath((*Series).Sum)
-}
-
-// Mean for each group in the Grouping.
-func (g Grouping) Mean() *Series {
-	return g.asyncMath((*Series).Mean)
-}
-
-// Min for each group in the Grouping.
-func (g Grouping) Min() *Series {
-	return g.asyncMath((*Series).Min)
-}
-
-// Max for each group in the Grouping.
-func (g Grouping) Max() *Series {
-	return g.asyncMath((*Series).Max)
-}
-
-// Median for each group in the Grouping.
-func (g Grouping) Median() *Series {
-	return g.asyncMath((*Series).Median)
-}
-
-// Std for each group in the Grouping.
-func (g Grouping) Std() *Series {
-	return g.asyncMath((*Series).Std)
-}
-
 var wg sync.WaitGroup
 
 func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
@@ -91,6 +61,7 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 		return ret
 	}
 
+	// asynchronous option
 	ch := make(chan calcReturn, g.Len())
 	for i, group := range g.Groups() {
 		wg.Add(1)
@@ -196,4 +167,65 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
 	}
 	return Grouping{s: s, groups: groups}
+}
+
+// First returns the first occurence of each grouping in the Series.
+func (g Grouping) First() *Series {
+	first := func(group string) *Series {
+		position := g.groups[group].Positions[0]
+		s := g.s.subsetRows([]int{position})
+		return s
+	}
+	ret := newEmptySeries()
+	for _, group := range g.Groups() {
+		s := first(group)
+		ret.InPlace.Join(s)
+	}
+	return ret
+}
+
+// Last returns the last occurence of each grouping in the Series.
+func (g Grouping) Last() *Series {
+	last := func(group string) *Series {
+		lastIdx := len(g.groups[group].Positions) - 1
+		position := g.groups[group].Positions[lastIdx]
+		s := g.s.subsetRows([]int{position})
+		return s
+	}
+	ret := newEmptySeries()
+	for _, group := range g.Groups() {
+		s := last(group)
+		ret.InPlace.Join(s)
+	}
+	return ret
+}
+
+// Sum for each group in the Grouping.
+func (g Grouping) Sum() *Series {
+	return g.asyncMath((*Series).Sum)
+}
+
+// Mean for each group in the Grouping.
+func (g Grouping) Mean() *Series {
+	return g.asyncMath((*Series).Mean)
+}
+
+// Min for each group in the Grouping.
+func (g Grouping) Min() *Series {
+	return g.asyncMath((*Series).Min)
+}
+
+// Max for each group in the Grouping.
+func (g Grouping) Max() *Series {
+	return g.asyncMath((*Series).Max)
+}
+
+// Median for each group in the Grouping.
+func (g Grouping) Median() *Series {
+	return g.asyncMath((*Series).Median)
+}
+
+// Std for each group in the Grouping.
+func (g Grouping) Std() *Series {
+	return g.asyncMath((*Series).Std)
 }
