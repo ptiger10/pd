@@ -33,16 +33,6 @@ func (s *Series) Join(s2 *Series) (*Series, error) {
 	return s, err
 }
 
-// match returns the row position of the first match of index Elements within a Series, or -1 if no match exists.
-func (s *Series) match(idx index.Elements) int {
-	for i := 0; i < s.Len(); i++ {
-		if reflect.DeepEqual(idx, s.index.Elements(i)) {
-			return i
-		}
-	}
-	return -1
-}
-
 // LookupSeries performs a vlookup of each values in one Series against another Series.
 func (s *Series) LookupSeries(s2 *Series) *Series {
 	if s2.index.NumLevels() != s.index.NumLevels() {
@@ -52,10 +42,19 @@ func (s *Series) LookupSeries(s2 *Series) *Series {
 		return newEmptySeries()
 	}
 
+	matchShallow := func(s *Series, idx index.Elements) int {
+		for i := 0; i < s.Len(); i++ {
+			if reflect.DeepEqual(idx, s.index.Elements(i)) {
+				return i
+			}
+		}
+		return -1
+	}
+
 	vals := make([]interface{}, 0)
 	for i := 0; i < s.Len(); i++ {
 		elems := s.index.Elements(i)
-		pos := s2.match(elems)
+		pos := matchShallow(s2, elems)
 		if pos != -1 {
 			vals = append(vals, s2.At(pos))
 		} else {

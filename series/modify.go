@@ -168,6 +168,31 @@ func (ip InPlace) DropRows(rowPositions []int) error {
 	return nil
 }
 
+// DropDuplicates drops any rows containing duplicate index + Series values and modifies the Series in place.
+func (ip InPlace) DropDuplicates() {
+	g := ip.s.GroupByIndex()
+	for _, group := range g.Groups() {
+		if positions := g.groups[group].Positions; len(positions) > 0 {
+			set := make(map[interface{}]bool)
+			for _, pos := range positions {
+				if set[ip.s.At(pos)] {
+					// ducks error because position is assumed to be in Series
+					ip.Drop(pos)
+				} else {
+					set[ip.s.At(pos)] = true
+				}
+			}
+		}
+	}
+}
+
+// DropDuplicates drops any rows containing duplicate index + Series values and returns a new Series.
+func (s *Series) DropDuplicates() *Series {
+	s = s.Copy()
+	s.InPlace.DropDuplicates()
+	return s
+}
+
 // DropNull drops all null values and modifies the Series in place.
 func (ip InPlace) DropNull() {
 	ip.dropMany(ip.s.null())

@@ -182,6 +182,7 @@ func ExampleInPlace_method_list() {
 	// Append
 	// Apply
 	// Drop
+	// DropDuplicates
 	// DropNull
 	// DropRows
 	// Insert

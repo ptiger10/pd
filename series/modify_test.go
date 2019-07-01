@@ -520,6 +520,43 @@ func TestModify_DropRows(t *testing.T) {
 	}
 }
 
+func TestModify_DropDuplicates(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input *Series
+		want  *Series
+	}{
+		{"single",
+			MustNew([]string{"foo", "foo", "bar"}, Config{
+				Index: []int{0, 0, 1}}),
+			MustNew([]string{"foo", "bar"}, Config{Index: []int{0, 1}})},
+		{"multi",
+			MustNew([]string{"foo", "foo", "bar"}, Config{
+				MultiIndex: []interface{}{[]int{0, 0, 1}, []int{2, 2, 3}}}),
+			MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]int{0, 1}, []int{2, 3}}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			sArchive := tt.input.Copy()
+			s.InPlace.DropDuplicates()
+			if !Equal(s, tt.want) {
+				t.Errorf("InPlace.DropDuplicates() got %v, want %v", s, tt.want)
+			}
+
+			sCopy := sArchive.DropDuplicates()
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(sCopy, tt.want) {
+					t.Errorf("Series.DropDuplicates() got %v, want %v", sCopy, tt.want)
+				}
+				if Equal(sArchive, sCopy) {
+					t.Errorf("Series.DropDuplicates() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
 func TestModify_DropNull(t *testing.T) {
 	type want struct {
 		series *Series
