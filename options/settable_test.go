@@ -22,6 +22,22 @@ func TestSettableOptions(t *testing.T) {
 		t.Error("Unable to set/get DisplayFloatPrecision")
 	}
 
+	if GetDisplayMaxRows() != defaultOptions.displayMaxRows {
+		t.Errorf("Default setting not reading for DisplayMaxRows")
+	}
+	SetDisplayMaxRows(10)
+	if GetDisplayMaxRows() != 10 {
+		t.Error("Unable to set/get DisplayMaxRows")
+	}
+
+	if GetDisplayMaxColumns() != defaultOptions.displayMaxColumns {
+		t.Errorf("Default setting not reading for DisplayMaxColumns")
+	}
+	SetDisplayMaxColumns(10)
+	if GetDisplayMaxColumns() != 10 {
+		t.Error("Unable to set/get DisplayMaxColumns")
+	}
+
 	if GetDisplayRepeatedLabels() != defaultOptions.displayRepeatedLabels {
 		t.Errorf("Default setting not reading for DisplayRepeatedLabels")
 	}

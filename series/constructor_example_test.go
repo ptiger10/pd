@@ -140,6 +140,36 @@ func ExampleNew_nonsequential_repeating() {
 	// name: foobar
 }
 
+func ExampleNew_repeating_singleIndex() {
+	s := MustNew(
+		[]string{"foo", "bar", "baz", "qux"},
+		Config{Index: []int{0, 0, 1, 1}})
+	fmt.Println(s)
+	// Output:
+	// 0    foo
+	//      bar
+	// 1    baz
+	//      qux
+	//
+	// datatype: string
+}
+
+func ExampleNew_repeating_allowed() {
+	options.SetDisplayRepeatedLabels(true)
+	s := MustNew(
+		[]string{"foo", "bar", "baz", "qux"},
+		Config{Index: []int{0, 0, 1, 1}})
+	fmt.Println(s)
+	options.RestoreDefaults()
+	// Output:
+	// 0    foo
+	// 0    bar
+	// 1    baz
+	// 1    qux
+	//
+	// datatype: string
+}
+
 func ExampleNew_partially_named_indexes() {
 	s := MustNew(
 		[]string{"foo", "bar"},

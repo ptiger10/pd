@@ -2,6 +2,8 @@ package options
 
 var defaultOptions = struct {
 	displayMaxWidth         int
+	displayMaxRows          int
+	displayMaxColumns       int
 	displayFloatPrecision   int
 	displayRepeatedLabels   bool
 	displayStringNullFiller string
@@ -11,6 +13,8 @@ var defaultOptions = struct {
 	async                   bool
 }{
 	displayMaxWidth,
+	displayMaxRows,
+	displayMaxColumns,
 	displayFloatPrecision,
 	displayRepeatedLabels,
 	displayStringNullFiller,
@@ -23,6 +27,8 @@ var defaultOptions = struct {
 // RestoreDefaults resets options back to their default setting
 func RestoreDefaults() {
 	SetDisplayMaxWidth(defaultOptions.displayMaxWidth)
+	SetDisplayMaxRows(defaultOptions.displayMaxRows)
+	SetDisplayMaxColumns(defaultOptions.displayMaxColumns)
 	SetDisplayFloatPrecision(defaultOptions.displayFloatPrecision)
 	SetDisplayRepeatedLabels(defaultOptions.displayRepeatedLabels)
 	SetDisplayStringNullFiller(defaultOptions.displayStringNullFiller)
@@ -33,6 +39,8 @@ func RestoreDefaults() {
 }
 
 var displayMaxWidth = 35
+var displayMaxRows = 50
+var displayMaxColumns = 50
 var displayFloatPrecision = 2
 var displayRepeatedLabels = false
 var displayStringNullFiller = "NaN"
@@ -54,6 +62,36 @@ func SetDisplayMaxWidth(n int) {
 // GetDisplayMaxWidth returns DisplayMaxWidth.
 func GetDisplayMaxWidth() int {
 	return displayMaxWidth
+}
+
+// SetDisplayMaxRows sets DisplayMaxRow to n rows.
+// DisplayMaxRow is an option when printing a Series.
+// It is the max number of rows that will be printed to the screen.
+// If the actual number of rows is longer than the max, the first n/2 and last n/2 will be displayed, and the middle will be elided.
+//
+// Default width: 50 rows
+func SetDisplayMaxRows(n int) {
+	displayMaxRows = n
+}
+
+// GetDisplayMaxRows returns DisplayMaxRows.
+func GetDisplayMaxRows() int {
+	return displayMaxRows
+}
+
+// SetDisplayMaxColumns sets DisplayMaxColumns to n columns.
+// DisplayMaxColumns is an option when printing a Series.
+// It is the max number of columns that will be printed to the screen.
+// If the actual number of columns is longer than the max, the first n/2 and last n/2 will be displayed, and the middle will be elided.
+//
+// Default width: 50 columns
+func SetDisplayMaxColumns(n int) {
+	displayMaxColumns = n
+}
+
+// GetDisplayMaxColumns returns DisplayMaxColumns.
+func GetDisplayMaxColumns() int {
+	return displayMaxColumns
 }
 
 // SetDisplayFloatPrecision sets DisplayFloatPrecision to n decimal places.

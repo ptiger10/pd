@@ -117,11 +117,11 @@ func (s *Series) print() string {
 			if j != numLevels-1 {
 				// add buffer to all index levels except the last
 				buffer = strings.Repeat(" ", values.GetDisplayIndexWhitespaceBuffer())
-				// skip repeated label values if this is not the last index level
-				if prior[j] == idx {
-					skip = true
-					idx = ""
-				}
+			}
+			// skip repeated label values
+			if prior[j] == idx && !options.GetDisplayRepeatedLabels() {
+				skip = true
+				idx = ""
 			}
 
 			// elide index string if longer than the max allowable width
@@ -135,8 +135,8 @@ func (s *Series) print() string {
 
 			newLine += printStr + buffer
 
-			// set prior row value for each index level except the last
-			if j != numLevels-1 && !skip {
+			// set prior row value
+			if !skip {
 				prior[j] = idx
 			}
 		}
