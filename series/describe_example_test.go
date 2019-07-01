@@ -180,6 +180,7 @@ func ExampleInPlace_method_list() {
 	// {InPlace Handler}
 	// Methods:
 	// Append
+	// Apply
 	// Drop
 	// DropNull
 	// DropRows

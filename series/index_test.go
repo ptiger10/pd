@@ -134,11 +134,11 @@ func TestIndex_Describe(t *testing.T) {
 }
 
 func TestIndex_Values(t *testing.T) {
-	want := []interface{}{[]int64{1, 2, 3}, []string{"qux", "quux", "quuz"}}
-	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: want})
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]float64{1, 2, 3}, []string{"qux", "quux", "quuz"}}})
 	got := s.Index.Values()
+	want := [][]interface{}{[]interface{}{1.0, 2.0, 3.0}, []interface{}{"qux", "quux", "quuz"}}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Index.Values(): got %#v, want %#v", got, want)
+		t.Errorf("Index.Values(): got %v, want %v", got, want)
 	}
 }
 
@@ -738,6 +738,50 @@ func TestIndex_SubsetLevels(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Index.Subset() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIndex_Filter(t *testing.T) {
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{Index: []string{"bamboo", "leaves", "taboo"}})
+	fn := func(val interface{}) bool {
+		v, ok := val.(string)
+		if !ok {
+			return false
+		}
+		if strings.HasSuffix(v, "boo") {
+			return true
+		}
+		return false
+	}
+	type args struct {
+		level int
+		fn    func(interface{}) bool
+	}
+	tests := []struct {
+		name  string
+		input *Series
+		args  args
+		want  []int
+	}{
+		{name: "pass", input: s, args: args{level: 0, fn: fn}, want: []int{0, 2}},
+		{"fail", s, args{10, fn}, []int{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			got := s.Index.Filter(tt.args.level, tt.args.fn)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("s.Filter() got %v, want %v", got, tt.want)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("s.Filter() returned no log message, want log due to fail")
+				}
 			}
 		})
 	}

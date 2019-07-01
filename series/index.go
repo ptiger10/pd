@@ -22,6 +22,19 @@ func (idx Index) String() string {
 	return printer
 }
 
+// Values returns an []interface{} of the values at each level of the index
+func (idx Index) Values() [][]interface{} {
+	var ret [][]interface{}
+	for j := 0; j < idx.NumLevels(); j++ {
+		var vals []interface{}
+		for i := 0; i < idx.s.Len(); i++ {
+			vals = append(vals, idx.s.index.Levels[j].Labels.Element(i).Value)
+		}
+		ret = append(ret, vals)
+	}
+	return ret
+}
+
 // Sort sorts the index by index level 0 and returns a new index.
 func (idx Index) Sort(asc bool) *Series {
 	idx = idx.s.Copy().Index
@@ -95,15 +108,6 @@ func (idx Index) Reindex(level int) error {
 	idx.s.index.Levels[level] = newLvl
 	idx.s.index.Refresh()
 	return nil
-}
-
-// Values returns an []interface{} of the values at each level of the index
-func (idx Index) Values() []interface{} {
-	var ret []interface{}
-	for i := 0; i < idx.NumLevels(); i++ {
-		ret = append(ret, idx.s.index.Levels[i].Labels.Vals())
-	}
-	return ret
 }
 
 // null returns the integer position of all null labels in this index level.
@@ -284,6 +288,60 @@ func (idx Index) Flip(level int) (*Series, error) {
 	s.index.Levels[level].DataType, s.datatype = s.datatype, s.index.Levels[level].DataType
 	s.index.Refresh()
 	return s, nil
+}
+
+// Filter an index level using a callback function test.
+// The Filter function iterates over all index values in interface{} form and applies the callback test to each.
+// The return value is a slice of integer positions of all the rows passing the test.
+// The caller is responsible for handling the type assertion on the interface, though this step is not necessary if the datatype is known with certainty.
+// For example, here are two ways to write a filter that returns all rows with the suffix "boo":
+//
+// #1 (safer) error check type assertion
+//
+//  s.Index.Filter(0, func(val interface{}) bool {
+//		v, ok := val.(string)
+//		if !ok {
+// 			return false
+//		}
+//		if strings.HasSuffix(v, "boo") {
+// 			return true
+// 		}
+// 		return false
+// 	})
+//
+// Input:
+// 0    bamboo
+// 1    leaves
+// 2    taboo
+//
+// Output:
+// []int{0,2}
+//
+// #2 (riskier) no error check
+//
+//  s.Filter(func(val interface{}) bool {
+//		if strings.HasSuffix(val.(string), "boo") {
+// 			return true
+// 		}
+// 		return false
+// 	})
+func (idx Index) Filter(level int, cmp func(interface{}) bool) []int {
+	include := make([]int, 0)
+	empty := make([]int, 0)
+
+	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("series.Index.Filter(): %v", err)
+		}
+		return empty
+	}
+	vals := idx.Values()[level]
+	for i, val := range vals {
+		if cmp(val) {
+			include = append(include, i)
+		}
+	}
+	return include
 }
 
 // LevelToFloat64 converts the labels at a specified index level to float64 and returns a new Series.
