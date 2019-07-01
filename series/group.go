@@ -19,8 +19,7 @@ type Grouping struct {
 }
 
 func (g Grouping) String() string {
-	printer := fmt.Sprintf("{Grouping | NumGroups: %v}\n", len(g.groups))
-	printer += fmt.Sprintf("Groups: [%v]\n", strings.Join(g.Groups(), ", "))
+	printer := fmt.Sprintf("{Grouping | NumGroups: %v, Groups: [%v]}\n", len(g.groups), strings.Join(g.Groups(), ", "))
 	return printer
 }
 
