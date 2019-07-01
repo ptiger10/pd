@@ -31,8 +31,8 @@ type InPlace struct {
 }
 
 func (ip InPlace) String() string {
-	var printer string
-	printer += "InPlace Handler\n"
+	printer := "{InPlace Handler}\n"
+	printer += "Methods:\n"
 	t := reflect.TypeOf(InPlace{})
 	for i := 0; i < t.NumMethod(); i++ {
 		method := t.Method(i)

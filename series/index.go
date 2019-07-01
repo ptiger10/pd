@@ -3,7 +3,6 @@ package series
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -20,12 +19,6 @@ type Index struct {
 
 func (idx Index) String() string {
 	printer := fmt.Sprintf("{Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
-	printer += "Methods:\n"
-	t := reflect.TypeOf(Index{})
-	for i := 0; i < t.NumMethod(); i++ {
-		method := t.Method(i)
-		printer += fmt.Sprintln(method.Name)
-	}
 	return printer
 }
 

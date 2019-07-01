@@ -18,6 +18,12 @@ type Grouping struct {
 	groups map[string]*group
 }
 
+func (g Grouping) String() string {
+	printer := fmt.Sprintf("{Grouping | NumGroups: %v}\n", len(g.groups))
+	printer += fmt.Sprintf("Groups: [%v]\n", strings.Join(g.Groups(), ", "))
+	return printer
+}
+
 type group struct {
 	Index     index.Index
 	Positions []int

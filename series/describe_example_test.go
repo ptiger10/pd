@@ -173,42 +173,6 @@ func ExampleElement_null_printer() {
 	// LabelTypes: [int64]
 }
 
-func ExampleIndex_valid_printer() {
-	s := MustNew([]string{"foo", "bar", "baz"})
-	fmt.Println(s.Index)
-	// Output:
-	// {Index | Len: 3, NumLevels: 1}
-	// Methods:
-	// AppendLevel
-	// At
-	// DropLevel
-	// DropLevels
-	// DropNull
-	// Flip
-	// InsertLevel
-	// Len
-	// Less
-	// LevelToBool
-	// LevelToDateTime
-	// LevelToFloat64
-	// LevelToInt64
-	// LevelToInterface
-	// LevelToString
-	// NumLevels
-	// Reindex
-	// RenameLevel
-	// SelectName
-	// SelectNames
-	// Set
-	// SetRows
-	// Sort
-	// String
-	// SubsetLevels
-	// Swap
-	// SwapLevels
-	// Values
-}
-
 func ExampleInPlace_method_list() {
 	s := MustNew("foo")
 	fmt.Println(s.InPlace)
@@ -235,4 +199,21 @@ func ExampleInPlace_method_list() {
 	// ToInt64
 	// ToInterface
 	// ToString
+}
+
+func ExampleIndex_valid_printer() {
+	s := MustNew([]string{"foo", "bar", "baz"})
+	fmt.Println(s.Index)
+	// Output:
+	// {Index | Len: 3, NumLevels: 1}
+}
+func ExampleGrouping_method_list() {
+	s := MustNew(
+		[]string{"foo", "bar", "baz"},
+		Config{MultiIndex: []interface{}{[]int{0, 0, 1}, []int{100, 100, 101}}})
+	g := s.GroupByIndex()
+	fmt.Println(g)
+	// Output:
+	// {Grouping | NumGroups: 2}
+	// Groups: [0 100, 1 101]
 }
