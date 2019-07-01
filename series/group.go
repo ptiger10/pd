@@ -12,7 +12,7 @@ import (
 	"github.com/ptiger10/pd/internal/index"
 )
 
-// A Grouping relates group labels to integer positions.
+// A Grouping returns a collection of index labels with mutually exclusive integer positions.
 type Grouping struct {
 	s      *Series
 	groups map[string]*group

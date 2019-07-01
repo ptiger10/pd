@@ -154,6 +154,20 @@ func ExampleNew_repeating_singleIndex() {
 	// datatype: string
 }
 
+func ExampleNew_repeating_multiIndex() {
+	s := MustNew(
+		[]string{"foo", "bar", "baz", "qux"},
+		Config{MultiIndex: []interface{}{[]int{0, 0, 1, 1}, []string{"A", "A", "B", "B"}}})
+	fmt.Println(s)
+	// Output:
+	// 0 A    foo
+	//        bar
+	// 1 B    baz
+	//        qux
+	//
+	// datatype: string
+}
+
 func ExampleNew_repeating_allowed() {
 	options.SetDisplayRepeatedLabels(true)
 	s := MustNew(
@@ -247,7 +261,7 @@ func ExampleNew_config_datatype() {
 	// datatype: float64
 }
 
-func ExampleNew_maxwidth_index() {
+func ExampleNew_maxWidth_index() {
 	s := MustNew([]string{"foo", "bar"}, Config{Index: []string{"This is a very long index row. Very long indeed.", "qux"}, IndexName: "baz"})
 	fmt.Println(s)
 	// Output:
@@ -258,13 +272,40 @@ func ExampleNew_maxwidth_index() {
 	// datatype: string
 }
 
-func ExampleNew_maxwidth_value() {
+func ExampleNew_maxWidth_value() {
 	s := MustNew([]string{"This is a very long index row. Very long indeed.", "foo"})
-	_ = s.String()
 	fmt.Println(s)
 	// Output:
 	// 0    This is a very long index row. V...
 	// 1                                    foo
 	//
 	//datatype: string
+}
+
+func ExampleNew_exceed_maxRows_even() {
+	options.SetDisplayMaxRows(2)
+	s := MustNew([]float64{0, 1, 2, 3, 4})
+	fmt.Println(s)
+	options.RestoreDefaults()
+	// Output:
+	// 0    0.00
+	// ...
+	// 4    4.00
+	//
+	//datatype: float64
+}
+
+func ExampleNew_exceed_maxRows_odd() {
+	options.SetDisplayMaxRows(3)
+	s := MustNew([]float64{0, 1, 2, 3, 4})
+	fmt.Println(s)
+	options.RestoreDefaults()
+
+	// Output:
+	// 0    0.00
+	// 1    1.00
+	// ...
+	// 4    4.00
+	//
+	//datatype: float64
 }

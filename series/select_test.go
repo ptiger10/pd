@@ -142,7 +142,7 @@ func TestFrom(t *testing.T) {
 		{"single", s, args{1, 1}, MustNew([]string{"bar"}, Config{Index: []int{1}})},
 		{"partial", s, args{1, 2}, MustNew([]string{"bar", "baz"}, Config{Index: []int{1, 2}})},
 		{"descending", s, args{2, 0}, MustNew([]string{"baz", "bar", "foo"}, Config{Index: []int{2, 1, 0}})},
-		{"fail: partial invalid", s, args{10, 0}, MustNew(newEmptySeries)},
+		{"fail: partial invalid", s, args{10, 0}, newEmptySeries()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

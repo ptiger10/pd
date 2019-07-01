@@ -88,7 +88,7 @@ func MustNew(data interface{}, config ...Config) *Series {
 	s, err := New(data, config...)
 	if err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("dataframe.MustNew(): %v", err)
+			log.Printf("series.MustNew(): %v", err)
 		}
 		return newEmptySeries()
 	}

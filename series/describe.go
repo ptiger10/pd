@@ -104,7 +104,24 @@ func (s *Series) print() string {
 
 	// [START rows]
 	prior := make(map[int]string)
+	var excludeRows []int
+	if s.Len() >= options.GetDisplayMaxRows() {
+		half := (options.GetDisplayMaxRows() / 2)
+		if options.GetDisplayMaxRows()%2 != 0 {
+			excludeRows = values.MakeIntRange(half+1, s.Len()-half)
+		} else {
+			excludeRows = values.MakeIntRange(half, s.Len()-half)
+		}
+	}
+	var counter int
 	for i := 0; i < s.Len(); i++ {
+		if excludeRows != nil && counter < len(excludeRows) && i == excludeRows[counter] {
+			if counter == 0 {
+				printer += "...\n"
+			}
+			counter++
+			continue
+		}
 		elem := s.Element(i)
 		var newLine string
 
