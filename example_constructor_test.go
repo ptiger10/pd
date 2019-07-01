@@ -15,6 +15,7 @@ func ExampleSeries_defaultIndex() {
 	// 0    foo
 	// 1    bar
 	// 2    baz
+	//
 	// datatype: string
 }
 

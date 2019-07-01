@@ -129,8 +129,7 @@ func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*
 
 func (g Grouping) math(group string, fn func(*Series) float64) *Series {
 	positions := g.groups[group].Positions
-	// ducks error because group positions are assumed to be in Series
-	rows, _ := g.s.subsetRows(positions)
+	rows := g.s.subsetRows(positions)
 	calc := fn(rows)
 	s := MustNew(calc)
 	s.index = g.groups[group].Index
@@ -158,8 +157,7 @@ func (g Grouping) Group(label string) *Series {
 	if !ok {
 		return newEmptySeries()
 	}
-	// ducks error because groups positions are assumed to be safe for Series selection
-	s, _ := g.s.subsetRows(group.Positions)
+	s := g.s.subsetRows(group.Positions)
 	return s
 }
 
@@ -184,7 +182,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 	}
 
 	for i := 0; i < s.Len(); i++ {
-		row, _ := s.subsetRows([]int{i})
+		row := s.subsetRows([]int{i})
 		labels := row.Element(0).Labels
 		var strLabels []string
 		for _, label := range labels {

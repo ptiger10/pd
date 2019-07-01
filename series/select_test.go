@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ptiger10/pd/options"
@@ -64,12 +65,28 @@ func TestSubset(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Subset(tt.args)
+			s := tt.input.Copy()
+			sArchive := tt.input.Copy()
+
+			err := s.InPlace.Subset(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Series.InPlace.Subset() error = %v, want %v", err, tt.wantErr)
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(s, tt.want) {
+					t.Errorf("Series.InPlace.Subset() got %v, want %v", s, tt.want)
+				}
+			}
+
+			sCopy, err := sArchive.Subset(tt.args)
+			if !Equal(sCopy, tt.want) {
+				t.Errorf("Series.Subset() got %v, want %v", sCopy, tt.want)
+			}
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Series.Subset() error = %v, want %v", err, tt.wantErr)
 			}
-			if !Equal(got, tt.want) {
-				t.Errorf("Series.Subset() got %v, want %v", got, tt.want)
+			if Equal(sArchive, sCopy) {
+				t.Errorf("Series.Subset() retained access to original, want copy")
 			}
 		})
 

@@ -14,35 +14,40 @@ func (s *Series) Element(position int) Element {
 	return Element{elem.Value, elem.Null, idxElems.Labels, idxElems.DataTypes}
 }
 
-// subsetRows copies a Series then subsets it to include only index items and values at the positions supplied
-func (s *Series) subsetRows(positions []int) (*Series, error) {
-	if err := s.ensureAlignment(); err != nil {
-		return newEmptySeries(), fmt.Errorf("series internal alignment error: %v", err)
-	}
-	if err := s.ensureRowPositions(positions); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.subsetRows(): %v", err)
-	}
-
-	s = s.Copy()
-	s.values = s.values.Subset(positions)
-	s.index = s.index.Subset(positions)
-	return s, nil
+// subsetRows subsets a Series to include only index items and values at the row positions supplied and modifies the Series in place.
+func (ip InPlace) subsetRows(positions []int) {
+	ip.s.values = ip.s.values.Subset(positions)
+	ip.s.index = ip.s.index.Subset(positions)
 }
 
-// Subset returns a subset of a Series based on the supplied integer positions.
-func (s *Series) Subset(rowPositions []int) (*Series, error) {
-	if rowPositions == nil {
-		return newEmptySeries(), fmt.Errorf("series.Subset(): rowPositions cannot be nil")
+// subsetRows subsets a Series to include only index items and values at the row positions supplied and returns a new Series.
+func (s *Series) subsetRows(positions []int) *Series {
+	s = s.Copy()
+	s.InPlace.subsetRows(positions)
+	return s
+}
+
+// Subset subsets a Series in place.
+func (ip InPlace) Subset(rowPositions []int) error {
+	if err := ip.s.ensureAlignment(); err != nil {
+		return fmt.Errorf("series.Subset: internal alignment error: %v", err)
 	}
-	if len(rowPositions) == 0 {
-		return newEmptySeries(), fmt.Errorf("series.Subset(): no valid rows provided")
+	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("series.Subset(): %v", err)
 	}
 
-	sub, err := s.subsetRows(rowPositions)
+	ip.s.InPlace.subsetRows(rowPositions)
+	return nil
+}
+
+// Subset subsets a Series based on the supplied integer positions and returns a new Series.
+func (s *Series) Subset(rowPositions []int) (*Series, error) {
+	s = s.Copy()
+	err := s.InPlace.Subset(rowPositions)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("series.Subset(): %v", err)
+		return newEmptySeries(), err
 	}
-	return sub, nil
+	return s, nil
 }
 
 // At returns the value at a single integer position, bur returns nil if the position is out of range.

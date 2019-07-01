@@ -308,8 +308,7 @@ func (s *Series) Unique() []string {
 
 // ValueCounts returns a map of non-null value labels to number of occurrences in the Series.
 func (s *Series) ValueCounts() map[string]int {
-	valid, _ := s.subsetRows(s.valid())
-	vals := valid.Values()
+	vals := s.DropNull().Values()
 	counter := make(map[string]int)
 	for _, val := range vals {
 		counter[fmt.Sprint(val)]++
