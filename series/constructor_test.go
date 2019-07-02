@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -100,7 +101,7 @@ func TestNew_conversion(t *testing.T) {
 	}
 }
 
-func TestNew_fail_config(t *testing.T) {
+func TestNew_Fail(t *testing.T) {
 	type args struct {
 		data   interface{}
 		config Config
@@ -141,7 +142,7 @@ func TestNew_fail_config(t *testing.T) {
 	}
 }
 
-func TestNew_fail_multipleConfigs(t *testing.T) {
+func TestNew_Fail_multipleConfigs(t *testing.T) {
 	_, err := New(nil, Config{}, Config{})
 	if err == nil {
 		t.Error("New() error = nil, want error due to multiple configs")
@@ -149,15 +150,33 @@ func TestNew_fail_multipleConfigs(t *testing.T) {
 }
 
 func TestMustNew(t *testing.T) {
-	got := MustNew(1.0)
-	v, err := values.InterfaceFactory(1.0)
-	if err != nil {
-		t.Error(err)
+	v, _ := values.InterfaceFactory(1.0)
+	tests := []struct {
+		name string
+		args interface{}
+		want *Series
+	}{
+		{name: "pass", args: 1.0,
+			want: &Series{values: v.Values, index: index.NewDefault(1), datatype: options.Float64}},
+		{name: "fail", args: complex64(1),
+			want: newEmptySeries()},
 	}
-	idx := index.NewDefault(1)
-	want := &Series{values: v.Values, index: idx, datatype: options.Float64}
-	if !Equal(got, want) {
-		t.Errorf("MustNew() = %v, want %v", got, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			got := MustNew(tt.args)
+			if !Equal(got, tt.want) {
+				t.Errorf("MustNew() = %v, want %v", got, tt.want)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("series.MustNew() returned no log message, want log due to fail")
+				}
+			}
+		})
 	}
 }
 func TestMustNew_fail(t *testing.T) {

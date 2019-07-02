@@ -129,27 +129,27 @@ func TestMakeExclusionTable(t *testing.T) {
 	}
 }
 
-func TestSubset(t *testing.T) {
-	tests := []struct {
-		args    []int
-		want    *DataFrame
-		wantErr bool
-	}{
-		{[]int{0}, MustNew([]interface{}{"foo"}), false},
-		{[]int{1}, MustNew([]interface{}{"bar"}, Config{Index: 1}), false},
-		{[]int{0, 1}, MustNew([]interface{}{[]string{"foo", "bar"}}), false},
-		{[]int{1, 0}, MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []int{1, 0}}), false},
-		{[]int{}, newEmptyDataFrame(), true},
-		{[]int{3}, newEmptyDataFrame(), true},
-	}
-	for _, tt := range tests {
-		df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
-		got, err := df.Subset(tt.args)
-		if (err != nil) != tt.wantErr {
-			t.Errorf("s.Subset() error = %v, want %v for args %v", err, tt.wantErr, tt.args)
-		}
-		if !Equal(got, tt.want) {
-			t.Errorf("s.Subset() got %v, want %v for args %v", got, tt.want, tt.args)
-		}
-	}
-}
+// func TestSubset(t *testing.T) {
+// 	tests := []struct {
+// 		args    []int
+// 		want    *DataFrame
+// 		wantErr bool
+// 	}{
+// 		{[]int{0}, MustNew([]interface{}{"foo"}), false},
+// 		{[]int{1}, MustNew([]interface{}{"bar"}, Config{Index: 1}), false},
+// 		{[]int{0, 1}, MustNew([]interface{}{[]string{"foo", "bar"}}), false},
+// 		{[]int{1, 0}, MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []int{1, 0}}), false},
+// 		{[]int{}, newEmptyDataFrame(), true},
+// 		{[]int{3}, newEmptyDataFrame(), true},
+// 	}
+// 	for _, tt := range tests {
+// 		df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
+// 		got, err := df.Subset(tt.args)
+// 		if (err != nil) != tt.wantErr {
+// 			t.Errorf("s.Subset() error = %v, want %v for args %v", err, tt.wantErr, tt.args)
+// 		}
+// 		if !Equal(got, tt.want) {
+// 			t.Errorf("s.Subset() got %v, want %v for args %v", got, tt.want, tt.args)
+// 		}
+// 	}
+// }

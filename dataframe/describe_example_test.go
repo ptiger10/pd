@@ -5,6 +5,12 @@ import (
 	"log"
 )
 
+func ExampleColSlice() {
+	df, _ := New([]interface{}{[]string{"bar"}, []string{"baz", "qux"}})
+	fmt.Println(df)
+	//Output:
+}
+
 func ExampleNew_float64() {
 	df, err := New(
 		[]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}},
@@ -17,9 +23,10 @@ func ExampleNew_float64() {
 	}
 	fmt.Println(df)
 	// Output:
-	//        baz qux
-	// foo      0 2.5
-	// bar    1.5   3
+	//         baz  qux
+	// foo       0  2.5
+	// bar     1.5    3
+	//
 	// datatype: float64
 }
 
@@ -33,6 +40,7 @@ func ExampleNew_string_indexUnnamed() {
 	// Output:
 	//          0   1
 	// baz    foo bar
+	//
 	// datatype: string
 	// name: foobar
 }

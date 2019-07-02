@@ -104,10 +104,10 @@ func MustNew(data []interface{}, config ...Config) *DataFrame {
 	return s
 }
 
+// newFromComponents constructs a dataframe from its constituent parts but returns an empty dataframe if series is nil
 func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, name string) *DataFrame {
 	if s == nil {
-		df, _ := New(nil)
-		return df
+		return newEmptyDataFrame()
 	}
 	return &DataFrame{
 		s:     s,
@@ -121,17 +121,17 @@ func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, 
 func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
 	ret, err := series.New(nil)
 	if err != nil {
-		return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): %v", err)
 	}
 	if len(values) != len(idx) {
-		return nil, fmt.Errorf("internal error: newFromSeries(): values must have same length as index: %d != %d", len(values), len(idx))
+		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): values must have same length as index: %d != %d", len(values), len(idx))
 	}
 	for i := 0; i < len(values); i++ {
-		n, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
+		s, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
 		if err != nil {
-			return nil, fmt.Errorf("internal error: newFromSeries(): %v", err)
+			return nil, fmt.Errorf("internal error: newSingleIndexSeries(): %v", err)
 		}
-		ret.InPlace.Join(n)
+		ret.InPlace.Join(s)
 	}
 	return ret, nil
 }

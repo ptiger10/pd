@@ -25,7 +25,7 @@ func (df *DataFrame) String() string {
 // Syntax:
 // i -> values
 // j -> index or column levels
-// k -> columns
+// k -> number of columns
 func (df *DataFrame) print() string {
 	numLevels := df.IndexLevels()
 	var indexNameRow string
@@ -153,6 +153,9 @@ func (df *DataFrame) print() string {
 		printer += fmt.Sprintln(newLine)
 	}
 	// [END rows]
+	if df.dataType() != "mixed" || df.name != "" {
+		printer += "\n"
+	}
 	if df.dataType() != "mixed" {
 		printer += fmt.Sprintf("datatype: %s\n", df.dataType())
 	}
