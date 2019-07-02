@@ -77,8 +77,8 @@ func TestNew(t *testing.T) {
 			if err != nil {
 				t.Errorf("New() error = %v, wantErr nil", err)
 			}
-			vf, _ := values.InterfaceFactory(tt.want.values)
-			wantValues := vf.Values
+			container := values.MustCreateValuesFromInterface(tt.want.values)
+			wantValues := container.Values
 			wantIdx := index.NewDefault(1)
 			want := &Series{values: wantValues, index: wantIdx, datatype: tt.want.dtype}
 			if !Equal(got, want) {
@@ -204,4 +204,15 @@ func Test_Copy(t *testing.T) {
 	if !Equal(s, sArchive) || Equal(s, sCopy) {
 		t.Errorf("s.Copy() retained references to original, want fresh copy")
 	}
+}
+
+func TestFromInternalComponents(t *testing.T) {
+	vals := values.MustCreateValuesFromInterface("foo")
+	index := index.NewDefault(1)
+	got := FromInternalComponents(vals.Values, index, options.String, "bar")
+	want := MustNew("foo", Config{Name: "bar"})
+	if !Equal(got, want) {
+		t.Errorf("FromInternalComponents() returned %v, want %v", got, want)
+	}
+
 }

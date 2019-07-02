@@ -280,7 +280,7 @@ func (s *Series) Values() []interface{} {
 }
 
 // MaxWidth returns the max number of characters in any value in the Series.
-// For use in printing Series and DataFrames.
+// For use in printing Series.
 func (s *Series) MaxWidth() int {
 	var max int
 	for _, v := range s.Values() {

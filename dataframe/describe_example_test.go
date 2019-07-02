@@ -5,12 +5,6 @@ import (
 	"log"
 )
 
-func ExampleColSlice() {
-	df, _ := New([]interface{}{"foo", []string{"foo", "bar", "ba"}})
-	fmt.Println(df.s[1])
-	//Output:
-}
-
 func ExampleNew_float64() {
 	df, err := New(
 		[]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}},

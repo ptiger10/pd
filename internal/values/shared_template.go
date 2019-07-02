@@ -23,13 +23,13 @@ type valueTypeValue struct {
 	null bool
 }
 
-// newSlicevalueType converts []valueType -> Factory with valueTypeValues
-func newSlicevalueType(vals []valueType) Factory {
+// newSlicevalueType converts []valueType -> Container with valueTypeValues
+func newSlicevalueType(vals []valueType) Container {
 	var ret valueTypeValues
 	for _, val := range vals {
 		ret = append(ret, newvalueType(val))
 	}
-	return Factory{&ret, options.PlaceholdervalueType}
+	return Container{&ret, options.PlaceholdervalueType}
 }
 
 // Len returns the number of value/null structs in the container.

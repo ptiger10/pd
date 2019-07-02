@@ -2,6 +2,7 @@ package values
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -10,11 +11,11 @@ import (
 )
 
 // InterfaceFactory converts interface{} to Values
-func InterfaceFactory(data interface{}) (Factory, error) {
-	var factory Factory
+func InterfaceFactory(data interface{}) (Container, error) {
+	var factory Container
 	var err error
 	if data == nil {
-		factory = Factory{Values: emptyValues(), DataType: options.None}
+		factory = Container{Values: emptyValues(), DataType: options.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,
@@ -29,47 +30,58 @@ func InterfaceFactory(data interface{}) (Factory, error) {
 			factory, err = SliceFactory(data)
 
 		default:
-			return Factory{Values: emptyValues()}, fmt.Errorf("internal.values.InterfaceFactory(): type not supported: %T", data)
+			return Container{Values: emptyValues()}, fmt.Errorf("internal.values.InterfaceFactory(): type not supported: %T", data)
 		}
 	}
 	return factory, err
 }
 
-// ScalarFactory creates a Factory from an interface{} that has been determined elsewhere to be a scalar.
+// MustCreateValuesFromInterface returns a container that satisfies the Values interface or panics.
+func MustCreateValuesFromInterface(data interface{}) Container {
+	container, err := InterfaceFactory(data)
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("MustCreateValuesFromInterface(): %v", err)
+		}
+	}
+	return container
+}
+
+// ScalarFactory creates a Container from an interface{} that has been determined elsewhere to be a scalar.
 // Be careful modifying this constructor and its children,
 // as reflection is inherently unsafe and each function expects to receive specific types only.
-func ScalarFactory(data interface{}) (Factory, error) {
-	var ret Factory
+func ScalarFactory(data interface{}) (Container, error) {
+	var ret Container
 	switch data.(type) {
 	case float32, float64:
 		val := scalarFloatToFloat64(data)
 		f := newFloat64(val)
-		ret = Factory{&float64Values{f}, options.Float64}
+		ret = Container{&float64Values{f}, options.Float64}
 
 	case int, int8, int16, int32, int64:
 		val := scalarIntToInt64(data)
 		i := newInt64(val)
-		ret = Factory{&int64Values{i}, options.Int64}
+		ret = Container{&int64Values{i}, options.Int64}
 
 	case uint, uint8, uint16, uint32, uint64:
 		val := scalarUIntToInt64(data)
 		i := newInt64(val)
-		ret = Factory{&int64Values{i}, options.Int64}
+		ret = Container{&int64Values{i}, options.Int64}
 
 	case string:
 		val := newString(data.(string))
-		ret = Factory{&stringValues{val}, options.String}
+		ret = Container{&stringValues{val}, options.String}
 
 	case bool:
 		val := newBool(data.(bool))
-		ret = Factory{&boolValues{val}, options.Bool}
+		ret = Container{&boolValues{val}, options.Bool}
 
 	case time.Time:
 		val := newDateTime(data.(time.Time))
-		ret = Factory{&dateTimeValues{val}, options.DateTime}
+		ret = Container{&dateTimeValues{val}, options.DateTime}
 
 	default:
-		ret = Factory{}
+		ret = Container{}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 
@@ -94,11 +106,11 @@ func scalarUIntToInt64(data interface{}) int64 {
 	return int64(d.Uint())
 }
 
-// SliceFactory creates a Factory from an interface{} that has been determined elsewhere to be a Slice.
+// SliceFactory creates a Container from an interface{} that has been determined elsewhere to be a Slice.
 // Be careful modifying this constructor and its children,
 // as reflection is inherently unsafe and each function expects to receive specific types only.
-func SliceFactory(data interface{}) (Factory, error) {
-	var ret Factory
+func SliceFactory(data interface{}) (Container, error) {
+	var ret Container
 
 	switch data.(type) {
 	case []float32:
@@ -138,7 +150,7 @@ func SliceFactory(data interface{}) (Factory, error) {
 		ret = newSliceInterface(vals)
 
 	default:
-		ret = Factory{nil, options.None}
+		ret = Container{nil, options.None}
 		return ret, fmt.Errorf("Type %T not supported", data)
 	}
 
@@ -223,3 +235,47 @@ func MakeStringRange(min, max int) []string {
 }
 
 // [END utility slices]
+
+// Copy copies a Values Container
+func (vc Container) Copy() Container {
+	return Container{
+		Values:   vc.Values.Copy(),
+		DataType: vc.DataType,
+	}
+}
+
+// AllValues returns all the values (including null values) in the Container as an interface slice.
+func (vc Container) AllValues() []interface{} {
+	var ret []interface{}
+	for i := 0; i < vc.Values.Len(); i++ {
+		ret = append(ret, vc.Values.Element(i).Value)
+	}
+	return ret
+}
+
+// MaxWidth returns the max width of any value in the container. For use in printing dataframes.
+func (vc Container) MaxWidth() int {
+	var max int
+	for _, v := range vc.AllValues() {
+		var length int
+		if vc.DataType == options.DateTime {
+			if val, ok := v.(time.Time); ok {
+				length = len(val.Format(options.GetDisplayTimeFormat()))
+			} else {
+				length = len(fmt.Sprint(v))
+			}
+		} else if vc.DataType == options.Float64 {
+			if val, ok := v.(float64); ok {
+				length = len(fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), val))
+			} else {
+				length = len(fmt.Sprint(v))
+			}
+		} else {
+			length = len(fmt.Sprint(v))
+		}
+		if length > max {
+			max = length
+		}
+	}
+	return max
+}

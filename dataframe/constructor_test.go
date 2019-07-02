@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
-	"github.com/ptiger10/pd/series"
 )
 
 func TestNew(t *testing.T) {
@@ -27,7 +27,7 @@ func TestNew(t *testing.T) {
 			args: args{data: []interface{}{"foo", "bar"}, config: nil},
 			want: &DataFrame{
 				name:  "",
-				s:     []*series.Series{series.MustNew("foo", series.Config{Name: "0"}), series.MustNew("bar", series.Config{Name: "1"})},
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.NewDefault(1),
 			},
@@ -35,10 +35,8 @@ func TestNew(t *testing.T) {
 		{"config with name",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Name: "foobar"}}},
 			&DataFrame{
-				name: "foobar",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "0"}),
-					series.MustNew("bar", series.Config{Name: "1"})},
+				name:  "foobar",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.NewDefault(1),
 			},
@@ -46,10 +44,8 @@ func TestNew(t *testing.T) {
 		{"config with index",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Index: "baz"}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "0", Index: "baz"}),
-					series.MustNew("bar", series.Config{Name: "1", Index: "baz"})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.New(index.MustNewLevel("baz", "")),
 			},
@@ -57,10 +53,8 @@ func TestNew(t *testing.T) {
 		{"config with named index",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Index: "baz", IndexName: "corge"}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "0", Index: "baz", IndexName: "corge"}),
-					series.MustNew("bar", series.Config{Name: "1", Index: "baz", IndexName: "corge"})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.New(index.MustNewLevel("baz", "corge")),
 			},
@@ -68,10 +62,8 @@ func TestNew(t *testing.T) {
 		{"config with multiIndex",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiIndex: []interface{}{"baz", "qux"}}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "0", MultiIndex: []interface{}{"baz", "qux"}}),
-					series.MustNew("bar", series.Config{Name: "1", MultiIndex: []interface{}{"baz", "qux"}})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.New(index.MustNewLevel("baz", ""), index.MustNewLevel("qux", "")),
 			},
@@ -79,10 +71,8 @@ func TestNew(t *testing.T) {
 		{"config with named multiIndex",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiIndex: []interface{}{"baz", "qux"}, MultiIndexNames: []string{"waldo", "fred"}}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "0", MultiIndex: []interface{}{"baz", "qux"}, MultiIndexNames: []string{"waldo", "fred"}}),
-					series.MustNew("bar", series.Config{Name: "1", MultiIndex: []interface{}{"baz", "qux"}, MultiIndexNames: []string{"waldo", "fred"}})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewDefaultColumns(2),
 				index: index.New(index.MustNewLevel("baz", "waldo"), index.MustNewLevel("qux", "fred")),
 			},
@@ -90,10 +80,8 @@ func TestNew(t *testing.T) {
 		{"config with columns",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "baz"}),
-					series.MustNew("bar", series.Config{Name: "qux"})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "")),
 				index: index.NewDefault(1),
 			},
@@ -101,10 +89,8 @@ func TestNew(t *testing.T) {
 		{"config with named columns",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}, ColName: "corge"}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "baz"}),
-					series.MustNew("bar", series.Config{Name: "qux"})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "corge")),
 				index: index.NewDefault(1),
 			},
@@ -112,10 +98,8 @@ func TestNew(t *testing.T) {
 		{"config with multicolumns",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiCol: [][]string{{"baz", "qux"}, {"quux", "quuz"}}, MultiColNames: []string{"fred", "waldo"}}}},
 			&DataFrame{
-				name: "",
-				s: []*series.Series{
-					series.MustNew("foo", series.Config{Name: "baz | quux"}),
-					series.MustNew("bar", series.Config{Name: "qux | quuz"})},
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
 				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "fred"), index.NewColLevel([]string{"quux", "quuz"}, "waldo")),
 				index: index.NewDefault(1),
 			},
@@ -195,7 +179,8 @@ func TestMustNew(t *testing.T) {
 	}{
 		{name: "pass", args: []interface{}{"foo"},
 			want: &DataFrame{
-				name: "", s: []*series.Series{series.MustNew("foo", series.Config{Name: "0"})}, cols: index.NewDefaultColumns(1), index: index.NewDefault(1)}},
+				name: "", vals: []values.Container{values.MustCreateValuesFromInterface("foo")},
+				cols: index.NewDefaultColumns(1), index: index.NewDefault(1)}},
 		{name: "fail", args: []interface{}{complex64(1)},
 			want: newEmptyDataFrame()},
 	}

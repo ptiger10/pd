@@ -2,14 +2,14 @@ package dataframe
 
 import (
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
-	"github.com/ptiger10/pd/series"
 )
 
 // A DataFrame is a 2D collection of one or more Series with a shared index and associated columns.
 type DataFrame struct {
 	name  string
-	s     []*series.Series
+	vals  []values.Container
 	cols  index.Columns
 	index index.Index
 }

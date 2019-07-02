@@ -103,3 +103,18 @@ func (s *Series) Copy() *Series {
 	copyS.InPlace = InPlace{s: copyS}
 	return copyS
 }
+
+// FromInternalComponents is a semi-private method for hydrating Series within the DataFrame module.
+// The required inputs are not available to the caller.
+func FromInternalComponents(vals values.Values, index index.Index, datatype options.DataType, name string) *Series {
+	s := &Series{
+		values:   vals,
+		index:    index,
+		datatype: datatype,
+		name:     name,
+	}
+	s.Index = Index{s: s}
+	s.InPlace = InPlace{s: s}
+	return s
+
+}

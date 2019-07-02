@@ -13,9 +13,9 @@ import (
 // TestSharedFloat64 tests shared float64 interface methods
 func TestSharedFloat64(t *testing.T) {
 	factory := newSliceFloat64([]float64{1, 2})
-	wantFactory := Factory{&float64Values{float64Value{1, false}, float64Value{2, false}}, options.Float64}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&float64Values{float64Value{1, false}, float64Value{2, false}}, options.Float64}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -90,9 +90,9 @@ func TestSharedFloat64(t *testing.T) {
 // TestSharedInt64 tests shared int64 interface methods
 func TestSharedInt64(t *testing.T) {
 	factory := newSliceInt64([]int64{1, 2})
-	wantFactory := Factory{&int64Values{int64Value{1, false}, int64Value{2, false}}, options.Int64}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&int64Values{int64Value{1, false}, int64Value{2, false}}, options.Int64}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -167,9 +167,9 @@ func TestSharedInt64(t *testing.T) {
 // TestSharedString tests shared string interface methods
 func TestSharedString(t *testing.T) {
 	factory := newSliceString([]string{"bar", "foo"})
-	wantFactory := Factory{&stringValues{stringValue{"bar", false}, stringValue{"foo", false}}, options.String}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&stringValues{stringValue{"bar", false}, stringValue{"foo", false}}, options.String}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -244,9 +244,9 @@ func TestSharedString(t *testing.T) {
 // TestSharedBool tests shared bool interface methods
 func TestSharedBool(t *testing.T) {
 	factory := newSliceBool([]bool{false, true})
-	wantFactory := Factory{&boolValues{boolValue{false, false}, boolValue{true, false}}, options.Bool}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&boolValues{boolValue{false, false}, boolValue{true, false}}, options.Bool}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -323,9 +323,9 @@ func TestSharedDateTime(t *testing.T) {
 	dt1 := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
 	dt2 := time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC)
 	factory := newSliceDateTime([]time.Time{dt1, dt2})
-	wantFactory := Factory{&dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt2, false}}, options.DateTime}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt2, false}}, options.DateTime}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -400,9 +400,9 @@ func TestSharedDateTime(t *testing.T) {
 // TestSharedInterface tests shared interface{} interface methods
 func TestSharedInterface(t *testing.T) {
 	factory := newSliceInterface([]interface{}{false, true})
-	wantFactory := Factory{&interfaceValues{interfaceValue{false, false}, interfaceValue{true, false}}, options.Interface}
-	if !reflect.DeepEqual(factory, wantFactory) {
-		t.Errorf("newSlice got %v, want %v", factory, wantFactory)
+	wantContainer := Container{&interfaceValues{interfaceValue{false, false}, interfaceValue{true, false}}, options.Interface}
+	if !reflect.DeepEqual(factory, wantContainer) {
+		t.Errorf("newSlice got %v, want %v", factory, wantContainer)
 	}
 
 	vals := factory.Values
@@ -478,11 +478,11 @@ func TestSharedInterface(t *testing.T) {
 // [START conversion tests]
 
 func TestConvert(t *testing.T) {
-	nullFloat := Factory{&float64Values{float64Value{math.NaN(), true}}, options.Float64}
-	nullInt := Factory{&int64Values{int64Value{0, true}}, options.Int64}
-	nullBool := Factory{&boolValues{boolValue{false, true}}, options.Bool}
-	nullDateTime := Factory{&dateTimeValues{dateTimeValue{time.Time{}, true}}, options.DateTime}
-	nullInterface := Factory{&interfaceValues{interfaceValue{0, true}}, options.Interface}
+	nullFloat := Container{&float64Values{float64Value{math.NaN(), true}}, options.Float64}
+	nullInt := Container{&int64Values{int64Value{0, true}}, options.Int64}
+	nullBool := Container{&boolValues{boolValue{false, true}}, options.Bool}
+	nullDateTime := Container{&dateTimeValues{dateTimeValue{time.Time{}, true}}, options.DateTime}
+	nullInterface := Container{&interfaceValues{interfaceValue{0, true}}, options.Interface}
 
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	testDateInSeconds := 1556668800000000000
@@ -491,7 +491,7 @@ func TestConvert(t *testing.T) {
 	nan := math.NaN()
 	var tests = []struct {
 		name      string
-		input     Factory
+		input     Container
 		convertTo options.DataType
 		wantVal   interface{}
 		wantNull  bool

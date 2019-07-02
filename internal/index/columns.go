@@ -2,6 +2,7 @@ package index
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ptiger10/pd/internal/values"
 )
@@ -82,6 +83,19 @@ func (cols Columns) Len() int {
 // NumLevels returns the number of column levels.
 func (cols Columns) NumLevels() int {
 	return len(cols.Levels)
+}
+
+// Names returns the name of every column by concatenating the labels across every level.
+func (cols Columns) Names() []string {
+	names := make([]string, cols.Len())
+	for k := 0; k < cols.Len(); k++ {
+		nameSlice := make([]string, cols.NumLevels())
+		for j := 0; j < cols.NumLevels(); j++ {
+			nameSlice[j] = cols.Levels[j].Labels[k]
+		}
+		names[k] = strings.Join(nameSlice, " | ")
+	}
+	return names
 }
 
 // MaxNameWidth returns the number of characters in the column name with the most characters.

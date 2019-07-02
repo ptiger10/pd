@@ -52,8 +52,8 @@ func (ip InPlace) Apply(fn func(interface{}) interface{}) {
 		newVals = append(newVals, newVal)
 	}
 	// ducks error because []interface{} as arg in InterfaceFactory cannot trigger unsupported error
-	vf, _ := values.InterfaceFactory(newVals)
-	ret, _ := values.Convert(vf.Values, ip.s.datatype)
+	container := values.MustCreateValuesFromInterface(newVals)
+	ret, _ := values.Convert(container.Values, ip.s.datatype)
 	ip.s.values = ret
 }
 

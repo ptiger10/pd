@@ -16,7 +16,8 @@ func (df *DataFrame) math(name string, fn func(s *series.Series) float64) *serie
 	}
 	var vals []interface{}
 	var idx []interface{}
-	for _, s := range df.s {
+	for m := 0; m < df.NumCols(); m++ {
+		s := df.hydrateSeries(m)
 		if calc := fn(s); !math.IsNaN(calc) {
 			vals = append(vals, calc)
 			idx = append(idx, s.Name())

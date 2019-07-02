@@ -22,13 +22,13 @@ type float64Value struct {
 	null bool
 }
 
-// newSliceFloat64 converts []Float64 -> Factory with float64Values
-func newSliceFloat64(vals []float64) Factory {
+// newSliceFloat64 converts []Float64 -> Container with float64Values
+func newSliceFloat64(vals []float64) Container {
 	var ret float64Values
 	for _, val := range vals {
 		ret = append(ret, newFloat64(val))
 	}
-	return Factory{&ret, options.Float64}
+	return Container{&ret, options.Float64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -175,13 +175,13 @@ type int64Value struct {
 	null bool
 }
 
-// newSliceInt64 converts []Int64 -> Factory with int64Values
-func newSliceInt64(vals []int64) Factory {
+// newSliceInt64 converts []Int64 -> Container with int64Values
+func newSliceInt64(vals []int64) Container {
 	var ret int64Values
 	for _, val := range vals {
 		ret = append(ret, newInt64(val))
 	}
-	return Factory{&ret, options.Int64}
+	return Container{&ret, options.Int64}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -328,13 +328,13 @@ type stringValue struct {
 	null bool
 }
 
-// newSliceString converts []String -> Factory with stringValues
-func newSliceString(vals []string) Factory {
+// newSliceString converts []String -> Container with stringValues
+func newSliceString(vals []string) Container {
 	var ret stringValues
 	for _, val := range vals {
 		ret = append(ret, newString(val))
 	}
-	return Factory{&ret, options.String}
+	return Container{&ret, options.String}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -481,13 +481,13 @@ type boolValue struct {
 	null bool
 }
 
-// newSliceBool converts []Bool -> Factory with boolValues
-func newSliceBool(vals []bool) Factory {
+// newSliceBool converts []Bool -> Container with boolValues
+func newSliceBool(vals []bool) Container {
 	var ret boolValues
 	for _, val := range vals {
 		ret = append(ret, newBool(val))
 	}
-	return Factory{&ret, options.Bool}
+	return Container{&ret, options.Bool}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -634,13 +634,13 @@ type dateTimeValue struct {
 	null bool
 }
 
-// newSliceDateTime converts []DateTime -> Factory with dateTimeValues
-func newSliceDateTime(vals []time.Time) Factory {
+// newSliceDateTime converts []DateTime -> Container with dateTimeValues
+func newSliceDateTime(vals []time.Time) Container {
 	var ret dateTimeValues
 	for _, val := range vals {
 		ret = append(ret, newDateTime(val))
 	}
-	return Factory{&ret, options.DateTime}
+	return Container{&ret, options.DateTime}
 }
 
 // Len returns the number of value/null structs in the container.
@@ -787,13 +787,13 @@ type interfaceValue struct {
 	null bool
 }
 
-// newSliceInterface converts []Interface -> Factory with interfaceValues
-func newSliceInterface(vals []interface{}) Factory {
+// newSliceInterface converts []Interface -> Container with interfaceValues
+func newSliceInterface(vals []interface{}) Container {
 	var ret interfaceValues
 	for _, val := range vals {
 		ret = append(ret, newInterface(val))
 	}
-	return Factory{&ret, options.Interface}
+	return Container{&ret, options.Interface}
 }
 
 // Len returns the number of value/null structs in the container.

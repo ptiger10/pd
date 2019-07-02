@@ -14,6 +14,7 @@ func TestNewColumns(t *testing.T) {
 		len          int
 		numLevels    int
 		maxNameWidth int
+		names        []string
 	}
 	tests := []struct {
 		name string
@@ -23,14 +24,14 @@ func TestNewColumns(t *testing.T) {
 		{"empty", args{nil},
 			want{
 				columns: Columns{Levels: []ColLevel{ColLevel{Labels: nil}}, NameMap: LabelMap{"": []int{0}}},
-				len:     0, numLevels: 1, maxNameWidth: 0,
+				len:     0, numLevels: 1, maxNameWidth: 0, names: []string{},
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
 				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}}},
 				NameMap: LabelMap{"foo": []int{0}}},
-				2, 1, 3,
+				2, 1, 3, []string{"1", "2"},
 			}},
 		{"two cols",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
@@ -39,7 +40,7 @@ func TestNewColumns(t *testing.T) {
 					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}},
 					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
-				2, 2, 5,
+				2, 2, 5, []string{"1 | 3", "2 | 4"},
 			}},
 	}
 	for _, tt := range tests {
@@ -59,6 +60,10 @@ func TestNewColumns(t *testing.T) {
 			gotMaxWidth := got.MaxNameWidth()
 			if gotMaxWidth != tt.want.maxNameWidth {
 				t.Errorf("Columns.MaxWidth(): got %v, want %v", gotMaxWidth, tt.want.maxNameWidth)
+			}
+			gotNames := got.Names()
+			if !reflect.DeepEqual(gotNames, tt.want.names) {
+				t.Errorf("Columns.Names(): got %v, want %v", gotNames, tt.want.names)
 			}
 		})
 	}

@@ -3,7 +3,6 @@ package dataframe
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
@@ -13,7 +12,7 @@ import (
 
 // New creates a new DataFrame with default column names.
 func New(data []interface{}, config ...Config) (*DataFrame, error) {
-	var s []*series.Series
+	var vals []values.Container
 	var idx index.Index
 	var cols index.Columns
 	configuration := index.Config{}
@@ -21,7 +20,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	var err error
 
 	if data == nil {
-		return &DataFrame{s: nil, index: index.New(), cols: index.NewColumns()}, nil
+		return &DataFrame{vals: nil, index: index.New(), cols: index.NewColumns()}, nil
 	}
 	// Handling config
 	if config != nil {
@@ -38,15 +37,17 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		}
 	}
 
-	// Values length
-	vals, err := values.InterfaceFactory(data[0])
-	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
+	// Handling values
+	for i := 0; i < len(data); i++ {
+		v, err := values.InterfaceFactory(data[i])
+		if err != nil {
+			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
+		}
+		vals = append(vals, v)
 	}
-	valuesLen := vals.Values.Len()
 
 	// Handling index
-	idx, err = index.NewFromConfig(configuration, valuesLen)
+	idx, err = index.NewFromConfig(configuration, vals[0].Values.Len())
 	if err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
@@ -56,30 +57,8 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 
-	// Handling Series
-	for i := 0; i < len(data); i++ {
-		var sNameSlice []string
-		for _, col := range cols.Levels {
-			if cols.Len() != len(data) {
-				return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): dataframe out of alignment: the number of columns in each level must equal the number of Series: %d != %d",
-					cols.Len(), len(data))
-			}
-			sNameSlice = append(sNameSlice, fmt.Sprint(col.Labels[i]))
-		}
-		sName := strings.Join(sNameSlice, " | ")
-		sConfig := series.Config{
-			Name: sName, DataType: tmp.DataType,
-			Index: tmp.Index, IndexName: tmp.IndexName,
-			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
-		}
-		n, err := series.New(data[i], sConfig)
-		if err != nil {
-			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
-		}
-		s = append(s, n)
-	}
 	df := &DataFrame{
-		s:     s,
+		vals:  vals,
 		index: idx,
 		cols:  cols,
 		name:  configuration.Name,
@@ -109,12 +88,12 @@ func MustNew(data []interface{}, config ...Config) *DataFrame {
 }
 
 // newFromComponents constructs a dataframe from its constituent parts but returns an empty dataframe if series is nil
-func newFromComponents(s []*series.Series, idx index.Index, cols index.Columns, name string) *DataFrame {
-	if s == nil {
+func newFromComponents(vals []values.Container, idx index.Index, cols index.Columns, name string) *DataFrame {
+	if vals == nil {
 		return newEmptyDataFrame()
 	}
 	return &DataFrame{
-		s:     s,
+		vals:  vals,
 		index: idx,
 		cols:  cols,
 		name:  name,
@@ -140,14 +119,14 @@ func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) 
 	return ret, nil
 }
 
-func (df *DataFrame) seriesAligned() error {
+func (df *DataFrame) valsAligned() error {
 	if df.NumCols() == 0 {
 		return nil
 	}
-	lvl0 := df.s[0].Len()
+	lvl0 := df.vals[0].Values.Len()
 	for i := 1; i < df.NumCols(); i++ {
-		if cmpLvl := df.s[i].Len(); lvl0 != cmpLvl {
-			return fmt.Errorf("df.seriesAligned(): series %v must have same number of labels as series 0, %d != %d",
+		if cmpLvl := df.vals[i].Values.Len(); lvl0 != cmpLvl {
+			return fmt.Errorf("df.valsAligned(): values container at %v must have same number of labels as container 0, %d != %d",
 				i, cmpLvl, lvl0)
 		}
 	}
@@ -164,7 +143,7 @@ func (df *DataFrame) ensureAlignment() error {
 		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
 	}
 
-	if err := df.seriesAligned(); err != nil {
+	if err := df.valsAligned(); err != nil {
 		return fmt.Errorf("dataframe out of alignment: %v", err)
 	}
 
@@ -177,20 +156,25 @@ func (df *DataFrame) ensureAlignment() error {
 
 // Copy creates a new deep copy of a Series.
 func (df *DataFrame) Copy() *DataFrame {
-	var sCopy []*series.Series
-	for i := 0; i < len(df.s); i++ {
-		sCopy = append(sCopy, df.s[i].Copy())
+	var valsCopy []values.Container
+	for i := 0; i < len(df.vals); i++ {
+		valsCopy = append(valsCopy, df.vals[i].Copy())
 	}
 	idxCopy := df.index.Copy()
 	colsCopy := df.cols.Copy()
 	dfCopy := &DataFrame{
-		s:     sCopy,
+		vals:  valsCopy,
 		index: idxCopy,
 		cols:  colsCopy,
 		name:  df.name,
 	}
-	// dfCopy.Apply = Apply{s: copyS}
 	// dfCopy.Index = Index{s: copyS}
 	// dfCopy.InPlace = InPlace{s: copyS}
 	return dfCopy
+}
+
+// hydrateSeries converts a column of values.Values into a Series with the same index as df.
+func (df *DataFrame) hydrateSeries(col int) *series.Series {
+	return series.FromInternalComponents(
+		df.vals[col].Values, df.index, df.vals[col].DataType, df.cols.Names()[col])
 }

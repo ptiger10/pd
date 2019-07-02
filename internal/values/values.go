@@ -28,8 +28,8 @@ type Values interface {
 	ToInterface() Values
 }
 
-// Factory contains Values (a list of Value/Null pairs satisfying the Values interface) and Kind.
-type Factory struct {
+// Container contains Values (a list of Value/Null pairs satisfying the Values interface) and Kind.
+type Container struct {
 	Values   Values
 	DataType options.DataType
 }
