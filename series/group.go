@@ -12,12 +12,6 @@ import (
 	"github.com/ptiger10/pd/internal/index"
 )
 
-// A Grouping returns a collection of index labels with mutually exclusive integer positions.
-type Grouping struct {
-	s      *Series
-	groups map[string]*group
-}
-
 func (g Grouping) String() string {
 	printer := fmt.Sprintf("{Grouping | NumGroups: %v, Groups: [%v]}\n", len(g.groups), strings.Join(g.Groups(), ", "))
 	return printer

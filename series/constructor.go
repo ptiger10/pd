@@ -9,17 +9,6 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
-// The Config struct can be used in the custom Series constructor to name the Series or specify its data type.
-// Basic usage: New("foo", series.Config{Name: "bar"})
-type Config struct {
-	Name            string
-	DataType        options.DataType
-	Index           interface{}
-	IndexName       string
-	MultiIndex      []interface{}
-	MultiIndexNames []string
-}
-
 // New creates a new Series with the supplied values and an optional config.
 func New(data interface{}, config ...Config) (*Series, error) {
 	var idx index.Index

@@ -23,3 +23,20 @@ type Element struct {
 	Labels     []interface{}
 	LabelTypes []options.DataType
 }
+
+// The Config struct can be used in the custom Series constructor to name the Series or specify its data type.
+// Basic usage: New("foo", series.Config{Name: "bar"})
+type Config struct {
+	Name            string
+	DataType        options.DataType
+	Index           interface{}
+	IndexName       string
+	MultiIndex      []interface{}
+	MultiIndexNames []string
+}
+
+// A Grouping returns a collection of index labels with mutually exclusive integer positions.
+type Grouping struct {
+	s      *Series
+	groups map[string]*group
+}

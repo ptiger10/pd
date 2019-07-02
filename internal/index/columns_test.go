@@ -26,18 +26,18 @@ func TestNewColumns(t *testing.T) {
 				len:     0, numLevels: 1, maxNameWidth: 0,
 			}},
 		{"one col",
-			args{[]ColLevel{NewColLevel([]interface{}{1, 2}, "foo")}},
+			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
-				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []interface{}{1, 2}}},
+				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}}},
 				NameMap: LabelMap{"foo": []int{0}}},
 				2, 1, 3,
 			}},
 		{"two cols",
-			args{[]ColLevel{NewColLevel([]interface{}{1, 2}, "foo"), NewColLevel([]interface{}{3, 4}, "corge")}},
+			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
 			want{Columns{
 				Levels: []ColLevel{
-					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []interface{}{1, 2}},
-					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []interface{}{3, 4}}},
+					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}},
+					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
 				2, 2, 5,
 			}},
@@ -66,17 +66,17 @@ func TestNewColumns(t *testing.T) {
 
 func TestNewDefaultColumns(t *testing.T) {
 	got := NewDefaultColumns(3)
-	want := NewColumns(NewColLevel([]interface{}{0, 1, 2}, ""))
+	want := NewColumns(NewColLevel([]string{"0", "1", "2"}, ""))
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewDefaultColumns: got %v, want %v", got, want)
 	}
 }
 
 func TestNewColLevel(t *testing.T) {
-	got := NewColLevel([]interface{}{"foo", "bar"}, "foobar")
+	got := NewColLevel([]string{"foo", "bar"}, "foobar")
 	want := ColLevel{
 		Name:     "foobar",
-		Labels:   []interface{}{"foo", "bar"},
+		Labels:   []string{"foo", "bar"},
 		LabelMap: LabelMap{"foo": []int{0}, "bar": []int{1}},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -102,22 +102,22 @@ func TestNewColumnFromConfig(t *testing.T) {
 			args{Config{}, 2},
 			want{NewDefaultColumns(2), false}},
 		{"both nil but named",
-			args{Config{ColsName: "foo"}, 2},
+			args{Config{ColName: "foo"}, 2},
 			want{NewColumns(NewDefaultColLevel(2, "foo")), false}},
 		{"singleLevel",
-			args{Config{Cols: []interface{}{"foo", "bar"}, ColsName: "baz"}, 2},
-			want{NewColumns(NewColLevel([]interface{}{"foo", "bar"}, "baz")), false}},
+			args{Config{Col: []string{"foo", "bar"}, ColName: "baz"}, 2},
+			want{NewColumns(NewColLevel([]string{"foo", "bar"}, "baz")), false}},
 		{"multiLevel",
-			args{Config{MultiCol: [][]interface{}{{"foo", "bar"}, {"baz", "qux"}}, MultiColNames: []string{"quux", "quuz"}}, 2},
-			want{NewColumns(NewColLevel([]interface{}{"foo", "bar"}, "quux"), NewColLevel([]interface{}{"baz", "qux"}, "quuz")), false}},
+			args{Config{MultiCol: [][]string{{"foo", "bar"}, {"baz", "qux"}}, MultiColNames: []string{"quux", "quuz"}}, 2},
+			want{NewColumns(NewColLevel([]string{"foo", "bar"}, "quux"), NewColLevel([]string{"baz", "qux"}, "quuz")), false}},
 		{"fail: both not nil",
 			args{Config{
-				Cols:     []interface{}{"foo"},
-				MultiCol: [][]interface{}{{"foo"}}}, 2},
+				Col:      []string{"foo"},
+				MultiCol: [][]string{{"foo"}}}, 2},
 			want{Columns{}, true}},
 		{"fail: wrong multiindex names length",
 			args{Config{
-				MultiCol:      [][]interface{}{{"foo"}},
+				MultiCol:      [][]string{{"foo"}},
 				MultiColNames: []string{"foo", "bar"}}, 2},
 			want{Columns{}, true}},
 	}
@@ -142,13 +142,13 @@ func TestColumns_Nil(t *testing.T) {
 	cols.Refresh()
 }
 
-func TestCols_Refresh(t *testing.T) {
-	columns := NewColumns(NewColLevel([]interface{}{"foo"}, "bar"))
+func TestCol_Refresh(t *testing.T) {
+	columns := NewColumns(NewColLevel([]string{"foo"}, "bar"))
 	columns.Levels[0] = NewDefaultColLevel(5, "baz")
 	columns.Refresh()
 	want := NewColumns(NewDefaultColLevel(5, "baz"))
 	if !reflect.DeepEqual(columns, want) {
-		t.Errorf("Cols.Refresh() got %v, want %v", columns, want)
+		t.Errorf("Col.Refresh() got %v, want %v", columns, want)
 	}
 	// Empty or nil columns do not trigger an error
 	columns.Levels = make([]ColLevel, 0)
@@ -158,22 +158,22 @@ func TestCols_Refresh(t *testing.T) {
 
 }
 
-func TestCols_Subset(t *testing.T) {
+func TestCol_Subset(t *testing.T) {
 	tests := []struct {
 		name      string
 		positions []int
 		want      Columns
 		wantErr   bool
 	}{
-		{"pass 0", []int{0}, NewColumns(NewColLevel([]interface{}{"foo"}, "baz"), NewColLevel([]interface{}{"qux"}, "corge")), false},
-		{"pass 1", []int{1}, NewColumns(NewColLevel([]interface{}{"bar"}, "baz"), NewColLevel([]interface{}{"quux"}, "corge")), false},
+		{"pass 0", []int{0}, NewColumns(NewColLevel([]string{"foo"}, "baz"), NewColLevel([]string{"qux"}, "corge")), false},
+		{"pass 1", []int{1}, NewColumns(NewColLevel([]string{"bar"}, "baz"), NewColLevel([]string{"quux"}, "corge")), false},
 		{"fail: out of range", []int{2}, Columns{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			col := NewColumns(
-				NewColLevel([]interface{}{"foo", "bar"}, "baz"),
-				NewColLevel([]interface{}{"qux", "quux"}, "corge"))
+				NewColLevel([]string{"foo", "bar"}, "baz"),
+				NewColLevel([]string{"qux", "quux"}, "corge"))
 			got, err := col.Subset(tt.positions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("cols.In(): %v", err)
@@ -193,13 +193,13 @@ func TestColLevel_Subset(t *testing.T) {
 		want      ColLevel
 		wantErr   bool
 	}{
-		{"pass 0", []int{0}, NewColLevel([]interface{}{"foo"}, "baz"), false},
-		{"pass 1", []int{1}, NewColLevel([]interface{}{"bar"}, "baz"), false},
+		{"pass 0", []int{0}, NewColLevel([]string{"foo"}, "baz"), false},
+		{"pass 1", []int{1}, NewColLevel([]string{"bar"}, "baz"), false},
 		{"out of range", []int{2}, ColLevel{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			col := NewColLevel([]interface{}{"foo", "bar"}, "baz")
+			col := NewColLevel([]string{"foo", "bar"}, "baz")
 			got, err := col.Subset(tt.positions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("colsLevel.In(): %v", err)

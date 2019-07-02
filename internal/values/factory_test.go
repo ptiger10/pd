@@ -276,9 +276,9 @@ func TestMakeIntRangeInclusive(t *testing.T) {
 	}
 }
 
-func TestMakeInterfaceRange(t *testing.T) {
-	got := MakeInterfaceRange(0, 3)
-	want := []interface{}{0, 1, 2}
+func TestMakeStringRange(t *testing.T) {
+	got := MakeStringRange(0, 3)
+	want := []string{"0", "1", "2"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("MakeIntRange(): got %v, want %v", got, want)
 	}

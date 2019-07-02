@@ -88,35 +88,35 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with columns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Cols: []interface{}{"baz", "qux"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}}}},
 			&DataFrame{
 				name: "",
 				s: []*series.Series{
 					series.MustNew("foo", series.Config{Name: "baz"}),
 					series.MustNew("bar", series.Config{Name: "qux"})},
-				cols:  index.NewColumns(index.NewColLevel([]interface{}{"baz", "qux"}, "")),
+				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "")),
 				index: index.NewDefault(1),
 			},
 		},
 		{"config with named columns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Cols: []interface{}{"baz", "qux"}, ColsName: "corge"}}},
+			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}, ColName: "corge"}}},
 			&DataFrame{
 				name: "",
 				s: []*series.Series{
 					series.MustNew("foo", series.Config{Name: "baz"}),
 					series.MustNew("bar", series.Config{Name: "qux"})},
-				cols:  index.NewColumns(index.NewColLevel([]interface{}{"baz", "qux"}, "corge")),
+				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "corge")),
 				index: index.NewDefault(1),
 			},
 		},
 		{"config with multicolumns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiCol: [][]interface{}{{"baz", "qux"}, {"quux", "quuz"}}, MultiColNames: []string{"fred", "waldo"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiCol: [][]string{{"baz", "qux"}, {"quux", "quuz"}}, MultiColNames: []string{"fred", "waldo"}}}},
 			&DataFrame{
 				name: "",
 				s: []*series.Series{
 					series.MustNew("foo", series.Config{Name: "baz | quux"}),
 					series.MustNew("bar", series.Config{Name: "qux | quuz"})},
-				cols:  index.NewColumns(index.NewColLevel([]interface{}{"baz", "qux"}, "fred"), index.NewColLevel([]interface{}{"quux", "quuz"}, "waldo")),
+				cols:  index.NewColumns(index.NewColLevel([]string{"baz", "qux"}, "fred"), index.NewColLevel([]string{"quux", "quuz"}, "waldo")),
 				index: index.NewDefault(1),
 			},
 		},
@@ -165,10 +165,9 @@ func TestNew_Fail(t *testing.T) {
 			MultiIndex:      []interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}},
 			MultiIndexNames: []string{"1"},
 		}}},
-		// {"column slice", args{[]interface{}{"foo"}, Config{Cols: []interface{}{[]string{"foo", "bar"}}}}},
-		{"values-cols alignmentV1", args{[]interface{}{"foo"}, Config{Cols: []interface{}{"foo", "bar"}}}},
-		// {"values-cols alignmentV2", args{[]interface{}{"foo", "bar"}, Config{Cols: []interface{}{"baz"}}}},
-		{"cols-multicols ambiguity", args{[]interface{}{"foo"}, Config{Cols: []interface{}{"baz"}, MultiCol: [][]interface{}{{"qux"}}}}},
+		{"values-cols alignment: too many columns", args{[]interface{}{"foo"}, Config{Col: []string{"foo", "bar"}}}},
+		{"values-cols alignment: too few columns", args{[]interface{}{"foo", "bar"}, Config{Col: []string{"baz"}}}},
+		{"cols-multicols ambiguity", args{[]interface{}{"foo"}, Config{Col: []string{"baz"}, MultiCol: [][]string{{"qux"}}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

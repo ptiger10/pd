@@ -3,6 +3,7 @@ package values
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/ptiger10/pd/options"
@@ -212,11 +213,11 @@ func MakeIntRangeInclusive(start, end int) []int {
 	return ret
 }
 
-// MakeInterfaceRange returns a sequential series of numbers as an interface slice, for use in making default column labels.
-func MakeInterfaceRange(min, max int) []interface{} {
-	a := make([]interface{}, max-min)
+// MakeStringRange returns a sequential series of numbers as string values, for use in making default column labels.
+func MakeStringRange(min, max int) []string {
+	a := make([]string, max-min)
 	for i := range a {
-		a[i] = min + i
+		a[i] = strconv.Itoa(min + i)
 	}
 	return a
 }

@@ -30,18 +30,18 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	var columns Columns
 
 	// both nil: return default index
-	if config.Cols == nil && config.MultiCol == nil {
-		cols := NewDefaultColLevel(n, config.ColsName)
+	if config.Col == nil && config.MultiCol == nil {
+		cols := NewDefaultColLevel(n, config.ColName)
 		return NewColumns(cols), nil
 
 	}
 	// both not nil: return error
-	if config.Cols != nil && config.MultiCol != nil {
-		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Cols and config.MultiCol is ambiguous; supply one or the other")
+	if config.Col != nil && config.MultiCol != nil {
+		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Col and config.MultiCol is ambiguous; supply one or the other")
 	}
 	// single-level Columns
-	if config.Cols != nil {
-		newLevel := NewColLevel(config.Cols, config.ColsName)
+	if config.Col != nil {
+		newLevel := NewColLevel(config.Col, config.ColName)
 		columns = NewColumns(newLevel)
 	}
 
@@ -117,18 +117,18 @@ func (cols *Columns) Refresh() {
 // It is identical to an index Level except for the Labels, which are a simple []interface{} that do not satisfy the values.Values interface.
 type ColLevel struct {
 	Name     string
-	Labels   []interface{}
+	Labels   []string
 	LabelMap LabelMap
 }
 
 // NewDefaultColLevel creates a column level with range labels (0, 1, 2, ...n) and optional name.
 func NewDefaultColLevel(n int, name string) ColLevel {
-	colsInt := values.MakeInterfaceRange(0, n)
+	colsInt := values.MakeStringRange(0, n)
 	return NewColLevel(colsInt, name)
 }
 
 // NewColLevel returns a Columns level with updated label map.
-func NewColLevel(labels []interface{}, name string) ColLevel {
+func NewColLevel(labels []string, name string) ColLevel {
 	lvl := ColLevel{
 		Labels: labels,
 		Name:   name,
@@ -165,7 +165,7 @@ func (lvl *ColLevel) updateLabelMap() {
 func (lvl ColLevel) Copy() ColLevel {
 	lvlCopy := ColLevel{}
 	lvlCopy = lvl
-	lvlCopy.Labels = make([]interface{}, lvl.Len())
+	lvlCopy.Labels = make([]string, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
 		lvlCopy.Labels[i] = lvl.Labels[i]
 	}
@@ -206,7 +206,7 @@ func (cols Columns) Subset(colPositions []int) (Columns, error) {
 
 // Subset returns the label values in a column level at specified integer positions.
 func (lvl ColLevel) Subset(positions []int) (ColLevel, error) {
-	var labels []interface{}
+	var labels []string
 	for _, pos := range positions {
 		if pos >= lvl.Len() {
 			return ColLevel{}, fmt.Errorf("internal colLevel.Subset(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)

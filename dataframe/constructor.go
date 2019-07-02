@@ -33,7 +33,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 			Name:  tmp.Name,
 			Index: tmp.Index, IndexName: tmp.IndexName,
 			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
-			Cols: tmp.Cols, ColsName: tmp.ColsName,
+			Col: tmp.Col, ColName: tmp.ColName,
 			MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
 		}
 	}
@@ -60,6 +60,10 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	for i := 0; i < len(data); i++ {
 		var sNameSlice []string
 		for _, col := range cols.Levels {
+			if cols.Len() != len(data) {
+				return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): dataframe out of alignment: the number of columns in each level must equal the number of Series: %d != %d",
+					cols.Len(), len(data))
+			}
 			sNameSlice = append(sNameSlice, fmt.Sprint(col.Labels[i]))
 		}
 		sName := strings.Join(sNameSlice, " | ")
@@ -136,6 +140,20 @@ func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) 
 	return ret, nil
 }
 
+func (df *DataFrame) seriesAligned() error {
+	if df.NumCols() == 0 {
+		return nil
+	}
+	lvl0 := df.s[0].Len()
+	for i := 1; i < df.NumCols(); i++ {
+		if cmpLvl := df.s[i].Len(); lvl0 != cmpLvl {
+			return fmt.Errorf("df.seriesAligned(): series %v must have same number of labels as series 0, %d != %d",
+				i, cmpLvl, lvl0)
+		}
+	}
+	return nil
+}
+
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
 func (df *DataFrame) ensureAlignment() error {
@@ -146,6 +164,10 @@ func (df *DataFrame) ensureAlignment() error {
 		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
 	}
 
+	if err := df.seriesAligned(); err != nil {
+		return fmt.Errorf("dataframe out of alignment: %v", err)
+	}
+
 	if df.cols.Len() != df.NumCols() {
 		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
 			df.cols.Len(), df.NumCols())
@@ -153,16 +175,22 @@ func (df *DataFrame) ensureAlignment() error {
 	return nil
 }
 
-// Config customizes the DataFrame constructor.
-type Config struct {
-	Name            string
-	DataType        options.DataType
-	Index           interface{}
-	IndexName       string
-	MultiIndex      []interface{}
-	MultiIndexNames []string
-	Cols            []interface{}
-	ColsName        string
-	MultiCol        [][]interface{}
-	MultiColNames   []string
+// Copy creates a new deep copy of a Series.
+func (df *DataFrame) Copy() *DataFrame {
+	var sCopy []*series.Series
+	for i := 0; i < len(df.s); i++ {
+		sCopy = append(sCopy, df.s[i].Copy())
+	}
+	idxCopy := df.index.Copy()
+	colsCopy := df.cols.Copy()
+	dfCopy := &DataFrame{
+		s:     sCopy,
+		index: idxCopy,
+		cols:  colsCopy,
+		name:  df.name,
+	}
+	// dfCopy.Apply = Apply{s: copyS}
+	// dfCopy.Index = Index{s: copyS}
+	// dfCopy.InPlace = InPlace{s: copyS}
+	return dfCopy
 }

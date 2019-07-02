@@ -37,7 +37,7 @@ func Test_Math(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df, err := New(
 				[]interface{}{[]float64{1, 3, 5}, []float64{-3, math.NaN(), -1}, []float64{-5, 0, 5}},
-				Config{Cols: []interface{}{"foo", "bar", "baz"}})
+				Config{Col: []string{"foo", "bar", "baz"}})
 			if err != nil {
 				t.Errorf("%v() error: %v", tt.name, err)
 			}

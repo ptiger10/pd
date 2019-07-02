@@ -34,9 +34,9 @@ type Config struct {
 	IndexName       string
 	MultiIndex      []interface{}
 	MultiIndexNames []string
-	Cols            []interface{}
-	ColsName        string
-	MultiCol        [][]interface{}
+	Col             []string
+	ColName         string
+	MultiCol        [][]string
 	MultiColNames   []string
 }
 

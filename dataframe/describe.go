@@ -2,11 +2,14 @@ package dataframe
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/series"
 )
 
 func (df *DataFrame) String() string {
@@ -14,6 +17,42 @@ func (df *DataFrame) String() string {
 		return "{Empty DataFrame}"
 	}
 	return df.print()
+}
+
+// Len returns the number of values in each Series of the DataFrame.
+func (df *DataFrame) Len() int {
+	if df.s == nil {
+		return 0
+	}
+	return df.s[0].Len()
+}
+
+// Name returns the DataFrame's name.
+func (df *DataFrame) Name() string {
+	return df.name
+}
+
+// Rename the DataFrame.
+func (df *DataFrame) Rename(name string) {
+	df.name = name
+}
+
+// NumCols returns the number of columns in the DataFrame.
+func (df *DataFrame) NumCols() int {
+	if df.s == nil {
+		return 0
+	}
+	return len(df.s)
+}
+
+// IndexLevels returns the number of index levels in the DataFrame.
+func (df *DataFrame) IndexLevels() int {
+	return df.index.NumLevels()
+}
+
+// ColLevels returns the number of column levels in the DataFrame.
+func (df *DataFrame) ColLevels() int {
+	return df.cols.NumLevels()
 }
 
 // printer for DataFrame index, values, and columns.
@@ -164,4 +203,84 @@ func (df *DataFrame) print() string {
 		printer += fmt.Sprintf("name: %s\n", df.name)
 	}
 	return printer
+}
+
+// Equal returns true if two dataframes contain equivalent values.
+func Equal(df, df2 *DataFrame) bool {
+	if df.NumCols() != df2.NumCols() {
+		return false
+	}
+	for i := 0; i < df.NumCols(); i++ {
+		if !series.Equal(df.s[i], df2.s[i]) {
+			return false
+		}
+	}
+	if !reflect.DeepEqual(df.index, df2.index) {
+		return false
+	}
+	if !reflect.DeepEqual(df.cols, df2.cols) {
+		return false
+	}
+	if df.name != df2.name {
+		return false
+	}
+	return true
+}
+
+// DataTypes returns the DataTypes of the Series in the DataFrame.
+func (df *DataFrame) DataTypes() *series.Series {
+	var vals []interface{}
+	var idx []interface{}
+	for _, s := range df.s {
+		vals = append(vals, s.DataType())
+		idx = append(idx, s.Name())
+	}
+	s, err := newSingleIndexSeries(vals, idx, "datatypes")
+	if err != nil {
+		log.Printf("DataTypes(): %v", err)
+		return nil
+	}
+	return s
+}
+
+// dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
+func (df *DataFrame) dataType() string {
+	uniqueTypes := df.DataTypes().Unique()
+	if len(uniqueTypes) == 1 {
+		return df.s[0].DataType()
+	}
+	return "mixed"
+}
+
+// maxColWidths is the max characters in each column of a dataframe.
+// exclusions should mimic the shape of the columns exactly
+func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
+	var maxColWidths []int
+	if len(exclusions) != df.ColLevels() || len(exclusions) == 0 {
+		return nil
+	}
+	if len(exclusions[0]) != df.NumCols() {
+		return nil
+	}
+	for k := 0; k < df.NumCols(); k++ {
+		max := df.s[k].MaxWidth()
+		for j := 0; j < df.ColLevels(); j++ {
+			if !exclusions[j][k] {
+				if length := len(fmt.Sprint(df.cols.Levels[j].Labels[k])); length > max {
+					max = length
+				}
+			}
+		}
+		maxColWidths = append(maxColWidths, max)
+	}
+	return maxColWidths
+}
+
+// for use in  printing dataframe columns
+func (df *DataFrame) makeExclusionsTable() [][]bool {
+	table := make([][]bool, df.ColLevels())
+	for row := range table {
+		table[row] = make([]bool, df.NumCols())
+	}
+	return table
 }
