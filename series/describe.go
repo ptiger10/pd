@@ -441,6 +441,9 @@ func (s *Series) ensureRowPositions(positions []int) error {
 
 // returns an error if any level position does not exist
 func (s *Series) ensureLevelPositions(positions []int) error {
+	if len(positions) == 0 {
+		return fmt.Errorf("no levels provided")
+	}
 	for _, pos := range positions {
 		len := s.index.NumLevels()
 		if pos >= len {

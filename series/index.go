@@ -89,7 +89,7 @@ func (idx Index) At(row int, level int) interface{} {
 
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
 func (idx Index) RenameLevel(level int, name string) error {
-	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("s.Index.RenameLevel(): %v", err)
 	}
 	idx.s.index.Levels[level].Name = name
@@ -99,7 +99,7 @@ func (idx Index) RenameLevel(level int, name string) error {
 
 // Reindex converts an index level to a default range []int{0, 1, 2,...n}
 func (idx Index) Reindex(level int) error {
-	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("s.Index.Reindex(): %v", err)
 	}
 	// ducks error because inputs are controlled
@@ -133,10 +133,10 @@ func (idx Index) DropNull(level int) (*Series, error) {
 
 // SwapLevels swaps two levels in the index and returns a new Series.
 func (idx Index) SwapLevels(i, j int) (*Series, error) {
-	if err := idx.ensureLevelPositions([]int{i}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{i}); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
 	}
-	if err := idx.ensureLevelPositions([]int{j}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{j}); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid j: %v", err)
 	}
 	s := idx.s.Copy()
@@ -172,22 +172,9 @@ func (idx Index) AppendLevel(values interface{}, name string) (*Series, error) {
 	return s, err
 }
 
-func (idx Index) ensureLevelPositions(levelPositions []int) error {
-	if len(levelPositions) == 0 {
-		return fmt.Errorf("no levels provided")
-	}
-
-	for _, pos := range levelPositions {
-		if pos >= idx.NumLevels() {
-			return fmt.Errorf("invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
-		}
-	}
-	return nil
-}
-
 // SubsetLevels returns a new Series with only the specified index levels.
 func (idx Index) SubsetLevels(levelPositions []int) (*Series, error) {
-	err := idx.ensureLevelPositions(levelPositions)
+	err := idx.s.ensureLevelPositions(levelPositions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.SubsetLevels(): %v", err)
 	}
@@ -225,7 +212,7 @@ func (idx Index) SetRows(rows []int, level int, val interface{}) (*Series, error
 
 // DropLevel drops the specified index level and returns a new Series.
 func (idx Index) DropLevel(level int) (*Series, error) {
-	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
 	s := idx.s.Copy()
@@ -235,7 +222,7 @@ func (idx Index) DropLevel(level int) (*Series, error) {
 
 // DropLevels drops the specified index levels and returns a new Series.
 func (idx Index) DropLevels(levelPositions []int) (*Series, error) {
-	if err := idx.ensureLevelPositions(levelPositions); err != nil {
+	if err := idx.s.ensureLevelPositions(levelPositions); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
 	s := idx.s.Copy()
@@ -278,7 +265,7 @@ func (idx Index) SelectNames(names []string) []int {
 
 // Flip replaces the Series values with the labels at the supplied index level, and vice versa.
 func (idx Index) Flip(level int) (*Series, error) {
-	err := idx.ensureLevelPositions([]int{level})
+	err := idx.s.ensureLevelPositions([]int{level})
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.Flip(): %v", err)
 	}
@@ -329,7 +316,7 @@ func (idx Index) Filter(level int, cmp func(interface{}) bool) []int {
 	include := make([]int, 0)
 	empty := make([]int, 0)
 
-	if err := idx.ensureLevelPositions([]int{level}); err != nil {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		if options.GetLogWarnings() {
 			log.Printf("series.Index.Filter(): %v", err)
 		}

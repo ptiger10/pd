@@ -25,11 +25,6 @@ func (s *Series) replace(s2 *Series) {
 
 // [START InPlace]
 
-// InPlace contains methods for modifying a Series in place.
-type InPlace struct {
-	s *Series
-}
-
 func (ip InPlace) String() string {
 	printer := "{InPlace Handler}\n"
 	printer += "Methods:\n"

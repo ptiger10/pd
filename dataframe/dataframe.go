@@ -13,6 +13,16 @@ type DataFrame struct {
 	cols    index.Columns
 	index   index.Index
 	InPlace InPlace
+	Index   Index
+}
+
+// A Row is a single row in a DataFrame.
+type Row struct {
+	Values     []interface{}
+	Nulls      []bool
+	ValueTypes []options.DataType
+	Labels     []interface{}
+	LabelTypes []options.DataType
 }
 
 // Config customizes the DataFrame constructor.

@@ -306,9 +306,9 @@ func TestModify_Set(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"singleRow",
-			MustNew([]interface{}{"foo"}), args{rowPositions: 0, val: "bar"},
-			want{df: MustNew([]interface{}{"bar"}), err: false}},
+		{name: "singleRow",
+			input: MustNew([]interface{}{"foo"}), args: args{rowPositions: 0, val: "bar"},
+			want: want{df: MustNew([]interface{}{"bar"}), err: false}},
 		{"fail: invalid index singleRow",
 			MustNew([]interface{}{"foo"}), args{1, "bar"},
 			want{MustNew([]interface{}{"foo"}), true}},

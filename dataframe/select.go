@@ -9,6 +9,21 @@ import (
 	"github.com/ptiger10/pd/series"
 )
 
+// Row returns information about the values and index labels in this row but panics if an out-of-range position is provided.
+func (df *DataFrame) Row(position int) Row {
+	vals := make([]interface{}, df.NumCols())
+	nulls := make([]bool, df.NumCols())
+	types := make([]options.DataType, df.NumCols())
+	for m := 0; m < df.NumCols(); m++ {
+		elem := df.vals[m].Values.Element(position)
+		vals[m] = elem.Value
+		nulls[m] = elem.Null
+		types[m] = df.vals[m].DataType
+	}
+	idxElems := df.index.Elements(position)
+	return Row{Values: vals, Nulls: nulls, ValueTypes: types, Labels: idxElems.Labels, LabelTypes: idxElems.DataTypes}
+}
+
 func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
 	if err := df.ensureAlignment(); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)

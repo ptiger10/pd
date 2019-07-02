@@ -16,6 +16,11 @@ type Series struct {
 	InPlace  InPlace
 }
 
+// InPlace contains methods for modifying a Series in place.
+type InPlace struct {
+	s *Series
+}
+
 // An Element is a single item in a Series.
 type Element struct {
 	Value      interface{}
