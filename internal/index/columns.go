@@ -147,6 +147,9 @@ func NewDefaultColLevel(n int, name string) ColLevel {
 
 // NewColLevel returns a Columns level with updated label map.
 func NewColLevel(labels []string, name string) ColLevel {
+	if labels == nil {
+		labels = []string{}
+	}
 	lvl := ColLevel{
 		Labels:   labels,
 		Name:     name,
@@ -163,9 +166,6 @@ func (lvl ColLevel) Len() int {
 
 // Refresh updates all the label mappings value within a column level.
 func (lvl *ColLevel) Refresh() {
-	if lvl.Labels == nil {
-		return
-	}
 	lvl.updateLabelMap()
 }
 

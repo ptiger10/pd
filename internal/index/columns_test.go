@@ -25,7 +25,7 @@ func TestNewColumns(t *testing.T) {
 	}{
 		{"empty", args{nil},
 			want{
-				columns: Columns{Levels: []ColLevel{ColLevel{Labels: nil, DataType: options.String}}, NameMap: LabelMap{"": []int{0}}},
+				columns: Columns{Levels: []ColLevel{ColLevel{Labels: []string{}, DataType: options.String, LabelMap: LabelMap{}}}, NameMap: LabelMap{"": []int{0}}},
 				len:     0, numLevels: 1, maxNameWidth: 0, names: []string{},
 			}},
 		{"one col",
@@ -89,6 +89,14 @@ func TestNewColLevel(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewColLevel(): got %v, want %v", got, want)
+	}
+}
+
+func TestNewColLevel_Nil(t *testing.T) {
+	colLevel := NewColLevel(nil, "")
+	cpy := colLevel.Copy()
+	if !reflect.DeepEqual(colLevel, cpy) {
+		t.Errorf("NewColLevel(nil) = %v, want %v", colLevel, cpy)
 	}
 }
 
