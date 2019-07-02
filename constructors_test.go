@@ -26,7 +26,7 @@ func TestSeries(t *testing.T) {
 			args{"foo", []Config{Config{Name: "bar"}}},
 			want{series.MustNew("foo", series.Config{Name: "bar"}), false}},
 		{"config with df field",
-			args{"foo", []Config{Config{Name: "bar", Cols: []interface{}{"baz"}}}},
+			args{"foo", []Config{Config{Name: "bar", Col: []string{"baz"}}}},
 			want{series.MustNew("foo", series.Config{Name: "bar"}), false}},
 		{"fail: multiple configs",
 			args{"foo", []Config{Config{Name: "bar"}, Config{Name: "baz"}}},

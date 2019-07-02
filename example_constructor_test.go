@@ -26,8 +26,8 @@ func ExampleDataFrame_default() {
 	}
 	fmt.Println(df)
 	// Output:
-	//        0  1
-	// 0    foo  7
-	// 1    bar 11
-	// 2    baz 19
+	//        0   1
+	// 0    foo   7
+	// 1    bar  11
+	// 2    baz  19
 }

@@ -43,7 +43,7 @@ func DataFrame(data []interface{}, config ...Config) (*dataframe.DataFrame, erro
 		Name: tmp.Name, DataType: tmp.DataType,
 		Index: tmp.Index, IndexName: tmp.IndexName,
 		MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
-		Cols: tmp.Cols, ColsName: tmp.ColsName,
+		Col: tmp.Col, ColName: tmp.ColName,
 		MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
 	}
 	df, err := dataframe.New(data, dfConfig)
@@ -61,8 +61,8 @@ type Config struct {
 	IndexName       string
 	MultiIndex      []interface{}
 	MultiIndexNames []string
-	Cols            []interface{}
-	ColsName        string
-	MultiCol        [][]interface{}
+	Col             []string
+	ColName         string
+	MultiCol        [][]string
 	MultiColNames   []string
 }
