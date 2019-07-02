@@ -60,9 +60,18 @@ func (ip InPlace) SwapRows(i, j int) {
 	for m := 0; m < ip.df.NumCols(); m++ {
 		ip.df.vals[m].Values.Swap(i, j)
 	}
-	for lvl := 0; lvl < ip.df.index.NumLevels(); lvl++ {
-		ip.df.index.Levels[lvl].Labels.Swap(i, j)
-		ip.df.index.Levels[lvl].Refresh()
+	for l := 0; l < ip.df.IndexLevels(); l++ {
+		ip.df.index.Levels[l].Labels.Swap(i, j)
+		ip.df.index.Levels[l].Refresh()
+	}
+}
+
+// SwapColumns swaps the selected columns in place.
+func (ip InPlace) SwapColumns(i, j int) {
+	ip.df.vals[i], ip.df.vals[j] = ip.df.vals[j], ip.df.vals[i]
+	for l := 0; l < ip.df.ColLevels(); l++ {
+		ip.df.cols.Levels[l].Labels[i], ip.df.cols.Levels[l].Labels[j] = ip.df.cols.Levels[l].Labels[j], ip.df.cols.Levels[l].Labels[i]
+		ip.df.cols.Levels[l].Refresh()
 	}
 }
 
@@ -316,6 +325,19 @@ func (df *DataFrame) SwapRows(i, j int) (*DataFrame, error) {
 		return newEmptyDataFrame(), fmt.Errorf("invalid position: %d (max %v)", j, df.Len()-1)
 	}
 	df.InPlace.SwapRows(i, j)
+	return df, nil
+}
+
+// SwapColumns swaps the selected rows and returns a new DataFrame.
+func (df *DataFrame) SwapColumns(i, j int) (*DataFrame, error) {
+	df = df.Copy()
+	if i >= df.NumCols() {
+		return newEmptyDataFrame(), fmt.Errorf("invalid position: %d (max %v)", i, df.Len()-1)
+	}
+	if j >= df.NumCols() {
+		return newEmptyDataFrame(), fmt.Errorf("invalid position: %d (max %v)", j, df.Len()-1)
+	}
+	df.InPlace.SwapColumns(i, j)
 	return df, nil
 }
 

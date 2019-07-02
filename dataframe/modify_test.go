@@ -135,6 +135,51 @@ func TestModify_SwapRows(t *testing.T) {
 	}
 }
 
+func TestModify_SwapColumns(t *testing.T) {
+	type args struct {
+		i int
+		j int
+	}
+	var tests = []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"0,1", args{0, 1}, false},
+		{"1,0", args{1, 0}, false},
+		{"fail: i", args{2, 0}, true},
+		{"fail: j", args{0, 2}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := MustNew([]interface{}{"foo", "bar"})
+			dfArchive := df.Copy()
+			want := MustNew([]interface{}{"bar", "foo"}, Config{Col: []string{"1", "0"}})
+			want.cols.Levels[0].DataType = options.Int64
+
+			dfCopy, err := dfArchive.SwapColumns(tt.args.i, tt.args.j)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DataFrame.SwapColumns() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+
+			// intentionally skip fail case
+			if !strings.Contains(tt.name, "fail") {
+				df.InPlace.SwapColumns(tt.args.i, tt.args.j)
+				if !Equal(df, want) {
+					t.Errorf("InPlace.SwapColumns() got %v, want %v", df.cols.Levels[0].DataType, want.cols.Levels[0].DataType)
+				}
+				if !Equal(dfCopy, want) {
+					t.Errorf("DataFrame.SwapColumns() got %v, want %v", dfCopy, want)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.SwapColumns() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
 func TestModify_InsertRow(t *testing.T) {
 	multi := MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{"A", 1}})
 	misaligned := MustNew([]interface{}{[]string{"foo", "bar"}})

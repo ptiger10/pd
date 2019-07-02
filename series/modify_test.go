@@ -128,7 +128,7 @@ func TestModify_Swap(t *testing.T) {
 					t.Errorf("Series.Swap() got %v, want %v", sCopy, want)
 				}
 				if Equal(sArchive, sCopy) {
-					t.Errorf("Series.Sort() retained access to original, want copy")
+					t.Errorf("Series.Swap() retained access to original, want copy")
 				}
 			}
 		})

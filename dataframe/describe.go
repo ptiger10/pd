@@ -33,10 +33,10 @@ func (df *DataFrame) Name() string {
 
 // NumCols returns the number of columns in the DataFrame.
 func (df *DataFrame) NumCols() int {
-	if df.vals == nil {
+	if len(df.cols.Levels) == 0 {
 		return 0
 	}
-	return len(df.vals)
+	return len(df.cols.Levels[0].Labels)
 }
 
 // IndexLevels returns the number of index levels in the DataFrame.
