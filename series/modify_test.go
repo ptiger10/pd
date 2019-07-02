@@ -496,24 +496,24 @@ func TestModify_DropRows(t *testing.T) {
 			sArchive := tt.input.Copy()
 			err := s.InPlace.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
-				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.DropRows() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !Equal(s, tt.want.series) {
-				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.series)
+				t.Errorf("InPlace.DropRows() got %v, want %v", s, tt.want.series)
 			}
 
 			sCopy, err := sArchive.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
-				t.Errorf("Series.Drop() error = %v, want %v", err, tt.want.err)
+				t.Errorf("Series.DropRows() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(sCopy, tt.want.series) {
-					t.Errorf("Series.Drop() got %v, want %v", sCopy, tt.want.series)
+					t.Errorf("Series.DropRows() got %v, want %v", sCopy, tt.want.series)
 				}
 				if Equal(sArchive, sCopy) {
-					t.Errorf("Series.Drop() retained access to original, want copy")
+					t.Errorf("Series.DropRows() retained access to original, want copy")
 				}
 			}
 		})

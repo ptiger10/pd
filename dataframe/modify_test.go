@@ -3,6 +3,9 @@ package dataframe
 import (
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
 // Modify tests check both inplace and copy functionality in the same test, if both are available
@@ -168,6 +171,10 @@ func TestModify_InsertRow(t *testing.T) {
 			multi,
 			args{1, []interface{}{"bar"}, []interface{}{"C"}},
 			want{nil, true}},
+		{"fail: wrong values length",
+			multi,
+			args{1, []interface{}{"bar", "baz"}, []interface{}{"C", 3}},
+			want{nil, true}},
 		{"fail: invalid position",
 			multi,
 			args{10, []interface{}{"bar"}, []interface{}{"C", 3}},
@@ -221,301 +228,301 @@ func TestModify_InsertRow(t *testing.T) {
 	}
 }
 
-// func TestModify_Append(t *testing.T) {
-// 	type args struct {
-// 		val interface{}
-// 		idx []interface{}
-// 	}
-// 	type want struct {
-// 		df  *DataFrame
-// 		err bool
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  want
-// 	}{
-// 		{"singleIndex",
-// 			MustNew([]string{"foo"}, Config{Index: []int{1}}),
-// 			args{val: "bar", idx: []interface{}{2}},
-// 			want{df: MustNew([]string{"foo", "bar"}, Config{Index: []int{1, 2}}), err: false}},
-// 		{"multiIndex",
-// 			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
-// 			args{"bar", []interface{}{"B", 2}},
-// 			want{MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), false}},
-// 		{"fail singleIndex: nil index values",
-// 			MustNew([]string{"foo"}, Config{Index: []int{1}}),
-// 			args{"bar", nil},
-// 			want{nil, true}},
-// 		{"fail multiIndex: insufficient index values",
-// 			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
-// 			args{"bar", []interface{}{"B"}},
-// 			want{nil, true}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			err := s.InPlace.Append(tt.args.val, tt.args.idx)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("InPlace.Append() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(s, tt.want.df) {
-// 					t.Errorf("InPlace.Append() got %v, want %v", s, tt.want.df)
-// 				}
-// 			}
-// 			dfCopy, err := dfArchive.Append(tt.args.val, tt.args.idx)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("DataFrame.Append() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want.df) {
-// 					t.Errorf("DataFrame.Append() got %v, want %v", dfCopy, tt.want.df)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.Append() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+func TestModify_AppendRow(t *testing.T) {
+	type args struct {
+		val []interface{}
+		idx []interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"singleIndex",
+			MustNew([]interface{}{[]string{"foo"}}, Config{Index: []int{1}}),
+			args{val: []interface{}{"bar"}, idx: []interface{}{2}},
+			want{df: MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int{1, 2}}), err: false}},
+		{"multiIndex",
+			MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
+			args{[]interface{}{"bar"}, []interface{}{"B", 2}},
+			want{MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), false}},
+		{"fail singleIndex: nil index values",
+			MustNew([]interface{}{[]string{"foo"}}, Config{Index: []int{1}}),
+			args{[]interface{}{"bar"}, nil},
+			want{nil, true}},
+		{"fail multiIndex: insufficient index values",
+			MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
+			args{[]interface{}{"bar"}, []interface{}{"B"}},
+			want{nil, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			err := s.InPlace.AppendRow(tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.AppendRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(s, tt.want.df) {
+					t.Errorf("InPlace.AppendRow() got %v, want %v", s, tt.want.df)
+				}
+			}
+			dfCopy, err := dfArchive.AppendRow(tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Append() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.Append() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Append() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func TestModify_Set(t *testing.T) {
-// 	type args struct {
-// 		rowPositions int
-// 		val          interface{}
-// 	}
-// 	type want struct {
-// 		df  *DataFrame
-// 		err bool
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  want
-// 	}{
-// 		{"singleRow",
-// 			MustNew("foo"), args{rowPositions: 0, val: "bar"},
-// 			want{df: MustNew("bar"), err: false}},
-// 		{"fail: invalid index singleRow",
-// 			MustNew("foo"), args{1, "bar"},
-// 			want{MustNew("foo"), true}},
-// 		{"fail: unsupported value",
-// 			MustNew("foo"), args{0, complex64(1)},
-// 			want{MustNew("foo"), true}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			err := s.InPlace.Set(tt.args.rowPositions, tt.args.val)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.df)
-// 			}
+func TestModify_Set(t *testing.T) {
+	type args struct {
+		rowPositions int
+		val          interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"singleRow",
+			MustNew([]interface{}{"foo"}), args{rowPositions: 0, val: "bar"},
+			want{df: MustNew([]interface{}{"bar"}), err: false}},
+		{"fail: invalid index singleRow",
+			MustNew([]interface{}{"foo"}), args{1, "bar"},
+			want{MustNew([]interface{}{"foo"}), true}},
+		{"fail: unsupported value",
+			MustNew([]interface{}{"foo"}), args{0, complex64(1)},
+			want{MustNew([]interface{}{"foo"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			err := s.InPlace.SetRow(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.SetRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.df) {
+				t.Errorf("InPlace.SetRow() got %v, want %v", s, tt.want.df)
+			}
 
-// 			dfCopy, err := dfArchive.Set(tt.args.rowPositions, tt.args.val)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want.df) {
-// 					t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.Set() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			dfCopy, err := dfArchive.SetRow(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.SetRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.SetRow() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.SetRow() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func TestModify_SetRows(t *testing.T) {
-// 	type args struct {
-// 		rowPositions []int
-// 		val          interface{}
-// 	}
-// 	type want struct {
-// 		df  *DataFrame
-// 		err bool
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  want
-// 	}{
-// 		{"singleRow",
-// 			MustNew("foo"), args{rowPositions: []int{0}, val: "bar"},
-// 			want{df: MustNew("bar"), err: false}},
-// 		{"multiRow",
-// 			MustNew([]string{"foo", "bar"}), args{[]int{0, 1}, "baz"},
-// 			want{MustNew([]string{"baz", "baz"}), false}},
-// 		{"fail: singleRow",
-// 			MustNew("foo"), args{rowPositions: []int{0}, val: complex64(1)},
-// 			want{df: MustNew("foo"), err: true}},
-// 		{"fail: invalid index singleRow",
-// 			MustNew("foo"), args{[]int{1}, "bar"},
-// 			want{MustNew("foo"), true}},
-// 		{"fail: partial success on multiRow",
-// 			MustNew("foo"), args{[]int{0, 2}, "bar"},
-// 			want{MustNew("foo"), true}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			err := s.InPlace.SetRows(tt.args.rowPositions, tt.args.val)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.df)
-// 			}
+func TestModify_SetRows(t *testing.T) {
+	type args struct {
+		rowPositions []int
+		val          interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"singleRow",
+			MustNew([]interface{}{"foo"}), args{rowPositions: []int{0}, val: "bar"},
+			want{df: MustNew([]interface{}{"bar"}), err: false}},
+		{"multiRow",
+			MustNew([]interface{}{[]string{"foo", "bar"}}), args{[]int{0, 1}, "baz"},
+			want{MustNew([]interface{}{[]string{"baz", "baz"}}), false}},
+		{"fail: singleRow",
+			MustNew([]interface{}{"foo"}), args{rowPositions: []int{0}, val: complex64(1)},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+		{"fail: invalid index singleRow",
+			MustNew([]interface{}{"foo"}), args{[]int{1}, "bar"},
+			want{MustNew([]interface{}{"foo"}), true}},
+		{"fail: partial success on multiRow",
+			MustNew([]interface{}{"foo"}), args{[]int{0, 2}, "bar"},
+			want{MustNew([]interface{}{"foo"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			err := s.InPlace.SetRows(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.df) {
+				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.df)
+			}
 
-// 			dfCopy, err := dfArchive.SetRows(tt.args.rowPositions, tt.args.val)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want.df) {
-// 					t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.Set() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			dfCopy, err := dfArchive.SetRows(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Set() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func TestModify_Drop(t *testing.T) {
-// 	type args struct {
-// 		rowPositions int
-// 	}
-// 	type want struct {
-// 		df  *DataFrame
-// 		err bool
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  want
-// 	}{
-// 		{"drop to 0",
-// 			MustNew("foo"), args{rowPositions: 0},
-// 			want{df: newEmptyDataFrame(), err: false}},
-// 		{"singleRow",
-// 			MustNew([]string{"foo", "bar", "baz"}), args{1},
-// 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
-// 		{"fail: invalid index singleRow",
-// 			MustNew("foo"), args{1},
-// 			want{MustNew("foo"), true}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			err := s.InPlace.Drop(tt.args.rowPositions)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.df)
-// 			}
+func TestModify_Drop(t *testing.T) {
+	type args struct {
+		rowPositions int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"drop to 0",
+			MustNew([]interface{}{"foo"}), args{rowPositions: 0},
+			want{df: newEmptyDataFrame(), err: false}},
+		{"singleRow",
+			MustNew([]interface{}{[]string{"foo", "bar", "baz"}}), args{1},
+			want{MustNew([]interface{}{[]string{"foo", "baz"}}, Config{Index: []int{0, 2}}), false}},
+		{"fail: invalid index singleRow",
+			MustNew([]interface{}{"foo"}), args{1},
+			want{MustNew([]interface{}{"foo"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			err := s.InPlace.DropRow(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.DropRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.df) {
+				t.Errorf("InPlace.DropRow() got %v, want %v", s, tt.want.df)
+			}
 
-// 			dfCopy, err := dfArchive.Drop(tt.args.rowPositions)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("DataFrame.Drop() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want.df) {
-// 					t.Errorf("DataFrame.Drop() got %v, want %v", dfCopy, tt.want.df)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.Drop() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			dfCopy, err := dfArchive.DropRow(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.DropRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.DropRow() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropRow() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// func TestModify_DropRows(t *testing.T) {
-// 	type args struct {
-// 		rowPositions []int
-// 	}
-// 	type want struct {
-// 		df  *DataFrame
-// 		err bool
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  want
-// 	}{
-// 		{"drop to 0",
-// 			MustNew("foo"), args{rowPositions: []int{0}},
-// 			want{df: newEmptyDataFrame(), err: false}},
-// 		{"singleRow",
-// 			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1}},
-// 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
-// 		{"multiRow",
-// 			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1, 2}},
-// 			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
-// 		{"multiRow reverse",
-// 			MustNew([]string{"foo", "bar", "baz"}), args{[]int{2, 1}},
-// 			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
-// 		{"fail: invalid index singleRow",
-// 			MustNew("foo"), args{[]int{1}},
-// 			want{MustNew("foo"), true}},
-// 		{"fail: partial success on multiRow",
-// 			MustNew([]string{"foo", "bar"}), args{[]int{0, 2}},
-// 			want{MustNew([]string{"foo", "bar"}), true}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			err := s.InPlace.DropRows(tt.args.rowPositions)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("InPlace.Drop() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.Drop() got %v, want %v", s, tt.want.df)
-// 			}
+func TestModify_DropRows(t *testing.T) {
+	type args struct {
+		rowPositions []int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"drop to 0",
+			MustNew([]interface{}{"foo"}), args{rowPositions: []int{0}},
+			want{df: newEmptyDataFrame(), err: false}},
+		{"singleRow",
+			MustNew([]interface{}{[]string{"foo", "bar", "baz"}}), args{[]int{1}},
+			want{MustNew([]interface{}{[]string{"foo", "baz"}}, Config{Index: []int{0, 2}}), false}},
+		{"multiRow",
+			MustNew([]interface{}{[]string{"foo", "bar", "baz"}}), args{[]int{1, 2}},
+			want{MustNew([]interface{}{[]string{"foo"}}, Config{Index: []int{0}}), false}},
+		{"multiRow reverse",
+			MustNew([]interface{}{[]string{"foo", "bar", "baz"}}), args{[]int{2, 1}},
+			want{MustNew([]interface{}{[]string{"foo"}}, Config{Index: []int{0}}), false}},
+		{"fail: invalid index singleRow",
+			MustNew([]interface{}{"foo"}), args{[]int{1}},
+			want{MustNew([]interface{}{"foo"}), true}},
+		{"fail: partial success on multiRow",
+			MustNew([]interface{}{[]string{"foo", "bar"}}), args{[]int{0, 2}},
+			want{MustNew([]interface{}{[]string{"foo", "bar"}}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			err := s.InPlace.DropRows(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.DropRows() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(s, tt.want.df) {
+				t.Errorf("InPlace.DropRows() got %v, want %v", s, tt.want.df)
+			}
 
-// 			dfCopy, err := dfArchive.DropRows(tt.args.rowPositions)
-// 			if (err != nil) != tt.want.err {
-// 				t.Errorf("DataFrame.Drop() error = %v, want %v", err, tt.want.err)
-// 				return
-// 			}
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want.df) {
-// 					t.Errorf("DataFrame.Drop() got %v, want %v", dfCopy, tt.want.df)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.Drop() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			dfCopy, err := dfArchive.DropRows(tt.args.rowPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.DropRows() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.DropRows() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropRows() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
 // func TestModify_DropDuplicates(t *testing.T) {
 // 	var tests = []struct {
@@ -598,79 +605,98 @@ func TestModify_InsertRow(t *testing.T) {
 // 	}
 // }
 
-// func TestModifyInPlace_DatatypeConversion(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	type args struct {
-// 		To (func(InPlace))
-// 	}
-// 	type want struct {
-// 		df       *DataFrame
-// 		datatype options.DataType
-// 	}
-// 	var tests = []struct {
-// 		name string
-// 		args args
-// 		want want
-// 	}{
-// 		{"float", args{(InPlace).ToFloat64}, want{MustNew([]interface{}{[]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}), options.Float64}},
-// 		{"int", args{(InPlace).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
-// 		{"string", args{(InPlace).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
-// 		{"bool", args{(InPlace).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
-// 		{"datetime", args{(InPlace).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
-// 		{"control", args{(InPlace).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := MustNew([]interface{}{1.5, 1, "1", false, testDate})
-// 			tt.args.To(s.InPlace)
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.To... got %v, want %v", s, tt.want.df)
-// 			}
-// 			if s.datatype != tt.want.datatype {
-// 				t.Errorf("InPlace.To... got datatype %v, want %v", s.datatype, tt.want.datatype)
-// 			}
-// 		})
-// 	}
-// }
+func TestModifyInPlace_DatatypeConversion(t *testing.T) {
+	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	singleRow := MustNew([]interface{}{1.5, 1, "1", false, testDate})
+	singleColumn := MustNew([]interface{}{[]interface{}{1.5, 1, "1", false, testDate}})
+	type args struct {
+		To (func(InPlace))
+	}
+	type want struct {
+		df       *DataFrame
+		datatype options.DataType
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "float row", input: singleRow, args: args{(InPlace).ToFloat64}, want: want{MustNew([]interface{}{1.5, 1.0, 1.0, 0.0, 1.5566688e+18}), options.Float64}},
+		{"float col", singleColumn, args{(InPlace).ToFloat64}, want{MustNew([]interface{}{[]float64{1.5, 1.0, 1.0, 0.0, 1.5566688e+18}}), options.Float64}},
+		{"int row", singleRow, args{(InPlace).ToInt64}, want{MustNew([]interface{}{int64(1), int64(1), int64(1), int64(0), int64(1.5566688e+18)}), options.Int64}},
+		{"int col", singleColumn, args{(InPlace).ToInt64}, want{MustNew([]interface{}{[]int64{1, 1, 1, 0, 1.5566688e+18}}), options.Int64}},
+		{"string row", singleRow, args{(InPlace).ToString}, want{MustNew([]interface{}{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
+		{"string col", singleColumn, args{(InPlace).ToString}, want{MustNew([]interface{}{[]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}}), options.String}},
+		{"bool row", singleRow, args{(InPlace).ToBool}, want{MustNew([]interface{}{true, true, true, false, true}), options.Bool}},
+		{"bool col", singleColumn, args{(InPlace).ToBool}, want{MustNew([]interface{}{[]bool{true, true, true, false, true}}), options.Bool}},
+		{"datetime row", singleRow, args{(InPlace).ToDateTime}, want{MustNew([]interface{}{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"datetime col", singleColumn, args{(InPlace).ToDateTime}, want{MustNew([]interface{}{[]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}}), options.DateTime}},
+		{"control row", singleRow, args{(InPlace).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}, Config{DataType: options.Interface}), options.Interface}},
+		{"control col", singleColumn, args{(InPlace).ToInterface}, want{MustNew([]interface{}{[]interface{}{1.5, 1, "1", false, testDate}}), options.Interface}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			tt.args.To(df.InPlace)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.To... got %v, want %v", df, tt.want.df)
+			}
+			if df.dataType() != tt.want.datatype.String() {
+				t.Errorf("InPlace.To... got datatype %v, want %v", df.dataType(), tt.want.datatype.String())
+			}
+		})
+	}
+}
 
-// func TestModify_DatatypeConversion(t *testing.T) {
-// 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-// 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	type args struct {
-// 		To (func(*DataFrame) *DataFrame)
-// 	}
-// 	type want struct {
-// 		df       *DataFrame
-// 		datatype options.DataType
-// 	}
-// 	var tests = []struct {
-// 		name string
-// 		args args
-// 		want want
-// 	}{
-// 		{"float", args{(*DataFrame).ToFloat64}, want{MustNew([]interface{}{[]float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}), options.Float64}},
-// 		{"int", args{(*DataFrame).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
-// 		{"string", args{(*DataFrame).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
-// 		{"bool", args{(*DataFrame).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
-// 		{"datetime", args{(*DataFrame).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
-// 		{"control: interface", args{(*DataFrame).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := MustNew([]interface{}{1.5, 1, "1", false, testDate})
-// 			got := tt.args.To(s)
-// 			if !Equal(got, tt.want.df) {
-// 				t.Errorf("DataFrame.To... got %v, want %v", got, tt.want.df)
-// 			}
-// 			if got.datatype != tt.want.datatype {
-// 				t.Errorf("DataFrame.To... got datatype %v, want %v", got.datatype, tt.want.datatype)
-// 			}
-// 			if !strings.Contains(tt.name, "control") {
-// 				if s.DataType() == got.DataType() {
-// 					t.Errorf("DataFrame.To... retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+func TestModify_DatatypeConversion(t *testing.T) {
+	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
+	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	singleRow := MustNew([]interface{}{1.5, 1, "1", false, testDate})
+	singleColumn := MustNew([]interface{}{[]interface{}{1.5, 1, "1", false, testDate}})
+	type args struct {
+		To (func(*DataFrame) *DataFrame)
+	}
+	type want struct {
+		df       *DataFrame
+		datatype options.DataType
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "float row", input: singleRow, args: args{(*DataFrame).ToFloat64}, want: want{MustNew([]interface{}{1.5, 1.0, 1.0, 0.0, 1.5566688e+18}), options.Float64}},
+		{"float col", singleColumn, args{(*DataFrame).ToFloat64}, want{MustNew([]interface{}{[]float64{1.5, 1.0, 1.0, 0.0, 1.5566688e+18}}), options.Float64}},
+		{"int row", singleRow, args{(*DataFrame).ToInt64}, want{MustNew([]interface{}{int64(1), int64(1), int64(1), int64(0), int64(1.5566688e+18)}), options.Int64}},
+		{"int col", singleColumn, args{(*DataFrame).ToInt64}, want{MustNew([]interface{}{[]int64{1, 1, 1, 0, 1.5566688e+18}}), options.Int64}},
+		{"string row", singleRow, args{(*DataFrame).ToString}, want{MustNew([]interface{}{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
+		{"string col", singleColumn, args{(*DataFrame).ToString}, want{MustNew([]interface{}{[]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}}), options.String}},
+		{"bool row", singleRow, args{(*DataFrame).ToBool}, want{MustNew([]interface{}{true, true, true, false, true}), options.Bool}},
+		{"bool col", singleColumn, args{(*DataFrame).ToBool}, want{MustNew([]interface{}{[]bool{true, true, true, false, true}}), options.Bool}},
+		{"datetime row", singleRow, args{(*DataFrame).ToDateTime}, want{MustNew([]interface{}{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"datetime col", singleColumn, args{(*DataFrame).ToDateTime}, want{MustNew([]interface{}{[]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}}), options.DateTime}},
+		{"control row", singleRow, args{(*DataFrame).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}, Config{DataType: options.Interface}), options.Interface}},
+		{"control col", singleColumn, args{(*DataFrame).ToInterface}, want{MustNew([]interface{}{[]interface{}{1.5, 1, "1", false, testDate}}), options.Interface}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := df.Copy()
+			got := tt.args.To(df)
+			if !Equal(got, tt.want.df) {
+				t.Errorf("DataFrame.To... got %v, want %v", got, tt.want.df)
+			}
+			if got.dataType() != tt.want.datatype.String() {
+				t.Errorf("DataFrame.To... got datatype %v, want %v", got.dataType(), tt.want.datatype.String())
+			}
+			if !strings.Contains(tt.name, "control") {
+				if Equal(got, dfArchive) {
+					t.Errorf("DataFrame.To... retained access to original, want copy")
+				}
+			}
+		})
+	}
+}

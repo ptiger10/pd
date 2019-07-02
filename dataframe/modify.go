@@ -97,13 +97,20 @@ func (ip InPlace) InsertRow(pos int, val []interface{}, idx []interface{}) error
 		return fmt.Errorf("DataFrame.InsertRow(): invalid position: %d (max %v)", pos, ip.Len())
 	}
 
+	if len(val) != ip.df.NumCols() {
+		return fmt.Errorf("DataFrame.InsertRow(): len(val) must equal number of columns (%d != %d)", len(val), ip.df.NumCols())
+	}
+
 	for _, v := range idx {
 		if _, err := values.InterfaceFactory(v); err != nil {
 			return fmt.Errorf("DataFrame.InsertRow(): %v", err)
 		}
 	}
-	if _, err := values.InterfaceFactory(val); err != nil {
-		return fmt.Errorf("DataFrame.InsertRow(): %v", err)
+
+	for _, v := range val {
+		if _, err := values.InterfaceFactory(v); err != nil {
+			return fmt.Errorf("DataFrame.InsertRow(): %v", err)
+		}
 	}
 
 	// Insertion once errors have been handled
@@ -112,7 +119,7 @@ func (ip InPlace) InsertRow(pos int, val []interface{}, idx []interface{}) error
 		ip.df.index.Levels[j].Refresh()
 	}
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.Insert(pos, val)
+		ip.df.vals[m].Values.Insert(pos, val[m])
 	}
 
 	return nil
@@ -243,7 +250,7 @@ func (ip InPlace) dropOne(pos int) {
 // ToFloat64 converts DataFrame values to float64 in place.
 func (ip InPlace) ToFloat64() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToFloat64()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToFloat64()
 		ip.df.vals[m].DataType = options.Float64
 	}
 }
@@ -251,7 +258,7 @@ func (ip InPlace) ToFloat64() {
 // ToInt64 converts DataFrame values to int64 in place.
 func (ip InPlace) ToInt64() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToInt64()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToInt64()
 		ip.df.vals[m].DataType = options.Int64
 	}
 }
@@ -259,7 +266,7 @@ func (ip InPlace) ToInt64() {
 // ToString converts DataFrame values to string in place.
 func (ip InPlace) ToString() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToString()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToString()
 		ip.df.vals[m].DataType = options.String
 	}
 }
@@ -267,7 +274,7 @@ func (ip InPlace) ToString() {
 // ToBool converts DataFrame values to bool in place.
 func (ip InPlace) ToBool() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToBool()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToBool()
 		ip.df.vals[m].DataType = options.Bool
 	}
 }
@@ -275,7 +282,7 @@ func (ip InPlace) ToBool() {
 // ToDateTime converts DataFrame values to datetime in place.
 func (ip InPlace) ToDateTime() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToDateTime()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToDateTime()
 		ip.df.vals[m].DataType = options.DateTime
 	}
 }
@@ -283,7 +290,7 @@ func (ip InPlace) ToDateTime() {
 // ToInterface converts DataFrame values to interface in place.
 func (ip InPlace) ToInterface() {
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.ToInterface()
+		ip.df.vals[m].Values = ip.df.vals[m].Values.ToInterface()
 		ip.df.vals[m].DataType = options.Interface
 	}
 }
