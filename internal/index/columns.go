@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 )
 
 // Columns is a collection of column levels, plus name mappings.
@@ -133,19 +134,23 @@ type ColLevel struct {
 	Name     string
 	Labels   []string
 	LabelMap LabelMap
+	DataType options.DataType
 }
 
 // NewDefaultColLevel creates a column level with range labels (0, 1, 2, ...n) and optional name.
 func NewDefaultColLevel(n int, name string) ColLevel {
 	colsInt := values.MakeStringRange(0, n)
-	return NewColLevel(colsInt, name)
+	lvl := NewColLevel(colsInt, name)
+	lvl.DataType = options.Int64
+	return lvl
 }
 
 // NewColLevel returns a Columns level with updated label map.
 func NewColLevel(labels []string, name string) ColLevel {
 	lvl := ColLevel{
-		Labels: labels,
-		Name:   name,
+		Labels:   labels,
+		Name:     name,
+		DataType: options.String,
 	}
 	lvl.Refresh()
 	return lvl

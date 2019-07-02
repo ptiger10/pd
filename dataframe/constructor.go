@@ -101,19 +101,17 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 }
 
 // newSingleIndexSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
-func newSingleIndexSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
+func newSingleIndexSeries(data []interface{}, idx index.Index, name string) (*series.Series, error) {
 	ret, err := series.New(nil)
 	if err != nil {
 		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): %v", err)
 	}
-	if len(values) != len(idx) {
-		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): values must have same length as index: %d != %d", len(values), len(idx))
+	if len(data) != idx.Len() {
+		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): values must have same length as index: %d != %d", len(data), idx.Len())
 	}
-	for i := 0; i < len(values); i++ {
-		s, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
-		if err != nil {
-			return nil, fmt.Errorf("internal error: newSingleIndexSeries(): %v", err)
-		}
+	for i := 0; i < len(data); i++ {
+		vals := values.MustCreateValuesFromInterface(data[i])
+		s := series.FromInternalComponents(vals.Values, idx, vals.DataType, name)
 		ret.InPlace.Join(s)
 	}
 	return ret, nil

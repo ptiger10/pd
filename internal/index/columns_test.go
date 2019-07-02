@@ -3,6 +3,8 @@ package index
 import (
 	"reflect"
 	"testing"
+
+	"github.com/ptiger10/pd/options"
 )
 
 func TestNewColumns(t *testing.T) {
@@ -23,13 +25,13 @@ func TestNewColumns(t *testing.T) {
 	}{
 		{"empty", args{nil},
 			want{
-				columns: Columns{Levels: []ColLevel{ColLevel{Labels: nil}}, NameMap: LabelMap{"": []int{0}}},
+				columns: Columns{Levels: []ColLevel{ColLevel{Labels: nil, DataType: options.String}}, NameMap: LabelMap{"": []int{0}}},
 				len:     0, numLevels: 1, maxNameWidth: 0, names: []string{},
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
-				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}}},
+				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}}},
 				2, 1, 3, []string{"1", "2"},
 			}},
@@ -37,8 +39,8 @@ func TestNewColumns(t *testing.T) {
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
 			want{Columns{
 				Levels: []ColLevel{
-					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}},
-					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}}},
+					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String},
+					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
 				2, 2, 5, []string{"1 | 3", "2 | 4"},
 			}},
@@ -70,8 +72,8 @@ func TestNewColumns(t *testing.T) {
 }
 
 func TestNewDefaultColumns(t *testing.T) {
-	got := NewDefaultColumns(3)
-	want := NewColumns(NewColLevel([]string{"0", "1", "2"}, ""))
+	got := NewDefaultColumns(2)
+	want := NewColumns(ColLevel{Name: "", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, DataType: options.Int64})
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewDefaultColumns: got %v, want %v", got, want)
 	}
@@ -83,6 +85,7 @@ func TestNewColLevel(t *testing.T) {
 		Name:     "foobar",
 		Labels:   []string{"foo", "bar"},
 		LabelMap: LabelMap{"foo": []int{0}, "bar": []int{1}},
+		DataType: options.String,
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewColLevel(): got %v, want %v", got, want)
@@ -212,6 +215,28 @@ func TestColLevel_Subset(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("colsLevel.In(): got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewDefaultColLevel(t *testing.T) {
+	type args struct {
+		n    int
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want ColLevel
+	}{
+		{name: "pass", args: args{n: 2, name: "foo"},
+			want: ColLevel{Name: "foo", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, DataType: options.Int64}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewDefaultColLevel(tt.args.n, tt.args.name); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewDefaultColLevel() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -23,7 +23,7 @@ func (df *DataFrame) math(name string, fn func(s *series.Series) float64) *serie
 			idx = append(idx, s.Name())
 		}
 	}
-	s, err := newSingleIndexSeries(vals, idx, name)
+	s, err := deriveSeries(vals, idx, name)
 	if err != nil {
 		log.Printf("%v: %v", fmt.Sprintf("%v()", strings.Title(name)), err)
 		return nil
