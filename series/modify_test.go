@@ -177,7 +177,7 @@ func TestModify_Insert(t *testing.T) {
 			want{nil, true}},
 		{"fail: misaligned series position",
 			misaligned,
-			args{3, "bar", []interface{}{"B"}},
+			args{0, "bar", []interface{}{"B"}},
 			want{nil, true}},
 		{"fail: unsupported index value",
 			MustNew([]string{"foo"}, Config{Index: "A"}),

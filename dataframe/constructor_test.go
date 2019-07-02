@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -121,8 +120,8 @@ func TestNew(t *testing.T) {
 				t.Errorf("New() error = %v, want nil", err)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %#v, want %#v", got.index, tt.want.index)
+			if !Equal(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
 	}

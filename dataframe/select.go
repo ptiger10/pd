@@ -69,3 +69,19 @@ func (df *DataFrame) Subset(rowPositions []int) (*DataFrame, error) {
 	}
 	return sub, nil
 }
+
+// subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and modifies the DataFrame in place.
+func (ip InPlace) subsetRows(positions []int) {
+	for m := 0; m < ip.df.NumCols(); m++ {
+		ip.df.vals[m].Values = ip.df.vals[m].Values.Subset(positions)
+	}
+
+	ip.df.index = ip.df.index.Subset(positions)
+}
+
+// subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and returns a new DataFrame.
+func (df *DataFrame) subsetRows(positions []int) *DataFrame {
+	df = df.Copy()
+	df.InPlace.subsetRows(positions)
+	return df
+}

@@ -31,11 +31,6 @@ func (df *DataFrame) Name() string {
 	return df.name
 }
 
-// Rename the DataFrame.
-func (df *DataFrame) Rename(name string) {
-	df.name = name
-}
-
 // NumCols returns the number of columns in the DataFrame.
 func (df *DataFrame) NumCols() int {
 	if df.vals == nil {
@@ -273,6 +268,8 @@ func Equal(df, df2 *DataFrame) bool {
 		return false
 	}
 	if !reflect.DeepEqual(df.cols, df2.cols) {
+		// diff, _ := messagediff.PrettyDiff(df.cols, df2.cols)
+		// fmt.Println(diff)
 		return false
 	}
 	if df.name != df2.name {
@@ -358,3 +355,76 @@ func (df *DataFrame) makeExclusionsTable() [][]bool {
 	}
 	return table
 }
+
+// [START ensure methods]
+
+// returns an error if any index levels have different lengths
+// or if there is a mismatch between the number of values and index items
+func (df *DataFrame) ensureAlignment() error {
+	if err := df.index.Aligned(); err != nil {
+		return fmt.Errorf("dataframe out of alignment: %v", err)
+	}
+	if labels := df.index.Levels[0].Len(); df.Len() != labels {
+		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
+	}
+
+	if err := df.valsAligned(); err != nil {
+		return fmt.Errorf("dataframe out of alignment: %v", err)
+	}
+
+	if df.cols.Len() != df.NumCols() {
+		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
+			df.cols.Len(), df.NumCols())
+	}
+	return nil
+}
+
+// returns an error if any row position does not exist
+func (df *DataFrame) ensureRowPositions(positions []int) error {
+	if len(positions) == 0 {
+		return fmt.Errorf("no valid rows")
+	}
+
+	len := df.Len()
+	for _, pos := range positions {
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// returns an error if any level position does not exist
+func (df *DataFrame) ensureIndexLevelPositions(positions []int) error {
+	for _, pos := range positions {
+		len := df.index.NumLevels()
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// returns an error if any level position does not exist
+func (df *DataFrame) ensureColumnPositions(positions []int) error {
+	for _, pos := range positions {
+		len := df.NumCols()
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// returns an error if any level position does not exist
+func (df *DataFrame) ensureColumnLevelPositions(positions []int) error {
+	for _, pos := range positions {
+		len := df.cols.NumLevels()
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// [END ensure methods]

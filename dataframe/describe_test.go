@@ -9,14 +9,28 @@ import (
 )
 
 func TestEqual(t *testing.T) {
-	df := MustNew(
-		[]interface{}{[]string{"foo"}, []string{"bar"}},
-		Config{Col: []string{"baz", "qux"}})
-	df2 := MustNew(
-		[]interface{}{[]string{"foo"}, []string{"bar"}},
-		Config{Col: []string{"baz", "qux"}})
-	if !Equal(df, df2) {
-		t.Errorf("Equal() did not return true for equivalent df")
+	df := MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Index: "corge", Col: []string{"baz", "qux"}})
+	type args struct {
+		df2 *DataFrame
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  bool
+	}{
+		{name: "equal", input: df, args: args{df2: df}, want: true},
+		{"equal empty", newEmptyDataFrame(), args{newEmptyDataFrame()}, true},
+		{"equal empty copy", newEmptyDataFrame().Copy(), args{newEmptyDataFrame()}, true},
+		{"not equal", df, args{MustNew([]interface{}{[]string{"foo"}, []string{"bar"}})}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Equal(tt.input, tt.args.df2)
+			if got != tt.want {
+				t.Errorf("Equal() got %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
@@ -82,5 +96,15 @@ func TestMakeExclusionTable(t *testing.T) {
 	want := [][]bool{{false, false}, {false, false}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("df.MakeExclusionsTable() got %v, want %v", got, want)
+	}
+}
+
+func TestNames(t *testing.T) {
+	df := newEmptyDataFrame()
+	fmt.Println(df.NumCols())
+	got := df.cols.Names()
+	want := []string{}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("df.cols.Names() for nil got %v, want %v", got, want)
 	}
 }

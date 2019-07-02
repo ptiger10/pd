@@ -20,7 +20,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	var err error
 
 	if data == nil {
-		return &DataFrame{vals: nil, index: index.New(), cols: index.NewColumns()}, nil
+		return newEmptyDataFrame(), nil
 	}
 	// Handling config
 	if config != nil {
@@ -72,6 +72,10 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		name:  configuration.Name,
 	}
 
+	// df.Columns = Columns{df: df}
+	// df.Index = Index{df: df}
+	df.InPlace = InPlace{df: df}
+
 	if err := df.ensureAlignment(); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
@@ -80,7 +84,11 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 }
 
 func newEmptyDataFrame() *DataFrame {
-	return MustNew(nil)
+	df := &DataFrame{vals: nil, index: index.New(), cols: index.NewColumns()}
+	// df.Columns = Columns{df: df}
+	// df.Index = Index{df: df}
+	df.InPlace = InPlace{df: df}
+	return df
 }
 
 // MustNew constructs a new DataFrame or logs an error and returns an empty DataFrame.
@@ -100,12 +108,17 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 	if vals == nil {
 		return newEmptyDataFrame()
 	}
-	return &DataFrame{
+	df := &DataFrame{
 		vals:  vals,
 		index: idx,
 		cols:  cols,
 		name:  name,
 	}
+	// df.Columns = Columns{df: df}
+	// df.Index = Index{df: df}
+	df.InPlace = InPlace{df: df}
+
+	return df
 }
 
 // deriveSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
@@ -141,27 +154,6 @@ func (df *DataFrame) valsAligned() error {
 	return nil
 }
 
-// returns an error if any index levels have different lengths
-// or if there is a mismatch between the number of values and index items
-func (df *DataFrame) ensureAlignment() error {
-	if err := df.index.Aligned(); err != nil {
-		return fmt.Errorf("dataframe out of alignment: %v", err)
-	}
-	if labels := df.index.Levels[0].Len(); df.Len() != labels {
-		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
-	}
-
-	if err := df.valsAligned(); err != nil {
-		return fmt.Errorf("dataframe out of alignment: %v", err)
-	}
-
-	if df.cols.Len() != df.NumCols() {
-		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
-			df.cols.Len(), df.NumCols())
-	}
-	return nil
-}
-
 // Copy creates a new deep copy of a Series.
 func (df *DataFrame) Copy() *DataFrame {
 	var valsCopy []values.Container
@@ -176,8 +168,9 @@ func (df *DataFrame) Copy() *DataFrame {
 		cols:  colsCopy,
 		name:  df.name,
 	}
-	// dfCopy.Index = Index{s: copyS}
-	// dfCopy.InPlace = InPlace{s: copyS}
+	dfCopy.InPlace = InPlace{df: dfCopy}
+	// dfCopy.Columns = Columns{df: dfCopy}
+	// dfCopy.Index = Index{df: dfCopy}
 	return dfCopy
 }
 
