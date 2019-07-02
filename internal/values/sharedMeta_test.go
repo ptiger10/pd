@@ -40,6 +40,7 @@ func TestMeta(t *testing.T) {
 	vals.Len()
 	vals.Swap(0, 0)
 	vals.Less(0, 0)
+	vals.Values()
 	vals.Vals()
 	vals.Element(0)
 	vals.Copy()

@@ -50,6 +50,15 @@ func (vals *valueTypeValues) Subset(rowPositions []int) Values {
 	return &ret
 }
 
+// Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
+func (vals *valueTypeValues) Values() []interface{} {
+	var ret []interface{}
+	for _, val := range *vals {
+		ret = append(ret, val.v)
+	}
+	return ret
+}
+
 // Vals returns only the Value fields for the collection of Value/Null structs as an empty interface.
 //
 // Caution: This operation excludes the Null field but retains any null values.

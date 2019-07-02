@@ -246,6 +246,30 @@ func (df *DataFrame) dataType() string {
 	return "mixed"
 }
 
+// maxWidths is the max characters in each values container of a dataframe.
+func (df *DataFrame) maxWidths() []int {
+	maxWidths := make([]int, df.NumCols())
+	for m := 0; m < df.NumCols(); m++ {
+		var max int
+		vc := df.vals[m]
+		for _, val := range vc.Values.Values() {
+			var length int
+			if vc.DataType == options.DateTime {
+				length = len(val.(time.Time).Format(options.GetDisplayTimeFormat()))
+			} else if vc.DataType == options.Float64 {
+				length = len(fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), val.(float64)))
+			} else {
+				length = len(fmt.Sprint(val))
+			}
+			if length > max {
+				max = length
+			}
+		}
+		maxWidths[m] = max
+	}
+	return maxWidths
+}
+
 // maxColWidths is the max characters in each column of a dataframe.
 // exclusions should mimic the shape of the columns exactly
 func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
@@ -256,8 +280,10 @@ func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
 	if len(exclusions[0]) != df.NumCols() {
 		return nil
 	}
+	maxValWidths := df.maxWidths()
+
 	for m := 0; m < df.NumCols(); m++ {
-		max := df.vals[m].MaxWidth()
+		max := maxValWidths[m]
 		for j := 0; j < df.ColLevels(); j++ {
 			if !exclusions[j][m] {
 				if length := len(fmt.Sprint(df.cols.Levels[j].Labels[m])); length > max {

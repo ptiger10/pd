@@ -17,7 +17,7 @@ func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
 	var subsetVals []values.Container
 	for i := 0; i < df.NumCols(); i++ {
 		vals := df.vals[i].Values.Subset(rowPositions)
-		subsetVals = append(subsetVals, values.Container{vals, df.vals[i].DataType})
+		subsetVals = append(subsetVals, values.Container{Values: vals, DataType: df.vals[i].DataType})
 	}
 	df = newFromComponents(subsetVals, idx, df.cols, df.name)
 	return df, nil

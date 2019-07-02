@@ -243,39 +243,3 @@ func (vc Container) Copy() Container {
 		DataType: vc.DataType,
 	}
 }
-
-// AllValues returns all the values (including null values) in the Container as an interface slice.
-func (vc Container) AllValues() []interface{} {
-	var ret []interface{}
-	for i := 0; i < vc.Values.Len(); i++ {
-		ret = append(ret, vc.Values.Element(i).Value)
-	}
-	return ret
-}
-
-// MaxWidth returns the max width of any value in the container. For use in printing dataframes.
-func (vc Container) MaxWidth() int {
-	var max int
-	for _, v := range vc.AllValues() {
-		var length int
-		if vc.DataType == options.DateTime {
-			if val, ok := v.(time.Time); ok {
-				length = len(val.Format(options.GetDisplayTimeFormat()))
-			} else {
-				length = len(fmt.Sprint(v))
-			}
-		} else if vc.DataType == options.Float64 {
-			if val, ok := v.(float64); ok {
-				length = len(fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), val))
-			} else {
-				length = len(fmt.Sprint(v))
-			}
-		} else {
-			length = len(fmt.Sprint(v))
-		}
-		if length > max {
-			max = length
-		}
-	}
-	return max
-}

@@ -272,11 +272,7 @@ func (s *Series) null() []int {
 
 // Values returns all the values (including null values) in the Series as an interface slice.
 func (s *Series) Values() []interface{} {
-	var ret []interface{}
-	for i := 0; i < s.Len(); i++ {
-		ret = append(ret, s.values.Element(i).Value)
-	}
-	return ret
+	return s.values.Values()
 }
 
 // MaxWidth returns the max number of characters in any value in the Series.

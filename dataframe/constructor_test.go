@@ -41,6 +41,15 @@ func TestNew(t *testing.T) {
 				index: index.NewDefault(1),
 			},
 		},
+		{"config with datatype",
+			args{[]interface{}{1.0, 2.0}, []Config{Config{DataType: options.Int64}}},
+			&DataFrame{
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface(int64(1)), values.MustCreateValuesFromInterface(int64(2))},
+				cols:  index.NewDefaultColumns(2),
+				index: index.NewDefault(1),
+			},
+		},
 		{"config with index",
 			args{[]interface{}{"foo", "bar"}, []Config{Config{Index: "baz"}}},
 			&DataFrame{

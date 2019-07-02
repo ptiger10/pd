@@ -10,7 +10,8 @@ import (
 // The same interface and value types are used for both Series values and Index labels
 type Values interface {
 	Len() int                // number of Value/Null structs
-	Vals() interface{}       // a slice of values in their native form, ready for type assertion
+	Vals() interface{}       // an interface of values, ready for type assertion into a slice of their native type
+	Values() []interface{}   // an interface slice of values, for handling values as a predictable slice
 	Subset([]int) Values     // a new Values object comprised of the Value/Null pairs at one or more integer positions
 	Element(int) Elem        // Value/Null pair at an integer position
 	Set(int, interface{})    // overwrite the value/null struct at an integer position

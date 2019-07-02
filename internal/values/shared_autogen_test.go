@@ -29,6 +29,12 @@ func TestSharedFloat64(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{1.0, 2.0}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{1.0, false}
 	if !reflect.DeepEqual(e, wantElem) {
@@ -106,6 +112,12 @@ func TestSharedInt64(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{int64(1), int64(2)}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{int64(1), false}
 	if !reflect.DeepEqual(e, wantElem) {
@@ -183,6 +195,12 @@ func TestSharedString(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{"bar", "foo"}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{"bar", false}
 	if !reflect.DeepEqual(e, wantElem) {
@@ -260,6 +278,12 @@ func TestSharedBool(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{false, true}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{false, false}
 	if !reflect.DeepEqual(e, wantElem) {
@@ -339,6 +363,12 @@ func TestSharedDateTime(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{dt1, dt2}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{dt1, false}
 	if !reflect.DeepEqual(e, wantElem) {
@@ -416,6 +446,12 @@ func TestSharedInterface(t *testing.T) {
 	if !reflect.DeepEqual(gotVals, wantVals) {
 		t.Errorf("Vals() got %v, want %v", gotVals, wantVals)
 	}
+	gotValues := vals.Values()
+	wantValues := []interface{}{false, true}
+	if !reflect.DeepEqual(gotValues, wantValues) {
+		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
+	}
+
 	e := vals.Element(0)
 	wantElem := Elem{false, false}
 	if !reflect.DeepEqual(e, wantElem) {

@@ -29,8 +29,9 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		}
 		tmp = config[0]
 		configuration = index.Config{
-			Name:  tmp.Name,
-			Index: tmp.Index, IndexName: tmp.IndexName,
+			Name:     tmp.Name,
+			DataType: tmp.DataType,
+			Index:    tmp.Index, IndexName: tmp.IndexName,
 			MultiIndex: tmp.MultiIndex, MultiIndexNames: tmp.MultiIndexNames,
 			Col: tmp.Col, ColName: tmp.ColName,
 			MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
@@ -39,11 +40,18 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 
 	// Handling values
 	for i := 0; i < len(data); i++ {
-		v, err := values.InterfaceFactory(data[i])
+		container, err := values.InterfaceFactory(data[i])
 		if err != nil {
 			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 		}
-		vals = append(vals, v)
+		if configuration.DataType != options.None {
+			container.Values, err = values.Convert(container.Values, configuration.DataType)
+			if err != nil {
+				return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
+			}
+			container.DataType = configuration.DataType
+		}
+		vals = append(vals, container)
 	}
 
 	// Handling index
@@ -100,18 +108,20 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 	}
 }
 
-// newSingleIndexSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
-func newSingleIndexSeries(data []interface{}, idx index.Index, name string) (*series.Series, error) {
+// deriveSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
+func deriveSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
 	ret, err := series.New(nil)
 	if err != nil {
-		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): %v", err)
+		return nil, fmt.Errorf("internal error: deriveSeries(): %v", err)
 	}
-	if len(data) != idx.Len() {
-		return nil, fmt.Errorf("internal error: newSingleIndexSeries(): values must have same length as index: %d != %d", len(data), idx.Len())
+	if len(values) != len(idx) {
+		return nil, fmt.Errorf("internal error: deriveSeries(): values must have same length as index: %d != %d", len(values), len(idx))
 	}
-	for i := 0; i < len(data); i++ {
-		vals := values.MustCreateValuesFromInterface(data[i])
-		s := series.FromInternalComponents(vals.Values, idx, vals.DataType, name)
+	for i := 0; i < len(values); i++ {
+		s, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
+		if err != nil {
+			return nil, fmt.Errorf("internal error: deriveSeries(): %v", err)
+		}
 		ret.InPlace.Join(s)
 	}
 	return ret, nil
