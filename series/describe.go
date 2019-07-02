@@ -89,6 +89,9 @@ func (s *Series) print() string {
 	for j := 0; j < numLevels; j++ {
 		name := s.index.Levels[j].Name
 		padding := maxIndexWidths[j]
+		if padding >= options.GetDisplayMaxWidth() {
+			padding = options.GetDisplayMaxWidth()
+		}
 		header += fmt.Sprintf("%*v", padding, name)
 		if j != numLevels-1 {
 			// add buffer to all index levels except the last

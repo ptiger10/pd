@@ -3,6 +3,8 @@ package dataframe
 import (
 	"fmt"
 	"log"
+
+	"github.com/ptiger10/pd/options"
 )
 
 func ExampleNew_float64() {
@@ -17,9 +19,9 @@ func ExampleNew_float64() {
 	}
 	fmt.Println(df)
 	// Output:
-	//         baz  qux
-	// foo       0  2.5
-	// bar     1.5    3
+	//         baz   qux
+	// foo    0.00  2.50
+	// bar    1.50  3.00
 	//
 	// datatype: float64
 }
@@ -32,8 +34,8 @@ func ExampleNew_string_indexUnnamed() {
 	}
 	fmt.Println(df)
 	// Output:
-	//          0   1
-	// baz    foo bar
+	//          0    1
+	// baz    foo  bar
 	//
 	// datatype: string
 	// name: foobar
@@ -47,8 +49,45 @@ func ExampleNew_string_indexNamed() {
 	fmt.Println(df)
 	// Output:
 	// qux
-	//          0   1
-	// baz    foo bar
+	//          0    1
+	// baz    foo  bar
+	//
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_indexRepeated() {
+	df, err := New([]interface{}{[]string{"foo", "bar"}},
+		Config{Name: "foobar", Index: []string{"baz", "baz"}, IndexName: "qux"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	// qux
+	//          0
+	// baz    foo
+	//        bar
+	//
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_string_indexRepeated_allowed() {
+	options.SetDisplayRepeatedLabels(true)
+	df, err := New([]interface{}{[]string{"foo", "bar"}},
+		Config{Name: "foobar", Index: []string{"baz", "baz"}, IndexName: "qux"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	options.RestoreDefaults()
+	// Output:
+	// qux
+	//          0
+	// baz    foo
+	// baz    bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -61,8 +100,9 @@ func ExampleNew_string_multiIndexUnnamed() {
 	}
 	fmt.Println(df)
 	// Output:
-	//                0   1
-	// baz corge    foo bar
+	//                0    1
+	// baz corge    foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -76,8 +116,9 @@ func ExampleNew_string_multiIndexNamed() {
 	fmt.Println(df)
 	// Output:
 	// qux  quux
-	//                0   1
-	// baz corge    foo bar
+	//                0    1
+	// baz corge    foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -90,8 +131,9 @@ func ExampleNew_string_colsUnnamed() {
 	}
 	fmt.Println(df)
 	// Output:
-	//      baz qux
-	// 0    foo bar
+	//      baz  qux
+	// 0    foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -104,8 +146,9 @@ func ExampleNew_string_colsNamed() {
 	}
 	fmt.Println(df)
 	// Output:
-	//      corge baz qux
-	// 0          foo bar
+	//      corge baz  qux
+	// 0          foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -119,8 +162,9 @@ func ExampleNew_string_multicolUnnamed() {
 	fmt.Println(df)
 	// Output:
 	//      quux
-	//       baz qux
-	// 0     foo bar
+	//       baz  qux
+	// 0     foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -133,9 +177,10 @@ func ExampleNew_string_multicolNamed() {
 	}
 	fmt.Println(df)
 	// Output:
-	//       corge quux quax
-	//      grault  baz  qux
-	// 0            foo  bar
+	//       corge quux  quax
+	//      grault  baz   qux
+	// 0            foo   bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -149,8 +194,9 @@ func ExampleNew_string_multicolNamed_repeat() {
 	fmt.Println(df)
 	// Output:
 	//       corge quux
-	//      grault  baz qux
-	// 0            foo bar
+	//      grault  baz  qux
+	// 0            foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -166,8 +212,9 @@ func ExampleNew_string_indexNamed_colsUnnamed() {
 	fmt.Println(df)
 	// Output:
 	// corge
-	//          quux qux
-	//   baz     foo bar
+	//          quux  qux
+	//   baz     foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -183,8 +230,9 @@ func ExampleNew_string_indexNamed_colsNamed() {
 	fmt.Println(df)
 	// Output:
 	// corge
-	//          quuz quux qux
-	//   baz          foo bar
+	//          quuz quux  qux
+	//   baz          foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -200,8 +248,9 @@ func ExampleNew_string_multiindexNamed_colsNamed() {
 	fmt.Println(df)
 	// Output:
 	// corge grault
-	//                 quuz quux qux
-	//   baz garply          foo bar
+	//                 quuz quux  qux
+	//   baz garply          foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -218,8 +267,9 @@ func ExampleNew_string_multiindexNamed_multicolNamed() {
 	// Output:
 	// grault  corge
 	//                  waldo fred
-	//                   quuz quux qux
-	//    baz garply           foo bar
+	//                   quuz quux  qux
+	//    baz garply           foo  bar
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -237,8 +287,9 @@ func ExampleNew_float64_indexNamed_multicolNamed() {
 	// Output:
 	// grault
 	//             quuz quux
-	//           garply  bar   baz
-	//    foo            qux waldo
+	//           garply  bar    baz
+	//    foo            qux  waldo
+	//
 	// datatype: string
 	// name: foobar
 }
@@ -248,10 +299,79 @@ func ExampleNew_float64_colsNamed_repeat_resume() {
 		Config{Name: "foobar", Col: []string{"quux", "quux", "foo"}})
 	fmt.Println(df)
 	// Output:
-	//      quux        foo
-	// 0     qux waldo fred
+	//      quux          foo
+	// 0     qux  waldo  fred
+	//
 	// datatype: string
 	// name: foobar
+}
+
+func ExampleNew_maxWidth_index() {
+	options.SetDisplayMaxWidth(10)
+	df := MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []string{"This is a very long index row. Very long indeed.", "qux"}, IndexName: "baz"})
+	fmt.Println(df)
+	options.RestoreDefaults()
+	// Output:
+	//        baz
+	//                 0
+	// This is...    foo
+	//        qux    bar
+	//
+	// datatype: string
+}
+
+func ExampleNew_maxWidth_value() {
+	s := MustNew([]interface{}{[]string{"This is a very long value row. Very long indeed.", "foo"}})
+	fmt.Println(s)
+	// Output:
+	//                                        0
+	// 0    This is a very long value row. V...
+	// 1                                    foo
+	//
+	// datatype: string
+}
+
+func ExampleNew_exceed_maxRows_even() {
+	options.SetDisplayMaxRows(2)
+	s := MustNew([]interface{}{[]float64{0, 1, 2, 3, 4}})
+	fmt.Println(s)
+	options.RestoreDefaults()
+	// Output:
+	//         0
+	// 0    0.00
+	// ...
+	// 4    4.00
+	//
+	// datatype: float64
+}
+
+func ExampleNew_exceed_maxRows_odd() {
+	options.SetDisplayMaxRows(3)
+	s := MustNew([]interface{}{[]float64{0, 1, 2, 3, 4}})
+	fmt.Println(s)
+	options.RestoreDefaults()
+
+	// Output:
+	//         0
+	// 0    0.00
+	// 1    1.00
+	// ...
+	// 4    4.00
+	//
+	// datatype: float64
+}
+
+func ExampleNew_exceed_maxColumns_odd() {
+	options.SetDisplayMaxColumns(3)
+	s := MustNew([]interface{}{0, 1, 2, 3, 4})
+	fmt.Println(s)
+	options.RestoreDefaults()
+
+	// Output:
+	//      0  1  ...  4
+	// 0    0  1       4
+	//
+	// datatype: int64
 }
 
 func ExampleDataFrame_Col() {
@@ -264,13 +384,14 @@ func ExampleDataFrame_Col() {
 	// 0    foo
 	// 1    bar
 	// 2    baz
+	//
 	// datatype: string
 	// name: corge
 }
 
 // Selects the first column with this label from the first level
 func ExampleDataFrame_multiCol_col() {
-	df, err := New([]interface{}{[]float64{1, 3, 5}, []string{"foo", "bar", "baz"}},
+	df, err := New([]interface{}{[]int{1, 3, 5}, []string{"foo", "bar", "baz"}},
 		Config{MultiCol: [][]string{{"qux", "qux"}, {"quux", "quuz"}}})
 	if err != nil {
 		log.Fatal(err)
@@ -280,7 +401,8 @@ func ExampleDataFrame_multiCol_col() {
 	// 0    1
 	// 1    3
 	// 2    5
-	// datatype: float64
+	//
+	// datatype: int64
 	// name: qux | quux
 }
 
@@ -293,8 +415,7 @@ func ExampleDataFrame_subset() {
 	fmt.Println(df.Subset([]int{0}))
 	// Output:
 	//       qux
-	//      quux quuz
-	// 0       1  foo
-	// datatype: float64
+	//      quux  quuz
+	// 0    1.00   foo
 	//  <nil>
 }

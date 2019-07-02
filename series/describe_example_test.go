@@ -258,23 +258,25 @@ func ExampleNew_config_datatype() {
 
 func ExampleNew_maxWidth_index() {
 	s := MustNew([]string{"foo", "bar"}, Config{Index: []string{"This is a very long index row. Very long indeed.", "qux"}, IndexName: "baz"})
+	options.SetDisplayMaxWidth(10)
 	fmt.Println(s)
+	options.RestoreDefaults()
 	// Output:
-	//                                 baz
-	// This is a very long index row. V...    foo
-	//                                 qux    bar
+	//        baz
+	// This is...    foo
+	//        qux    bar
 	//
 	// datatype: string
 }
 
 func ExampleNew_maxWidth_value() {
-	s := MustNew([]string{"This is a very long index row. Very long indeed.", "foo"})
+	s := MustNew([]string{"This is a very long value row. Very long indeed.", "foo"})
 	fmt.Println(s)
 	// Output:
-	// 0    This is a very long index row. V...
+	// 0    This is a very long value row. V...
 	// 1                                    foo
 	//
-	//datatype: string
+	// datatype: string
 }
 
 func ExampleNew_exceed_maxRows_even() {
@@ -287,7 +289,7 @@ func ExampleNew_exceed_maxRows_even() {
 	// ...
 	// 4    4.00
 	//
-	//datatype: float64
+	// datatype: float64
 }
 
 func ExampleNew_exceed_maxRows_odd() {
@@ -302,7 +304,7 @@ func ExampleNew_exceed_maxRows_odd() {
 	// ...
 	// 4    4.00
 	//
-	//datatype: float64
+	// datatype: float64
 }
 
 // [END constructor examples]

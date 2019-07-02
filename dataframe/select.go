@@ -54,7 +54,7 @@ func (df *DataFrame) Col(label string) *series.Series {
 		return s
 	}
 	df, _ = df.selectByCols(colPos)
-	return df.hydrateSeries(colPos[0])
+	return df.hydrateSeries(0)
 }
 
 // Subset a DataFrame to include only the rows at supplied integer positions.

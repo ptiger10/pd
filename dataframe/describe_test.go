@@ -8,21 +8,6 @@ import (
 	"github.com/ptiger10/pd/series"
 )
 
-func TestDataTypes(t *testing.T) {
-	df, err := New([]interface{}{"foo"})
-	if err != nil {
-		t.Errorf("df.DataTypes(): %v", err)
-	}
-	got := df.DataTypes()
-	want, err := series.New("string", series.Config{Index: "0", Name: "datatypes"})
-	if err != nil {
-		fmt.Println(err)
-	}
-	if !series.Equal(got, want) {
-		t.Errorf("df.DataTypes() returned %v, want %v", got, want)
-	}
-}
-
 func TestEqual(t *testing.T) {
 	df := MustNew(
 		[]interface{}{[]string{"foo"}, []string{"bar"}},
@@ -32,6 +17,21 @@ func TestEqual(t *testing.T) {
 		Config{Col: []string{"baz", "qux"}})
 	if !Equal(df, df2) {
 		t.Errorf("Equal() did not return true for equivalent df")
+	}
+}
+
+func TestDataTypes(t *testing.T) {
+	df, err := New([]interface{}{"foo"}, Config{Index: "bar"})
+	if err != nil {
+		t.Errorf("df.DataTypes(): %v", err)
+	}
+	got := df.DataTypes()
+	want, err := series.New("string", series.Config{Name: "datatypes"})
+	if err != nil {
+		fmt.Println(err)
+	}
+	if !series.Equal(got, want) {
+		t.Errorf("df.DataTypes() returned %#v, want %#v", got, want)
 	}
 }
 
