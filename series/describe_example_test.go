@@ -487,7 +487,7 @@ func ExampleInPlace_method_list() {
 	s := MustNew("foo")
 	fmt.Println(s.InPlace)
 	// Output:
-	// {InPlace Handler}
+	// {InPlace Series Handler}
 	// Methods:
 	// Append
 	// Apply
@@ -517,7 +517,7 @@ func ExampleIndex_valid_printer() {
 	s := MustNew([]string{"foo", "bar", "baz"})
 	fmt.Println(s.Index)
 	// Output:
-	// {Index | Len: 3, NumLevels: 1}
+	// {Series Index | Len: 3, NumLevels: 1}
 }
 func ExampleGrouping_method_list() {
 	s := MustNew(
@@ -526,5 +526,5 @@ func ExampleGrouping_method_list() {
 	g := s.GroupByIndex()
 	fmt.Println(g)
 	// Output:
-	// {Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
+	// {Series Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
 }

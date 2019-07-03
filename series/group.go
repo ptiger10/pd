@@ -12,11 +12,6 @@ import (
 	"github.com/ptiger10/pd/internal/index"
 )
 
-func (g Grouping) String() string {
-	printer := fmt.Sprintf("{Grouping | NumGroups: %v, Groups: [%v]}\n", len(g.groups), strings.Join(g.Groups(), ", "))
-	return printer
-}
-
 type group struct {
 	Index     index.Index
 	Positions []int

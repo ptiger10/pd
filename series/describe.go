@@ -72,13 +72,6 @@ func (s *Series) Describe() {
 
 }
 
-func (s *Series) String() string {
-	if Equal(s, newEmptySeries()) {
-		return "{Empty Series}"
-	}
-	return s.print()
-}
-
 // expects to receive a slice of typed value structs (eg values.float64Values)
 func (s *Series) print() string {
 	numLevels := len(s.index.Levels)
@@ -208,20 +201,6 @@ func (s *Series) print() string {
 		printer += fmt.Sprintf("name: %s\n", s.name)
 	}
 	return printer
-}
-
-func (el Element) String() string {
-	var printStr string
-	for _, pair := range [][]interface{}{
-		[]interface{}{"Value", el.Value},
-		[]interface{}{"Null", el.Null},
-		[]interface{}{"Labels", el.Labels},
-		[]interface{}{"LabelTypes", el.LabelTypes},
-	} {
-		// LabelTypes is 10 characters wide, so left padding set to 10
-		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", values.GetDisplayElementWhitespaceBuffer()), pair[1])
-	}
-	return printStr
 }
 
 // DataType is the data type of the Series' values. Mimics reflect.Type with the addition of time.Time as DateTime.

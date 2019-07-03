@@ -12,16 +12,6 @@ import (
 
 // [START Index modifications]
 
-// Index contains index selection and conversion
-type Index struct {
-	s *Series
-}
-
-func (idx Index) String() string {
-	printer := fmt.Sprintf("{Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
-	return printer
-}
-
 // Values returns an []interface{} of the values at each level of the index
 func (idx Index) Values() [][]interface{} {
 	var ret [][]interface{}
