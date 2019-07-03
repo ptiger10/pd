@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -188,19 +189,29 @@ func TestMustNew_fail(t *testing.T) {
 }
 
 func Test_Copy(t *testing.T) {
-	s := MustNew("foo", Config{Name: "bar"})
-	sArchive := MustNew("foo", Config{Name: "bar"})
-	sCopy := s.Copy()
-	sCopy.index.Levels[0].Labels.Set(0, 5)
-	sCopy.values.Set(0, "bar")
-	sCopy.name = "foobar"
-	sCopy.index.Refresh()
-	want := MustNew("bar", Config{Index: 5, Name: "foobar"})
-	if !Equal(sCopy, want) {
-		t.Errorf("s.Copy() returned %v, want %v", sCopy.index, want.index)
+	tests := []struct {
+		name  string
+		input *Series
+		want  *Series
+	}{
+		{name: "pass", input: MustNew("foo"), want: MustNew("foo")},
 	}
-	if !Equal(s, sArchive) || Equal(s, sCopy) {
-		t.Errorf("s.Copy() retained references to original, want fresh copy")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Copy()
+			if !Equal(got, tt.want) {
+				t.Errorf("s.Copy() returned %v, want %v", got, tt.want)
+			}
+			if reflect.ValueOf(tt.input).Pointer() == reflect.ValueOf(tt.want).Pointer() {
+				t.Errorf("s.Copy() retained reference to original, want copy")
+			}
+			if reflect.ValueOf(tt.input.values).Pointer() == reflect.ValueOf(tt.want.values).Pointer() {
+				t.Errorf("s.Copy() retained reference to original values, want copy")
+			}
+			if reflect.ValueOf(tt.input.index.Levels).Pointer() == reflect.ValueOf(tt.want.index.Levels).Pointer() {
+				t.Errorf("s.Copy() retained reference to original index, want copy")
+			}
+		})
 	}
 }
 

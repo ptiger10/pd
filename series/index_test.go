@@ -214,7 +214,7 @@ func TestIndex_Flip(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"pass", MustNew([]string{"foo", "bar", "baz"}, Config{Name: "corge", IndexName: "foobar"}), args{0},
+		{"pass", MustNew([]string{"foo", "bar", "baz"}, Config{Name: "corge", IndexName: "foobar", Index: []int64{0, 1, 2}}), args{0},
 			want{MustNew([]int64{0, 1, 2}, Config{Name: "foobar", Index: []string{"foo", "bar", "baz"}, IndexName: "corge"}), false}},
 		{"fail: invalid", MustNew("foo"), args{10},
 			want{newEmptySeries(), true}},
@@ -270,7 +270,7 @@ func TestIndex_RenameLevel(t *testing.T) {
 }
 
 func TestIndex_Reindex(t *testing.T) {
-	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"bar", "baz"}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}})
+	s := MustNew("foo", Config{Index: "bar"})
 	type args struct {
 		level int
 	}
@@ -281,7 +281,7 @@ func TestIndex_Reindex(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "pass 0", args: args{0},
-			want:    MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]int64{0, 1}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}}),
+			want:    MustNew("foo"),
 			wantErr: false},
 		{"fail invalid level", args{10}, s, true},
 	}
@@ -489,7 +489,7 @@ func TestIndex_Set(t *testing.T) {
 		want    *Series
 		wantErr bool
 	}{
-		{name: "0, 0", fields: fields{MustNew("foo")}, args: args{0, 0, 100},
+		{name: "0, 0", fields: fields{MustNew("foo", Config{Index: 0})}, args: args{0, 0, 100},
 			want:    MustNew("foo", Config{Index: 100}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew("foo")}, args{1, 0, complex64(1)},
@@ -528,7 +528,7 @@ func TestIndex_SetRows(t *testing.T) {
 		want    *Series
 		wantErr bool
 	}{
-		{name: "0, 0", fields: fields{MustNew([]string{"foo", "bar"})}, args: args{[]int{0, 1}, 0, 100},
+		{name: "0, 0", fields: fields{MustNew([]string{"foo", "bar"}, Config{Index: []int64{0, 1}})}, args: args{[]int{0, 1}, 0, 100},
 			want:    MustNew([]string{"foo", "bar"}, Config{Index: []int64{100, 100}}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew("foo")}, args{[]int{0}, 0, complex64(1)},

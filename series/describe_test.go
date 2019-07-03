@@ -44,9 +44,9 @@ func TestSeries_Describe(t *testing.T) {
 			if gotLen != tt.want.len {
 				t.Errorf("s.Len(): got %v, want %v", gotLen, tt.want.len)
 			}
-			gotNumIdxLevels := s.Index.NumLevels()
+			gotNumIdxLevels := s.NumLevels()
 			if gotNumIdxLevels != tt.want.numIdxLevels {
-				t.Errorf("s.Index.NumLevels(): got %v, want %v", gotNumIdxLevels, tt.want.numIdxLevels)
+				t.Errorf("s.NumLevels(): got %v, want %v", gotNumIdxLevels, tt.want.numIdxLevels)
 			}
 			gotMaxWidth := s.MaxWidth()
 			if gotMaxWidth != tt.want.maxWidth {

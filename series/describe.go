@@ -230,6 +230,11 @@ func (s *Series) Len() int {
 	return s.values.Len()
 }
 
+// NumLevels returns the number of index levels in the Series.
+func (s *Series) NumLevels() int {
+	return s.index.NumLevels()
+}
+
 // valid returns integer positions of valid (i.e., non-null) values in the series.
 func (s *Series) valid() []int {
 	var ret []int
@@ -427,7 +432,7 @@ func (s *Series) ensureLevelPositions(positions []int) error {
 		return fmt.Errorf("no levels provided")
 	}
 	for _, pos := range positions {
-		len := s.index.NumLevels()
+		len := s.NumLevels()
 		if pos >= len {
 			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
 		}

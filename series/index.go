@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/ptiger10/pd/internal/index"
-	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -56,7 +55,7 @@ func (idx Index) Len() int {
 
 // NumLevels returns the number of levels in the index
 func (idx Index) NumLevels() int {
-	return idx.s.index.NumLevels()
+	return idx.s.NumLevels()
 }
 
 // At returns the index value at a specified row position and index level but returns nil if either integer is out of range.
@@ -87,16 +86,13 @@ func (idx Index) RenameLevel(level int, name string) error {
 	return nil
 }
 
-// Reindex converts an index level to a default range []int{0, 1, 2,...n}
+// Reindex converts an index level in place to an ordered default range []int{0, 1, 2,...n}
 func (idx Index) Reindex(level int) error {
 	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("s.Index.Reindex(): %v", err)
 	}
 	// ducks error because inputs are controlled
-	idxVals := values.MakeIntRange(0, idx.Len())
-	newLvl := index.MustNewLevel(idxVals, idx.s.index.Levels[level].Name)
-	idx.s.index.Levels[level] = newLvl
-	idx.s.index.Refresh()
+	idx.s.index.Levels[level] = index.NewDefaultLevel(idx.Len(), idx.s.index.Levels[level].Name)
 	return nil
 }
 

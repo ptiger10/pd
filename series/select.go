@@ -97,7 +97,7 @@ func (s *Series) XS(rowPositions []int, levelPositions []int) (*Series, error) {
 
 // SelectLabel returns the integer location of the first row in index level 0 with the supplied label, or -1 if the label does not exist.
 func (s *Series) SelectLabel(label string) int {
-	if s.index.NumLevels() == 0 {
+	if s.NumLevels() == 0 {
 		if options.GetLogWarnings() {
 			log.Println("Series.SelectLabel(): index has no length")
 		}

@@ -43,7 +43,7 @@ func TestElement(t *testing.T) {
 	}
 }
 func TestSubset(t *testing.T) {
-	s := MustNew([]string{"foo", "bar", "baz"})
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}})
 	misaligned := MustNew([]string{"foo", "bar"})
 	misaligned.index = misaligned.index.Subset([]int{0})
 
@@ -54,9 +54,9 @@ func TestSubset(t *testing.T) {
 		want    *Series
 		wantErr bool
 	}{
-		{name: "pass", input: s, args: []int{0}, want: MustNew("foo"), wantErr: false},
+		{name: "pass", input: s, args: []int{0}, want: MustNew("foo", Config{Index: []int{0}}), wantErr: false},
 		{"pass", s, []int{1}, MustNew("bar", Config{Index: 1}), false},
-		{"pass", s, []int{0, 1}, MustNew([]string{"foo", "bar"}), false},
+		{"pass", s, []int{0, 1}, MustNew([]string{"foo", "bar"}, Config{Index: []int{0, 1}}), false},
 		{"pass", s, []int{1, 0}, MustNew([]string{"bar", "foo"}, Config{Index: []int{1, 0}}), false},
 		{"fail: misaligned", misaligned, []int{1}, newEmptySeries(), true},
 		{"fail: empty", s, []int{}, newEmptySeries(), true},
@@ -127,7 +127,7 @@ func TestSeries_At(t *testing.T) {
 }
 
 func TestFrom(t *testing.T) {
-	s := MustNew([]string{"foo", "bar", "baz"})
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}})
 	type args struct {
 		start int
 		end   int
@@ -138,7 +138,7 @@ func TestFrom(t *testing.T) {
 		args  args
 		want  *Series
 	}{
-		{name: "ascending", input: s, args: args{start: 0, end: 2}, want: MustNew([]string{"foo", "bar", "baz"})},
+		{name: "ascending", input: s, args: args{start: 0, end: 2}, want: MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}})},
 		{"single", s, args{1, 1}, MustNew([]string{"bar"}, Config{Index: []int{1}})},
 		{"partial", s, args{1, 2}, MustNew([]string{"bar", "baz"}, Config{Index: []int{1, 2}})},
 		{"descending", s, args{2, 0}, MustNew([]string{"baz", "bar", "foo"}, Config{Index: []int{2, 1, 0}})},

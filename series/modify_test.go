@@ -1,10 +1,12 @@
 package series
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -37,38 +39,38 @@ func TestModify_Sort(t *testing.T) {
 		want  want
 	}{
 		{"float",
-			MustNew([]float64{3, 5, 1}), args{true},
+			MustNew([]float64{3, 5, 1}, Config{Index: []int{0, 1, 2}}), args{true},
 			want{MustNew([]float64{1, 3, 5}, Config{Index: []int{2, 0, 1}})}},
 		{"float desc",
-			MustNew([]float64{3, 5, 1}), args{false},
+			MustNew([]float64{3, 5, 1}, Config{Index: []int{0, 1, 2}}), args{false},
 			want{MustNew([]float64{5, 3, 1}, Config{Index: []int{1, 0, 2}})}},
 
 		{"int",
-			MustNew([]int{3, 5, 1}), args{true},
+			MustNew([]int{3, 5, 1}, Config{Index: []int{0, 1, 2}}), args{true},
 			want{MustNew([]int{1, 3, 5}, Config{Index: []int{2, 0, 1}})}},
 		{"int desc",
-			MustNew([]int{3, 5, 1}), args{false},
+			MustNew([]int{3, 5, 1}, Config{Index: []int{0, 1, 2}}), args{false},
 			want{MustNew([]int{5, 3, 1}, Config{Index: []int{1, 0, 2}})}},
 
 		{"string",
-			MustNew([]string{"15", "3", "1"}), args{true},
+			MustNew([]string{"15", "3", "1"}, Config{Index: []int{0, 1, 2}}), args{true},
 			want{MustNew([]string{"1", "15", "3"}, Config{Index: []int{2, 0, 1}})}},
 		{"string desc",
-			MustNew([]string{"15", "3", "1"}), args{false},
+			MustNew([]string{"15", "3", "1"}, Config{Index: []int{0, 1, 2}}), args{false},
 			want{MustNew([]string{"3", "15", "1"}, Config{Index: []int{1, 0, 2}})}},
 
 		{"bool",
-			MustNew([]bool{false, true, false}), args{true},
+			MustNew([]bool{false, true, false}, Config{Index: []int{0, 1, 2}}), args{true},
 			want{MustNew([]bool{false, false, true}, Config{Index: []int{0, 2, 1}})}},
 		{"bool desc",
-			MustNew([]bool{false, true, false}), args{false},
+			MustNew([]bool{false, true, false}, Config{Index: []int{0, 1, 2}}), args{false},
 			want{MustNew([]bool{true, false, false}, Config{Index: []int{1, 0, 2}})}},
 
 		{"datetime",
-			MustNew([]time.Time{testDate2, testDate3, testDate1}), args{true},
+			MustNew([]time.Time{testDate2, testDate3, testDate1}, Config{Index: []int{0, 1, 2}}), args{true},
 			want{MustNew([]time.Time{testDate1, testDate2, testDate3}, Config{Index: []int{2, 0, 1}})}},
 		{"datetime desc",
-			MustNew([]time.Time{testDate2, testDate3, testDate1}), args{false},
+			MustNew([]time.Time{testDate2, testDate3, testDate1}, Config{Index: []int{0, 1, 2}}), args{false},
 			want{MustNew([]time.Time{testDate3, testDate2, testDate1}, Config{Index: []int{1, 0, 2}})}},
 	}
 	for _, tt := range tests {
@@ -108,7 +110,7 @@ func TestModify_Swap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := MustNew([]string{"foo", "bar"})
+			s := MustNew([]string{"foo", "bar"}, Config{Index: []int{0, 1}})
 			sArchive := s.Copy()
 			want := MustNew([]string{"bar", "foo"}, Config{Index: []int{1, 0}})
 
@@ -136,9 +138,7 @@ func TestModify_Swap(t *testing.T) {
 }
 
 func TestModify_Insert(t *testing.T) {
-	multi := MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"A", 1}})
-	misaligned := MustNew([]string{"foo", "bar"})
-	misaligned.index.Levels[0].Labels.Drop(1)
+	multi := MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"baz", 1}})
 
 	type args struct {
 		pos int
@@ -155,29 +155,29 @@ func TestModify_Insert(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"emptySeries",
-			newEmptySeries(),
-			args{0, "foo", []interface{}{"A"}},
-			want{series: MustNew("foo", Config{Index: "A"}), err: false}},
+		{name: "emptySeries",
+			input: newEmptySeries(),
+			args:  args{pos: 0, val: "foo", idx: []interface{}{"bar"}},
+			want:  want{series: MustNew("foo", Config{Index: "bar"}), err: false}},
 		{"singleIndex",
-			MustNew([]string{"foo"}, Config{Index: "A"}),
-			args{0, "bar", []interface{}{"B"}},
-			want{series: MustNew([]string{"bar", "foo"}, Config{Index: []string{"B", "A"}}), err: false}},
+			MustNew([]string{"foo"}, Config{Index: "baz"}),
+			args{0, "bar", []interface{}{"qux"}},
+			want{series: MustNew([]string{"bar", "foo"}, Config{Index: []string{"qux", "baz"}}), err: false}},
+		{"default index, empty arg",
+			MustNew([]string{"foo", "bar"}),
+			args{1, "baz", nil},
+			want{series: MustNew([]string{"foo", "baz", "bar"}), err: false}},
 		{"multiIndex",
 			multi,
-			args{1, "bar", []interface{}{"B", 2}},
-			want{series: MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), err: false}},
-		{"fail: wrong index length",
+			args{1, "bar", []interface{}{"qux", 2}},
+			want{series: MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"baz", "qux"}, []int{1, 2}}}), err: false}},
+		{"fail: index too long",
 			multi,
-			args{1, "bar", []interface{}{"C"}},
+			args{1, "bar", []interface{}{"foo", "baz", "qux"}},
 			want{nil, true}},
 		{"fail: invalid position",
 			multi,
 			args{3, "bar", []interface{}{"C", 3}},
-			want{nil, true}},
-		{"fail: misaligned series position",
-			misaligned,
-			args{0, "bar", []interface{}{"B"}},
 			want{nil, true}},
 		{"fail: unsupported index value",
 			MustNew([]string{"foo"}, Config{Index: "A"}),
@@ -196,7 +196,7 @@ func TestModify_Insert(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := tt.input
 			sArchive := tt.input.Copy()
-			err := s.InPlace.Insert(tt.args.pos, tt.args.val, tt.args.idx)
+			err := s.InPlace.Insert(tt.args.pos, tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -207,7 +207,7 @@ func TestModify_Insert(t *testing.T) {
 				}
 			}
 
-			sCopy, err := sArchive.Insert(tt.args.pos, tt.args.val, tt.args.idx)
+			sCopy, err := sArchive.Insert(tt.args.pos, tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Series.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -215,6 +215,8 @@ func TestModify_Insert(t *testing.T) {
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(sCopy, tt.want.series) {
 					t.Errorf("Series.Insert() got %v, want %v", sCopy, tt.want.series)
+					diff, _ := messagediff.PrettyDiff(s, tt.want.series)
+					fmt.Println(diff)
 				}
 				if Equal(sArchive, sCopy) {
 					t.Errorf("Series.Insert() retained access to original, want copy")
@@ -247,20 +249,20 @@ func TestModify_Append(t *testing.T) {
 			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
 			args{"bar", []interface{}{"B", 2}},
 			want{MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), false}},
-		{"fail singleIndex: nil index values",
-			MustNew([]string{"foo"}, Config{Index: []int{1}}),
+		{"singleIndex: default index and nil index values",
+			MustNew("foo"),
 			args{"bar", nil},
-			want{nil, true}},
-		{"fail multiIndex: insufficient index values",
-			MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
-			args{"bar", []interface{}{"B"}},
+			want{MustNew([]string{"foo", "bar"}), false}},
+		{"fail multiIndex: too many index values",
+			MustNew([]string{"foo"}),
+			args{"bar", []interface{}{"qux", "baz"}},
 			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := tt.input
 			sArchive := tt.input.Copy()
-			err := s.InPlace.Append(tt.args.val, tt.args.idx)
+			err := s.InPlace.Append(tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Append() error = %v, want %v", err, tt.want.err)
 				return
@@ -270,7 +272,7 @@ func TestModify_Append(t *testing.T) {
 					t.Errorf("InPlace.Append() got %v, want %v", s, tt.want.series)
 				}
 			}
-			sCopy, err := sArchive.Append(tt.args.val, tt.args.idx)
+			sCopy, err := sArchive.Append(tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Series.Append() error = %v, want %v", err, tt.want.err)
 				return
@@ -418,10 +420,10 @@ func TestModify_Drop(t *testing.T) {
 		want  want
 	}{
 		{"drop to 0",
-			MustNew("foo"), args{rowPositions: 0},
+			MustNew("foo", Config{Index: []int{0}}), args{rowPositions: 0},
 			want{series: newEmptySeries(), err: false}},
 		{"singleRow",
-			MustNew([]string{"foo", "bar", "baz"}), args{1},
+			MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}}), args{1},
 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
 		{"fail: invalid index singleRow",
 			MustNew("foo"), args{1},
@@ -475,13 +477,13 @@ func TestModify_DropRows(t *testing.T) {
 			MustNew("foo"), args{rowPositions: []int{0}},
 			want{series: newEmptySeries(), err: false}},
 		{"singleRow",
-			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1}},
+			MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}}), args{[]int{1}},
 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}}), false}},
 		{"multiRow",
-			MustNew([]string{"foo", "bar", "baz"}), args{[]int{1, 2}},
+			MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}}), args{[]int{1, 2}},
 			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
 		{"multiRow reverse",
-			MustNew([]string{"foo", "bar", "baz"}), args{[]int{2, 1}},
+			MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}}), args{[]int{2, 1}},
 			want{MustNew([]string{"foo"}, Config{Index: []int{0}}), false}},
 		{"fail: invalid index singleRow",
 			MustNew("foo"), args{[]int{1}},
@@ -500,7 +502,7 @@ func TestModify_DropRows(t *testing.T) {
 				return
 			}
 			if !Equal(s, tt.want.series) {
-				t.Errorf("InPlace.DropRows() got %v, want %v", s, tt.want.series)
+				t.Errorf("InPlace.DropRows() got %#v, want %#v", s, tt.want.series)
 			}
 
 			sCopy, err := sArchive.DropRows(tt.args.rowPositions)
@@ -570,10 +572,10 @@ func TestModify_DropNull(t *testing.T) {
 			MustNew("foo"),
 			want{series: MustNew("foo")}},
 		{"null row",
-			MustNew([]string{"foo", "", "baz"}),
+			MustNew([]string{"foo", "", "baz"}, Config{Index: []int{0, 1, 2}}),
 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}})}},
 		{"null row reverse",
-			MustNew([]string{"baz", "", "foo"}),
+			MustNew([]string{"baz", "", "foo"}, Config{Index: []int{0, 1, 2}}),
 			want{MustNew([]string{"baz", "foo"}, Config{Index: []int{0, 2}})}},
 		{"all null rows",
 			MustNew([]string{"", ""}),

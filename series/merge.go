@@ -16,12 +16,12 @@ func (ip InPlace) Join(s2 *Series) error {
 		return nil
 	}
 
-	if s2.index.NumLevels() != ip.s.index.NumLevels() {
-		return fmt.Errorf("Series.Join(): s2 must have same number of index levels as s (%d != %d)", s2.index.NumLevels(), ip.s.index.NumLevels())
+	if s2.index.NumLevels() != ip.s.NumLevels() {
+		return fmt.Errorf("Series.Join(): s2 must have same number of index levels as s (%d != %d)", s2.index.NumLevels(), ip.s.NumLevels())
 	}
 	for i := 0; i < s2.Len(); i++ {
 		elem := s2.Element(i)
-		ip.s.InPlace.Append(elem.Value, elem.Labels)
+		ip.s.InPlace.Append(elem.Value, elem.Labels...)
 	}
 	return nil
 }
@@ -35,9 +35,9 @@ func (s *Series) Join(s2 *Series) (*Series, error) {
 
 // LookupSeries performs a vlookup of each values in one Series against another Series.
 func (s *Series) LookupSeries(s2 *Series) *Series {
-	if s2.index.NumLevels() != s.index.NumLevels() {
+	if s2.index.NumLevels() != s.NumLevels() {
 		if options.GetLogWarnings() {
-			log.Printf("Series.LookupSeries(): s2 must have same number of index levels as s (%d != %d)\n", s2.index.NumLevels(), s.index.NumLevels())
+			log.Printf("Series.LookupSeries(): s2 must have same number of index levels as s (%d != %d)\n", s2.index.NumLevels(), s.NumLevels())
 		}
 		return newEmptySeries()
 	}
