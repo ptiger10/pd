@@ -163,7 +163,7 @@ func TestNewFromConfig(t *testing.T) {
 func Test_NewDefault(t *testing.T) {
 	got := NewDefault(2)
 	want := New(Level{Labels: values.MustCreateValuesFromInterface([]int64{0, 1}).Values,
-		LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, Name: "", DataType: options.Int64, defaultInt: true})
+		LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, Name: "", DataType: options.Int64, IsDefault: true})
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Default constructor returned %v, want %v", got, want)
 	}

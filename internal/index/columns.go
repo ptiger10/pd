@@ -18,7 +18,7 @@ type Columns struct {
 // NewColumns returns a new Columns collection from a slice of column levels.
 func NewColumns(levels ...ColLevel) Columns {
 	if levels == nil {
-		return Columns{Levels: []ColLevel{}, NameMap: LabelMap{}}
+		return Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}
 	}
 	cols := Columns{
 		Levels: levels,
@@ -131,19 +131,18 @@ func (cols *Columns) Refresh() {
 // A ColLevel is a single collection of column labels within a Columns collection, plus label mappings and metadata.
 // It is identical to an index Level except for the Labels, which are a simple []interface{} that do not satisfy the values.Values interface.
 type ColLevel struct {
-	Name       string
-	Labels     []string
-	LabelMap   LabelMap
-	DataType   options.DataType
-	defaultInt bool
+	Name      string
+	Labels    []string
+	LabelMap  LabelMap
+	DataType  options.DataType
+	IsDefault bool
 }
 
 // NewDefaultColLevel creates a column level with range labels (0, 1, 2, ...n) and optional name.
 func NewDefaultColLevel(n int, name string) ColLevel {
 	colsInt := values.MakeStringRange(0, n)
-	lvl := NewColLevel(colsInt, name)
-	lvl.DataType = options.Int64
-	lvl.defaultInt = true
+	lvl := ColLevel{Labels: colsInt, DataType: options.Int64, Name: name, IsDefault: true}
+	lvl.Refresh()
 	return lvl
 }
 
@@ -202,8 +201,8 @@ func (lvl ColLevel) Copy() ColLevel {
 
 // Copy returns a deep copy of each column level.
 func (cols Columns) Copy() Columns {
-	if reflect.DeepEqual(cols, Columns{NameMap: LabelMap{}, Levels: []ColLevel{}}) {
-		return Columns{NameMap: LabelMap{}, Levels: []ColLevel{}}
+	if reflect.DeepEqual(cols, Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}) {
+		return Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}
 	}
 	colsCopy := Columns{NameMap: LabelMap{}}
 	for k, v := range cols.NameMap {
