@@ -11,7 +11,7 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
-func TestDataFrame_Describe(t *testing.T) {
+func TestSeries_Describe(t *testing.T) {
 	type want struct {
 		len          int
 		numIdxLevels int
@@ -25,17 +25,17 @@ func TestDataFrame_Describe(t *testing.T) {
 		input *Series
 		want  want
 	}{
+		{"empty",
+			newEmptySeries(),
+			want{len: 0, numIdxLevels: 0, maxWidth: 0, datatype: "none"}},
 		{name: "default index",
 			input: MustNew("foo"),
 			want: want{len: 1, numIdxLevels: 1, maxWidth: 3,
 				values: []interface{}{"foo"}, datatype: "string", name: ""}},
 		{"multi index",
-			MustNew(1.0, Config{MultiIndex: []interface{}{"baz", "qux"}, Name: "foo"}),
-			want{len: 1, numIdxLevels: 2, maxWidth: 1,
+			MustNew(1.00, Config{MultiIndex: []interface{}{"baz", "qux"}, Name: "foo"}),
+			want{len: 1, numIdxLevels: 2, maxWidth: 4,
 				values: []interface{}{1.0}, datatype: "float64", name: "foo"}},
-		{"empty",
-			newEmptySeries(),
-			want{len: 0, numIdxLevels: 0, maxWidth: 0, datatype: "none"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -66,32 +66,6 @@ func TestDataFrame_Describe(t *testing.T) {
 			}
 
 		})
-	}
-}
-
-func TestSeries_DataType(t *testing.T) {
-	var tests = []struct {
-		datatype options.DataType
-		expected string
-	}{
-
-		{options.None, "none"},
-		{options.Float64, "float64"},
-		{options.Int64, "int64"},
-		{options.String, "string"},
-		{options.Bool, "bool"},
-		{options.DateTime, "dateTime"},
-		{options.Interface, "interface"},
-		{options.Unsupported, "unsupported"},
-		{-1, "unknown"},
-		{100, "unknown"},
-	}
-	for _, test := range tests {
-		s, _ := New([]int{1, 2, 3})
-		s.datatype = test.datatype
-		if s.DataType() != test.expected {
-			t.Errorf("s.Datatype() for datatype %v returned %v, want %v", test.datatype, test.datatype.String(), test.expected)
-		}
 	}
 }
 

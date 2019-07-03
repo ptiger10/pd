@@ -14,6 +14,10 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	var idx index.Index
 	configuration := index.Config{} // Series config
 
+	if data == nil {
+		return newEmptySeries(), nil
+	}
+
 	// Handling config
 	if config != nil {
 		if len(config) > 1 {
@@ -28,14 +32,14 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	}
 
 	// Handling values
-	factory, err := values.InterfaceFactory(data)
+	container, err := values.InterfaceFactory(data)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("series.New(): %v", err)
 	}
 
 	// Handling index
 	// empty data: return empty index
-	if lenValues := factory.Values.Len(); lenValues == 0 {
+	if lenValues := container.Values.Len(); lenValues == 0 {
 		idx = index.New()
 		// not empty data: use config
 	} else {
@@ -46,9 +50,9 @@ func New(data interface{}, config ...Config) (*Series, error) {
 	}
 
 	s := &Series{
-		values:   factory.Values,
+		values:   container.Values,
 		index:    idx,
-		datatype: factory.DataType,
+		datatype: container.DataType,
 		name:     configuration.Name,
 	}
 
@@ -85,7 +89,11 @@ func MustNew(data interface{}, config ...Config) *Series {
 }
 
 func newEmptySeries() *Series {
-	s := MustNew(nil)
+	// ducks error because InterfaceFactory supports nil data
+	container, _ := values.InterfaceFactory(nil)
+	s := &Series{index: index.New(), values: container.Values, datatype: container.DataType}
+	s.Index = Index{s: s}
+	s.InPlace = InPlace{s: s}
 	return s
 }
 

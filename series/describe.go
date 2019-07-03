@@ -394,6 +394,9 @@ func ensureDateTime(vals interface{}) []time.Time {
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
 func (s *Series) ensureAlignment() error {
+	if s.Index.Len() == 0 {
+		return nil
+	}
 	if err := s.index.Aligned(); err != nil {
 		return fmt.Errorf("out of alignment: %v", err)
 	}

@@ -15,9 +15,7 @@ import (
 
 func TestNew_emptySeries(t *testing.T) {
 	got := newEmptySeries()
-	values, _ := values.InterfaceFactory(nil)
-	index := index.New()
-	want := &Series{values: values.Values, index: index}
+	want := &Series{values: values.MustCreateValuesFromInterface(nil).Values, index: index.New(), datatype: options.None}
 	if !Equal(got, want) {
 		t.Errorf("New(nil) returned %#v, want %#v", got, want)
 	}
@@ -143,7 +141,7 @@ func TestNew_Fail(t *testing.T) {
 }
 
 func TestNew_Fail_multipleConfigs(t *testing.T) {
-	_, err := New(nil, Config{}, Config{})
+	_, err := New("foo", Config{}, Config{})
 	if err == nil {
 		t.Error("New() error = nil, want error due to multiple configs")
 	}
