@@ -10,6 +10,10 @@ func (val valueTypeValue) toInt64() int64Value {
 	return int64Value{}
 }
 
+func (val valueTypeValue) toString() stringValue {
+	return stringValue{}
+}
+
 func (val valueTypeValue) toBool() boolValue {
 	return boolValue{}
 }

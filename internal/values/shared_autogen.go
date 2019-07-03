@@ -5,7 +5,6 @@
 package values
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ptiger10/pd/options"
@@ -121,13 +120,6 @@ func (vals *float64Values) ToInt64() Values {
 		ret = append(ret, val.toInt64())
 	}
 	return &ret
-}
-
-func (val *float64Value) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // ToString converts float64Values to stringValues.
@@ -285,13 +277,6 @@ func (vals *int64Values) ToInt64() Values {
 	return &ret
 }
 
-func (val *int64Value) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
-}
-
 // ToString converts int64Values to stringValues.
 func (vals *int64Values) ToString() Values {
 	var ret stringValues
@@ -445,13 +430,6 @@ func (vals *stringValues) ToInt64() Values {
 		ret = append(ret, val.toInt64())
 	}
 	return &ret
-}
-
-func (val *stringValue) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // ToString converts stringValues to stringValues.
@@ -609,13 +587,6 @@ func (vals *boolValues) ToInt64() Values {
 	return &ret
 }
 
-func (val *boolValue) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
-}
-
 // ToString converts boolValues to stringValues.
 func (vals *boolValues) ToString() Values {
 	var ret stringValues
@@ -771,13 +742,6 @@ func (vals *dateTimeValues) ToInt64() Values {
 	return &ret
 }
 
-func (val *dateTimeValue) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
-}
-
 // ToString converts dateTimeValues to stringValues.
 func (vals *dateTimeValues) ToString() Values {
 	var ret stringValues
@@ -931,13 +895,6 @@ func (vals *interfaceValues) ToInt64() Values {
 		ret = append(ret, val.toInt64())
 	}
 	return &ret
-}
-
-func (val *interfaceValue) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // ToString converts interfaceValues to stringValues.

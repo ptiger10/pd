@@ -1,8 +1,11 @@
 package values
 
 import (
+	"fmt"
 	"math"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
 // [START Constructor Functions]
@@ -38,6 +41,13 @@ func (val int64Value) toFloat64() float64Value {
 // toInt returns itself
 func (val int64Value) toInt64() int64Value {
 	return val
+}
+
+func (val int64Value) toString() stringValue {
+	if val.null {
+		return stringValue{options.GetDisplayStringNullFiller(), true}
+	}
+	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // toBool converts int64Value to boolValue

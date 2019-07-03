@@ -1,8 +1,11 @@
 package values
 
 import (
+	"fmt"
 	"math"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
 // newFloat64 creates a float64Value from atomic float64 value
@@ -37,6 +40,13 @@ func (val float64Value) toInt64() int64Value {
 	v := int64(val.v)
 	return int64Value{v, false}
 
+}
+
+func (val float64Value) toString() stringValue {
+	if val.null {
+		return stringValue{options.GetDisplayStringNullFiller(), true}
+	}
+	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // toBool converts float64Value to boolValue

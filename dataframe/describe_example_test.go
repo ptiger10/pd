@@ -7,6 +7,13 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func ExampleNew_empty_dataframe() {
+	df := MustNew(nil)
+	fmt.Println(df)
+	// Output:
+	// {Empty DataFrame}
+}
+
 func ExampleNew_float64() {
 	df, err := New(
 		[]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}},

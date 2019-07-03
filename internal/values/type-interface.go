@@ -5,6 +5,8 @@ import (
 	"math"
 	"reflect"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
 // [START Convenience Functions]
@@ -89,6 +91,13 @@ func (val interfaceValue) toInt64() int64Value {
 		return newDateTime(val.v.(time.Time)).toInt64()
 	}
 	return int64Value{0, true}
+}
+
+func (val interfaceValue) toString() stringValue {
+	if isNullString(fmt.Sprint(val.v)) || val.null {
+		return stringValue{options.GetDisplayStringNullFiller(), true}
+	}
+	return stringValue{fmt.Sprint(val.v), false}
 }
 
 func (val interfaceValue) toBool() boolValue {

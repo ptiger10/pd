@@ -1,8 +1,6 @@
 package values
 
 import (
-	"fmt"
-
 	"github.com/cheekybits/genny/generic"
 	"github.com/ptiger10/pd/options"
 )
@@ -122,13 +120,6 @@ func (vals *valueTypeValues) ToInt64() Values {
 		ret = append(ret, val.toInt64())
 	}
 	return &ret
-}
-
-func (val *valueTypeValue) toString() stringValue {
-	if val.null {
-		return stringValue{options.GetDisplayStringNullFiller(), true}
-	}
-	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // ToString converts valueTypeValues to stringValues.

@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -19,7 +20,7 @@ func TestRename(t *testing.T) {
 	}
 }
 
-// func TestModify_Sort(t *testing.T) {
+// func TestDataFrame_Modify_Sort(t *testing.T) {
 // 	testDate1 := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
 // 	testDate2 := testDate1.Add(24 * time.Hour)
 // 	testDate3 := testDate2.Add(24 * time.Hour)
@@ -91,7 +92,7 @@ func TestRename(t *testing.T) {
 // 	}
 // }
 
-func TestModify_SwapRows(t *testing.T) {
+func TestDataFrame_Modify_SwapRows(t *testing.T) {
 	type args struct {
 		i int
 		j int
@@ -135,7 +136,7 @@ func TestModify_SwapRows(t *testing.T) {
 	}
 }
 
-func TestModify_SwapColumns(t *testing.T) {
+func TestDataFrame_Modify_SwapColumns(t *testing.T) {
 	type args struct {
 		i int
 		j int
@@ -180,7 +181,7 @@ func TestModify_SwapColumns(t *testing.T) {
 	}
 }
 
-func TestModify_InsertRow(t *testing.T) {
+func TestDataFrame_Modify_InsertRow(t *testing.T) {
 	multi := MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{"A", 1}})
 	misaligned := MustNew([]interface{}{[]string{"foo", "bar"}})
 	misaligned.index.Levels[0].Labels.Drop(1)
@@ -273,7 +274,94 @@ func TestModify_InsertRow(t *testing.T) {
 	}
 }
 
-func TestModify_AppendRow(t *testing.T) {
+func TestDataFrame_Modify_InsertColumn(t *testing.T) {
+	multi := MustNew([]interface{}{[]string{"foo"}}, Config{Col: []string{"A"}})
+
+	type args struct {
+		pos int
+		val []interface{}
+		idx []interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "emptySeries",
+			input: newEmptyDataFrame(),
+			args:  args{pos: 0, val: []interface{}{"foo"}, idx: []interface{}{"A"}},
+			want:  want{df: MustNew([]interface{}{"foo"}, Config{Index: "A"}), err: false}},
+		{"singleIndex",
+			MustNew([]interface{}{[]string{"foo"}}, Config{Index: "A"}),
+			args{0, []interface{}{"bar"}, []interface{}{"B"}},
+			want{df: MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []string{"B", "A"}}), err: false}},
+		{"multiIndex",
+			multi,
+			args{1, []interface{}{"bar"}, []interface{}{"B", 2}},
+			want{df: MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), err: false}},
+		{"fail: wrong index length",
+			multi,
+			args{1, []interface{}{"bar"}, []interface{}{"C"}},
+			want{nil, true}},
+		{"fail: wrong values length",
+			multi,
+			args{1, []interface{}{"bar", "baz"}, []interface{}{"C", 3}},
+			want{nil, true}},
+		{"fail: invalid position",
+			multi,
+			args{10, []interface{}{"bar"}, []interface{}{"C", 3}},
+			want{nil, true}},
+		{"fail: unsupported index value",
+			MustNew([]interface{}{[]string{"foo"}}, Config{Index: "A"}),
+			args{0, []interface{}{"bar"}, []interface{}{complex64(1)}},
+			want{nil, true}},
+		{"fail: unsupported df value",
+			MustNew([]interface{}{[]string{"foo"}}, Config{Index: "A"}),
+			args{0, []interface{}{complex64(1)}, []interface{}{"A"}},
+			want{nil, true}},
+		{"fail: unsupported value inserting into empty df",
+			newEmptyDataFrame(),
+			args{0, []interface{}{complex64(1)}, []interface{}{"A"}},
+			want{nil, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.InsertRow(tt.args.pos, tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.InsertRow() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(df, tt.want.df) {
+					t.Errorf("InPlace.InsertRow() got %v, want %v", df, tt.want.df)
+				}
+			}
+
+			dfCopy, err := dfArchive.InsertRow(tt.args.pos, tt.args.val, tt.args.idx)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Insert() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.Insert() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Insert() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_AppendRow(t *testing.T) {
 	type args struct {
 		val []interface{}
 		idx []interface{}
@@ -336,7 +424,7 @@ func TestModify_AppendRow(t *testing.T) {
 	}
 }
 
-func TestModify_Set(t *testing.T) {
+func TestDataFrame_Modify_Set(t *testing.T) {
 	type args struct {
 		rowPositions int
 		val          interface{}
@@ -391,7 +479,7 @@ func TestModify_Set(t *testing.T) {
 	}
 }
 
-func TestModify_SetRows(t *testing.T) {
+func TestDataFrame_Modify_SetRows(t *testing.T) {
 	type args struct {
 		rowPositions []int
 		val          interface{}
@@ -452,7 +540,7 @@ func TestModify_SetRows(t *testing.T) {
 	}
 }
 
-func TestModify_Drop(t *testing.T) {
+func TestDataFrame_Modify_Drop(t *testing.T) {
 	type args struct {
 		rowPositions int
 	}
@@ -506,7 +594,7 @@ func TestModify_Drop(t *testing.T) {
 	}
 }
 
-func TestModify_DropRows(t *testing.T) {
+func TestDataFrame_Modify_DropRows(t *testing.T) {
 	type args struct {
 		rowPositions []int
 	}
@@ -569,88 +657,114 @@ func TestModify_DropRows(t *testing.T) {
 	}
 }
 
-// func TestModify_DropDuplicates(t *testing.T) {
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		want  *DataFrame
-// 	}{
-// 		{"single",
-// 			MustNew([]string{"foo", "foo", "bar"}, Config{
-// 				Index: []int{0, 0, 1}}),
-// 			MustNew([]string{"foo", "bar"}, Config{Index: []int{0, 1}})},
-// 		{"multi",
-// 			MustNew([]string{"foo", "foo", "bar"}, Config{
-// 				MultiIndex: []interface{}{[]int{0, 0, 1}, []int{2, 2, 3}}}),
-// 			MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]int{0, 1}, []int{2, 3}}})},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			s.InPlace.DropDuplicates()
-// 			if !Equal(s, tt.want) {
-// 				t.Errorf("InPlace.DropDuplicates() got %v, want %v", s, tt.want)
-// 			}
+func TestRow_hash(t *testing.T) {
+	df := MustNew([]interface{}{"foo"})
+	r := df.Row(0)
+	got := r.hash()
+	want := "30fce7113467b7e11a683e8d764529f6a23fdb0b"
+	if fmt.Sprintf("%x", got) != want {
+		t.Errorf("Row.hash() got %x, want %v", got, want)
+	}
+}
 
-// 			dfCopy := dfArchive.DropDuplicates()
-// 			if !strings.Contains(tt.name, "fail") {
-// 				if !Equal(dfCopy, tt.want) {
-// 					t.Errorf("DataFrame.DropDuplicates() got %v, want %v", dfCopy, tt.want)
-// 				}
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.DropDuplicates() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+func TestDataFrame_Modify_DropDuplicates(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		want  *DataFrame
+	}{
+		{"single",
+			MustNew([]interface{}{[]string{"foo", "foo", "bar"}}, Config{
+				Index: []int{0, 0, 1}}),
+			MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int{0, 1}})},
+		{"multi",
+			MustNew([]interface{}{[]string{"foo", "foo", "bar"}}, Config{
+				MultiIndex: []interface{}{[]int{0, 0, 1}, []int{2, 2, 3}}}),
+			MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]int{0, 1}, []int{2, 3}}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input
+			dfArchive := tt.input.Copy()
+			s.InPlace.DropDuplicates()
+			if !Equal(s, tt.want) {
+				t.Errorf("InPlace.DropDuplicates() got %v, want %v", s, tt.want)
+			}
 
-// func TestModify_DropNull(t *testing.T) {
-// 	type want struct {
-// 		df *DataFrame
-// 	}
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		want  want
-// 	}{
-// 		{"control: no null rows",
-// 			MustNew("foo"),
-// 			want{df: MustNew("foo")}},
-// 		{"null row",
-// 			MustNew([]string{"foo", "", "baz"}),
-// 			want{MustNew([]string{"foo", "baz"}, Config{Index: []int{0, 2}})}},
-// 		{"null row reverse",
-// 			MustNew([]string{"baz", "", "foo"}),
-// 			want{MustNew([]string{"baz", "foo"}, Config{Index: []int{0, 2}})}},
-// 		{"all null rows",
-// 			MustNew([]string{"", ""}),
-// 			want{newEmptyDataFrame()}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := tt.input
-// 			dfArchive := tt.input.Copy()
-// 			s.InPlace.DropNull()
-// 			if !Equal(s, tt.want.df) {
-// 				t.Errorf("InPlace.DropNull() got %v, want %v", s, tt.want.df)
-// 			}
+			dfCopy := dfArchive.DropDuplicates()
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want) {
+					t.Errorf("DataFrame.DropDuplicates() got %v, want %v", dfCopy, tt.want)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropDuplicates() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
 
-// 			dfCopy := dfArchive.DropNull()
-// 			if !Equal(dfCopy, tt.want.df) {
-// 				t.Errorf("DataFrame.DropNull() got %v, want %v", dfCopy, tt.want.df)
-// 			}
-// 			if !strings.Contains(tt.name, "control") {
-// 				if Equal(dfArchive, dfCopy) {
-// 					t.Errorf("DataFrame.DropNull() retained access to original, want copy")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+func TestDataFrame_Modify_DropNull(t *testing.T) {
+	type args struct {
+		cols []int
+	}
+	type want struct {
+		df *DataFrame
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "control: no null rows",
+			input: MustNew([]interface{}{"foo"}),
+			args:  args{cols: []int{}},
+			want:  want{df: MustNew([]interface{}{"foo"})}},
+		{"null row",
+			MustNew([]interface{}{[]string{"foo", "", "baz"}}),
+			args{nil},
+			want{MustNew([]interface{}{[]string{"foo", "baz"}}, Config{Index: []int{0, 2}})}},
+		{"null row reverse",
+			MustNew([]interface{}{[]string{"baz", "", "foo"}}),
+			args{nil},
+			want{MustNew([]interface{}{[]string{"baz", "foo"}}, Config{Index: []int{0, 2}})}},
+		{"all null rows",
+			MustNew([]interface{}{[]string{"", ""}}),
+			args{nil},
+			want{newEmptyDataFrame()}},
+		{"null in first column, second row",
+			MustNew([]interface{}{[]string{"baz", "", "foo"}, []int{1, 2, 3}}),
+			args{[]int{0}},
+			want{MustNew([]interface{}{[]string{"baz", "foo"}, []int{1, 3}}, Config{Index: []int{0, 2}})}},
+		{"control: null in first column, but second column selected",
+			MustNew([]interface{}{[]string{"baz", "", "foo"}, []int{1, 2, 3}}),
+			args{[]int{1}},
+			want{MustNew([]interface{}{[]string{"baz", "", "foo"}, []int{1, 2, 3}}, Config{Index: []int{0, 1, 2}})}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			df.InPlace.DropNull(tt.args.cols...)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.DropNull() got %v, want %v", df, tt.want.df)
+			}
 
-func TestModifyInPlace_DatatypeConversion(t *testing.T) {
+			dfCopy := dfArchive.DropNull(tt.args.cols...)
+			if !Equal(dfCopy, tt.want.df) {
+				t.Errorf("DataFrame.DropNull() got %v, want %v", dfCopy, tt.want.df)
+			}
+			if !strings.Contains(tt.name, "control") {
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropNull() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_ModifyInPlace_DatatypeConversion(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	singleRow := MustNew([]interface{}{1.5, 1, "1", false, testDate})
@@ -695,7 +809,7 @@ func TestModifyInPlace_DatatypeConversion(t *testing.T) {
 	}
 }
 
-func TestModify_DatatypeConversion(t *testing.T) {
+func TestDataFrame_Modify_DatatypeConversion(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	singleRow := MustNew([]interface{}{1.5, 1, "1", false, testDate})

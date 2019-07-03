@@ -1,8 +1,11 @@
 package values
 
 import (
+	"fmt"
 	"math"
 	"time"
+
+	"github.com/ptiger10/pd/options"
 )
 
 // [START Constructor Functions]
@@ -47,6 +50,13 @@ func (val dateTimeValue) toInt64() int64Value {
 	}
 	v := val.v.UnixNano()
 	return int64Value{v, false}
+}
+
+func (val dateTimeValue) toString() stringValue {
+	if val.null {
+		return stringValue{options.GetDisplayStringNullFiller(), true}
+	}
+	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // ToBool converts dateTimeValues to boolValues

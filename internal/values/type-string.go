@@ -1,6 +1,7 @@
 package values
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -64,6 +65,13 @@ func (val stringValue) toInt64() int64Value {
 		return int64Value{0, true}
 	}
 	return int64Value{int64(f), false}
+}
+
+func (val stringValue) toString() stringValue {
+	if isNullString(val.v) || val.null {
+		return stringValue{options.GetDisplayStringNullFiller(), true}
+	}
+	return stringValue{fmt.Sprint(val.v), false}
 }
 
 // toBool converts stringValue to boolValue

@@ -261,8 +261,6 @@ func Equal(df, df2 *DataFrame) bool {
 		return false
 	}
 	if !reflect.DeepEqual(df.cols, df2.cols) {
-		// diff, _ := messagediff.PrettyDiff(df.cols, df2.cols)
-		// fmt.Println(diff)
 		return false
 	}
 	if df.name != df2.name {
@@ -301,12 +299,12 @@ func (df *DataFrame) maxWidths() []int {
 	maxWidths := make([]int, df.NumCols())
 	for m := 0; m < df.NumCols(); m++ {
 		var max int
-		vc := df.vals[m]
-		for _, val := range vc.Values.Values() {
+		container := df.vals[m]
+		for _, val := range container.Values.Values() {
 			var length int
-			if vc.DataType == options.DateTime {
+			if container.DataType == options.DateTime {
 				length = len(val.(time.Time).Format(options.GetDisplayTimeFormat()))
-			} else if vc.DataType == options.Float64 {
+			} else if container.DataType == options.Float64 {
 				length = len(fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), val.(float64)))
 			} else {
 				length = len(fmt.Sprint(val))
@@ -355,6 +353,22 @@ func (df *DataFrame) makeColumnExclusionsTable() [][]bool {
 	return table
 }
 
+// null returns the integer position of all null values in the specified column positions (or in any column, if none are specified).
+func (df *DataFrame) null(cols ...int) []int {
+	if len(cols) == 0 {
+		cols = values.MakeIntRange(0, df.NumCols())
+	}
+	var ret []int
+	for _, col := range cols {
+		for i := 0; i < df.Len(); i++ {
+			if df.vals[col].Values.Element(i).Null {
+				ret = append(ret, i)
+			}
+		}
+	}
+	return ret
+}
+
 // [START ensure methods]
 
 // returns an error if any index levels have different lengths
@@ -384,9 +398,9 @@ func (df *DataFrame) ensureAlignment() error {
 
 // returns an error if any row position does not exist
 func (df *DataFrame) ensureRowPositions(positions []int) error {
-	if len(positions) == 0 {
-		return fmt.Errorf("no valid rows")
-	}
+	// if len(positions) == 0 {
+	// 	return fmt.Errorf("no valid rows")
+	// }
 
 	len := df.Len()
 	for _, pos := range positions {

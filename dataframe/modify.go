@@ -1,6 +1,8 @@
 package dataframe
 
 import (
+	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -65,7 +67,7 @@ func (ip InPlace) Less(col int, i, j int) bool {
 
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and modifies the DataFrame in place.
 // If the original DataFrame is empty, replaces it with a new DataFrame.
-func (ip InPlace) InsertRow(pos int, val []interface{}, idx []interface{}) error {
+func (ip InPlace) InsertRow(row int, val []interface{}, idx []interface{}) error {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
 		newDf, err := New(val, Config{MultiIndex: idx})
@@ -77,16 +79,13 @@ func (ip InPlace) InsertRow(pos int, val []interface{}, idx []interface{}) error
 	}
 
 	// Handling errors
-	if err := ip.df.ensureAlignment(); err != nil {
-		return fmt.Errorf("DataFrame.InsertRow(): %v", err)
-	}
 	if len(idx) != ip.df.index.NumLevels() {
-		return fmt.Errorf("DataFrame.InsertRow() len(idx) must equal number of index levels: supplied %v want %v",
+		return fmt.Errorf("DataFrame.InsertRow() len(idx) must equal number of index levels: (%d != %d)",
 			len(idx), ip.df.index.NumLevels())
 	}
 
-	if pos > ip.Len() {
-		return fmt.Errorf("DataFrame.InsertRow(): invalid position: %d (max %v)", pos, ip.Len())
+	if row > ip.Len() {
+		return fmt.Errorf("DataFrame.InsertRow(): invalid position: %d (max %v)", row, ip.Len())
 	}
 
 	if len(val) != ip.df.NumCols() {
@@ -107,13 +106,34 @@ func (ip InPlace) InsertRow(pos int, val []interface{}, idx []interface{}) error
 
 	// Insertion once errors have been handled
 	for j := 0; j < ip.df.index.NumLevels(); j++ {
-		ip.df.index.Levels[j].Labels.Insert(pos, idx[j])
+		ip.df.index.Levels[j].Labels.Insert(row, idx[j])
 		ip.df.index.Levels[j].Refresh()
 	}
 	for m := 0; m < ip.df.NumCols(); m++ {
-		ip.df.vals[m].Values.Insert(pos, val[m])
+		ip.df.vals[m].Values.Insert(row, val[m])
 	}
 
+	return nil
+}
+
+// InsertColumnMulti inserts a column with multiple levels immediately before the specified column position and modifies the DataFrame in place.
+func (ip InPlace) InsertColumnMulti(col int, vals interface{}, names [][]string) error {
+	if col > ip.df.NumCols() {
+		return fmt.Errorf("DataFrame.InsertColumn(): invalid position: %d (max %v)", col, ip.df.NumCols())
+	}
+	container, err := values.InterfaceFactory(vals)
+	if err != nil {
+		return fmt.Errorf("DataFrame.InsertColumn(): %v", err)
+	}
+	if container.Values.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.InsertColumn(): new column must contain same number of vals as all other columns (%d != %d)",
+			container.Values.Len(), ip.df.Len())
+	}
+	if len(names) != ip.df.cols.NumLevels() {
+		return fmt.Errorf("DataFrame.InsertColumn() len(names) must equal the existing number of column levels: (%d != %d)",
+			len(names), ip.df.cols.NumLevels())
+	}
+	ip.df.vals = append(ip.df.vals[:col], append([]values.Container{container}, ip.df.vals[col:]...)...)
 	return nil
 }
 
@@ -175,41 +195,51 @@ func (ip InPlace) DropRows(rowPositions []int) error {
 	return nil
 }
 
-// // DropDuplicates drops any rows containing duplicate index + DataFrame values and modifies the DataFrame in place.
-// func (ip InPlace) DropDuplicates() {
-// 	g := ip.df.GroupByIndex()
-// 	var toDrop []int
-// 	for _, group := range g.Groups() {
-// 		// only inspect groups with at least one position
-// 		if positions := g.groups[group].Positions; len(positions) > 0 {
-// 			exists := make(map[interface{}]bool)
-// 			for _, pos := range positions {
-// 				if exists[ip.df.At(pos)] {
-// 					toDrop = append(toDrop, pos)
-// 				} else {
-// 					exists[ip.df.At(pos)] = true
-// 				}
-// 			}
-// 		}
-// 	}
-// 	// ducks error because position is assumed to be in DataFrame
-// 	if len(toDrop) != 0 {
-// 		ip.DropRows(toDrop)
-// 	}
-// }
+// Hash computes a unique identifer for each Row.
+func (r Row) hash() string {
+	jsonBytes, _ := json.Marshal(r)
+	h := sha1.New()
+	h.Write(jsonBytes)
+	bs := h.Sum(nil)
+	return fmt.Sprintf("%x", bs)
+}
 
-// // DropDuplicates drops any rows containing duplicate index + DataFrame values and returns a new DataFrame.
-// func (df *DataFrame) DropDuplicates() *DataFrame {
-// 	df = df.Copy()
-// df.InPlace.DropDuplicates()
-// 	return df
-// }
+// DropDuplicates drops any rows containing duplicate index + DataFrame values and modifies the DataFrame in place.
+func (ip InPlace) DropDuplicates() {
+	var toDrop []int
+	g := ip.df.GroupByIndex()
+	for _, group := range g.Groups() {
+		// only inspect groups with at least one position
+		if positions := g.groups[group].Positions; len(positions) > 0 {
+			exists := make(map[interface{}]bool)
+			for _, pos := range positions {
+				if exists[ip.df.Row(pos).hash()] {
+					toDrop = append(toDrop, pos)
+				} else {
+					exists[ip.df.Row(pos).hash()] = true
+				}
+			}
+		}
+	}
+	// ducks error because position is assumed to be in DataFrame
+	ip.DropRows(toDrop)
+}
 
-// // DropNull drops all null values and modifies the DataFrame in place.
-// func (ip InPlace) DropNull() {
-// 	ip.dropMany(ip.df.null())
-// 	return
-// }
+// DropDuplicates drops any rows containing duplicate index + DataFrame values and returns a new DataFrame.
+func (df *DataFrame) DropDuplicates() *DataFrame {
+	df = df.Copy()
+	df.InPlace.DropDuplicates()
+	return df
+}
+
+// DropNull drops all null values and modifies the DataFrame in place.
+func (ip InPlace) DropNull(cols ...int) error {
+	if err := ip.df.ensureColumnPositions(cols); err != nil {
+		return fmt.Errorf("df.DropNull(): %v", err)
+	}
+	ip.dropMany(ip.df.null(cols...))
+	return nil
+}
 
 // dropMany drops multiple rows and modifies the DataFrame in place.
 func (ip InPlace) dropMany(positions []int) error {
@@ -325,9 +355,9 @@ func (df *DataFrame) SwapColumns(i, j int) (*DataFrame, error) {
 }
 
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and returns a new DataFrame.
-func (df *DataFrame) InsertRow(pos int, val []interface{}, idx []interface{}) (*DataFrame, error) {
+func (df *DataFrame) InsertRow(row int, val []interface{}, idx []interface{}) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.InsertRow(pos, val, idx)
+	err := df.InPlace.InsertRow(row, val, idx)
 	return df, err
 }
 
@@ -368,12 +398,12 @@ func (df *DataFrame) DropRows(positions []int) (*DataFrame, error) {
 	return df, err
 }
 
-// // DropNull drops all null values and modifies the DataFrame in place.
-// func (df *DataFrame) DropNull() *DataFrame {
-// 	df = df.Copy()
-// 	df.InPlace.DropNull()
-// 	return df
-// }
+// DropNull drops all null values and modifies the DataFrame in place.
+func (df *DataFrame) DropNull(cols ...int) *DataFrame {
+	df = df.Copy()
+	df.InPlace.DropNull(cols...)
+	return df
+}
 
 // ToFloat64 converts DataFrame values to float64 and returns a new DataFrame.
 func (df *DataFrame) ToFloat64() *DataFrame {
