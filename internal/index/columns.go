@@ -2,6 +2,7 @@ package index
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -17,8 +18,7 @@ type Columns struct {
 // NewColumns returns a new Columns collection from a slice of column levels.
 func NewColumns(levels ...ColLevel) Columns {
 	if levels == nil {
-		emptyLevel := NewColLevel(nil, "")
-		levels = append(levels, emptyLevel)
+		return Columns{Levels: []ColLevel{}, NameMap: LabelMap{}}
 	}
 	cols := Columns{
 		Levels: levels,
@@ -147,8 +147,8 @@ func NewDefaultColLevel(n int, name string) ColLevel {
 
 // NewColLevel returns a Columns level with updated label map.
 func NewColLevel(labels []string, name string) ColLevel {
-	if labels == nil {
-		labels = []string{}
+	if len(labels) == 0 {
+		return ColLevel{}
 	}
 	lvl := ColLevel{
 		Labels:   labels,
@@ -182,6 +182,9 @@ func (lvl *ColLevel) updateLabelMap() {
 
 // Copy copies a Column Level
 func (lvl ColLevel) Copy() ColLevel {
+	if reflect.DeepEqual(lvl, ColLevel{}) {
+		return ColLevel{}
+	}
 	lvlCopy := ColLevel{}
 	lvlCopy = lvl
 	lvlCopy.Labels = make([]string, lvl.Len())
@@ -197,6 +200,9 @@ func (lvl ColLevel) Copy() ColLevel {
 
 // Copy returns a deep copy of each column level.
 func (cols Columns) Copy() Columns {
+	if reflect.DeepEqual(cols, Columns{NameMap: LabelMap{}, Levels: []ColLevel{}}) {
+		return Columns{NameMap: LabelMap{}, Levels: []ColLevel{}}
+	}
 	colsCopy := Columns{NameMap: LabelMap{}}
 	for k, v := range cols.NameMap {
 		colsCopy.NameMap[k] = v

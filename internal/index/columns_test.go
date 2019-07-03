@@ -7,6 +7,21 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func TestColumns_Nil(t *testing.T) {
+	cols := Columns{}
+	_ = cols.Copy()
+	_ = cols.Len()
+	_ = cols.NumLevels()
+	cols.Refresh()
+}
+
+func TestColLevel_Nil(t *testing.T) {
+	lvl := ColLevel{}
+	_ = lvl.Copy()
+	_ = lvl.Len()
+	lvl.Refresh()
+}
+
 func TestNewColumns(t *testing.T) {
 	type args struct {
 		levels []ColLevel
@@ -25,8 +40,8 @@ func TestNewColumns(t *testing.T) {
 	}{
 		{"empty", args{nil},
 			want{
-				columns: Columns{Levels: []ColLevel{ColLevel{Labels: []string{}, DataType: options.String, LabelMap: LabelMap{}}}, NameMap: LabelMap{"": []int{0}}},
-				len:     0, numLevels: 1, maxNameWidth: 0, names: []string{},
+				columns: Columns{Levels: []ColLevel{}, NameMap: LabelMap{}},
+				len:     0, numLevels: 0, maxNameWidth: 0, names: []string{},
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
@@ -92,11 +107,42 @@ func TestNewColLevel(t *testing.T) {
 	}
 }
 
-func TestNewColLevel_Nil(t *testing.T) {
-	colLevel := NewColLevel(nil, "")
-	cpy := colLevel.Copy()
-	if !reflect.DeepEqual(colLevel, cpy) {
-		t.Errorf("NewColLevel(nil) = %v, want %v", colLevel, cpy)
+func TestNewColLevel_Copy(t *testing.T) {
+	tests := []struct {
+		name  string
+		input ColLevel
+		want  ColLevel
+	}{
+		{name: "empty nil", input: NewColLevel(nil, ""), want: ColLevel{}},
+		{"empty", NewColLevel([]string{}, "bar"), ColLevel{}},
+		{"pass", NewColLevel([]string{"foo"}, "bar"), NewColLevel([]string{"foo"}, "bar")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Copy()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ColLevel.Copy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewColumns_Copy(t *testing.T) {
+	tests := []struct {
+		name  string
+		input Columns
+		want  Columns
+	}{
+		{name: "empty", input: NewColumns(), want: Columns{Levels: []ColLevel{}, NameMap: LabelMap{}}},
+		{"pass", NewColumns(NewColLevel([]string{"foo"}, "bar")), NewColumns(NewColLevel([]string{"foo"}, "bar"))},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Copy()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Columns.Copy() = %#v, want %#v", got, tt.want)
+			}
+		})
 	}
 }
 
@@ -150,14 +196,6 @@ func TestNewColumnFromConfig(t *testing.T) {
 	}
 }
 
-func TestColumns_Nil(t *testing.T) {
-	cols := Columns{}
-	_ = cols.Copy()
-	_ = cols.Len()
-	_ = cols.NumLevels()
-	cols.Refresh()
-}
-
 func TestCol_Refresh(t *testing.T) {
 	columns := NewColumns(NewColLevel([]string{"foo"}, "bar"))
 	columns.Levels[0] = NewDefaultColLevel(5, "baz")
@@ -166,12 +204,6 @@ func TestCol_Refresh(t *testing.T) {
 	if !reflect.DeepEqual(columns, want) {
 		t.Errorf("Col.Refresh() got %v, want %v", columns, want)
 	}
-	// Empty or nil columns do not trigger an error
-	columns.Levels = make([]ColLevel, 0)
-	columns.Refresh()
-	columns = NewColumns()
-	columns.Refresh()
-
 }
 
 func TestCol_Subset(t *testing.T) {

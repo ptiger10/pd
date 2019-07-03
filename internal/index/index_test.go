@@ -12,9 +12,25 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func TestIndex_Nil(t *testing.T) {
+	idx := Index{}
+	_ = idx.Aligned()
+	_ = idx.Copy()
+	_ = idx.Len()
+	_ = idx.NumLevels()
+	idx.Refresh()
+}
+
+func TestIndexLevel_Nil(t *testing.T) {
+	lvl := Level{}
+	_ = lvl.Copy()
+	_ = lvl.Len()
+	_ = lvl.maxWidth()
+	_, _ = lvl.Convert(options.None)
+	lvl.Refresh()
+}
+
 func TestNew(t *testing.T) {
-	empty, _ := values.InterfaceFactory(nil)
-	labelsEmpty := empty.Values
 	vals, _ := values.InterfaceFactory([]int{1, 2})
 	labels := vals.Values
 
@@ -36,8 +52,8 @@ func TestNew(t *testing.T) {
 	}{
 		{"empty", args{nil},
 			want{
-				index: Index{Levels: []Level{Level{Labels: labelsEmpty, LabelMap: LabelMap{}}}, NameMap: LabelMap{"": []int{0}}},
-				len:   0, numLevels: 1, maxWidths: []int{0}, unnamed: true, datatypes: []options.DataType{options.None},
+				index: Index{Levels: []Level{}, NameMap: LabelMap{}},
+				len:   0, numLevels: 0, maxWidths: []int{}, unnamed: true, datatypes: []options.DataType{},
 			}},
 		{"one level",
 			args{[]Level{MustNewLevel([]int{1, 2}, "foo")}},
@@ -62,7 +78,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := New(tt.args.levels...)
 			if !reflect.DeepEqual(got, tt.want.index) {
-				t.Errorf("New(): got %#v, want %#v", got.Levels[0], tt.want.index.Levels[0])
+				t.Errorf("New(): got %#v, want %#v", got, tt.want.index)
 			}
 			gotLen := got.Len()
 			if gotLen != tt.want.len {
@@ -70,11 +86,11 @@ func TestNew(t *testing.T) {
 			}
 			gotNumLevels := got.NumLevels()
 			if !reflect.DeepEqual(gotNumLevels, tt.want.numLevels) {
-				t.Errorf("Index.MaxWidth(): got %v, want %v", gotNumLevels, tt.want.numLevels)
+				t.Errorf("Index.NumLevels(): got %v, want %v", gotNumLevels, tt.want.numLevels)
 			}
 			gotMaxWidth := got.MaxWidths()
 			if !reflect.DeepEqual(gotMaxWidth, tt.want.maxWidths) {
-				t.Errorf("Index.MaxWidth(): got %v, want %v", gotMaxWidth, tt.want.maxWidths)
+				t.Errorf("Index.MaxWidth(): got %#v, want %#v", gotMaxWidth, tt.want.maxWidths)
 			}
 			gotUnnamed := got.Unnamed()
 			if !reflect.DeepEqual(gotUnnamed, tt.want.unnamed) {
@@ -82,7 +98,7 @@ func TestNew(t *testing.T) {
 			}
 			gotDataTypes := got.DataTypes()
 			if !reflect.DeepEqual(gotDataTypes, tt.want.datatypes) {
-				t.Errorf("Index.GotDataTypes(): got %v, want %v", gotDataTypes, tt.want.datatypes)
+				t.Errorf("Index.GotDataTypes(): got %#v, want %#v", gotDataTypes, tt.want.datatypes)
 			}
 		})
 	}
@@ -161,16 +177,79 @@ func Test_NewDefault(t *testing.T) {
 	}
 }
 
-func Test_Copy(t *testing.T) {
-	idx := New(MustNewLevel([]int{1, 2, 3}, ""))
-	copyIdx := idx.Copy()
-	for i := 0; i < len(idx.Levels); i++ {
-		if reflect.ValueOf(idx.Levels[i].Labels).Pointer() == reflect.ValueOf(copyIdx.Levels[i].Labels).Pointer() {
-			t.Errorf("index.Copy() returned original labels at level %v, want fresh copy", i)
-		}
-		if reflect.ValueOf(idx.Levels[i].LabelMap).Pointer() == reflect.ValueOf(copyIdx.Levels[i].LabelMap).Pointer() {
-			t.Errorf("index.Copy() returned original map at level %v, want fresh copy", i)
-		}
+func TestIndex_NewLevel(t *testing.T) {
+	type args struct {
+		data interface{}
+		name string
+	}
+	type want struct {
+		level Level
+		err   bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "empty", args: args{data: nil, name: ""},
+			want: want{level: Level{}, err: false}},
+		{"pass", args{"foo", "bar"},
+			want{
+				Level{
+					Name: "bar", DataType: options.String,
+					Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+				false}},
+		{"fail unsupported", args{complex64(1), "bar"},
+			want{Level{}, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewLevel(tt.args.data, tt.args.name)
+			if (err != nil) != tt.want.err {
+				t.Errorf("NewLevel() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(got, tt.want.level) {
+				t.Errorf("NewLevel() = %v, want %v", got, tt.want.level)
+			}
+		})
+	}
+}
+
+func TestNewIndexLevel_Copy(t *testing.T) {
+	tests := []struct {
+		name  string
+		input Level
+		want  Level
+	}{
+		{name: "empty nil", input: MustNewLevel(nil, ""), want: Level{}},
+		{"pass", MustNewLevel("foo", "bar"), MustNewLevel("foo", "bar")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Copy()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Level.Copy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewIndex_Copy(t *testing.T) {
+	tests := []struct {
+		name  string
+		input Index
+		want  Index
+	}{
+		{name: "empty", input: New(), want: Index{Levels: []Level{}, NameMap: LabelMap{}}},
+		{"pass", New(MustNewLevel("foo", "bar")), New(MustNewLevel("foo", "bar"))},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Copy()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Index.Copy() = %#v, want %#v", got, tt.want)
+			}
+		})
 	}
 }
 
@@ -183,15 +262,6 @@ func TestMustNew_fail(t *testing.T) {
 	if buf.String() == "" {
 		t.Errorf("MustNew() returned no log message, want log due to fail")
 	}
-}
-
-func TestIndex_Nil(t *testing.T) {
-	idx := Index{}
-	_ = idx.Aligned()
-	_ = idx.Copy()
-	_ = idx.Len()
-	_ = idx.NumLevels()
-	idx.Refresh()
 }
 
 func TestElements(t *testing.T) {

@@ -3,6 +3,7 @@ package index
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -46,8 +47,7 @@ type Config struct {
 // Expects that Levels already have .LabelMap and .Longest set.
 func New(levels ...Level) Index {
 	if levels == nil {
-		emptyLevel, _ := NewLevel(nil, "")
-		levels = append(levels, emptyLevel)
+		return Index{Levels: []Level{}, NameMap: LabelMap{}}
 	}
 	idx := Index{
 		Levels: levels,
@@ -105,6 +105,9 @@ func NewFromConfig(config Config, n int) (Index, error) {
 
 // Copy returns a deep copy of each index level
 func (idx Index) Copy() Index {
+	if reflect.DeepEqual(idx, Index{NameMap: LabelMap{}, Levels: []Level{}}) {
+		return Index{NameMap: LabelMap{}, Levels: []Level{}}
+	}
 	idxCopy := Index{NameMap: LabelMap{}}
 	for k, v := range idx.NameMap {
 		idxCopy.NameMap[k] = v
@@ -124,6 +127,9 @@ func NewDefaultLevel(n int, name string) Level {
 
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
+	if data == nil {
+		return Level{}, nil
+	}
 	factory, err := values.InterfaceFactory(data)
 	if err != nil {
 		return Level{}, fmt.Errorf("NewLevel(): %v", err)
@@ -148,6 +154,9 @@ func MustNewLevel(data interface{}, name string) Level {
 
 // Copy copies an Index Level
 func (lvl Level) Copy() Level {
+	if reflect.DeepEqual(lvl, Level{}) {
+		return Level{}
+	}
 	lvlCopy := Level{}
 	lvlCopy = lvl
 	lvlCopy.Labels = lvlCopy.Labels.Copy()
@@ -209,18 +218,18 @@ func (idx Index) Unnamed() bool {
 
 // MaxWidths returns the max number of characters in each level of an index.
 func (idx Index) MaxWidths() []int {
-	var maxWidths []int
-	for _, lvl := range idx.Levels {
-		maxWidths = append(maxWidths, lvl.maxWidth())
+	maxWidths := make([]int, idx.NumLevels())
+	for j := 0; j < idx.NumLevels(); j++ {
+		maxWidths[j] = idx.Levels[j].maxWidth()
 	}
 	return maxWidths
 }
 
 // DataTypes returns a slice of the DataTypes at each level of the index
 func (idx Index) DataTypes() []options.DataType {
-	var idxDataTypes []options.DataType
-	for _, lvl := range idx.Levels {
-		idxDataTypes = append(idxDataTypes, lvl.DataType)
+	idxDataTypes := make([]options.DataType, idx.NumLevels())
+	for j := 0; j < idx.NumLevels(); j++ {
+		idxDataTypes[j] = idx.Levels[j].DataType
 	}
 	return idxDataTypes
 }
@@ -378,6 +387,9 @@ func (idx *Index) Refresh() {
 
 // Len returns the number of labels in the level
 func (lvl Level) Len() int {
+	if reflect.DeepEqual(lvl, Level{}) {
+		return 0
+	}
 	return lvl.Labels.Len()
 }
 
