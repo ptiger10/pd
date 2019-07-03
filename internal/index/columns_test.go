@@ -88,7 +88,7 @@ func TestNewColumns(t *testing.T) {
 
 func TestNewDefaultColumns(t *testing.T) {
 	got := NewDefaultColumns(2)
-	want := NewColumns(ColLevel{Name: "", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, DataType: options.Int64})
+	want := NewColumns(ColLevel{Name: "", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, DataType: options.Int64, defaultInt: true})
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("NewDefaultColumns: got %v, want %v", got, want)
 	}
@@ -271,7 +271,8 @@ func TestNewDefaultColLevel(t *testing.T) {
 		want ColLevel
 	}{
 		{name: "pass", args: args{n: 2, name: "foo"},
-			want: ColLevel{Name: "foo", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, DataType: options.Int64}},
+			want: ColLevel{Name: "foo", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}},
+				DataType: options.Int64, defaultInt: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
