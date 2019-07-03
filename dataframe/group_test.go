@@ -24,20 +24,20 @@ func TestDataFrame_GroupByIndex(t *testing.T) {
 		args  args
 		want  map[string]*group
 	}{
-		// {name: "single no args",
-		// 	input: MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []int{1, 1, 2}}),
-		// 	args:  args{[]int{}},
-		// 	want: map[string]*group{
-		// 		"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
-		// 		"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
-		// 	}},
-		// {"multi no args",
-		// 	multi,
-		// 	args{[]int{}},
-		// 	map[string]*group{
-		// 		"1 2": &group{Positions: []int{0, 1}, Index: index.New(lvl1, lvl2)},
-		// 		"2 1": &group{Positions: []int{2}, Index: index.New(lvl2, lvl1)},
-		// 	}},
+		{name: "single no args",
+			input: MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []int{1, 1, 2}}),
+			args:  args{[]int{}},
+			want: map[string]*group{
+				"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
+				"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
+			}},
+		{"multi no args",
+			multi,
+			args{[]int{}},
+			map[string]*group{
+				"1 2": &group{Positions: []int{0, 1}, Index: index.New(lvl1, lvl2)},
+				"2 1": &group{Positions: []int{2}, Index: index.New(lvl2, lvl1)},
+			}},
 		{"multi one level",
 			multi,
 			args{[]int{0}},

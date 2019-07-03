@@ -44,6 +44,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		if err != nil {
 			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 		}
+		// optional DataType conversion
 		if configuration.DataType != options.None {
 			container.Values, err = values.Convert(container.Values, configuration.DataType)
 			if err != nil {
@@ -73,7 +74,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	}
 
 	// df.Columns = Columns{df: df}
-	// df.Index = Index{df: df}
+	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 
 	if err := df.ensureAlignment(); err != nil {
@@ -86,7 +87,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 func newEmptyDataFrame() *DataFrame {
 	df := &DataFrame{vals: nil, index: index.New(), cols: index.NewColumns()}
 	// df.Columns = Columns{df: df}
-	// df.Index = Index{df: df}
+	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 	return df
 }
@@ -115,7 +116,7 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 		name:  name,
 	}
 	// df.Columns = Columns{df: df}
-	// df.Index = Index{df: df}
+	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 
 	return df
@@ -169,8 +170,8 @@ func (df *DataFrame) Copy() *DataFrame {
 		name:  df.name,
 	}
 	dfCopy.InPlace = InPlace{df: dfCopy}
+	dfCopy.Index = Index{df: dfCopy}
 	// dfCopy.Columns = Columns{df: dfCopy}
-	// dfCopy.Index = Index{df: dfCopy}
 	return dfCopy
 }
 

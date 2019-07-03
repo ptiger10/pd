@@ -295,12 +295,26 @@ func ExampleNew_float64_indexNamed_multicolNamed() {
 }
 
 func ExampleNew_float64_colsNamed_repeat_resume() {
-	df := MustNew([]interface{}{"qux", "waldo", "fred"},
-		Config{Name: "foobar", Col: []string{"quux", "quux", "foo"}})
+	df := MustNew([]interface{}{"qux", "bar", "fred"},
+		Config{Name: "foobar", Col: []string{"waldo", "waldo", "foo"}})
 	fmt.Println(df)
 	// Output:
-	//      quux          foo
-	// 0     qux  waldo  fred
+	//      waldo        foo
+	// 0      qux  bar  fred
+	//
+	// datatype: string
+	// name: foobar
+}
+
+func ExampleNew_float64_colsNamed_repeat_allowed() {
+	options.SetDisplayRepeatedLabels(true)
+	df := MustNew([]interface{}{"qux", "bar", "fred"},
+		Config{Name: "foobar", Col: []string{"waldo", "waldo", "foo"}})
+	fmt.Println(df)
+	options.RestoreDefaults()
+	// Output:
+	//      waldo  waldo   foo
+	// 0      qux    bar  fred
 	//
 	// datatype: string
 	// name: foobar

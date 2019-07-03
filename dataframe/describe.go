@@ -77,7 +77,7 @@ func (df *DataFrame) print() string {
 
 	// [START column rows]
 	// var colLevelRows []string
-	excl := df.makeExclusionsTable()
+	excl := df.makeColumnExclusionsTable()
 	maxColWidths := df.maxColWidths(excl)
 	var excludeColumns []int
 	if df.NumCols() >= options.GetDisplayMaxColumns() {
@@ -273,6 +273,9 @@ func Equal(df, df2 *DataFrame) bool {
 
 // DataTypes returns the DataTypes of the Series in the DataFrame.
 func (df *DataFrame) DataTypes() *series.Series {
+	if len(df.vals) == 0 {
+		return series.MustNew(nil)
+	}
 	var types []string
 	for _, val := range df.vals {
 		types = append(types, val.DataType.String())
@@ -284,6 +287,9 @@ func (df *DataFrame) DataTypes() *series.Series {
 // dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
 func (df *DataFrame) dataType() string {
 	uniqueTypes := df.DataTypes().Unique()
+	if len(uniqueTypes) == 0 {
+		return "empty"
+	}
 	if len(uniqueTypes) == 1 {
 		return df.vals[0].DataType.String()
 	}
@@ -340,8 +346,8 @@ func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
 	return maxColWidths
 }
 
-// for use in  printing dataframe columns
-func (df *DataFrame) makeExclusionsTable() [][]bool {
+// for use in printing dataframe columns
+func (df *DataFrame) makeColumnExclusionsTable() [][]bool {
 	table := make([][]bool, df.ColLevels())
 	for row := range table {
 		table[row] = make([]bool, df.NumCols())
@@ -354,6 +360,7 @@ func (df *DataFrame) makeExclusionsTable() [][]bool {
 // returns an error if any index levels have different lengths
 // or if there is a mismatch between the number of values and index items
 func (df *DataFrame) ensureAlignment() error {
+	// check index
 	if err := df.index.Aligned(); err != nil {
 		return fmt.Errorf("dataframe out of alignment: %v", err)
 	}
@@ -361,14 +368,17 @@ func (df *DataFrame) ensureAlignment() error {
 		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
 	}
 
+	// check columns
+	if df.NumCols() != len(df.vals) {
+		return fmt.Errorf("dataframe.New(): number of columns must match number of series (%d != %d)",
+			df.NumCols(), len(df.vals))
+	}
+
+	// check number of values in each column
 	if err := df.valsAligned(); err != nil {
 		return fmt.Errorf("dataframe out of alignment: %v", err)
 	}
 
-	if df.cols.Len() != df.NumCols() {
-		return fmt.Errorf("dataframe.New(): number of columns must match number of series: %d != %d",
-			df.cols.Len(), df.NumCols())
-	}
 	return nil
 }
 

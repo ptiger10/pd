@@ -1,7 +1,6 @@
 package dataframe
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -22,9 +21,15 @@ func TestDataFrame_Describe(t *testing.T) {
 		input *DataFrame
 		want  want
 	}{
-		{name: "default index, col",
-			input: MustNew([]interface{}{"foo"}),
+		{name: "empty",
+			input: newEmptyDataFrame(),
 			want: want{
+				len: 0, numCols: 0, numIdxLevels: 0, numColLevels: 0,
+				dataType: "empty", dataTypes: series.MustNew(nil),
+			}},
+		{"default index, col",
+			MustNew([]interface{}{"foo"}),
+			want{
 				len: 1, numCols: 1, numIdxLevels: 1, numColLevels: 1,
 				dataType: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
 			}},
@@ -45,12 +50,6 @@ func TestDataFrame_Describe(t *testing.T) {
 			want{
 				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 2,
 				dataType: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
-			}},
-		{"empty",
-			newEmptyDataFrame(),
-			want{
-				len: 0, numCols: 0, numIdxLevels: 0, numColLevels: 0,
-				dataType: "None", dataTypes: series.MustNew(nil),
 			}},
 	}
 	for _, tt := range tests {
@@ -111,26 +110,42 @@ func TestEqual(t *testing.T) {
 }
 
 func TestMaxColWidth(t *testing.T) {
+	type want struct {
+		colWidths       []int
+		exclusionsTable [][]bool
+	}
 	tests := []struct {
+		name   string
 		config Config
-		want   []int
+		want   want
 	}{
-		{Config{}, []int{3, 4}},
-		{Config{Col: []string{"corge", "bar"}, ColName: "grapply"}, []int{5, 4}},
-		{Config{MultiCol: [][]string{{"corge", "bar"}, {"qux", "quuz"}}, MultiColNames: []string{"grapply", "grault"}}, []int{5, 4}},
+		{name: "empty config", config: Config{},
+			want: want{colWidths: []int{3, 4}, exclusionsTable: [][]bool{{false, false}}}},
+		{"single level",
+			Config{Col: []string{"corge", "bar"}, ColName: "grapply"},
+			want{[]int{5, 4}, [][]bool{{false, false}}}},
+		{"multi level",
+			Config{MultiCol: [][]string{{"corge", "bar"}, {"qux", "quuz"}}, MultiColNames: []string{"grapply", "grault"}},
+			want{[]int{5, 4}, [][]bool{{false, false}, {false, false}}}},
 	}
 
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+		})
 		df := MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}}, tt.config)
-		excl := df.makeExclusionsTable()
+		excl := df.makeColumnExclusionsTable()
 		got := df.maxColWidths(excl)
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("df.maxColWidths() got %v, want %v for df \n%v", got, tt.want, df)
+		if !reflect.DeepEqual(got, tt.want.colWidths) {
+			t.Errorf("df.maxColWidths() got %v, want %v", got, tt.want.colWidths)
+		}
+		if !reflect.DeepEqual(excl, tt.want.exclusionsTable) {
+			t.Errorf("df.makeColumnExclusionsTable() got %v, want %v", excl, tt.want.exclusionsTable)
 		}
 	}
 }
 
-func TestMaxColWidthExclusions(t *testing.T) {
+func TestMaxColWidthExcludeRepeat(t *testing.T) {
 	df := MustNew(
 		[]interface{}{[]string{"a", "b"}, []string{"c", "quux"}},
 		Config{MultiCol: [][]string{{"waldo", "waldo"}, {"d", "e"}}})
@@ -139,24 +154,5 @@ func TestMaxColWidthExclusions(t *testing.T) {
 	want := []int{5, 4}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("df.maxColWidths() got %v, want %v for df \n%v", got, want, df)
-	}
-}
-
-func TestMakeExclusionTable(t *testing.T) {
-	df := MustNew([]interface{}{"foo", "bar"}, Config{MultiCol: [][]string{{"baz", "qux"}, {"quux", "quuz"}}})
-	got := df.makeExclusionsTable()
-	want := [][]bool{{false, false}, {false, false}}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("df.MakeExclusionsTable() got %v, want %v", got, want)
-	}
-}
-
-func TestNames(t *testing.T) {
-	df := newEmptyDataFrame()
-	fmt.Println(df.NumCols())
-	got := df.cols.Names()
-	want := []string{}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("df.cols.Names() for nil got %v, want %v", got, want)
 	}
 }
