@@ -11,13 +11,6 @@ import (
 	"github.com/ptiger10/pd/series"
 )
 
-func (df *DataFrame) String() string {
-	if Equal(df, newEmptyDataFrame()) {
-		return "{Empty DataFrame}"
-	}
-	return df.print()
-}
-
 // Len returns the number of values in each Series of the DataFrame.
 func (df *DataFrame) Len() int {
 	if df.vals == nil {

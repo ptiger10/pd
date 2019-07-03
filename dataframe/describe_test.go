@@ -8,6 +8,82 @@ import (
 	"github.com/ptiger10/pd/series"
 )
 
+func TestDataFrame_Describe(t *testing.T) {
+	type want struct {
+		len          int
+		numCols      int
+		numIdxLevels int
+		numColLevels int
+		dataType     string
+		dataTypes    *series.Series
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		want  want
+	}{
+		{name: "default index, col",
+			input: MustNew([]interface{}{"foo"}),
+			want: want{
+				len: 1, numCols: 1, numIdxLevels: 1, numColLevels: 1,
+				dataType: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
+			}},
+		{"multi index, single col",
+			MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"baz", "qux"}}),
+			want{
+				len: 1, numCols: 1, numIdxLevels: 2, numColLevels: 1,
+				dataType: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
+			}},
+		{"single index, two cols",
+			MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"baz", "qux"}}),
+			want{
+				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 1,
+				dataType: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
+			}},
+		{"single index, multi col",
+			MustNew([]interface{}{"foo", "bar"}, Config{MultiCol: [][]string{{"baz", "qux"}, {"corge", "fred"}}}),
+			want{
+				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 2,
+				dataType: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
+			}},
+		{"empty",
+			newEmptyDataFrame(),
+			want{
+				len: 0, numCols: 0, numIdxLevels: 0, numColLevels: 0,
+				dataType: "None", dataTypes: series.MustNew(nil),
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			gotLen := df.Len()
+			if gotLen != tt.want.len {
+				t.Errorf("df.Len(): got %v, want %v", gotLen, tt.want.len)
+			}
+			gotNumCols := df.NumCols()
+			if gotNumCols != tt.want.numCols {
+				t.Errorf("df.NumCols(): got %v, want %v", gotNumCols, tt.want.numCols)
+			}
+			gotNumIdxLevels := df.IndexLevels()
+			if gotNumIdxLevels != tt.want.numIdxLevels {
+				t.Errorf("df.IndexLevels(): got %v, want %v", gotNumIdxLevels, tt.want.numIdxLevels)
+			}
+			gotNumColLevels := df.ColLevels()
+			if gotNumColLevels != tt.want.numColLevels {
+				t.Errorf("df.ColLevels(): got %v, want %v", gotNumColLevels, tt.want.numColLevels)
+			}
+			gotDataType := df.dataType()
+			if gotDataType != tt.want.dataType {
+				t.Errorf("df.dataType(): got %v, want %v", gotDataType, tt.want.dataType)
+			}
+			gotDataTypes := df.DataTypes()
+			if !series.Equal(gotDataTypes, tt.want.dataTypes) {
+				t.Errorf("df.DataTypes(): got %v, want %v", gotDataTypes, tt.want.dataTypes)
+			}
+		})
+	}
+}
+
 func TestEqual(t *testing.T) {
 	df := MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Index: "corge", Col: []string{"baz", "qux"}})
 	type args struct {
@@ -31,30 +107,6 @@ func TestEqual(t *testing.T) {
 				t.Errorf("Equal() got %v, want %v", got, tt.want)
 			}
 		})
-	}
-}
-
-func TestDataTypes(t *testing.T) {
-	df, err := New([]interface{}{"foo"}, Config{Index: "bar"})
-	if err != nil {
-		t.Errorf("df.DataTypes(): %v", err)
-	}
-	got := df.DataTypes()
-	want, err := series.New("string", series.Config{Name: "datatypes"})
-	if err != nil {
-		fmt.Println(err)
-	}
-	if !series.Equal(got, want) {
-		t.Errorf("df.DataTypes() returned %#v, want %#v", got, want)
-	}
-}
-
-func TestDataType(t *testing.T) {
-	df, _ := New([]interface{}{"foo"})
-	got := df.dataType()
-	want := "string"
-	if got != want {
-		t.Errorf("df.dataType() returned %v, want %v", got, want)
 	}
 }
 

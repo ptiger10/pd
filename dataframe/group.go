@@ -1,13 +1,14 @@
 package dataframe
 
 import (
-	"github.com/ptiger10/pd/internal/index"
-)
+	"fmt"
+	"log"
+	"sort"
+	"strings"
 
-// func (g Grouping) String() string {
-// 	printer := fmt.Sprintf("{Grouping | NumGroups: %v, Groups: [%v]}\n", len(g.groups), strings.Join(g.Groups(), ", "))
-// 	return printer
-// }
+	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/options"
+)
 
 type group struct {
 	Index     index.Index
@@ -98,33 +99,33 @@ func (g Grouping) copy() Grouping {
 // 	return s
 // }
 
-// // Groups returns all valid group labels in the Grouping.
-// func (g Grouping) Groups() []string {
-// 	var keys []string
-// 	for k := range g.groups {
-// 		keys = append(keys, k)
-// 	}
-// 	sort.Strings(keys)
-// 	return keys
-// }
+// Groups returns all valid group labels in the Grouping.
+func (g Grouping) Groups() []string {
+	var keys []string
+	for k := range g.groups {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
 
-// // Len returns the number of groups in the Grouping.
-// func (g Grouping) Len() int {
-// 	return len(g.groups)
-// }
+// Len returns the number of groups in the Grouping.
+func (g Grouping) Len() int {
+	return len(g.groups)
+}
 
-// // Group returns the DataFrame with the given group label, or an error if that label does not exist.
-// func (g Grouping) Group(label string) *DataFrame {
-// 	group, ok := g.groups[label]
-// 	if !ok {
-// 		if options.GetLogWarnings() {
-// 			log.Printf("s.Grouping.Group(): label %v not in g.Groups()", label)
-// 		}
-// 		return newEmptyDataFrame()
-// 	}
-// 	s := g.df.subsetRows(group.Positions)
-// 	return s
-// }
+// Group returns the DataFrame with the given group label, or an error if that label does not exist.
+func (g Grouping) Group(label string) *DataFrame {
+	group, ok := g.groups[label]
+	if !ok {
+		if options.GetLogWarnings() {
+			log.Printf("s.Grouping.Group(): label %v not in g.Groups()", label)
+		}
+		return newEmptyDataFrame()
+	}
+	s := g.df.subsetRows(group.Positions)
+	return s
+}
 
 func newEmptyGrouping() Grouping {
 	groups := make(map[string]*group)
@@ -132,36 +133,36 @@ func newEmptyGrouping() Grouping {
 	return Grouping{df: df, groups: groups}
 }
 
-// // GroupByIndex groups a DataFrame by one or more of its index levels. If no int is provided, all index levels are used.
-// func (df *DataFrame) GroupByIndex(levelPositions ...int) Grouping {
-// 	groups := make(map[string]*group)
-// 	if len(levelPositions) != 0 {
-// 		var err error
-// 		df, err = df.Index.SubsetLevels(levelPositions)
-// 		if err != nil {
-// 			if options.GetLogWarnings() {
-// 				log.Printf("df.GroupByIndex() %v\n", err)
-// 			}
-// 			return newEmptyGrouping()
-// 		}
-// 	}
+// GroupByIndex groups a DataFrame by one or more of its index levels. If no int is provided, all index levels are used.
+func (df *DataFrame) GroupByIndex(levelPositions ...int) Grouping {
+	groups := make(map[string]*group)
+	if len(levelPositions) != 0 {
+		var err error
+		df, err = df.Index.SubsetLevels(levelPositions)
+		if err != nil {
+			if options.GetLogWarnings() {
+				log.Printf("df.GroupByIndex() %v\n", err)
+			}
+			return newEmptyGrouping()
+		}
+	}
 
-// 	for i := 0; i < df.Len(); i++ {
-// 		row := df.subsetRows([]int{i})
-// 		labels := row.Element(0).Labels
-// 		var strLabels []string
-// 		for _, label := range labels {
-// 			strLabels = append(strLabels, fmt.Sprint(label))
-// 		}
-// 		groupLabel := strings.Join(strLabels, " ")
+	for i := 0; i < df.Len(); i++ {
+		row := df.subsetRows([]int{i})
+		labels := row.Row(0).Labels
+		var strLabels []string
+		for _, label := range labels {
+			strLabels = append(strLabels, fmt.Sprint(label))
+		}
+		groupLabel := strings.Join(strLabels, " ")
 
-// 		if _, ok := groups[groupLabel]; !ok {
-// 			groups[groupLabel] = &group{Index: row.index}
-// 		}
-// 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
-// 	}
-// 	return Grouping{df: df, groups: groups}
-// }
+		if _, ok := groups[groupLabel]; !ok {
+			groups[groupLabel] = &group{Index: row.index}
+		}
+		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
+	}
+	return Grouping{df: df, groups: groups}
+}
 
 // // First returns the first occurence of each grouping in the DataFrame.
 // func (g Grouping) First() *DataFrame {

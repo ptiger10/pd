@@ -2,7 +2,6 @@ package dataframe
 
 import (
 	"fmt"
-	"reflect"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -24,22 +23,6 @@ func (df *DataFrame) replace(df2 *DataFrame) {
 }
 
 // [START InPlace]
-
-// InPlace contains methods for modifying a DataFrame in place.
-type InPlace struct {
-	df *DataFrame
-}
-
-func (ip InPlace) String() string {
-	printer := "{InPlace Handler}\n"
-	printer += "Methods:\n"
-	t := reflect.TypeOf(InPlace{})
-	for i := 0; i < t.NumMethod(); i++ {
-		method := t.Method(i)
-		printer += fmt.Sprintln(method.Name)
-	}
-	return printer
-}
 
 // // Sort sorts the series by its values and modifies the DataFrame in place.
 // func (ip InPlace) Sort(asc bool) {

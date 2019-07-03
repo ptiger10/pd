@@ -12,16 +12,6 @@ import (
 
 // [START Index modifications]
 
-// Index contains index selection and conversion
-type Index struct {
-	df *DataFrame
-}
-
-func (idx Index) String() string {
-	printer := fmt.Sprintf("{Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
-	return printer
-}
-
 // Values returns an []interface{} of the values at each level of the index
 func (idx Index) Values() [][]interface{} {
 	var ret [][]interface{}
@@ -73,13 +63,13 @@ func (idx Index) NumLevels() int {
 func (idx Index) At(row int, level int) interface{} {
 	if level >= idx.NumLevels() {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.At(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+			log.Printf("df.Index.At(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 		}
 		return nil
 	}
 	if row >= idx.Len() {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.At(): invalid row: %d (max: %v)", row, idx.Len()-1)
+			log.Printf("df.Index.At(): invalid row: %d (max: %v)", row, idx.Len()-1)
 		}
 		return nil
 	}
@@ -90,7 +80,7 @@ func (idx Index) At(row int, level int) interface{} {
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
 func (idx Index) RenameLevel(level int, name string) error {
 	if err := idx.df.ensureIndexLevelPositions([]int{level}); err != nil {
-		return fmt.Errorf("s.Index.RenameLevel(): %v", err)
+		return fmt.Errorf("df.Index.RenameLevel(): %v", err)
 	}
 	idx.df.index.Levels[level].Name = name
 	idx.df.index.Refresh()
@@ -100,7 +90,7 @@ func (idx Index) RenameLevel(level int, name string) error {
 // Reindex converts an index level to a default range []int{0, 1, 2,...n}
 func (idx Index) Reindex(level int) error {
 	if err := idx.df.ensureIndexLevelPositions([]int{level}); err != nil {
-		return fmt.Errorf("s.Index.Reindex(): %v", err)
+		return fmt.Errorf("df.Index.Reindex(): %v", err)
 	}
 	// ducks error because inputs are controlled
 	idxVals := values.MakeIntRange(0, idx.Len())
@@ -124,52 +114,52 @@ func (idx Index) null(level int) []int {
 // DropNull drops null index values at the index level specified and returns a new DataFrame.
 func (idx Index) DropNull(level int) (*DataFrame, error) {
 	if level >= idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 	}
-	s := idx.df.Copy()
-	s.InPlace.dropMany(idx.null(level))
-	return s, nil
+	df := idx.df.Copy()
+	df.InPlace.dropMany(idx.null(level))
+	return df, nil
 }
 
 // SwapLevels swaps two levels in the index and returns a new DataFrame.
 func (idx Index) SwapLevels(i, j int) (*DataFrame, error) {
 	if err := idx.df.ensureIndexLevelPositions([]int{i}); err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.SwapLevels(): invalid i: %v", err)
 	}
 	if err := idx.df.ensureIndexLevelPositions([]int{j}); err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.SwapLevels(): invalid j: %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.SwapLevels(): invalid j: %v", err)
 	}
-	s := idx.df.Copy()
-	s.index.Levels[i], s.index.Levels[j] = s.index.Levels[j], s.index.Levels[i]
-	s.index.Refresh()
-	return s, nil
+	df := idx.df.Copy()
+	df.index.Levels[i], df.index.Levels[j] = df.index.Levels[j], df.index.Levels[i]
+	df.index.Refresh()
+	return df, nil
 }
 
 // InsertLevel inserts a level into the index and returns a new DataFrame.
 func (idx Index) InsertLevel(pos int, values interface{}, name string) (*DataFrame, error) {
 	if pos > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.InsertLevel(): invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
 	}
 	lvl, err := index.NewLevel(values, name)
 	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.InsertLevel(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): %v", err)
 	}
 	if lvl.Len() != idx.Len() {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.InsertLevel(): values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
 	}
-	s := idx.df.Copy()
-	s.index.Levels = append(s.index.Levels[:pos], append([]index.Level{lvl}, s.index.Levels[pos:]...)...)
-	s.index.Refresh()
-	return s, nil
+	df := idx.df.Copy()
+	df.index.Levels = append(df.index.Levels[:pos], append([]index.Level{lvl}, df.index.Levels[pos:]...)...)
+	df.index.Refresh()
+	return df, nil
 }
 
 // AppendLevel adds a new index level to the end of the current index  and returns a new DataFrame.
 func (idx Index) AppendLevel(values interface{}, name string) (*DataFrame, error) {
-	s, err := idx.InsertLevel(idx.Len(), values, name)
+	df, err := idx.InsertLevel(idx.Len(), values, name)
 	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.AppendLevel(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.AppendLevel(): %v", err)
 	}
-	return s, err
+	return df, err
 }
 
 // SubsetLevels returns a new DataFrame with only the specified index levels.
@@ -178,25 +168,25 @@ func (idx Index) SubsetLevels(levelPositions []int) (*DataFrame, error) {
 	if err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("s.Index.SubsetLevels(): %v", err)
 	}
-	s := idx.df.Copy()
+	df := idx.df.Copy()
 	levels := make([]index.Level, 0)
 	for _, position := range levelPositions {
-		levels = append(levels, s.index.Levels[position])
+		levels = append(levels, df.index.Levels[position])
 	}
-	s.index.Levels = levels
-	s.index.Refresh()
-	return s, nil
+	df.index.Levels = levels
+	df.index.Refresh()
+	return df, nil
 }
 
 // Set sets the label at the specified index row and level to val and returns a new DataFrame.
 // First converts val to be the same type as the index level.
 func (idx Index) Set(row int, level int, val interface{}) (*DataFrame, error) {
-	s := idx.df.Copy()
-	err := s.index.Set(row, level, val)
+	df := idx.df.Copy()
+	err := df.index.Set(row, level, val)
 	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("s.Index.Set(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.Set(): %v", err)
 	}
-	return s, nil
+	return df, nil
 }
 
 // SetRows sets the label at the specified index rows and level to val and returns a new DataFrame.

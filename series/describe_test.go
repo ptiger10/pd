@@ -11,6 +11,64 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func TestDataFrame_Describe(t *testing.T) {
+	type want struct {
+		len          int
+		numIdxLevels int
+		maxWidth     int
+		values       []interface{}
+		datatype     string
+		name         string
+	}
+	tests := []struct {
+		name  string
+		input *Series
+		want  want
+	}{
+		{name: "default index",
+			input: MustNew("foo"),
+			want: want{len: 1, numIdxLevels: 1, maxWidth: 3,
+				values: []interface{}{"foo"}, datatype: "string", name: ""}},
+		{"multi index",
+			MustNew(1.0, Config{MultiIndex: []interface{}{"baz", "qux"}, Name: "foo"}),
+			want{len: 1, numIdxLevels: 2, maxWidth: 1,
+				values: []interface{}{1.0}, datatype: "float64", name: "foo"}},
+		{"empty",
+			newEmptySeries(),
+			want{len: 0, numIdxLevels: 0, maxWidth: 0, datatype: "none"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input.Copy()
+			gotLen := s.Len()
+			if gotLen != tt.want.len {
+				t.Errorf("s.Len(): got %v, want %v", gotLen, tt.want.len)
+			}
+			gotNumIdxLevels := s.Index.NumLevels()
+			if gotNumIdxLevels != tt.want.numIdxLevels {
+				t.Errorf("s.Index.NumLevels(): got %v, want %v", gotNumIdxLevels, tt.want.numIdxLevels)
+			}
+			gotMaxWidth := s.MaxWidth()
+			if gotMaxWidth != tt.want.maxWidth {
+				t.Errorf("s.MaxWidth(): got %v, want %v", gotMaxWidth, tt.want.maxWidth)
+			}
+			gotValues := s.Values()
+			if !reflect.DeepEqual(gotValues, tt.want.values) {
+				t.Errorf("s.Values(): got %v, want %v", gotMaxWidth, tt.want.values)
+			}
+			gotDatatype := s.DataType()
+			if gotDatatype != tt.want.datatype {
+				t.Errorf("s.Datatype(): got %v, want %v", gotDatatype, tt.want.datatype)
+			}
+			gotName := s.Name()
+			if gotName != tt.want.name {
+				t.Errorf("s.Name(): got %v, want %v", gotName, tt.want.name)
+			}
+
+		})
+	}
+}
+
 func TestSeries_DataType(t *testing.T) {
 	var tests = []struct {
 		datatype options.DataType
@@ -71,24 +129,6 @@ func TestSeries_ReplaceNil(t *testing.T) {
 	s.replace(s2)
 	if !Equal(s, s2) {
 		t.Errorf("Series.replace() returned %v, want %v", s, s2)
-	}
-}
-
-func TestSeries_Values(t *testing.T) {
-	s := MustNew([]string{"foo", "bar", "baz"})
-	got := s.Values()
-	want := []interface{}{"foo", "bar", "baz"}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("s.Values() got %v, want %v", got, want)
-	}
-}
-
-func TestSeries_MaxWidth(t *testing.T) {
-	s := MustNew([]string{"foo", "quux", "grault"}, Config{Name: "grapply"})
-	got := s.MaxWidth()
-	want := 6
-	if got != want {
-		t.Errorf("s.MaxWidth got %v, want %v", got, want)
 	}
 }
 

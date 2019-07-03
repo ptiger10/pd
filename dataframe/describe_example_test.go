@@ -419,3 +419,64 @@ func ExampleDataFrame_subset() {
 	// 0    1.00   foo
 	//  <nil>
 }
+
+// [START additional structs]
+
+func ExampleDataFrame_empty_df() {
+	df := newEmptyDataFrame()
+	fmt.Println(df)
+	// Output:
+	// {Empty DataFrame}
+}
+
+func ExampleRow_valid_printer() {
+	df := MustNew([]interface{}{"foo", 5, true, ""})
+	fmt.Println(df.Row(0))
+	// Output:
+	// 	   Values: [foo 5 true NaN]
+	//     IsNull: [false false false true]
+	// ValueTypes: [string int64 bool string]
+	//     Labels: [0]
+	// LabelTypes: [int64]
+}
+
+func ExampleInPlace_method_list() {
+	df := MustNew([]interface{}{"foo"})
+	fmt.Println(df.InPlace)
+	// Output:
+	// {InPlace DataFrame Handler}
+	// Methods:
+	// AppendRow
+	// DropRow
+	// DropRows
+	// InsertRow
+	// Len
+	// Less
+	// SetRow
+	// SetRows
+	// String
+	// SwapColumns
+	// SwapRows
+	// ToBool
+	// ToDateTime
+	// ToFloat64
+	// ToInt64
+	// ToInterface
+	// ToString
+}
+
+func ExampleIndex_valid_printer() {
+	df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
+	fmt.Println(df.Index)
+	// Output:
+	// {DataFrame Index | Len: 3, NumLevels: 1}
+}
+func ExampleGrouping_method_list() {
+	s := MustNew(
+		[]interface{}{[]string{"foo", "bar", "baz"}},
+		Config{MultiIndex: []interface{}{[]int{0, 0, 1}, []int{100, 100, 101}}})
+	g := s.GroupByIndex()
+	fmt.Println(g)
+	// Output:
+	// {DataFrame Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
+}
