@@ -131,10 +131,11 @@ func (cols *Columns) Refresh() {
 // A ColLevel is a single collection of column labels within a Columns collection, plus label mappings and metadata.
 // It is identical to an index Level except for the Labels, which are a simple []interface{} that do not satisfy the values.Values interface.
 type ColLevel struct {
-	Name     string
-	Labels   []string
-	LabelMap LabelMap
-	DataType options.DataType
+	Name       string
+	Labels     []string
+	LabelMap   LabelMap
+	DataType   options.DataType
+	defaultInt bool
 }
 
 // NewDefaultColLevel creates a column level with range labels (0, 1, 2, ...n) and optional name.
@@ -142,6 +143,7 @@ func NewDefaultColLevel(n int, name string) ColLevel {
 	colsInt := values.MakeStringRange(0, n)
 	lvl := NewColLevel(colsInt, name)
 	lvl.DataType = options.Int64
+	lvl.defaultInt = true
 	return lvl
 }
 

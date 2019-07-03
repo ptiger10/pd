@@ -18,10 +18,11 @@ type Index struct {
 
 // A Level is a single collection of labels within an index, plus label mappings and metadata
 type Level struct {
-	DataType options.DataType
-	Labels   values.Values
-	LabelMap LabelMap
-	Name     string
+	DataType   options.DataType
+	Labels     values.Values
+	LabelMap   LabelMap
+	Name       string
+	defaultInt bool
 }
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
@@ -122,6 +123,7 @@ func (idx Index) Copy() Index {
 func NewDefaultLevel(n int, name string) Level {
 	v := values.MakeIntRange(0, n)
 	level := MustNewLevel(v, name)
+	level.defaultInt = true
 	return level
 }
 

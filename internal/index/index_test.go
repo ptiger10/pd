@@ -162,10 +162,8 @@ func TestNewFromConfig(t *testing.T) {
 
 func Test_NewDefault(t *testing.T) {
 	got := NewDefault(3)
-	lvl, err := NewLevel([]int64{0, 1, 2}, "")
-	if err != nil {
-		t.Error(err)
-	}
+	lvl := MustNewLevel([]int64{0, 1, 2}, "")
+	lvl.defaultInt = true
 	want := New(lvl)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Default constructor returned %v, want %v", got, want)

@@ -12,10 +12,10 @@ import (
 
 // InterfaceFactory converts interface{} to Values
 func InterfaceFactory(data interface{}) (Container, error) {
-	var factory Container
+	var container Container
 	var err error
 	if data == nil {
-		factory = Container{Values: emptyValues(), DataType: options.None}
+		container = Container{Values: emptyValues(), DataType: options.None}
 	} else {
 		switch reflect.ValueOf(data).Kind() {
 		case reflect.Float32, reflect.Float64,
@@ -24,16 +24,16 @@ func InterfaceFactory(data interface{}) (Container, error) {
 			reflect.String,
 			reflect.Bool,
 			reflect.Struct:
-			factory, err = ScalarFactory(data)
+			container, err = ScalarFactory(data)
 
 		case reflect.Slice:
-			factory, err = SliceFactory(data)
+			container, err = SliceFactory(data)
 
 		default:
 			return Container{Values: emptyValues()}, fmt.Errorf("internal.values.InterfaceFactory(): type not supported: %T", data)
 		}
 	}
-	return factory, err
+	return container, err
 }
 
 // MustCreateValuesFromInterface returns a container that satisfies the Values interface or panics.
