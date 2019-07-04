@@ -220,33 +220,23 @@ func (cols Columns) Copy() Columns {
 	return colsCopy
 }
 
-// Subset returns a new Columns with all the column levels located at the specified integer positions
-func (cols Columns) Subset(colPositions []int) (Columns, error) {
-	cols = cols.Copy()
-	var lvls []ColLevel
-	for _, lvl := range cols.Levels {
-		lvl, err := lvl.Subset(colPositions)
-		if err != nil {
-			return Columns{}, fmt.Errorf("internal columns.Subset(): %v", err)
-		}
-		lvls = append(lvls, lvl)
+// Subset subsets a Columns with all the column levels located at the specified integer positions and modifies the Columns in place.
+func (cols *Columns) Subset(colPositions []int) {
+	for j := 0; j < cols.NumLevels(); j++ {
+		cols.Levels[j].Subset(colPositions)
 	}
-	cols.Levels = lvls
 	cols.updateNameMap()
-	return cols, nil
+	return
 }
 
-// Subset returns the label values in a column level at specified integer positions.
-func (lvl ColLevel) Subset(positions []int) (ColLevel, error) {
+// Subset subsets the label values in a column level at specified integer positions and modifies the ColLevel in place.
+func (lvl *ColLevel) Subset(positions []int) {
 	var labels []string
 	for _, pos := range positions {
-		if pos >= lvl.Len() {
-			return ColLevel{}, fmt.Errorf("internal colLevel.Subset(): invalid integer position: %d (max %d)", pos, lvl.Len()-1)
-		}
 		labels = append(labels, lvl.Labels[pos])
 	}
 	lvl.Labels = labels
 
 	lvl.Refresh()
-	return lvl, nil
+	return
 }

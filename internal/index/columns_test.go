@@ -226,20 +226,15 @@ func TestCol_Subset(t *testing.T) {
 	}{
 		{"pass 0", []int{0}, NewColumns(NewColLevel([]string{"foo"}, "baz"), NewColLevel([]string{"qux"}, "corge")), false},
 		{"pass 1", []int{1}, NewColumns(NewColLevel([]string{"bar"}, "baz"), NewColLevel([]string{"quux"}, "corge")), false},
-		{"fail: out of range", []int{2}, Columns{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			col := NewColumns(
 				NewColLevel([]string{"foo", "bar"}, "baz"),
 				NewColLevel([]string{"qux", "quux"}, "corge"))
-			got, err := col.Subset(tt.positions)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("cols.In(): %v", err)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("cols.In(): got %v, want %v", got, tt.want)
+			col.Subset(tt.positions)
+			if !reflect.DeepEqual(col, tt.want) {
+				t.Errorf("cols.Subset(): got %v, want %v", col, tt.want)
 			}
 		})
 	}
@@ -254,18 +249,13 @@ func TestColLevel_Subset(t *testing.T) {
 	}{
 		{"pass 0", []int{0}, NewColLevel([]string{"foo"}, "baz"), false},
 		{"pass 1", []int{1}, NewColLevel([]string{"bar"}, "baz"), false},
-		{"out of range", []int{2}, ColLevel{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			col := NewColLevel([]string{"foo", "bar"}, "baz")
-			got, err := col.Subset(tt.positions)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("colsLevel.In(): %v", err)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("colsLevel.In(): got %v, want %v", got, tt.want)
+			col.Subset(tt.positions)
+			if !reflect.DeepEqual(col, tt.want) {
+				t.Errorf("colsLevel.Subset(): got %v, want %v", col, tt.want)
 			}
 		})
 	}
