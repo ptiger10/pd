@@ -320,6 +320,39 @@ func (ip InPlace) dropOne(pos int) {
 	return
 }
 
+// DropColumn drops a column at a specified integer position and modifies the DataFrame in place.
+func (ip InPlace) DropColumn(col int) error {
+
+	// Handling errors
+	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
+		return fmt.Errorf("DataFrame.DropColumn(): %v", err)
+	}
+
+	for j := 0; j < ip.df.cols.NumLevels(); j++ {
+		ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], ip.df.cols.Levels[j].Labels[col+1:]...)
+		ip.df.cols.Levels[j].Refresh()
+	}
+
+	ip.df.vals = append(ip.df.vals[:col], ip.df.vals[col+1:]...)
+	if ip.df.NumCols() == 0 {
+		ip.df.replace(newEmptyDataFrame())
+	}
+	return nil
+}
+
+// DropColumns drops the columns at the specified integer positions and modifies the DataFrame in place.
+func (ip InPlace) DropColumns(columnPositions []int) error {
+	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
+		return fmt.Errorf("DataFrame.DropColumns(): %v", err)
+	}
+	sort.IntSlice(columnPositions).Sort()
+	for i, position := range columnPositions {
+		// ducks error because all columns are assumed to be safe after aggregate error check above
+		ip.df.InPlace.DropColumn(position - i)
+	}
+	return nil
+}
+
 // ToFloat64 converts DataFrame values to float64 in place.
 func (ip InPlace) ToFloat64() {
 	for m := 0; m < ip.df.NumCols(); m++ {
@@ -462,6 +495,20 @@ func (df *DataFrame) DropRow(row int) (*DataFrame, error) {
 func (df *DataFrame) DropRows(positions []int) (*DataFrame, error) {
 	df = df.Copy()
 	err := df.InPlace.DropRows(positions)
+	return df, err
+}
+
+// DropColumn drops the column at the specified integer position and returns a new DataFrame.
+func (df *DataFrame) DropColumn(col int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.DropColumn(col)
+	return df, err
+}
+
+// DropColumns drops the column at the specified integer position and returns a new DataFrame.
+func (df *DataFrame) DropColumns(columnPositions []int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.DropColumns(columnPositions)
 	return df, err
 }
 

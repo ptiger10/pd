@@ -210,7 +210,7 @@ func (ip InPlace) dropMany(positions []int) error {
 }
 
 // dropOne drops a row at a specified integer position and modifies the Series in place.
-// Should be called via dropMany to catch errors.
+// For internal use when position is ensured. To catch errors, call via dropMany.
 func (ip InPlace) dropOne(pos int) {
 	for i := 0; i < ip.s.NumLevels(); i++ {
 		ip.s.index.Levels[i].Labels.Drop(pos)

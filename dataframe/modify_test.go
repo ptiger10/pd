@@ -722,13 +722,119 @@ func TestDataFrame_Modify_DropRows(t *testing.T) {
 	}
 }
 
+func TestDataFrame_Modify_DropColumn(t *testing.T) {
+	type args struct {
+		col int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"drop to 0",
+			MustNew([]interface{}{"foo"}), args{col: 0},
+			want{df: newEmptyDataFrame(), err: false}},
+		{"multiple cols",
+			MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"0", "1"}}), args{1},
+			want{MustNew([]interface{}{"foo"}, Config{Col: []string{"0"}}), false}},
+		{"fail: invalid col",
+			MustNew([]interface{}{"foo"}), args{10},
+			want{MustNew([]interface{}{"foo"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.DropColumn(tt.args.col)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.DropColumn() error = %v, want %v", err, tt.want.err)
+			}
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.DropColumn() got %v, want %v", df, tt.want.df)
+				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
+				fmt.Println(diff)
+			}
+
+			dfCopy, err := dfArchive.DropColumn(tt.args.col)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.DropColumn() error = %v, want %v", err, tt.want.err)
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.DropColumn() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropColumn() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_DropColumns(t *testing.T) {
+	type args struct {
+		col []int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "multiple cols",
+			input: MustNew([]interface{}{"foo", "bar", "baz"}, Config{Col: []string{"0", "1", "2"}}),
+			args:  args{[]int{0, 2}},
+			want:  want{MustNew([]interface{}{"bar"}, Config{Col: []string{"1"}}), false}},
+		{"fail: invalid col",
+			MustNew([]interface{}{"foo"}), args{[]int{10}},
+			want{MustNew([]interface{}{"foo"}), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.DropColumns(tt.args.col)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.DropColumns() error = %v, want %v", err, tt.want.err)
+			}
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.DropColumns() got %v, want %v", df, tt.want.df)
+				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
+				fmt.Println(diff)
+			}
+
+			dfCopy, err := dfArchive.DropColumns(tt.args.col)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.DropColumns() error = %v, want %v", err, tt.want.err)
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.DropColumns() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.DropColumns() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
 func TestRow_hash(t *testing.T) {
 	df := MustNew([]interface{}{"foo"})
 	r := df.Row(0)
 	got := r.hash()
 	want := "30fce7113467b7e11a683e8d764529f6a23fdb0b"
-	if fmt.Sprintf("%x", got) != want {
-		t.Errorf("Row.hash() got %x, want %v", got, want)
+	if got != want {
+		t.Errorf("Row.hash() got %v, want %v", got, want)
 	}
 }
 
