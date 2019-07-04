@@ -67,6 +67,49 @@ func (df *DataFrame) SelectLabels(labels []string, level int) []int {
 	return include
 }
 
+// SelectColumn returns the integer location of the first row in index level 0 with the supplied label, or -1 if the label does not exist.
+func (df *DataFrame) SelectColumn(label string) int {
+	if df.ColLevels() == 0 {
+		if options.GetLogWarnings() {
+			log.Println("DataFrame.SelectColumn(): index has no levels")
+		}
+		return -1
+	}
+	val, ok := df.cols.Levels[0].LabelMap[label]
+	if !ok {
+		if options.GetLogWarnings() {
+			log.Printf("DataFrame.SelectColumn(): %v not in label map\n", label)
+		}
+		return -1
+	}
+	return val[0]
+}
+
+// SelectColumns returns the integer locations of all columns with the supplied labels within the supplied level.
+// If an error is encountered, returns a new slice of 0 length.
+func (df *DataFrame) SelectColumns(labels []string, level int) []int {
+	empty := make([]int, 0)
+	err := df.ensureColumnLevelPositions([]int{level})
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("DataFrame.SelectColumns(): %v", err)
+		}
+		return empty
+	}
+	include := make([]int, 0)
+	for _, label := range labels {
+		val, ok := df.cols.Levels[level].LabelMap[label]
+		if !ok {
+			if options.GetLogWarnings() {
+				log.Printf("DataFrame.SelectColumns(): %v not in label map", label)
+			}
+			return empty
+		}
+		include = append(include, val...)
+	}
+	return include
+}
+
 // Col returns the first Series with the specified column label at column level 0.
 func (df *DataFrame) Col(label string) *series.Series {
 	colPos, ok := df.cols.Levels[0].LabelMap[label]

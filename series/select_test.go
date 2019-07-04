@@ -212,15 +212,14 @@ func TestSeries_SelectLabel(t *testing.T) {
 		label string
 	}
 	tests := []struct {
-		name     string
-		input    *Series
-		args     args
-		want     int
-		wantFail bool
+		name  string
+		input *Series
+		args  args
+		want  int
 	}{
-		{name: "pass", input: s, args: args{label: "1"}, want: 0, wantFail: false},
-		{"fail: empty Series", &Series{}, args{label: "1"}, -1, true},
-		{"fail: label not in Series", s, args{label: "100"}, -1, true},
+		{name: "pass", input: s, args: args{label: "1"}, want: 0},
+		{"fail: empty Series", newEmptySeries(), args{label: "1"}, -1},
+		{"fail: label not in Series", s, args{label: "100"}, -1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -230,7 +229,7 @@ func TestSeries_SelectLabel(t *testing.T) {
 			if got := tt.input.SelectLabel(tt.args.label); got != tt.want {
 				t.Errorf("Series.SelectLabel() = %v, want %v", got, tt.want)
 			}
-			if tt.wantFail {
+			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
 					t.Errorf("Series.SelectLabel() returned no log message, want log due to fail")
 				}
@@ -246,17 +245,16 @@ func TestSeries_SelectLabels(t *testing.T) {
 		level  int
 	}
 	tests := []struct {
-		name     string
-		input    *Series
-		args     args
-		want     []int
-		wantFail bool
+		name  string
+		input *Series
+		args  args
+		want  []int
 	}{
-		{name: "pass", input: s, args: args{labels: []string{"1"}, level: 0}, want: []int{0, 1, 2}, wantFail: false},
-		{"pass", s, args{[]string{"qux", "quux"}, 1}, []int{0, 1}, false},
-		{"fail: empty Series", &Series{}, args{[]string{"1"}, 0}, []int{}, true},
-		{"fail: label not in Series", s, args{[]string{"100"}, 0}, []int{}, true},
-		{"fail: invalid level", s, args{[]string{"1"}, 100}, []int{}, true},
+		{name: "pass", input: s, args: args{labels: []string{"1"}, level: 0}, want: []int{0, 1, 2}},
+		{"pass", s, args{[]string{"qux", "quux"}, 1}, []int{0, 1}},
+		{"fail: empty Series", newEmptySeries(), args{[]string{"1"}, 0}, []int{}},
+		{"fail: label not in Series", s, args{[]string{"100"}, 0}, []int{}},
+		{"fail: invalid level", s, args{[]string{"1"}, 100}, []int{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -266,7 +264,7 @@ func TestSeries_SelectLabels(t *testing.T) {
 			if got := tt.input.SelectLabels(tt.args.labels, tt.args.level); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Series.SelectLabels() = %v, want %v", got, tt.want)
 			}
-			if tt.wantFail {
+			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
 					t.Errorf("Series.SelectLabels() returned no log message, want log due to fail")
 				}
