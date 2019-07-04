@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
@@ -415,6 +416,33 @@ func (ip InPlace) SetIndex(col int) error {
 	return nil
 }
 
+func (ip InPlace) resetIndex(level int) {
+	container := values.Container{Values: ip.df.index.Levels[level].Labels, DataType: ip.df.index.Levels[level].DataType}
+	ip.df.vals = append(ip.df.vals, container)
+	names := strings.Split(ip.df.index.Levels[level].Name, " | ")
+	for j := 0; j < ip.df.ColLevels(); j++ {
+		ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels, names[j])
+		ip.df.cols.Levels[j].Refresh()
+	}
+
+	// ducks error because levels are certain to be in index
+	ip.df.index.DropLevel(level)
+	return
+}
+
+// ResetIndex sets an index level as a column, drops the index level, and modifies the DataFrame in place.
+// If level is the only level, a default int index is inserted.
+func (ip InPlace) ResetIndex(level int) error {
+	if err := ip.df.ensureIndexLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("DataFrame.ResetIndex(): %v", err)
+	}
+	if ip.df.IndexLevels() == 1 {
+		ip.df.index.Levels = append(ip.df.index.Levels, index.NewDefaultLevel(ip.Len(), ""))
+	}
+	ip.resetIndex(level)
+	return nil
+}
+
 // ToFloat64 converts DataFrame values to float64 in place.
 func (ip InPlace) ToFloat64() {
 	for m := 0; m < ip.df.NumCols(); m++ {
@@ -599,6 +627,14 @@ func (df *DataFrame) DropNull(cols ...int) *DataFrame {
 func (df *DataFrame) SetIndex(col int) (*DataFrame, error) {
 	df = df.Copy()
 	err := df.InPlace.SetIndex(col)
+	return df, err
+}
+
+// ResetIndex sets an index level as a column, drops the index level, and returns a new DataFrame.
+// If level is the only level, a default int index is inserted.
+func (df *DataFrame) ResetIndex(level int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.ResetIndex(level)
 	return df, err
 }
 

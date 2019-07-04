@@ -1094,6 +1094,11 @@ func TestDataFrame_Modify_SetIndex(t *testing.T) {
 				err: false,
 			},
 		},
+		{"control: single column",
+			MustNew([]interface{}{"foo"}),
+			args{col: 0},
+			want{MustNew([]interface{}{"foo"}), false},
+		},
 		{"fail: invalid col",
 			df,
 			args{col: 10},
@@ -1107,8 +1112,6 @@ func TestDataFrame_Modify_SetIndex(t *testing.T) {
 			err := df.InPlace.SetIndex(tt.args.col)
 			if !Equal(df, tt.want.df) {
 				t.Errorf("InPlace.SetIndex() got %v, want %v", df, tt.want.df)
-				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
-				fmt.Println(diff)
 			}
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.SetIndex() error = %v, want %v", err, tt.want.err)
@@ -1126,11 +1129,79 @@ func TestDataFrame_Modify_SetIndex(t *testing.T) {
 				if !Equal(dfCopy, tt.want.df) {
 					t.Errorf("DataFrame.SetIndex() got %v, want %v", dfCopy, tt.want.df)
 				}
-				if Equal(dfArchive, dfCopy) {
-					t.Errorf("DataFrame.SetIndex() retained access to original, want copy")
+				if !strings.Contains(tt.name, "control") {
+					if Equal(dfArchive, dfCopy) {
+						t.Errorf("DataFrame.SetIndex() retained access to original, want copy")
+					}
 				}
 			}
+		})
+	}
+}
 
+func TestDataFrame_Modify_ResetIndex(t *testing.T) {
+	df := MustNew([]interface{}{"foo", "bar"}, Config{MultiIndex: []interface{}{[]int{0}, []string{"baz"}}, Col: []string{"0", "1"}})
+	type args struct {
+		level int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "pass",
+			input: df,
+			args:  args{level: 1},
+			want: want{df: MustNew([]interface{}{"foo", "bar", "baz"}, Config{
+				Col:   []string{"0", "1", ""},
+				Index: []int{0}}),
+				err: false,
+			},
+		},
+		{"replace last index level with default int level",
+			MustNew([]interface{}{"foo"}, Config{Index: "bar", IndexName: "qux", Col: []string{"baz"}}),
+			args{level: 0},
+			want{MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"baz", "qux"}}), false},
+		},
+		{"fail: invalid level",
+			df,
+			args{level: 10},
+			want{df, true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.ResetIndex(tt.args.level)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.ResetIndex() got %v, want %v", df, tt.want.df)
+			}
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.ResetIndex() error = %v, want %v", err, tt.want.err)
+			}
+
+			dfCopy, err := dfArchive.ResetIndex(tt.args.level)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.ResetIndex() error = %v, want %v", err, tt.want.err)
+			}
+			if !Equal(dfCopy, tt.want.df) {
+				t.Errorf("DataFrame.ResetIndex() got %v, want %v", dfCopy, tt.want.df)
+			}
+
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.ResetIndex() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.ResetIndex() retained access to original, want copy")
+				}
+			}
 		})
 	}
 }
