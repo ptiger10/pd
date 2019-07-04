@@ -1,63 +1,103 @@
 package dataframe
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ptiger10/pd/series"
 )
 
-// func TestSubset(t *testing.T) {
-// 	tests := []struct {
-// 		args    []int
-// 		want    *DataFrame
-// 		wantErr bool
-// 	}{
-// 		{[]int{0}, MustNew([]interface{}{"foo"}), false},
-// 		{[]int{1}, MustNew([]interface{}{"bar"}, Config{Index: 1}), false},
-// 		{[]int{0, 1}, MustNew([]interface{}{[]string{"foo", "bar"}}), false},
-// 		{[]int{1, 0}, MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []int{1, 0}}), false},
-// 		{[]int{}, newEmptyDataFrame(), true},
-// 		{[]int{3}, newEmptyDataFrame(), true},
-// 	}
-// 	for _, tt := range tests {
-// 		df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
-// 		got, err := df.Subset(tt.args)
-// 		if (err != nil) != tt.wantErr {
-// 			t.Errorf("s.Subset() error = %v, want %v for args %v", err, tt.wantErr, tt.args)
-// 		}
-// 		if !Equal(got, tt.want) {
-// 			t.Errorf("s.Subset() got %v, want %v for args %v", got, tt.want, tt.args)
-// 		}
-// 	}
-// }
-
-func TestSelectRows(t *testing.T) {
-	var err error
-	df, err := New(
-		[]interface{}{[]string{"foo", "bar", "baz"}},
-		Config{Index: []string{"qux", "quux", "corge"}, Col: []string{"foofoo"}})
-	got, err := df.selectByRows([]int{0, 1})
-	if err != nil {
-		t.Errorf("selectByRows(): %v", err)
+func TestSubsetRows(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []int{0, 1, 2}})
+	tests := []struct {
+		name    string
+		input   *DataFrame
+		args    []int
+		want    *DataFrame
+		wantErr bool
+	}{
+		{name: "subset one row", input: df, args: []int{0}, want: MustNew([]interface{}{"foo"}, Config{Index: []int{0}}), wantErr: false},
+		{"subset two rows", df, []int{0, 1}, MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int{0, 1}}), false},
+		{"two rows reverse", df, []int{1, 0}, MustNew([]interface{}{[]string{"bar", "foo"}}, Config{Index: []int{1, 0}}), false},
+		{"fail: empty args", df, []int{}, newEmptyDataFrame(), true},
+		{"fail: invalid row", df, []int{3}, newEmptyDataFrame(), true},
 	}
-	want := MustNew([]interface{}{[]string{"foo", "bar"}},
-		Config{Index: []string{"qux", "quux"}, Col: []string{"foofoo"}})
-	if !Equal(got, want) {
-		t.Errorf("selectByRows(): got %v, want %v", got, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.SubsetRows(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InPlace.SubsetRows() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(df, tt.want) {
+					t.Errorf("InPlace.SubsetRows() got %v, want %v", df, tt.want)
+				}
+			}
+
+			dfCopy, err := dfArchive.SubsetRows(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DataFrame.SubsetRows() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want) {
+					t.Errorf("DataFrame.SubsetRows() got %v, want %v", dfCopy, tt.want)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.SubsetRows() retained access to original, want copy")
+				}
+			}
+		})
 	}
 }
 
-func TestSelectCols(t *testing.T) {
-	df := MustNew(
-		[]interface{}{[]string{"foo"}, []string{"bar"}},
-		Config{Col: []string{"baz", "qux"}})
-	got, err := df.selectByCols([]int{1})
-	if err != nil {
-		t.Errorf("selectByCols(): %v", err)
+func TestSubsetColumns(t *testing.T) {
+	df := MustNew([]interface{}{"foo", "bar", "baz"}, Config{Col: []string{"0", "1", "2"}})
+	tests := []struct {
+		name    string
+		input   *DataFrame
+		args    []int
+		want    *DataFrame
+		wantErr bool
+	}{
+		{name: "subset one column", input: df, args: []int{0}, want: MustNew([]interface{}{"foo"}, Config{Col: []string{"0"}}), wantErr: false},
+		{"subset two columns", df, []int{0, 1}, MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"0", "1"}}), false},
+		{"two columns reverse", df, []int{1, 0}, MustNew([]interface{}{"bar", "foo"}, Config{Col: []string{"1", "0"}}), false},
+		{"fail: empty args", df, []int{}, newEmptyDataFrame(), true},
+		{"fail: invalid column", df, []int{10}, newEmptyDataFrame(), true},
 	}
-	want := MustNew([]interface{}{[]string{"bar"}}, Config{Col: []string{"qux"}})
-	if !Equal(got, want) {
-		t.Errorf("selectByCols(): got %v, want %v", got, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.SubsetColumns(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InPlace.SubsetColumns() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(df, tt.want) {
+					t.Errorf("InPlace.SubsetColumns() got %v, want %v", df, tt.want)
+				}
+			}
+
+			dfCopy, err := dfArchive.SubsetColumns(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DataFrame.SubsetColumns() error = %v, want %v", err, tt.wantErr)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want) {
+					t.Errorf("DataFrame.SubsetColumns() got %v, want %v", dfCopy, tt.want)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.SubsetColumns() retained access to original, want copy")
+				}
+			}
+		})
 	}
 }
 

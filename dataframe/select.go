@@ -24,38 +24,47 @@ func (df *DataFrame) Row(position int) Row {
 	return Row{Values: vals, Nulls: nulls, ValueTypes: types, Labels: idxElems.Labels, LabelTypes: idxElems.DataTypes}
 }
 
-func (df *DataFrame) selectByRows(rowPositions []int) (*DataFrame, error) {
-	if err := df.ensureAlignment(); err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe internal alignment error: %v", err)
+// SelectLabel returns the integer location of the first row in index level 0 with the supplied label, or -1 if the label does not exist.
+func (df *DataFrame) SelectLabel(label string) int {
+	if df.IndexLevels() == 0 {
+		if options.GetLogWarnings() {
+			log.Println("DataFrame.SelectLabel(): index has no levels")
+		}
+		return -1
 	}
-	idx := df.index.Subset(rowPositions)
-	var subsetVals []values.Container
-	for i := 0; i < df.NumCols(); i++ {
-		vals := df.vals[i].Values.Subset(rowPositions)
-		subsetVals = append(subsetVals, values.Container{Values: vals, DataType: df.vals[i].DataType})
+	val, ok := df.index.Levels[0].LabelMap[label]
+	if !ok {
+		if options.GetLogWarnings() {
+			log.Printf("DataFrame.SelectLabel(): %v not in label map\n", label)
+		}
+		return -1
 	}
-	df = newFromComponents(subsetVals, idx, df.cols, df.name)
-	return df, nil
+	return val[0]
 }
 
-func (df *DataFrame) selectByCols(colPositions []int) (*DataFrame, error) {
-	if err := df.ensureAlignment(); err != nil {
-		return df, fmt.Errorf("dataframe internal alignment error: %v", err)
-	}
-	var subsetVals []values.Container
-	for _, pos := range colPositions {
-		if pos >= df.NumCols() {
-			return nil, fmt.Errorf("dataframe.selectByCols(): invalid col position %d (max: %d)", pos, df.NumCols()-1)
-		}
-		subsetVals = append(subsetVals, df.vals[pos])
-	}
-	columnsSlice, err := df.cols.Subset(colPositions)
+// SelectLabels returns the integer locations of all rows with the supplied labels within the supplied level.
+// If an error is encountered, returns a new slice of 0 length.
+func (df *DataFrame) SelectLabels(labels []string, level int) []int {
+	empty := make([]int, 0)
+	err := df.ensureIndexLevelPositions([]int{level})
 	if err != nil {
-		return nil, fmt.Errorf("dataframe.selectByCols(): %v", err)
+		if options.GetLogWarnings() {
+			log.Printf("DataFrame.SelectLabels(): %v", err)
+		}
+		return empty
 	}
-
-	df = newFromComponents(subsetVals, df.index, columnsSlice, df.name)
-	return df, nil
+	include := make([]int, 0)
+	for _, label := range labels {
+		val, ok := df.index.Levels[level].LabelMap[label]
+		if !ok {
+			if options.GetLogWarnings() {
+				log.Printf("DataFrame.SelectLabels(): %v not in label map", label)
+			}
+			return empty
+		}
+		include = append(include, val...)
+	}
+	return include
 }
 
 // Col returns the first Series with the specified column label at column level 0.
@@ -68,21 +77,7 @@ func (df *DataFrame) Col(label string) *series.Series {
 		s, _ := series.New(nil)
 		return s
 	}
-	df, _ = df.selectByCols(colPos)
-	return df.hydrateSeries(0)
-}
-
-// Subset a DataFrame to include only the rows at supplied integer positions.
-func (df *DataFrame) Subset(rowPositions []int) (*DataFrame, error) {
-	if len(rowPositions) == 0 {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.Subset(): no valid rows provided")
-	}
-
-	sub, err := df.selectByRows(rowPositions)
-	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("dataframe.Subset(): %v", err)
-	}
-	return sub, nil
+	return df.hydrateSeries(colPos[0])
 }
 
 // subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and modifies the DataFrame in place.
@@ -91,12 +86,73 @@ func (ip InPlace) subsetRows(positions []int) {
 		ip.df.vals[m].Values = ip.df.vals[m].Values.Subset(positions)
 	}
 
-	ip.df.index = ip.df.index.Subset(positions)
+	ip.df.index.Subset(positions)
 }
 
-// subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and returns a new DataFrame.
+// subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and modifies the DataFrame in place.
+// For use in internal functions that do not expect en error, such as GroupBy.
 func (df *DataFrame) subsetRows(positions []int) *DataFrame {
 	df = df.Copy()
 	df.InPlace.subsetRows(positions)
 	return df
+}
+
+// SubsetRows subsets a DataFrame to include only the rows at supplied integer positions and modifies the DataFrame in place.
+func (ip InPlace) SubsetRows(rowPositions []int) error {
+	if len(rowPositions) == 0 {
+		return fmt.Errorf("dataframe.SubsetRows(): no valid rows provided")
+	}
+	if err := ip.df.ensureRowPositions(rowPositions); err != nil {
+		return fmt.Errorf("dataframe.SubsetRows(): %v", err)
+	}
+
+	ip.subsetRows(rowPositions)
+	return nil
+}
+
+// SubsetRows subsets a DataFrame to include only the rows at supplied integer positions and returns a new DataFrame.
+func (df *DataFrame) SubsetRows(rowPositions []int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.SubsetRows(rowPositions)
+	return df, err
+}
+
+// subsetCols subsets a DataFrame to include only columns at the column positions supplied and modifies the DataFrame in place.
+func (ip InPlace) subsetCols(positions []int) {
+	vals := make([]values.Container, len(positions))
+	for i, pos := range positions {
+		vals[i] = ip.df.vals[pos]
+	}
+	ip.df.vals = vals
+	ip.df.cols.Subset(positions)
+}
+
+// subsetCols subsets a DataFrame to include only index items and values at the columns positions supplied and returns a copy of the DataFrame.
+// For use in internal functions that do not expect en error.
+func (df *DataFrame) subsetCols(positions []int) *DataFrame {
+	df = df.Copy()
+	df.InPlace.subsetCols(positions)
+	return df
+}
+
+// SubsetColumns subsets a DataFrame to include only the columns at supplied integer positions and modifies the DataFrame in place.
+func (ip InPlace) SubsetColumns(columnPositions []int) error {
+	if len(columnPositions) == 0 {
+		return fmt.Errorf("dataframe.SubsetColumns(): no valid columns provided")
+	}
+
+	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
+		return fmt.Errorf("dataframe.SubsetColumns(): %v", err)
+	}
+
+	ip.subsetCols(columnPositions)
+
+	return nil
+}
+
+// SubsetColumns subsets a DataFrame to include only the columns at supplied integer positions and returns a new DataFrame.
+func (df *DataFrame) SubsetColumns(columnPositions []int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.SubsetColumns(columnPositions)
+	return df, err
 }
