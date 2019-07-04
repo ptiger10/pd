@@ -130,8 +130,8 @@ func FromInternalComponents(container values.Container, index index.Index, name 
 
 // ToInternalComponents is a semi-private method for using a Series within the DataFrame module.
 // The required inputs are not available to the caller.
-func (s *Series) ToInternalComponents() values.Container {
-	return values.Container{Values: s.values, DataType: s.datatype}
+func (s *Series) ToInternalComponents() (values.Container, index.Index) {
+	return values.Container{Values: s.values.Copy(), DataType: s.datatype}, s.index.Copy()
 }
 
 // [END semi-private methods]

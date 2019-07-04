@@ -354,7 +354,7 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 	multi := MustNew([]interface{}{[]string{"foo"}}, Config{MultiCol: [][]string{{"bar"}, {"baz"}}})
 	type args struct {
 		col       int
-		val       interface{}
+		s         *series.Series
 		colLabels []string
 	}
 	type want struct {
@@ -369,54 +369,46 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 	}{
 		{name: "emptySeries",
 			input: newEmptyDataFrame(),
-			args:  args{col: 0, val: "foo", colLabels: []string{"bar"}},
+			args:  args{col: 0, s: series.MustNew("foo"), colLabels: []string{"bar"}},
 			want:  want{df: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}), err: false}},
 		{"single col",
 			single,
-			args{0, "baz", []string{"qux"}},
+			args{0, series.MustNew("baz"), []string{"qux"}},
 			want{df: MustNew([]interface{}{"baz", "foo"}, Config{Col: []string{"qux", "bar"}}), err: false}},
 		{"insert label into default range",
 			MustNew([]interface{}{"foo", "bar"}),
-			args{1, "baz", []string{"qux"}},
+			args{1, series.MustNew("baz"), []string{"qux"}},
 			want{df: MustNew([]interface{}{"foo", "baz", "bar"}, Config{Col: []string{"0", "qux", "1"}}), err: false}},
 		{"no label provided, not default",
 			single,
-			args{0, "baz", nil},
+			args{0, series.MustNew("baz"), nil},
 			want{df: MustNew([]interface{}{"baz", "foo"}, Config{Col: []string{"NaN", "bar"}}), err: false}},
 		{"no label provided, default",
 			MustNew([]interface{}{[]string{"foo"}}),
-			args{0, "baz", nil},
+			args{0, series.MustNew("baz"), nil},
 			want{df: MustNew([]interface{}{"baz", "foo"}), err: false}},
 		{"multi col",
 			multi,
-			args{1, "corge", []string{"qux", "quux"}},
+			args{1, series.MustNew("corge"), []string{"qux", "quux"}},
 			want{df: MustNew([]interface{}{"foo", "corge"}, Config{MultiCol: [][]string{{"bar", "qux"}, {"baz", "quux"}}}), err: false}},
 		{"fail: exceeds column length",
 			multi,
-			args{1, "bar", []string{"A", "B", "C"}},
+			args{1, series.MustNew("baz"), []string{"A", "B", "C"}},
 			want{nil, true}},
 		{"fail: wrong values length",
 			multi,
-			args{1, []string{"bar", "baz"}, nil},
+			args{1, series.MustNew([]string{"bar", "baz"}), nil},
 			want{nil, true}},
 		{"fail: invalid column insertion point",
 			single,
-			args{10, "bar", nil},
-			want{nil, true}},
-		{"fail: unsupported values",
-			single,
-			args{0, complex64(1), nil},
-			want{nil, true}},
-		{"fail: unsupported value in empty dataframe",
-			newEmptyDataFrame(),
-			args{0, complex64(1), nil},
+			args{10, series.MustNew("bar"), nil},
 			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input.Copy()
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.InsertColumn(tt.args.col, tt.args.val, tt.args.colLabels...)
+			err := df.InPlace.InsertColumn(tt.args.col, tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.InsertColumn() error = %v, want %v", err, tt.want.err)
 				return
@@ -429,7 +421,7 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 				fmt.Println(diff)
 			}
 
-			dfCopy, err := dfArchive.InsertColumn(tt.args.col, tt.args.val, tt.args.colLabels...)
+			dfCopy, err := dfArchive.InsertColumn(tt.args.col, tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -507,7 +499,7 @@ func TestDataFrame_Modify_AppendRow(t *testing.T) {
 
 func TestDataFrame_Modify_AppendColumn(t *testing.T) {
 	type args struct {
-		val       interface{}
+		s         *series.Series
 		colLabels []string
 	}
 	type want struct {
@@ -522,22 +514,22 @@ func TestDataFrame_Modify_AppendColumn(t *testing.T) {
 	}{
 		{name: "emptySeries",
 			input: newEmptyDataFrame(),
-			args:  args{val: "foo", colLabels: []string{"bar"}},
+			args:  args{s: series.MustNew("foo"), colLabels: []string{"bar"}},
 			want:  want{df: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}), err: false}},
 		{"single col",
 			MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
-			args{"baz", []string{"qux"}},
+			args{series.MustNew("baz"), []string{"qux"}},
 			want{df: MustNew([]interface{}{"foo", "baz"}, Config{Col: []string{"bar", "qux"}}), err: false}},
 		{"fail: exceed cols",
 			MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
-			args{"baz", []string{"qux", "quux", "corge"}},
+			args{series.MustNew("baz"), []string{"qux", "quux", "corge"}},
 			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input.Copy()
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.AppendColumn(tt.args.val, tt.args.colLabels...)
+			err := df.InPlace.AppendColumn(tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.AppendColumn() error = %v, want %v", err, tt.want.err)
 				return
@@ -548,7 +540,7 @@ func TestDataFrame_Modify_AppendColumn(t *testing.T) {
 				}
 			}
 
-			dfCopy, err := dfArchive.AppendColumn(tt.args.val, tt.args.colLabels...)
+			dfCopy, err := dfArchive.AppendColumn(tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.AppendColumn() error = %v, want %v", err, tt.want.err)
 				return
@@ -682,9 +674,10 @@ func TestDataFrame_Modify_SetRows(t *testing.T) {
 }
 
 func TestDataFrame_Modify_SetColumn(t *testing.T) {
+	complex, _ := series.New(complex64(1))
 	type args struct {
 		col int
-		val interface{}
+		s   *series.Series
 	}
 	type want struct {
 		df  *DataFrame
@@ -697,23 +690,23 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 		want  want
 	}{
 		{"singleColumn",
-			MustNew([]interface{}{[]string{"foo", "bar"}}), args{col: 0, val: []string{"baz", "qux"}},
+			MustNew([]interface{}{[]string{"foo", "bar"}}), args{col: 0, s: series.MustNew([]string{"baz", "qux"})},
 			want{df: MustNew([]interface{}{[]string{"baz", "qux"}}), err: false}},
 		{"fail: invalid col position",
-			MustNew([]interface{}{"foo"}), args{col: 10, val: "bar"},
+			MustNew([]interface{}{"foo"}), args{10, series.MustNew("bar")},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 		{"fail: unsupported value",
-			MustNew([]interface{}{"foo"}), args{col: 0, val: complex64(1)},
+			MustNew([]interface{}{"foo"}), args{0, complex},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 		{"fail: excessive val length",
-			MustNew([]interface{}{"foo"}), args{col: 0, val: []string{"baz", "qux"}},
+			MustNew([]interface{}{"foo"}), args{0, series.MustNew([]string{"baz", "qux"})},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.SetColumn(tt.args.col, tt.args.val)
+			err := df.InPlace.SetColumn(tt.args.col, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -722,7 +715,7 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
 			}
 
-			dfCopy, err := dfArchive.SetColumn(tt.args.col, tt.args.val)
+			dfCopy, err := dfArchive.SetColumn(tt.args.col, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -742,7 +735,7 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 func TestDataFrame_Modify_SetColumns(t *testing.T) {
 	type args struct {
 		columnPositions []int
-		val             interface{}
+		s               *series.Series
 	}
 	type want struct {
 		df  *DataFrame
@@ -755,23 +748,23 @@ func TestDataFrame_Modify_SetColumns(t *testing.T) {
 		want  want
 	}{
 		{"singleColumn",
-			MustNew([]interface{}{[]string{"foo", "bar"}, []string{"foo", "bar"}}), args{columnPositions: []int{0, 1}, val: []string{"baz", "qux"}},
+			MustNew([]interface{}{[]string{"foo", "bar"}, []string{"foo", "bar"}}), args{columnPositions: []int{0, 1}, s: series.MustNew([]string{"baz", "qux"})},
 			want{df: MustNew([]interface{}{[]string{"baz", "qux"}, []string{"baz", "qux"}}), err: false}},
 		{"fail: invalid col position",
-			MustNew([]interface{}{"foo"}), args{[]int{10}, "bar"},
+			MustNew([]interface{}{"foo"}), args{[]int{10}, series.MustNew("bar")},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 		{"fail: unsupported value",
-			MustNew([]interface{}{"foo"}), args{[]int{0}, complex64(1)},
+			MustNew([]interface{}{"foo"}), args{[]int{0}, series.MustNew(complex64(1))},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 		{"fail: excessive val length",
-			MustNew([]interface{}{"foo"}), args{[]int{0}, []string{"baz", "qux"}},
+			MustNew([]interface{}{"foo"}), args{[]int{0}, series.MustNew([]string{"baz", "qux"})},
 			want{df: MustNew([]interface{}{"foo"}), err: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.SetColumns(tt.args.columnPositions, tt.args.val)
+			err := df.InPlace.SetColumns(tt.args.columnPositions, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -780,7 +773,7 @@ func TestDataFrame_Modify_SetColumns(t *testing.T) {
 				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
 			}
 
-			dfCopy, err := dfArchive.SetColumns(tt.args.columnPositions, tt.args.val)
+			dfCopy, err := dfArchive.SetColumns(tt.args.columnPositions, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
 				return

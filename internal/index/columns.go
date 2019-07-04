@@ -54,18 +54,23 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",
 				len(config.MultiColNames), len(config.MultiCol))
 		}
-		var newLevels []ColLevel
-		for i := 0; i < len(config.MultiCol); i++ {
-			var levelName string
-			if i < len(config.MultiColNames) {
-				levelName = config.MultiColNames[i]
-			}
-			newLevel := NewColLevel(config.MultiCol[i], levelName)
-			newLevels = append(newLevels, newLevel)
-		}
-		columns = NewColumns(newLevels...)
+		columns = CreateMultiCol(config.MultiCol, config.MultiColNames)
 	}
 	return columns, nil
+}
+
+// CreateMultiCol returns a MultiCol from [][]string
+func CreateMultiCol(cols [][]string, colNames []string) Columns {
+	var newLevels []ColLevel
+	for i := 0; i < len(cols); i++ {
+		var levelName string
+		if i < len(colNames) {
+			levelName = colNames[i]
+		}
+		newLevel := NewColLevel(cols[i], levelName)
+		newLevels = append(newLevels, newLevel)
+	}
+	return NewColumns(newLevels...)
 }
 
 // NewDefaultColumns returns a new Columns collection with default range labels (0, 1, 2, ... n).

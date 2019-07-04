@@ -463,9 +463,11 @@ func ExampleInPlace_method_list() {
 	// DropRows
 	// InsertColumn
 	// InsertRow
+	// Join
 	// Len
 	// Less
 	// ResetIndex
+	// Set
 	// SetColumn
 	// SetColumns
 	// SetIndex

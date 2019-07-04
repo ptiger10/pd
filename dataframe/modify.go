@@ -56,7 +56,8 @@ func (ip InPlace) Set(colLabel string, s *series.Series) {
 		}
 		return
 	}
-	ip.df.vals[col] = s.ToInternalComponents()
+	container, _ := s.ToInternalComponents()
+	ip.df.vals[col] = container
 }
 
 // SwapRows swaps the selected rows in place.
@@ -148,17 +149,15 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 }
 
 // InsertColumn inserts a column with an indefinite number of column labels immediately before the specified column position and modifies the DataFrame in place.
-func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) error {
+func (ip InPlace) InsertColumn(col int, s *series.Series, colLabels ...string) error {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
-		df, err := New([]interface{}{vals}, Config{MultiCol: [][]string{colLabels}})
-		if err != nil {
-			return fmt.Errorf("DataFrame.InsertColumn(): inserting into empty DataFrame requires creating a new DataFrame: %v", err)
-		}
+		vals, idx := s.ToInternalComponents()
+		cols := index.CreateMultiCol([][]string{colLabels}, nil)
+		df := newFromComponents([]values.Container{vals}, idx, cols, "")
 		ip.df.replace(df)
 		return nil
 	}
-
 	// Handling errors
 	if len(colLabels) > ip.df.cols.NumLevels() {
 		return fmt.Errorf("DataFrame.InsertColumn() len(colLabels) must not exceed number of column levels: (%d > %d)",
@@ -168,13 +167,10 @@ func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) e
 	if col > ip.df.NumCols() {
 		return fmt.Errorf("DataFrame.InsertColumn(): invalid col: %d (max %v)", col, ip.df.NumCols())
 	}
-	container, err := values.InterfaceFactory(vals)
-	if err != nil {
-		return fmt.Errorf("DataFrame.InsertColumn(): %v", err)
-	}
-	if container.Values.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.InsertColumn(): new column must contain same number of vals as all other columns (%d != %d)",
-			container.Values.Len(), ip.df.Len())
+
+	if s.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.InsertColumn(): series must be same length as df (%d != %d)",
+			s.Len(), ip.df.Len())
 	}
 	// Insertion once errors have been handled
 
@@ -182,16 +178,14 @@ func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) e
 		if j < len(colLabels) {
 			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{colLabels[j]}, ip.df.cols.Levels[j].Labels[col:]...)...)
 			ip.df.cols.Levels[j].IsDefault = false
-			// maintain column datatype unless it is unsupported
-			labelContainer, err := values.InterfaceFactory(colLabels[j])
-			if err != nil {
-				ip.df.cols.Levels[j].DataType = options.Interface
-			}
+			// ducks error because col labels are string
+			labelContainer := values.MustCreateValuesFromInterface(colLabels[j])
 			// switch column level datatype to string unless it is already int64 (ie a default index) and the addition is int64
 			if labelContainer.DataType != options.Int64 {
 				ip.df.cols.Levels[j].DataType = options.String
 			}
 		} else {
+			// add empty column for all levels where it was not supplied
 			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{"NaN"}, ip.df.cols.Levels[j].Labels[col:]...)...)
 		}
 		// Reorder default columns
@@ -201,6 +195,7 @@ func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) e
 			ip.df.cols.Levels[j].Refresh()
 		}
 	}
+	container, _ := s.ToInternalComponents()
 	ip.df.vals = append(ip.df.vals[:col], append([]values.Container{container}, ip.df.vals[col:]...)...)
 	return nil
 }
@@ -215,8 +210,8 @@ func (ip InPlace) AppendRow(val []interface{}, idxLabels ...interface{}) error {
 }
 
 // AppendColumn adds a row at a specified integer position and modifies the DataFrame in place.
-func (ip InPlace) AppendColumn(val interface{}, colLabels ...string) error {
-	err := ip.df.InPlace.InsertColumn(ip.Len(), val, colLabels...)
+func (ip InPlace) AppendColumn(s *series.Series, colLabels ...string) error {
+	err := ip.df.InPlace.InsertColumn(ip.Len(), s, colLabels...)
 	if err != nil {
 		return fmt.Errorf("DataFrame.AppendColumn(): %v", err)
 	}
@@ -256,37 +251,31 @@ func (ip InPlace) SetRows(rowPositions []int, val interface{}) error {
 }
 
 // SetColumn sets the values in the specified column to val and modifies the DataFrame in place.
-func (ip InPlace) SetColumn(col int, val interface{}) error {
+func (ip InPlace) SetColumn(col int, s *series.Series) error {
 	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
 		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
 	}
 
-	container, err := values.InterfaceFactory(val)
-	if err != nil {
-		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+	if s.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.SetColumn(): series must be same length as df (%d != %d)",
+			s.Len(), ip.df.Len())
 	}
-	if container.Values.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.SetColumn(): val must have same number of values as columns in the existing dataframe (%d != %d)",
-			container.Values.Len(), ip.df.Len())
-	}
+	container, _ := s.ToInternalComponents()
 	ip.df.vals[col] = container
 	return nil
 }
 
 // SetColumns sets the values in the specified columns to val and modifies the DataFrame in place.
-func (ip InPlace) SetColumns(columnPositions []int, val interface{}) error {
+func (ip InPlace) SetColumns(columnPositions []int, s *series.Series) error {
 	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
 		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
 	}
+	if s.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.SetColumn(): series must be same length as df (%d != %d)",
+			s.Len(), ip.df.Len())
+	}
+	container, _ := s.ToInternalComponents()
 
-	container, err := values.InterfaceFactory(val)
-	if err != nil {
-		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
-	}
-	if container.Values.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.SetColumn(): val must have same number of values as columns in the existing dataframe (%d != %d)",
-			container.Values.Len(), ip.df.Len())
-	}
 	for _, col := range columnPositions {
 		ip.df.vals[col] = container
 	}
@@ -564,9 +553,9 @@ func (df *DataFrame) InsertRow(row int, val []interface{}, idxLabels ...interfac
 }
 
 // InsertColumn inserts a new column into the DataFrame immediately before the specified integer position and returns a new DataFrame.
-func (df *DataFrame) InsertColumn(row int, val interface{}, colLabels ...string) (*DataFrame, error) {
+func (df *DataFrame) InsertColumn(row int, s *series.Series, colLabels ...string) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.InsertColumn(row, val, colLabels...)
+	err := df.InPlace.InsertColumn(row, s, colLabels...)
 	return df, err
 }
 
@@ -580,8 +569,8 @@ func (df *DataFrame) AppendRow(val []interface{}, idxLabels ...interface{}) (*Da
 }
 
 // AppendColumn adds a column at the end and returns a new DataFrame.
-func (df *DataFrame) AppendColumn(val interface{}, colLabels ...string) (*DataFrame, error) {
-	df, err := df.InsertColumn(df.Len(), val, colLabels...)
+func (df *DataFrame) AppendColumn(s *series.Series, colLabels ...string) (*DataFrame, error) {
+	df, err := df.InsertColumn(df.Len(), s, colLabels...)
 	if err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("DataFrame.AppendColumn(): %v", err)
 	}
@@ -603,16 +592,16 @@ func (df *DataFrame) SetRows(rowPositions []int, val interface{}) (*DataFrame, e
 }
 
 // SetColumn sets all the values in the specified columns to val and returns a new DataFrame.
-func (df *DataFrame) SetColumn(col int, val interface{}) (*DataFrame, error) {
+func (df *DataFrame) SetColumn(col int, s *series.Series) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.SetColumn(col, val)
+	err := df.InPlace.SetColumn(col, s)
 	return df, err
 }
 
 // SetColumns sets all the values in the specified columns to val and returns a new DataFrame.
-func (df *DataFrame) SetColumns(columnPositions []int, val interface{}) (*DataFrame, error) {
+func (df *DataFrame) SetColumns(columnPositions []int, s *series.Series) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.SetColumns(columnPositions, val)
+	err := df.InPlace.SetColumns(columnPositions, s)
 	return df, err
 }
 

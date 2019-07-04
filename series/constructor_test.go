@@ -228,10 +228,14 @@ func TestFromInternalComponents(t *testing.T) {
 
 func TestToInternalComponents(t *testing.T) {
 	s := MustNew("foo")
-	got := s.ToInternalComponents()
-	want := values.MustCreateValuesFromInterface("foo")
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("ToInternalComponents() returned %v, want %v", got, want)
+	vals, idx := s.ToInternalComponents()
+	wantVals := values.MustCreateValuesFromInterface("foo")
+	wantIdx := index.NewDefault(1)
+	if !reflect.DeepEqual(vals, wantVals) {
+		t.Errorf("ToInternalComponents() returned %v, want %v", vals, wantVals)
+	}
+	if !reflect.DeepEqual(idx, wantIdx) {
+		t.Errorf("ToInternalComponents() returned %v, want %v", idx, wantIdx)
 	}
 
 }
