@@ -218,10 +218,20 @@ func Test_Copy(t *testing.T) {
 func TestFromInternalComponents(t *testing.T) {
 	vals := values.MustCreateValuesFromInterface("foo")
 	index := index.NewDefault(1)
-	got := FromInternalComponents(vals.Values, index, options.String, "bar")
+	got := FromInternalComponents(vals, index, "bar")
 	want := MustNew("foo", Config{Name: "bar"})
 	if !Equal(got, want) {
 		t.Errorf("FromInternalComponents() returned %v, want %v", got, want)
+	}
+
+}
+
+func TestToInternalComponents(t *testing.T) {
+	s := MustNew("foo")
+	got := s.ToInternalComponents()
+	want := values.MustCreateValuesFromInterface("foo")
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ToInternalComponents() returned %v, want %v", got, want)
 	}
 
 }

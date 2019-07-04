@@ -112,17 +112,26 @@ func (s *Series) Copy() *Series {
 	return copyS
 }
 
+// [START semi-private methods]
+
 // FromInternalComponents is a semi-private method for hydrating Series within the DataFrame module.
 // The required inputs are not available to the caller.
-func FromInternalComponents(vals values.Values, index index.Index, datatype options.DataType, name string) *Series {
+func FromInternalComponents(container values.Container, index index.Index, name string) *Series {
 	s := &Series{
-		values:   vals,
+		values:   container.Values,
 		index:    index,
-		datatype: datatype,
+		datatype: container.DataType,
 		name:     name,
 	}
 	s.Index = Index{s: s}
 	s.InPlace = InPlace{s: s}
 	return s
-
 }
+
+// ToInternalComponents is a semi-private method for using a Series within the DataFrame module.
+// The required inputs are not available to the caller.
+func (s *Series) ToInternalComponents() values.Container {
+	return values.Container{Values: s.values, DataType: s.datatype}
+}
+
+// [END semi-private methods]

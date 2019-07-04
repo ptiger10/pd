@@ -10,6 +10,7 @@ import (
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/series"
 
 	"github.com/ptiger10/pd/options"
 )
@@ -41,6 +42,21 @@ func (df *DataFrame) replace(df2 *DataFrame) {
 // Len returns the length of the underlying DataFrame (required by Sort interface)
 func (ip InPlace) Len() int {
 	return ip.df.Len()
+}
+
+// Set selects the first column in column level 0 with the label and sets its values to s. If an error occurs, the error is logged and nothing happens.
+func (ip InPlace) Set(colLabel string, s *series.Series) {
+	col := ip.df.SelectColumn(colLabel)
+	if col == -1 {
+		return
+	}
+	if s.Len() != ip.Len() {
+		if options.GetLogWarnings() {
+			log.Printf("df.Set(): series must be same length as df (%d != %d)", s.Len(), ip.Len())
+		}
+		return
+	}
+	ip.df.vals[col] = s.ToInternalComponents()
 }
 
 // SwapRows swaps the selected rows in place.
@@ -324,13 +340,6 @@ func (ip InPlace) DropDuplicates() {
 	ip.DropRows(toDrop)
 }
 
-// DropDuplicates drops any rows containing duplicate index + DataFrame values and returns a new DataFrame.
-func (df *DataFrame) DropDuplicates() *DataFrame {
-	df = df.Copy()
-	df.InPlace.DropDuplicates()
-	return df
-}
-
 // DropNull drops all null values and modifies the DataFrame in place. If an invalid column is provided, returns original DataFrame.
 func (ip InPlace) DropNull(cols ...int) {
 	if err := ip.df.ensureColumnPositions(cols); err != nil {
@@ -539,6 +548,14 @@ func (df *DataFrame) SwapColumns(i, j int) (*DataFrame, error) {
 	return df, nil
 }
 
+// Set selects the first column in column level 0 with the label and sets its values to s, then returns a new DataFrame.
+// If an error occurs, the error is logged and nothing happens.
+func (df *DataFrame) Set(colLabel string, s *series.Series) *DataFrame {
+	df = df.Copy()
+	df.InPlace.Set(colLabel, s)
+	return df
+}
+
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and returns a new DataFrame.
 func (df *DataFrame) InsertRow(row int, val []interface{}, idxLabels ...interface{}) (*DataFrame, error) {
 	df = df.Copy()
@@ -631,6 +648,13 @@ func (df *DataFrame) DropColumns(columnPositions []int) (*DataFrame, error) {
 func (df *DataFrame) DropNull(cols ...int) *DataFrame {
 	df = df.Copy()
 	df.InPlace.DropNull(cols...)
+	return df
+}
+
+// DropDuplicates drops any rows containing duplicate index + DataFrame values and returns a new DataFrame.
+func (df *DataFrame) DropDuplicates() *DataFrame {
+	df = df.Copy()
+	df.InPlace.DropDuplicates()
 	return df
 }
 

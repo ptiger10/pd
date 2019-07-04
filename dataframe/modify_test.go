@@ -11,6 +11,7 @@ import (
 
 	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/series"
 )
 
 // Modify tests check both inplace and copy functionality in the same test, if both are available
@@ -95,6 +96,73 @@ func TestRename(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestDataFrame_Modify_SetSpecial(t *testing.T) {
+	type args struct {
+		colLabel string
+		s        *series.Series
+	}
+	type want struct {
+		df *DataFrame
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "pass",
+			input: MustNew([]interface{}{"foo"}),
+			args:  args{colLabel: "0", s: series.MustNew("bar")},
+			want:  want{df: MustNew([]interface{}{"bar"})},
+		},
+		{"fail: invalid column label",
+			MustNew([]interface{}{"foo"}),
+			args{colLabel: "100", s: series.MustNew("bar")},
+			want{df: MustNew([]interface{}{"foo"})},
+		},
+		{"fail: series length does not match dataframe length",
+			MustNew([]interface{}{"foo"}),
+			args{colLabel: "0", s: series.MustNew([]string{"bar", "baz"})},
+			want{df: MustNew([]interface{}{"foo"})},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			df.InPlace.Set(tt.args.colLabel, tt.args.s)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("InPlace.Set() returned no log message, want log due to fail")
+				}
+				buf.Reset()
+			}
+
+			dfCopy := dfArchive.Set(tt.args.colLabel, tt.args.s)
+			if !Equal(dfCopy, tt.want.df) {
+				t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Set() retained access to original, want copy")
+				}
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("DataFrame.Set() returned no log message, want log due to fail")
+				}
+			}
+		})
+	}
+}
 
 func TestDataFrame_Modify_SwapRows(t *testing.T) {
 	type args struct {
