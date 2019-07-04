@@ -307,6 +307,10 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 			single,
 			args{0, "baz", []string{"qux"}},
 			want{df: MustNew([]interface{}{"baz", "foo"}, Config{Col: []string{"qux", "bar"}}), err: false}},
+		{"insert label into default range",
+			MustNew([]interface{}{"foo", "bar"}),
+			args{1, "baz", []string{"qux"}},
+			want{df: MustNew([]interface{}{"foo", "baz", "bar"}, Config{Col: []string{"0", "qux", "1"}}), err: false}},
 		{"no label provided, not default",
 			single,
 			args{0, "baz", nil},
@@ -353,6 +357,8 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 				if !Equal(df, tt.want.df) {
 					t.Errorf("InPlace.InsertColumn() got %v, want %v", df, tt.want.df)
 				}
+				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
+				fmt.Println(diff)
 			}
 
 			dfCopy, err := dfArchive.InsertColumn(tt.args.col, tt.args.val, tt.args.colLabels...)

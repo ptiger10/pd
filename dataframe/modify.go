@@ -111,6 +111,7 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 	for j := 0; j < ip.df.index.NumLevels(); j++ {
 		if j < len(idxLabels) {
 			ip.df.index.Levels[j].Labels.Insert(row, idxLabels[j])
+			ip.df.index.Levels[j].IsDefault = false
 		} else {
 			ip.df.index.Levels[j].Labels.Insert(row, "")
 		}
@@ -164,6 +165,16 @@ func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) e
 	for j := 0; j < ip.df.cols.NumLevels(); j++ {
 		if j < len(colLabels) {
 			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{colLabels[j]}, ip.df.cols.Levels[j].Labels[col:]...)...)
+			ip.df.cols.Levels[j].IsDefault = false
+			// maintain column datatype unless it is unsupported
+			labelContainer, err := values.InterfaceFactory(colLabels[j])
+			if err != nil {
+				ip.df.cols.Levels[j].DataType = options.Interface
+			}
+			// switch column level datatype to string unless it is already int64 (ie a default index) and the addition is int64
+			if labelContainer.DataType != options.Int64 {
+				ip.df.cols.Levels[j].DataType = options.String
+			}
 		} else {
 			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{"NaN"}, ip.df.cols.Levels[j].Labels[col:]...)...)
 		}

@@ -87,6 +87,7 @@ func (ip InPlace) Insert(pos int, val interface{}, idxLabels ...interface{}) err
 	for j := 0; j < ip.s.NumLevels(); j++ {
 		if j < len(idxLabels) {
 			ip.s.index.Levels[j].Labels.Insert(pos, idxLabels[j])
+			ip.s.index.Levels[j].IsDefault = false
 		} else {
 			ip.s.index.Levels[j].Labels.Insert(pos, "")
 		}
