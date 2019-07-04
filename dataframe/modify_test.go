@@ -1,7 +1,10 @@
 package dataframe
 
 import (
+	"bytes"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -332,6 +335,10 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 			single,
 			args{0, complex64(1), nil},
 			want{nil, true}},
+		{"fail: unsupported value in empty dataframe",
+			newEmptyDataFrame(),
+			args{0, complex64(1), nil},
+			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -388,20 +395,16 @@ func TestDataFrame_Modify_AppendRow(t *testing.T) {
 			MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
 			args{[]interface{}{"bar"}, []interface{}{"B", 2}},
 			want{MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]string{"A", "B"}, []int{1, 2}}}), false}},
-		{"fail singleIndex: nil index values",
-			MustNew([]interface{}{[]string{"foo"}}, Config{Index: []int{1}}),
-			args{[]interface{}{"bar"}, nil},
-			want{nil, true}},
-		{"fail multiIndex: insufficient index values",
+		{"fail multiIndex: excessive index values",
 			MustNew([]interface{}{[]string{"foo"}}, Config{MultiIndex: []interface{}{[]string{"A"}, []int{1}}}),
-			args{[]interface{}{"bar"}, []interface{}{"B"}},
+			args{[]interface{}{"bar"}, []interface{}{"B", "C", "D"}},
 			want{nil, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := tt.input
 			dfArchive := tt.input.Copy()
-			err := s.InPlace.AppendRow(tt.args.val, tt.args.idx)
+			err := s.InPlace.AppendRow(tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.AppendRow() error = %v, want %v", err, tt.want.err)
 				return
@@ -411,7 +414,7 @@ func TestDataFrame_Modify_AppendRow(t *testing.T) {
 					t.Errorf("InPlace.AppendRow() got %v, want %v", s, tt.want.df)
 				}
 			}
-			dfCopy, err := dfArchive.AppendRow(tt.args.val, tt.args.idx)
+			dfCopy, err := dfArchive.AppendRow(tt.args.val, tt.args.idx...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Append() error = %v, want %v", err, tt.want.err)
 				return
@@ -422,6 +425,66 @@ func TestDataFrame_Modify_AppendRow(t *testing.T) {
 				}
 				if Equal(dfArchive, dfCopy) {
 					t.Errorf("DataFrame.Append() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_AppendColumn(t *testing.T) {
+	type args struct {
+		val       interface{}
+		colLabels []string
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "emptySeries",
+			input: newEmptyDataFrame(),
+			args:  args{val: "foo", colLabels: []string{"bar"}},
+			want:  want{df: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}), err: false}},
+		{"single col",
+			MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
+			args{"baz", []string{"qux"}},
+			want{df: MustNew([]interface{}{"foo", "baz"}, Config{Col: []string{"bar", "qux"}}), err: false}},
+		{"fail: exceed cols",
+			MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
+			args{"baz", []string{"qux", "quux", "corge"}},
+			want{nil, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.AppendColumn(tt.args.val, tt.args.colLabels...)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.AppendColumn() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(df, tt.want.df) {
+					t.Errorf("InPlace.AppendColumn() got %v, want %v", df, tt.want.df)
+				}
+			}
+
+			dfCopy, err := dfArchive.AppendColumn(tt.args.val, tt.args.colLabels...)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.AppendColumn() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.AppendColumn() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.AppendColumn() retained access to original, want copy")
 				}
 			}
 		})
@@ -638,7 +701,6 @@ func TestDataFrame_Modify_DropRows(t *testing.T) {
 			err := s.InPlace.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.DropRows() error = %v, want %v", err, tt.want.err)
-				return
 			}
 			if !Equal(s, tt.want.df) {
 				t.Errorf("InPlace.DropRows() got %v, want %v", s, tt.want.df)
@@ -647,7 +709,6 @@ func TestDataFrame_Modify_DropRows(t *testing.T) {
 			dfCopy, err := dfArchive.DropRows(tt.args.rowPositions)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.DropRows() error = %v, want %v", err, tt.want.err)
-				return
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(dfCopy, tt.want.df) {
@@ -745,14 +806,28 @@ func TestDataFrame_Modify_DropNull(t *testing.T) {
 			MustNew([]interface{}{[]string{"baz", "", "foo"}, []int{1, 2, 3}}),
 			args{[]int{1}},
 			want{MustNew([]interface{}{[]string{"baz", "", "foo"}, []int{1, 2, 3}})}},
+		{"control fail: invalid column selected",
+			MustNew([]interface{}{"foo"}),
+			args{[]int{10}},
+			want{MustNew([]interface{}{"foo"})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
 			df := tt.input
 			dfArchive := tt.input.Copy()
 			df.InPlace.DropNull(tt.args.cols...)
 			if !Equal(df, tt.want.df) {
 				t.Errorf("InPlace.DropNull() got %v, want %v", df, tt.want.df)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("InPlace.DropNull() returned no log message, want log due to fail")
+				}
+				buf.Reset()
 			}
 
 			dfCopy := dfArchive.DropNull(tt.args.cols...)
@@ -762,6 +837,11 @@ func TestDataFrame_Modify_DropNull(t *testing.T) {
 			if !strings.Contains(tt.name, "control") {
 				if Equal(dfArchive, dfCopy) {
 					t.Errorf("DataFrame.DropNull() retained access to original, want copy")
+				}
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("DataFrame.DropNull() returned no log message, want log due to fail")
 				}
 			}
 		})

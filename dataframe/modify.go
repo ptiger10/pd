@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -176,10 +177,19 @@ func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) e
 }
 
 // AppendRow adds a row at a specified integer position and modifies the DataFrame in place.
-func (ip InPlace) AppendRow(val []interface{}, idx []interface{}) error {
-	err := ip.df.InPlace.InsertRow(ip.Len(), val, idx)
+func (ip InPlace) AppendRow(val []interface{}, idxLabels ...interface{}) error {
+	err := ip.df.InPlace.InsertRow(ip.Len(), val, idxLabels...)
 	if err != nil {
 		return fmt.Errorf("DataFrame.AppendRow(): %v", err)
+	}
+	return nil
+}
+
+// AppendColumn adds a row at a specified integer position and modifies the DataFrame in place.
+func (ip InPlace) AppendColumn(val interface{}, colLabels ...string) error {
+	err := ip.df.InPlace.InsertColumn(ip.Len(), val, colLabels...)
+	if err != nil {
+		return fmt.Errorf("DataFrame.AppendColumn(): %v", err)
 	}
 	return nil
 }
@@ -270,13 +280,16 @@ func (df *DataFrame) DropDuplicates() *DataFrame {
 	return df
 }
 
-// DropNull drops all null values and modifies the DataFrame in place.
-func (ip InPlace) DropNull(cols ...int) error {
+// DropNull drops all null values and modifies the DataFrame in place. If an invalid column is provided, returns original DataFrame.
+func (ip InPlace) DropNull(cols ...int) {
 	if err := ip.df.ensureColumnPositions(cols); err != nil {
-		return fmt.Errorf("df.DropNull(): %v", err)
+		if options.GetLogWarnings() {
+			log.Printf("df.DropNull(): %v", err)
+		}
+		return
 	}
 	ip.dropMany(ip.df.null(cols...))
-	return nil
+	return
 }
 
 // dropMany drops multiple rows and modifies the DataFrame in place.
@@ -407,10 +420,19 @@ func (df *DataFrame) InsertColumn(row int, val interface{}, colLabels ...string)
 }
 
 // AppendRow adds a row at the end and returns a new DataFrame.
-func (df *DataFrame) AppendRow(val []interface{}, idx []interface{}) (*DataFrame, error) {
-	df, err := df.InsertRow(df.Len(), val, idx)
+func (df *DataFrame) AppendRow(val []interface{}, idxLabels ...interface{}) (*DataFrame, error) {
+	df, err := df.InsertRow(df.Len(), val, idxLabels...)
 	if err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("DataFrame.AppendRow(): %v", err)
+	}
+	return df, nil
+}
+
+// AppendColumn adds a column at the end and returns a new DataFrame.
+func (df *DataFrame) AppendColumn(val interface{}, colLabels ...string) (*DataFrame, error) {
+	df, err := df.InsertColumn(df.Len(), val, colLabels...)
+	if err != nil {
+		return newEmptyDataFrame(), fmt.Errorf("DataFrame.AppendColumn(): %v", err)
 	}
 	return df, nil
 }
@@ -443,7 +465,7 @@ func (df *DataFrame) DropRows(positions []int) (*DataFrame, error) {
 	return df, err
 }
 
-// DropNull drops all null values and modifies the DataFrame in place.
+// DropNull drops all null values and modifies the DataFrame in place. If an invalid column is provided, returns a copy of the original DataFrame.
 func (df *DataFrame) DropNull(cols ...int) *DataFrame {
 	df = df.Copy()
 	df.InPlace.DropNull(cols...)

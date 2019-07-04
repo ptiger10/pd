@@ -273,7 +273,7 @@ func TestIndex_RenameLevel(t *testing.T) {
 }
 
 func TestIndex_Reindex(t *testing.T) {
-	df := MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]string{"bar", "baz"}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}})
+	df := MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []string{"bar", "baz"}})
 	type args struct {
 		level int
 	}
@@ -284,7 +284,7 @@ func TestIndex_Reindex(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "pass 0", args: args{0},
-			want:    MustNew([]interface{}{[]string{"foo", "bar"}}, Config{MultiIndex: []interface{}{[]int64{0, 1}, []string{"qux", "quux"}}, MultiIndexNames: []string{"qux", "quuz"}}),
+			want:    MustNew([]interface{}{[]string{"foo", "bar"}}),
 			wantErr: false},
 		{"fail invalid level", args{10}, df, true},
 	}
