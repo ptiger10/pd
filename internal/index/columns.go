@@ -181,6 +181,12 @@ func (lvl *ColLevel) updateLabelMap() {
 	lvl.LabelMap = labelMap
 }
 
+// ResetDefault converts a column level in place to an ordered default range []int{0, 1, 2,...n}. It is analogous to Reindex but for columns.
+func (lvl *ColLevel) ResetDefault() {
+	*lvl = NewDefaultColLevel(lvl.Len(), "")
+	return
+}
+
 // Copy copies a Column Level
 func (lvl ColLevel) Copy() ColLevel {
 	if reflect.DeepEqual(lvl, ColLevel{}) {

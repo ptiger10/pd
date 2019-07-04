@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/ptiger10/pd/internal/index"
-	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -93,10 +92,7 @@ func (idx Index) Reindex(level int) error {
 		return fmt.Errorf("df.Index.Reindex(): %v", err)
 	}
 	// ducks error because inputs are controlled
-	idxVals := values.MakeIntRange(0, idx.Len())
-	newLvl := index.MustNewLevel(idxVals, idx.df.index.Levels[level].Name)
-	idx.df.index.Levels[level] = newLvl
-	idx.df.index.Refresh()
+	idx.df.index.Levels[level] = index.NewDefaultLevel(idx.Len(), idx.df.index.Levels[level].Name)
 	return nil
 }
 

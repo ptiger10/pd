@@ -213,8 +213,10 @@ func TestIndex_Flip(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{name: "pass", input: MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Name: "corge", IndexName: "foobar"}), args: args{0, 0},
-			want: want{MustNew([]interface{}{[]int64{0, 1, 2}}, Config{Name: "foobar", Index: []string{"foo", "bar", "baz"}, IndexName: "corge"}), false}},
+		{name: "pass",
+			input: MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Name: "corge", IndexName: "foobar", Index: []int{0, 1, 2}}),
+			args:  args{0, 0},
+			want:  want{MustNew([]interface{}{[]int64{0, 1, 2}}, Config{Name: "foobar", Index: []string{"foo", "bar", "baz"}, IndexName: "corge"}), false}},
 		{"fail: invalid col", MustNew([]interface{}{"foo"}), args{10, 0},
 			want{newEmptyDataFrame(), true}},
 		{"fail: invalid level", MustNew([]interface{}{"foo"}), args{0, 10},
@@ -489,7 +491,7 @@ func TestIndex_Set(t *testing.T) {
 		want    *DataFrame
 		wantErr bool
 	}{
-		{name: "0, 0", fields: fields{MustNew([]interface{}{"foo"})}, args: args{0, 0, 100},
+		{name: "0, 0", fields: fields{MustNew([]interface{}{"foo"}, Config{Index: []int{0}})}, args: args{0, 0, 100},
 			want:    MustNew([]interface{}{"foo"}, Config{Index: 100}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew([]interface{}{"foo"})}, args{1, 0, complex64(1)},
@@ -528,7 +530,8 @@ func TestIndex_SetRows(t *testing.T) {
 		want    *DataFrame
 		wantErr bool
 	}{
-		{name: "0, 0", fields: fields{MustNew([]interface{}{[]string{"foo", "bar"}})}, args: args{[]int{0, 1}, 0, 100},
+		{name: "0, 0", fields: fields{MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int{0, 1}})},
+			args:    args{[]int{0, 1}, 0, 100},
 			want:    MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int64{100, 100}}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew([]interface{}{"foo"})}, args{[]int{0}, 0, complex64(1)},

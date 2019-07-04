@@ -468,8 +468,11 @@ func ExampleInPlace_method_list() {
 	// {InPlace DataFrame Handler}
 	// Methods:
 	// AppendRow
+	// DropDuplicates
+	// DropNull
 	// DropRow
 	// DropRows
+	// InsertColumnMulti
 	// InsertRow
 	// Len
 	// Less

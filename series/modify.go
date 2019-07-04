@@ -53,28 +53,28 @@ func (ip InPlace) Less(i, j int) bool {
 
 // Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
 // If the original Series is empty, replaces it with a new Series.
-func (ip InPlace) Insert(pos int, val interface{}, idx ...interface{}) error {
+func (ip InPlace) Insert(pos int, val interface{}, idxLabels ...interface{}) error {
 	// Handling empty Series
 	if Equal(ip.s, newEmptySeries()) {
-		newS, err := New(val, Config{MultiIndex: idx})
+		s, err := New(val, Config{MultiIndex: idxLabels})
 		if err != nil {
 			return fmt.Errorf("Series.Insert(): inserting into empty Series requires creating a new Series: %v", err)
 		}
-		ip.s.replace(newS)
+		ip.s.replace(s)
 		return nil
 	}
 
 	// Handling errors
-	if len(idx) > ip.s.NumLevels() {
-		return fmt.Errorf("Series.Insert() len(idx) must not exceed number of index levels: (%d > %d)",
-			len(idx), ip.s.NumLevels())
+	if len(idxLabels) > ip.s.NumLevels() {
+		return fmt.Errorf("Series.Insert() len(idxLabels) must not exceed number of index levels: (%d > %d)",
+			len(idxLabels), ip.s.NumLevels())
 	}
 
 	if pos > ip.Len() {
 		return fmt.Errorf("Series.Insert(): invalid position: %d (max %v)", pos, ip.Len())
 	}
 
-	for _, v := range idx {
+	for _, v := range idxLabels {
 		if _, err := values.InterfaceFactory(v); err != nil {
 			return fmt.Errorf("Series.Insert(): %v", err)
 		}
@@ -85,8 +85,8 @@ func (ip InPlace) Insert(pos int, val interface{}, idx ...interface{}) error {
 
 	// Insertion once errors have been handled
 	for j := 0; j < ip.s.NumLevels(); j++ {
-		if j < len(idx) {
-			ip.s.index.Levels[j].Labels.Insert(pos, idx[j])
+		if j < len(idxLabels) {
+			ip.s.index.Levels[j].Labels.Insert(pos, idxLabels[j])
 		} else {
 			ip.s.index.Levels[j].Labels.Insert(pos, "")
 		}
@@ -94,8 +94,9 @@ func (ip InPlace) Insert(pos int, val interface{}, idx ...interface{}) error {
 		if ip.s.index.Levels[j].IsDefault {
 			// ducks error because index level is known to be in series.
 			ip.s.Index.Reindex(j)
+		} else {
+			ip.s.index.Levels[j].Refresh()
 		}
-		ip.s.index.Levels[j].Refresh()
 	}
 	ip.s.values.Insert(pos, val)
 
@@ -280,15 +281,15 @@ func (s *Series) Swap(i, j int) (*Series, error) {
 }
 
 // Insert inserts a new row into the Series immediately before the specified integer position and returns a new Series.
-func (s *Series) Insert(pos int, val interface{}, idx ...interface{}) (*Series, error) {
+func (s *Series) Insert(pos int, val interface{}, idxLabels ...interface{}) (*Series, error) {
 	s = s.Copy()
-	err := s.InPlace.Insert(pos, val, idx...)
+	err := s.InPlace.Insert(pos, val, idxLabels...)
 	return s, err
 }
 
 // Append adds a row at the end and returns a new Series.
-func (s *Series) Append(val interface{}, idx ...interface{}) (*Series, error) {
-	s, err := s.Insert(s.Len(), val, idx...)
+func (s *Series) Append(val interface{}, idxLabels ...interface{}) (*Series, error) {
+	s, err := s.Insert(s.Len(), val, idxLabels...)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("Series.Append(): %v", err)
 	}

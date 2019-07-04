@@ -1,12 +1,10 @@
 package series
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -141,9 +139,9 @@ func TestModify_Insert(t *testing.T) {
 	multi := MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"baz", 1}})
 
 	type args struct {
-		pos int
-		val interface{}
-		idx []interface{}
+		pos       int
+		val       interface{}
+		idxLabels []interface{}
 	}
 	type want struct {
 		series *Series
@@ -157,7 +155,7 @@ func TestModify_Insert(t *testing.T) {
 	}{
 		{name: "emptySeries",
 			input: newEmptySeries(),
-			args:  args{pos: 0, val: "foo", idx: []interface{}{"bar"}},
+			args:  args{pos: 0, val: "foo", idxLabels: []interface{}{"bar"}},
 			want:  want{series: MustNew("foo", Config{Index: "bar"}), err: false}},
 		{"singleIndex",
 			MustNew([]string{"foo"}, Config{Index: "baz"}),
@@ -200,7 +198,7 @@ func TestModify_Insert(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := tt.input
 			sArchive := tt.input.Copy()
-			err := s.InPlace.Insert(tt.args.pos, tt.args.val, tt.args.idx...)
+			err := s.InPlace.Insert(tt.args.pos, tt.args.val, tt.args.idxLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -211,7 +209,7 @@ func TestModify_Insert(t *testing.T) {
 				}
 			}
 
-			sCopy, err := sArchive.Insert(tt.args.pos, tt.args.val, tt.args.idx...)
+			sCopy, err := sArchive.Insert(tt.args.pos, tt.args.val, tt.args.idxLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("Series.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -219,8 +217,6 @@ func TestModify_Insert(t *testing.T) {
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(sCopy, tt.want.series) {
 					t.Errorf("Series.Insert() got %v, want %v", sCopy, tt.want.series)
-					diff, _ := messagediff.PrettyDiff(s, tt.want.series)
-					fmt.Println(diff)
 				}
 				if Equal(sArchive, sCopy) {
 					t.Errorf("Series.Insert() retained access to original, want copy")

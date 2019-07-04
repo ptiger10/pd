@@ -67,32 +67,32 @@ func (ip InPlace) Less(col int, i, j int) bool {
 
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and modifies the DataFrame in place.
 // If the original DataFrame is empty, replaces it with a new DataFrame.
-func (ip InPlace) InsertRow(row int, val []interface{}, idx []interface{}) error {
+func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}) error {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
-		newDf, err := New(val, Config{MultiIndex: idx})
+		df, err := New(val, Config{MultiIndex: idxLabels})
 		if err != nil {
 			return fmt.Errorf("DataFrame.InsertRow(): inserting into empty DataFrame requires creating a new DataFrame: %v", err)
 		}
-		ip.df.replace(newDf)
+		ip.df.replace(df)
 		return nil
 	}
 
 	// Handling errors
-	if len(idx) != ip.df.index.NumLevels() {
-		return fmt.Errorf("DataFrame.InsertRow() len(idx) must equal number of index levels: (%d != %d)",
-			len(idx), ip.df.index.NumLevels())
+	if len(idxLabels) > ip.df.index.NumLevels() {
+		return fmt.Errorf("DataFrame.InsertRow() len(idxLabels) must not exceed number of index levels: (%d != %d)",
+			len(idxLabels), ip.df.index.NumLevels())
 	}
 
 	if row > ip.Len() {
-		return fmt.Errorf("DataFrame.InsertRow(): invalid position: %d (max %v)", row, ip.Len())
+		return fmt.Errorf("DataFrame.InsertRow(): invalid row: %d (max %v)", row, ip.Len())
 	}
 
 	if len(val) != ip.df.NumCols() {
 		return fmt.Errorf("DataFrame.InsertRow(): len(val) must equal number of columns (%d != %d)", len(val), ip.df.NumCols())
 	}
 
-	for _, v := range idx {
+	for _, v := range idxLabels {
 		if _, err := values.InterfaceFactory(v); err != nil {
 			return fmt.Errorf("DataFrame.InsertRow(): %v", err)
 		}
@@ -106,9 +106,20 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idx []interface{}) error
 
 	// Insertion once errors have been handled
 	for j := 0; j < ip.df.index.NumLevels(); j++ {
-		ip.df.index.Levels[j].Labels.Insert(row, idx[j])
-		ip.df.index.Levels[j].Refresh()
+		if j < len(idxLabels) {
+			ip.df.index.Levels[j].Labels.Insert(row, idxLabels[j])
+		} else {
+			ip.df.index.Levels[j].Labels.Insert(row, "")
+		}
+		// Reorder a default index
+		if ip.df.index.Levels[j].IsDefault {
+			// ducks error because index level is known to be in series.
+			ip.df.Index.Reindex(j)
+		} else {
+			ip.df.index.Levels[j].Refresh()
+		}
 	}
+
 	for m := 0; m < ip.df.NumCols(); m++ {
 		ip.df.vals[m].Values.Insert(row, val[m])
 	}
@@ -116,10 +127,26 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idx []interface{}) error
 	return nil
 }
 
-// InsertColumnMulti inserts a column with multiple levels immediately before the specified column position and modifies the DataFrame in place.
-func (ip InPlace) InsertColumnMulti(col int, vals interface{}, names [][]string) error {
+// InsertColumn inserts a column with an indefinite number of column labels immediately before the specified column position and modifies the DataFrame in place.
+func (ip InPlace) InsertColumn(col int, vals interface{}, colLabels ...string) error {
+	// Handling empty DataFrame
+	if Equal(ip.df, newEmptyDataFrame()) {
+		df, err := New([]interface{}{vals}, Config{MultiCol: [][]string{colLabels}})
+		if err != nil {
+			return fmt.Errorf("DataFrame.InsertColumn(): inserting into empty DataFrame requires creating a new DataFrame: %v", err)
+		}
+		ip.df.replace(df)
+		return nil
+	}
+
+	// Handling errors
+	if len(colLabels) > ip.df.cols.NumLevels() {
+		return fmt.Errorf("DataFrame.InsertColumn() len(colLabels) must not exceed number of column levels: (%d > %d)",
+			len(colLabels), ip.df.cols.NumLevels())
+	}
+
 	if col > ip.df.NumCols() {
-		return fmt.Errorf("DataFrame.InsertColumn(): invalid position: %d (max %v)", col, ip.df.NumCols())
+		return fmt.Errorf("DataFrame.InsertColumn(): invalid col: %d (max %v)", col, ip.df.NumCols())
 	}
 	container, err := values.InterfaceFactory(vals)
 	if err != nil {
@@ -129,9 +156,20 @@ func (ip InPlace) InsertColumnMulti(col int, vals interface{}, names [][]string)
 		return fmt.Errorf("DataFrame.InsertColumn(): new column must contain same number of vals as all other columns (%d != %d)",
 			container.Values.Len(), ip.df.Len())
 	}
-	if len(names) != ip.df.cols.NumLevels() {
-		return fmt.Errorf("DataFrame.InsertColumn() len(names) must equal the existing number of column levels: (%d != %d)",
-			len(names), ip.df.cols.NumLevels())
+	// Insertion once errors have been handled
+
+	for j := 0; j < ip.df.cols.NumLevels(); j++ {
+		if j < len(colLabels) {
+			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{colLabels[j]}, ip.df.cols.Levels[j].Labels[col:]...)...)
+		} else {
+			ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels[:col], append([]string{"NaN"}, ip.df.cols.Levels[j].Labels[col:]...)...)
+		}
+		// Reorder default columns
+		if ip.df.cols.Levels[j].IsDefault {
+			ip.df.cols.Levels[j].ResetDefault()
+		} else {
+			ip.df.cols.Levels[j].Refresh()
+		}
 	}
 	ip.df.vals = append(ip.df.vals[:col], append([]values.Container{container}, ip.df.vals[col:]...)...)
 	return nil
@@ -355,9 +393,16 @@ func (df *DataFrame) SwapColumns(i, j int) (*DataFrame, error) {
 }
 
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and returns a new DataFrame.
-func (df *DataFrame) InsertRow(row int, val []interface{}, idx []interface{}) (*DataFrame, error) {
+func (df *DataFrame) InsertRow(row int, val []interface{}, idxLabels ...interface{}) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.InsertRow(row, val, idx)
+	err := df.InPlace.InsertRow(row, val, idxLabels...)
+	return df, err
+}
+
+// InsertColumn inserts a new column into the DataFrame immediately before the specified integer position and returns a new DataFrame.
+func (df *DataFrame) InsertColumn(row int, val interface{}, colLabels ...string) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.InsertColumn(row, val, colLabels...)
 	return df, err
 }
 

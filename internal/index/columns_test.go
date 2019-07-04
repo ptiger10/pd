@@ -95,6 +95,16 @@ func TestNewDefaultColumns(t *testing.T) {
 	}
 }
 
+func TestResetDefault(t *testing.T) {
+	got := NewColumns(NewColLevel([]string{"foo", "bar"}, ""))
+	got.Levels[0].ResetDefault()
+	want := NewColumns(ColLevel{Name: "", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}},
+		DataType: options.Int64, IsDefault: true})
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ColLevel.ResetDefault(): got %v, want %v", got, want)
+	}
+}
+
 func TestNewColLevel(t *testing.T) {
 	got := NewColLevel([]string{"foo", "bar"}, "foobar")
 	want := ColLevel{

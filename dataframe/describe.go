@@ -384,7 +384,7 @@ func (df *DataFrame) ensureAlignment() error {
 
 	// check columns
 	if df.NumCols() != len(df.vals) {
-		return fmt.Errorf("dataframe.New(): number of columns must match number of series (%d != %d)",
+		return fmt.Errorf("dataframe out of alignment: number of columns must match number of value containers (%d != %d)",
 			df.NumCols(), len(df.vals))
 	}
 
