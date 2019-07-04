@@ -295,42 +295,62 @@ func TestAligned(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
-	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
-	subsetLvl := MustNewLevel([]string{"foo", "bar"}, "")
-	single := New(lvl)
-	multi := New(lvl, lvl)
-	singleSubset := New(subsetLvl)
-	multiSubset := New(subsetLvl, subsetLvl)
-
 	type args struct {
-		pos   []int
-		index Index
-		fn    func(Index, []int) Index
+		pos []int
 	}
 	type want struct {
 		index Index
 	}
 	tests := []struct {
-		name string
-		args args
-		want want
+		name  string
+		input Index
+		args  args
+		want  want
 	}{
 
+		{name: "subsetRows multiIndex",
+			input: New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"foo", "bar", "baz"}, "")),
+			args:  args{pos: []int{0, 1}},
+			want:  want{New(MustNewLevel([]string{"foo", "bar"}, ""), MustNewLevel([]string{"foo", "bar"}, ""))}},
 		{"subsetRows singleIndex",
-			args{[]int{0, 1}, single, Index.Subset},
-			want{singleSubset}},
-		{"subsetRows multiIndex",
-			args{[]int{0, 1}, multi, Index.Subset},
-			want{multiSubset}},
-		{"subsetLevels",
-			args{[]int{0}, multi, Index.SubsetLevels},
-			want{single}},
+			New(MustNewLevel([]string{"foo", "bar", "baz"}, "")),
+			args{[]int{0, 1}},
+			want{New(MustNewLevel([]string{"foo", "bar"}, ""))}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.args.fn(tt.args.index, tt.args.pos)
-			if !reflect.DeepEqual(got, tt.want.index) {
-				t.Errorf("Subset(): got %v, want %v", got, tt.want.index)
+			tt.input.Subset(tt.args.pos)
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("Subset(): got %v, want %v", tt.input, tt.want.index)
+			}
+		})
+	}
+}
+
+func TestSubsetLevels(t *testing.T) {
+	type args struct {
+		pos []int
+	}
+	type want struct {
+		index Index
+	}
+	tests := []struct {
+		name  string
+		input Index
+		args  args
+		want  want
+	}{
+
+		{name: "subsetLevels multiIndex",
+			input: New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, "")),
+			args:  args{pos: []int{1}},
+			want:  want{New(MustNewLevel([]string{"qux", "quux", "quuz"}, ""))}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.input.SubsetLevels(tt.args.pos)
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("Index.SubsetLevels(): got %v, want %v", tt.input, tt.want.index)
 			}
 		})
 	}

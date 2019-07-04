@@ -45,7 +45,7 @@ func TestElement(t *testing.T) {
 func TestSubset(t *testing.T) {
 	s := MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}})
 	misaligned := MustNew([]string{"foo", "bar"})
-	misaligned.index = misaligned.index.Subset([]int{0})
+	misaligned.index.Subset([]int{0})
 
 	tests := []struct {
 		name    string

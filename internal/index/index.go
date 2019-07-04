@@ -252,24 +252,24 @@ func (idx Index) Aligned() error {
 	return nil
 }
 
-// Subset returns a new index with all the labels located at the specified integer positions
-func (idx Index) Subset(rowPositions []int) Index {
-	idx = idx.Copy()
-	for i := 0; i < idx.NumLevels(); i++ {
-		idx.Levels[i].Labels = idx.Levels[i].Labels.Subset(rowPositions)
+// Subset subsets the index with the labels located at the specified integer positions  and modifies the index in place.
+func (idx *Index) Subset(rowPositions []int) {
+	for j := 0; j < idx.NumLevels(); j++ {
+		idx.Levels[j].Labels = idx.Levels[j].Labels.Subset(rowPositions)
 	}
 	idx.Refresh()
-	return idx
+	return
 }
 
-// SubsetLevels returns a copy of the index with only those levels located at specified integer positions
-func (idx Index) SubsetLevels(levelPositions []int) Index {
-	var lvls []Level
-	for _, pos := range levelPositions {
-		lvls = append(lvls, idx.Levels[pos])
+// SubsetLevels subsets the index with only the levels located at specified integer positions and modifies the index in place.
+func (idx *Index) SubsetLevels(levelPositions []int) {
+	newIdx := Index{Levels: make([]Level, len(levelPositions))}
+	for i, pos := range levelPositions {
+		newIdx.Levels[i] = idx.Levels[pos]
 	}
-	newIdx := New(lvls...)
-	return newIdx
+	newIdx.updateNameMap()
+	*idx = newIdx
+	return
 }
 
 func (idx Index) ensureRowPositions(rowPositions []int) error {

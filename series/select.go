@@ -19,7 +19,7 @@ func (s *Series) Element(position int) Element {
 // subsetRows subsets a Series to include only index items and values at the row positions supplied and modifies the Series in place.
 func (ip InPlace) subsetRows(positions []int) {
 	ip.s.values = ip.s.values.Subset(positions)
-	ip.s.index = ip.s.index.Subset(positions)
+	ip.s.index.Subset(positions)
 }
 
 // subsetRows subsets a Series to include only index items and values at the row positions supplied and returns a new Series.
