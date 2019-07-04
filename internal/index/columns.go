@@ -99,6 +99,14 @@ func (cols Columns) Names() []string {
 	return names
 }
 
+// Name returns the name of the column at col
+func (cols Columns) Name(col int) string {
+	if cols.NumLevels() == 0 {
+		return ""
+	}
+	return cols.Names()[col]
+}
+
 // MaxNameWidth returns the number of characters in the column name with the most characters.
 func (cols Columns) MaxNameWidth() int {
 	var max int

@@ -294,6 +294,89 @@ func TestAligned(t *testing.T) {
 	}
 }
 
+func TestIndex_SwapLevels(t *testing.T) {
+	idx := New(MustNewLevel("foo", ""), MustNewLevel("bar", ""))
+	type args struct {
+		i int
+		j int
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name  string
+		input Index
+		args  args
+		want  want
+	}{
+		{name: "pass", input: idx.Copy(), args: args{0, 1},
+			want: want{index: New(MustNewLevel("bar", ""), MustNewLevel("foo", "")), err: false}},
+		{"reverse order", idx.Copy(), args{1, 0},
+			want{New(MustNewLevel("bar", ""), MustNewLevel("foo", "")), false}},
+		{"fail: i", idx.Copy(), args{10, 1},
+			want{idx, true}},
+		{"fail: j", idx.Copy(), args{0, 10},
+			want{idx, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.SwapLevels(tt.args.i, tt.args.j)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Index.SwapLevels() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("Index.SwapLevels() = \n%#v, want \n%#v", tt.input, tt.want.index)
+			}
+		})
+	}
+}
+
+func TestIndex_InsertLevel(t *testing.T) {
+	idx := New(MustNewLevel("foo", ""), MustNewLevel("bar", ""))
+	type args struct {
+		pos    int
+		values interface{}
+		name   string
+	}
+	type want struct {
+		index Index
+		err   bool
+	}
+	tests := []struct {
+		name  string
+		input Index
+		args  args
+		want  want
+	}{
+		{name: "0", input: idx.Copy(), args: args{0, "baz", ""},
+			want: want{index: New(MustNewLevel("baz", ""), MustNewLevel("foo", ""), MustNewLevel("bar", "")), err: false}},
+		{"1", idx.Copy(), args{1, "baz", ""},
+			want{index: New(MustNewLevel("foo", ""), MustNewLevel("baz", ""), MustNewLevel("bar", "")), err: false}},
+		{"1", idx.Copy(), args{2, "baz", ""},
+			want{index: New(MustNewLevel("foo", ""), MustNewLevel("bar", ""), MustNewLevel("baz", "")), err: false}},
+		{"fail: invalid position", idx.Copy(), args{10, "baz", ""},
+			want{idx.Copy(), true}},
+		{"fail: unsupported value", idx.Copy(), args{2, complex64(1), ""},
+			want{idx.Copy(), true}},
+		{"fail: incorrect length of values", idx.Copy(), args{2, []string{"corge", "waldo"}, ""},
+			want{idx.Copy(), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.input.InsertLevel(tt.args.pos, tt.args.values, tt.args.name)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Index.InsertLevel() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(tt.input, tt.want.index) {
+				t.Errorf("Index.InsertLevel() = %v, want %v", tt.input, tt.want.index)
+			}
+		})
+	}
+}
+
 func TestSubset(t *testing.T) {
 	type args struct {
 		pos []int

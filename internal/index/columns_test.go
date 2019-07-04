@@ -32,6 +32,7 @@ func TestNewColumns(t *testing.T) {
 		numLevels    int
 		maxNameWidth int
 		names        []string
+		name         string
 	}
 	tests := []struct {
 		name string
@@ -41,14 +42,14 @@ func TestNewColumns(t *testing.T) {
 		{"empty", args{nil},
 			want{
 				columns: Columns{Levels: []ColLevel{}, NameMap: LabelMap{}},
-				len:     0, numLevels: 0, maxNameWidth: 0, names: []string{},
+				len:     0, numLevels: 0, maxNameWidth: 0, names: []string{}, name: "",
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
 				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}}},
-				2, 1, 3, []string{"1", "2"},
+				2, 1, 3, []string{"1", "2"}, "1",
 			}},
 		{"two cols",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
@@ -57,7 +58,7 @@ func TestNewColumns(t *testing.T) {
 					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String},
 					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
-				2, 2, 5, []string{"1 | 3", "2 | 4"},
+				2, 2, 5, []string{"1 | 3", "2 | 4"}, "1 | 3",
 			}},
 	}
 	for _, tt := range tests {
@@ -81,6 +82,10 @@ func TestNewColumns(t *testing.T) {
 			gotNames := got.Names()
 			if !reflect.DeepEqual(gotNames, tt.want.names) {
 				t.Errorf("Columns.Names(): got %v, want %v", gotNames, tt.want.names)
+			}
+			gotName := got.Name(0)
+			if !reflect.DeepEqual(gotName, tt.want.name) {
+				t.Errorf("Columns.Name(): got %v, want %v", gotName, tt.want.name)
 			}
 		})
 	}

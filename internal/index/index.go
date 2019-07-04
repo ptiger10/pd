@@ -252,7 +252,37 @@ func (idx Index) Aligned() error {
 	return nil
 }
 
-// Subset subsets the index with the labels located at the specified integer positions  and modifies the index in place.
+// SwapLevels swaps two levels in the index and modifies the index in place.
+func (idx *Index) SwapLevels(i, j int) error {
+	if err := idx.ensureLevelPositions([]int{i}); err != nil {
+		return fmt.Errorf("invalid i: %v", err)
+	}
+	if err := idx.ensureLevelPositions([]int{j}); err != nil {
+		return fmt.Errorf("invalid j: %v", err)
+	}
+	idx.Levels[i], idx.Levels[j] = idx.Levels[j], idx.Levels[i]
+	idx.Refresh()
+	return nil
+}
+
+// InsertLevel inserts a level into the index and modifies the index in place.
+func (idx *Index) InsertLevel(pos int, values interface{}, name string) error {
+	if pos > idx.NumLevels() {
+		return fmt.Errorf("invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
+	}
+	lvl, err := NewLevel(values, name)
+	if err != nil {
+		return fmt.Errorf("index.InsertLevel(): %v", err)
+	}
+	if lvl.Len() != idx.Len() {
+		return fmt.Errorf("values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
+	}
+	idx.Levels = append(idx.Levels[:pos], append([]Level{lvl}, idx.Levels[pos:]...)...)
+	idx.Refresh()
+	return nil
+}
+
+// Subset subsets the index with the labels located at the specified integer positions and modifies the index in place.
 func (idx *Index) Subset(rowPositions []int) {
 	for j := 0; j < idx.NumLevels(); j++ {
 		idx.Levels[j].Labels = idx.Levels[j].Labels.Subset(rowPositions)
