@@ -226,6 +226,44 @@ func (ip InPlace) SetRows(rowPositions []int, val interface{}) error {
 	return nil
 }
 
+// SetColumn sets the values in the specified column to val and modifies the DataFrame in place.
+func (ip InPlace) SetColumn(col int, val interface{}) error {
+	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
+		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+	}
+
+	container, err := values.InterfaceFactory(val)
+	if err != nil {
+		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+	}
+	if container.Values.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.SetColumn(): val must have same number of values as columns in the existing dataframe (%d != %d)",
+			container.Values.Len(), ip.df.Len())
+	}
+	ip.df.vals[col] = container
+	return nil
+}
+
+// SetColumns sets the values in the specified columns to val and modifies the DataFrame in place.
+func (ip InPlace) SetColumns(columnPositions []int, val interface{}) error {
+	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
+		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+	}
+
+	container, err := values.InterfaceFactory(val)
+	if err != nil {
+		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+	}
+	if container.Values.Len() != ip.df.Len() {
+		return fmt.Errorf("DataFrame.SetColumn(): val must have same number of values as columns in the existing dataframe (%d != %d)",
+			container.Values.Len(), ip.df.Len())
+	}
+	for _, col := range columnPositions {
+		ip.df.vals[col] = container
+	}
+	return nil
+}
+
 // DropRow drops the row at the specified integer position and modifies the DataFrame in place.
 func (ip InPlace) DropRow(row int) error {
 	if err := ip.dropMany([]int{row}); err != nil {
@@ -481,6 +519,20 @@ func (df *DataFrame) SetRow(row int, val interface{}) (*DataFrame, error) {
 func (df *DataFrame) SetRows(rowPositions []int, val interface{}) (*DataFrame, error) {
 	df = df.Copy()
 	err := df.InPlace.SetRows(rowPositions, val)
+	return df, err
+}
+
+// SetColumn sets all the values in the specified columns to val and returns a new DataFrame.
+func (df *DataFrame) SetColumn(col int, val interface{}) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.SetColumn(col, val)
+	return df, err
+}
+
+// SetColumns sets all the values in the specified columns to val and returns a new DataFrame.
+func (df *DataFrame) SetColumns(columnPositions []int, val interface{}) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.SetColumns(columnPositions, val)
 	return df, err
 }
 

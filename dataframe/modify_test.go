@@ -579,18 +579,134 @@ func TestDataFrame_Modify_SetRows(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := tt.input
+			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := s.InPlace.SetRows(tt.args.rowPositions, tt.args.val)
+			err := df.InPlace.SetRows(tt.args.rowPositions, tt.args.val)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if !Equal(s, tt.want.df) {
-				t.Errorf("InPlace.Set() got %v, want %v", s, tt.want.df)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
 			}
 
 			dfCopy, err := dfArchive.SetRows(tt.args.rowPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Set() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_SetColumn(t *testing.T) {
+	type args struct {
+		col int
+		val interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"singleColumn",
+			MustNew([]interface{}{[]string{"foo", "bar"}}), args{col: 0, val: []string{"baz", "qux"}},
+			want{df: MustNew([]interface{}{[]string{"baz", "qux"}}), err: false}},
+		{"fail: invalid col position",
+			MustNew([]interface{}{"foo"}), args{col: 10, val: "bar"},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+		{"fail: unsupported value",
+			MustNew([]interface{}{"foo"}), args{col: 0, val: complex64(1)},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+		{"fail: excessive val length",
+			MustNew([]interface{}{"foo"}), args{col: 0, val: []string{"baz", "qux"}},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.SetColumn(tt.args.col, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
+			}
+
+			dfCopy, err := dfArchive.SetColumn(tt.args.col, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.Set() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Set() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_SetColumns(t *testing.T) {
+	type args struct {
+		columnPositions []int
+		val             interface{}
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{"singleColumn",
+			MustNew([]interface{}{[]string{"foo", "bar"}, []string{"foo", "bar"}}), args{columnPositions: []int{0, 1}, val: []string{"baz", "qux"}},
+			want{df: MustNew([]interface{}{[]string{"baz", "qux"}, []string{"baz", "qux"}}), err: false}},
+		{"fail: invalid col position",
+			MustNew([]interface{}{"foo"}), args{[]int{10}, "bar"},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+		{"fail: unsupported value",
+			MustNew([]interface{}{"foo"}), args{[]int{0}, complex64(1)},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+		{"fail: excessive val length",
+			MustNew([]interface{}{"foo"}), args{[]int{0}, []string{"baz", "qux"}},
+			want{df: MustNew([]interface{}{"foo"}), err: true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.SetColumns(tt.args.columnPositions, tt.args.val)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
+			}
+
+			dfCopy, err := dfArchive.SetColumns(tt.args.columnPositions, tt.args.val)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
 				return
