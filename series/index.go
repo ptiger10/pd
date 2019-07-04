@@ -119,33 +119,19 @@ func (idx Index) DropNull(level int) (*Series, error) {
 
 // SwapLevels swaps two levels in the index and returns a new Series.
 func (idx Index) SwapLevels(i, j int) (*Series, error) {
-	if err := idx.s.ensureLevelPositions([]int{i}); err != nil {
+	s := idx.s.Copy()
+	if err := s.index.SwapLevels(i, j); err != nil {
 		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
 	}
-	if err := idx.s.ensureLevelPositions([]int{j}); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid j: %v", err)
-	}
-	s := idx.s.Copy()
-	s.index.Levels[i], s.index.Levels[j] = s.index.Levels[j], s.index.Levels[i]
-	s.index.Refresh()
 	return s, nil
 }
 
 // InsertLevel inserts a level into the index and returns a new Series.
 func (idx Index) InsertLevel(pos int, values interface{}, name string) (*Series, error) {
-	if pos > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("s.Index.InsertLevel(): invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
-	}
-	lvl, err := index.NewLevel(values, name)
-	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.InsertLevel(): %v", err)
-	}
-	if lvl.Len() != idx.Len() {
-		return newEmptySeries(), fmt.Errorf("s.Index.InsertLevel(): values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
-	}
 	s := idx.s.Copy()
-	s.index.Levels = append(s.index.Levels[:pos], append([]index.Level{lvl}, s.index.Levels[pos:]...)...)
-	s.index.Refresh()
+	if err := s.index.InsertLevel(pos, values, name); err != nil {
+		return newEmptySeries(), fmt.Errorf("s.Index.InsertLevel(): invalid i: %v", err)
+	}
 	return s, nil
 }
 

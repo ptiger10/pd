@@ -1070,6 +1070,71 @@ func TestDataFrame_Modify_DropNull(t *testing.T) {
 	}
 }
 
+func TestDataFrame_Modify_SetIndex(t *testing.T) {
+	df := MustNew([]interface{}{"foo", "bar"}, Config{Index: []int{0}, Col: []string{"0", "1"}})
+	type args struct {
+		col int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "pass",
+			input: df,
+			args:  args{col: 0},
+			want: want{df: MustNew([]interface{}{"bar"}, Config{
+				Col:        []string{"1"},
+				MultiIndex: []interface{}{[]string{"foo"}, []int{0}}, MultiIndexNames: []string{"0", ""}}),
+				err: false,
+			},
+		},
+		{"fail: invalid col",
+			df,
+			args{col: 10},
+			want{df, true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.SetIndex(tt.args.col)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.SetIndex() got %v, want %v", df, tt.want.df)
+				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
+				fmt.Println(diff)
+			}
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.SetIndex() error = %v, want %v", err, tt.want.err)
+			}
+
+			dfCopy, err := dfArchive.SetIndex(tt.args.col)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.SetIndex() error = %v, want %v", err, tt.want.err)
+			}
+			if !Equal(dfCopy, tt.want.df) {
+				t.Errorf("DataFrame.SetIndex() got %v, want %v", dfCopy, tt.want.df)
+			}
+
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(dfCopy, tt.want.df) {
+					t.Errorf("DataFrame.SetIndex() got %v, want %v", dfCopy, tt.want.df)
+				}
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.SetIndex() retained access to original, want copy")
+				}
+			}
+
+		})
+	}
+}
+
 func TestDataFrame_ModifyInPlace_DatatypeConversion(t *testing.T) {
 	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
 	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)

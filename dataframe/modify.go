@@ -7,6 +7,7 @@ import (
 	"log"
 	"sort"
 
+	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
 
 	"github.com/ptiger10/pd/options"
@@ -391,6 +392,29 @@ func (ip InPlace) DropColumns(columnPositions []int) error {
 	return nil
 }
 
+func (ip InPlace) setIndex(col int) {
+	container := ip.df.vals[col]
+	newLevel := index.Level{Name: ip.df.cols.Name(col), Labels: container.Values, DataType: container.DataType}
+	ip.df.index.Levels = append(ip.df.index.Levels, newLevel)
+	// ducks error because levels are certain to be in index
+	ip.df.index.SwapLevels(0, ip.df.IndexLevels()-1)
+
+	ip.DropColumn(col)
+	return
+}
+
+// SetIndex sets a column as an index level, drops the column, and modifies the DataFrame in place. If col is the only column, nothing happens.
+func (ip InPlace) SetIndex(col int) error {
+	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
+		return fmt.Errorf("DataFrame.SetIndex(): %v", err)
+	}
+	if ip.df.NumCols() == 1 {
+		return nil
+	}
+	ip.setIndex(col)
+	return nil
+}
+
 // ToFloat64 converts DataFrame values to float64 in place.
 func (ip InPlace) ToFloat64() {
 	for m := 0; m < ip.df.NumCols(); m++ {
@@ -564,11 +588,18 @@ func (df *DataFrame) DropColumns(columnPositions []int) (*DataFrame, error) {
 	return df, err
 }
 
-// DropNull drops all null values and modifies the DataFrame in place. If an invalid column is provided, returns a copy of the original DataFrame.
+// DropNull drops all null values and returns a new DataFrame. If an invalid column is provided, returns a copy of the original DataFrame.
 func (df *DataFrame) DropNull(cols ...int) *DataFrame {
 	df = df.Copy()
 	df.InPlace.DropNull(cols...)
 	return df
+}
+
+// SetIndex sets a column as an index level, drops the column, and returns a new DataFrame. If col is the only column, nothing happens.
+func (df *DataFrame) SetIndex(col int) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.SetIndex(col)
+	return df, err
 }
 
 // ToFloat64 converts DataFrame values to float64 and returns a new DataFrame.

@@ -178,5 +178,5 @@ func (df *DataFrame) Copy() *DataFrame {
 // hydrateSeries converts a column of values.Values into a Series with the same index as df.
 func (df *DataFrame) hydrateSeries(col int) *series.Series {
 	return series.FromInternalComponents(
-		df.vals[col].Values, df.index, df.vals[col].DataType, df.cols.Names()[col])
+		df.vals[col].Values, df.index, df.vals[col].DataType, df.cols.Name(col))
 }

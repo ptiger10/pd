@@ -119,33 +119,19 @@ func (idx Index) DropNull(level int) (*DataFrame, error) {
 
 // SwapLevels swaps two levels in the index and returns a new DataFrame.
 func (idx Index) SwapLevels(i, j int) (*DataFrame, error) {
-	if err := idx.df.ensureIndexLevelPositions([]int{i}); err != nil {
+	df := idx.df.Copy()
+	if err := df.index.SwapLevels(i, j); err != nil {
 		return newEmptyDataFrame(), fmt.Errorf("df.Index.SwapLevels(): invalid i: %v", err)
 	}
-	if err := idx.df.ensureIndexLevelPositions([]int{j}); err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("df.Index.SwapLevels(): invalid j: %v", err)
-	}
-	df := idx.df.Copy()
-	df.index.Levels[i], df.index.Levels[j] = df.index.Levels[j], df.index.Levels[i]
-	df.index.Refresh()
 	return df, nil
 }
 
 // InsertLevel inserts a level into the index and returns a new DataFrame.
 func (idx Index) InsertLevel(pos int, values interface{}, name string) (*DataFrame, error) {
-	if pos > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): invalid index level: %d (max: %v)", pos, idx.NumLevels()-1)
-	}
-	lvl, err := index.NewLevel(values, name)
-	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): %v", err)
-	}
-	if lvl.Len() != idx.Len() {
-		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
-	}
 	df := idx.df.Copy()
-	df.index.Levels = append(df.index.Levels[:pos], append([]index.Level{lvl}, df.index.Levels[pos:]...)...)
-	df.index.Refresh()
+	if err := df.index.InsertLevel(pos, values, name); err != nil {
+		return newEmptyDataFrame(), fmt.Errorf("df.Index.InsertLevel(): invalid i: %v", err)
+	}
 	return df, nil
 }
 
