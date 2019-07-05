@@ -46,7 +46,7 @@ func (ip InPlace) Len() int {
 
 // Set selects the first column in column level 0 with the label and sets its values to s. If an error occurs, the error is logged and nothing happens.
 func (ip InPlace) Set(colLabel string, s *series.Series) {
-	col := ip.df.SelectColumn(colLabel)
+	col := ip.df.SelectCol(colLabel)
 	if col == -1 {
 		return
 	}

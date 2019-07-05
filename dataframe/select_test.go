@@ -207,7 +207,7 @@ func TestSeries_SelectLabels(t *testing.T) {
 	}
 }
 
-func TestSeries_SelectColumn(t *testing.T) {
+func TestSeries_SelectCol(t *testing.T) {
 	df := MustNew([]interface{}{"foo", "bar", "baz"}, Config{Col: []string{"qux", "quuz", "qux"}})
 	type args struct {
 		label string
@@ -228,19 +228,19 @@ func TestSeries_SelectColumn(t *testing.T) {
 			log.SetOutput(&buf)
 			defer log.SetOutput(os.Stderr)
 
-			if got := tt.input.SelectColumn(tt.args.label); got != tt.want {
-				t.Errorf("DataFrame.SelectColumn() = %v, want %v", got, tt.want)
+			if got := tt.input.SelectCol(tt.args.label); got != tt.want {
+				t.Errorf("DataFrame.SelectCol() = %v, want %v", got, tt.want)
 			}
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
-					t.Errorf("DataFrame.SelectColumn() returned no log message, want log due to fail")
+					t.Errorf("DataFrame.SelectCol() returned no log message, want log due to fail")
 				}
 			}
 		})
 	}
 }
 
-func TestSeries_SelectColumns(t *testing.T) {
+func TestSeries_SelectCols(t *testing.T) {
 	df := MustNew([]interface{}{"foo", "bar", "baz"}, Config{MultiCol: [][]string{{"qux", "quux", "qux"}, {"corge", "waldo", "fred"}}})
 	type args struct {
 		labels []string
@@ -264,12 +264,12 @@ func TestSeries_SelectColumns(t *testing.T) {
 			log.SetOutput(&buf)
 			defer log.SetOutput(os.Stderr)
 
-			if got := tt.input.SelectColumns(tt.args.labels, tt.args.level); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Series.SelectColumns() = %v, want %v", got, tt.want)
+			if got := tt.input.SelectCols(tt.args.labels, tt.args.level); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Series.SelectCols() = %v, want %v", got, tt.want)
 			}
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
-					t.Errorf("Series.SelectColumns() returned no log message, want log due to fail")
+					t.Errorf("Series.SelectCols() returned no log message, want log due to fail")
 				}
 			}
 		})
