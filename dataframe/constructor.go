@@ -94,14 +94,14 @@ func newEmptyDataFrame() *DataFrame {
 
 // MustNew constructs a new DataFrame or logs an error and returns an empty DataFrame.
 func MustNew(data []interface{}, config ...Config) *DataFrame {
-	s, err := New(data, config...)
+	df, err := New(data, config...)
 	if err != nil {
 		if options.GetLogWarnings() {
 			log.Printf("dataframe.MustNew(): %v", err)
 		}
 		return newEmptyDataFrame()
 	}
-	return s
+	return df
 }
 
 // newFromComponents constructs a dataframe from its constituent parts but returns an empty dataframe if series is nil

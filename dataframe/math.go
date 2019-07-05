@@ -37,9 +37,14 @@ func (df *DataFrame) Sum() *series.Series {
 	return df.math("sum", (*series.Series).Sum)
 }
 
-// Mean all numerical or boolean columns.
+// Mean of all numerical or boolean columns.
 func (df *DataFrame) Mean() *series.Series {
 	return df.math("mean", (*series.Series).Mean)
+}
+
+// Median of all numerical or boolean columns.
+func (df *DataFrame) Median() *series.Series {
+	return df.math("median", (*series.Series).Median)
 }
 
 // Min all numerical columns.

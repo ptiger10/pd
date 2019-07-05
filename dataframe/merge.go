@@ -1,11 +1,5 @@
 package dataframe
 
-import (
-	"reflect"
-
-	"github.com/ptiger10/pd/internal/index"
-)
-
 // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and modifies the DataFrame in place.
 // If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
 //
@@ -27,13 +21,25 @@ func (ip InPlace) Join(append string, method string, df2 *DataFrame) error {
 	return nil
 }
 
-func matchIndexLevel(df *DataFrame, idx index.Elements) int {
-	for i := 0; i < df.Len(); i++ {
-		if reflect.DeepEqual(idx, df.index.Elements(i)) {
-			return i
-		}
+// assumes equivalent index and columns
+func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
+	// Handling empty DataFrame
+	if Equal(ip.df, newEmptyDataFrame()) {
+		ip.df.replace(df2)
+		return
 	}
-	return -1
+
+	// Append
+	// Index Levels
+	for j := 0; j < ip.df.IndexLevels(); j++ {
+		ip.df.index.Levels[j].Labels.Append(df2.index.Levels[j].Labels)
+		ip.df.index.Levels[j].Refresh()
+	}
+	// Values
+	for m := 0; m < ip.df.NumCols(); m++ {
+		ip.df.vals[m].Values.Append(df2.vals[m].Values)
+	}
+	return
 }
 
 // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and returns a new DataFrame.

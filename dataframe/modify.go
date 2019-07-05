@@ -125,7 +125,7 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 	}
 
 	// Insertion once errors have been handled
-	for j := 0; j < ip.df.index.NumLevels(); j++ {
+	for j := 0; j < ip.df.IndexLevels(); j++ {
 		if j < len(idxLabels) {
 			ip.df.index.Levels[j].Labels.Insert(row, idxLabels[j])
 			ip.df.index.Levels[j].IsDefault = false
@@ -148,8 +148,8 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 	return nil
 }
 
-// InsertColumn inserts a column with an indefinite number of column labels immediately before the specified column position and modifies the DataFrame in place.
-func (ip InPlace) InsertColumn(col int, s *series.Series, colLabels ...string) error {
+// InsertCol inserts a column with an indefinite number of column labels immediately before the specified column position and modifies the DataFrame in place.
+func (ip InPlace) InsertCol(col int, s *series.Series, colLabels ...string) error {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
 		vals, idx := s.ToInternalComponents()
@@ -160,16 +160,16 @@ func (ip InPlace) InsertColumn(col int, s *series.Series, colLabels ...string) e
 	}
 	// Handling errors
 	if len(colLabels) > ip.df.cols.NumLevels() {
-		return fmt.Errorf("DataFrame.InsertColumn() len(colLabels) must not exceed number of column levels: (%d > %d)",
+		return fmt.Errorf("DataFrame.InsertCol() len(colLabels) must not exceed number of column levels: (%d > %d)",
 			len(colLabels), ip.df.cols.NumLevels())
 	}
 
 	if col > ip.df.NumCols() {
-		return fmt.Errorf("DataFrame.InsertColumn(): invalid col: %d (max %v)", col, ip.df.NumCols())
+		return fmt.Errorf("DataFrame.InsertCol(): invalid col: %d (max %v)", col, ip.df.NumCols())
 	}
 
 	if s.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.InsertColumn(): series must be same length as df (%d != %d)",
+		return fmt.Errorf("DataFrame.InsertCol(): series must be same length as df (%d != %d)",
 			s.Len(), ip.df.Len())
 	}
 	// Insertion once errors have been handled
@@ -209,11 +209,11 @@ func (ip InPlace) AppendRow(val []interface{}, idxLabels ...interface{}) error {
 	return nil
 }
 
-// AppendColumn adds a row at a specified integer position and modifies the DataFrame in place.
-func (ip InPlace) AppendColumn(s *series.Series, colLabels ...string) error {
-	err := ip.df.InPlace.InsertColumn(ip.Len(), s, colLabels...)
+// AppendCol adds a row at a specified integer position and modifies the DataFrame in place.
+func (ip InPlace) AppendCol(s *series.Series, colLabels ...string) error {
+	err := ip.df.InPlace.InsertCol(ip.Len(), s, colLabels...)
 	if err != nil {
-		return fmt.Errorf("DataFrame.AppendColumn(): %v", err)
+		return fmt.Errorf("DataFrame.AppendCol(): %v", err)
 	}
 	return nil
 }
@@ -250,14 +250,14 @@ func (ip InPlace) SetRows(rowPositions []int, val interface{}) error {
 	return nil
 }
 
-// SetColumn sets the values in the specified column to val and modifies the DataFrame in place.
-func (ip InPlace) SetColumn(col int, s *series.Series) error {
+// SetCol sets the values in the specified column to val and modifies the DataFrame in place.
+func (ip InPlace) SetCol(col int, s *series.Series) error {
 	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
-		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+		return fmt.Errorf("DataFrame.SetCol(): %v", err)
 	}
 
 	if s.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.SetColumn(): series must be same length as df (%d != %d)",
+		return fmt.Errorf("DataFrame.SetCol(): series must be same length as df (%d != %d)",
 			s.Len(), ip.df.Len())
 	}
 	container, _ := s.ToInternalComponents()
@@ -265,13 +265,13 @@ func (ip InPlace) SetColumn(col int, s *series.Series) error {
 	return nil
 }
 
-// SetColumns sets the values in the specified columns to val and modifies the DataFrame in place.
-func (ip InPlace) SetColumns(columnPositions []int, s *series.Series) error {
+// SetCols sets the values in the specified columns to val and modifies the DataFrame in place.
+func (ip InPlace) SetCols(columnPositions []int, s *series.Series) error {
 	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
-		return fmt.Errorf("DataFrame.SetColumn(): %v", err)
+		return fmt.Errorf("DataFrame.SetCol(): %v", err)
 	}
 	if s.Len() != ip.df.Len() {
-		return fmt.Errorf("DataFrame.SetColumn(): series must be same length as df (%d != %d)",
+		return fmt.Errorf("DataFrame.SetCol(): series must be same length as df (%d != %d)",
 			s.Len(), ip.df.Len())
 	}
 	container, _ := s.ToInternalComponents()
@@ -369,12 +369,12 @@ func (ip InPlace) dropOne(pos int) {
 	return
 }
 
-// DropColumn drops a column at a specified integer position and modifies the DataFrame in place.
-func (ip InPlace) DropColumn(col int) error {
+// DropCol drops a column at a specified integer position and modifies the DataFrame in place.
+func (ip InPlace) DropCol(col int) error {
 
 	// Handling errors
 	if err := ip.df.ensureColumnPositions([]int{col}); err != nil {
-		return fmt.Errorf("DataFrame.DropColumn(): %v", err)
+		return fmt.Errorf("DataFrame.DropCol(): %v", err)
 	}
 
 	for j := 0; j < ip.df.cols.NumLevels(); j++ {
@@ -389,28 +389,39 @@ func (ip InPlace) DropColumn(col int) error {
 	return nil
 }
 
-// DropColumns drops the columns at the specified integer positions and modifies the DataFrame in place.
-func (ip InPlace) DropColumns(columnPositions []int) error {
+// DropCols drops the columns at the specified integer positions and modifies the DataFrame in place.
+func (ip InPlace) DropCols(columnPositions []int) error {
 	if err := ip.df.ensureColumnPositions(columnPositions); err != nil {
-		return fmt.Errorf("DataFrame.DropColumns(): %v", err)
+		return fmt.Errorf("DataFrame.DropCols(): %v", err)
 	}
 	sort.IntSlice(columnPositions).Sort()
 	for i, position := range columnPositions {
 		// ducks error because all columns are assumed to be safe after aggregate error check above
-		ip.df.InPlace.DropColumn(position - i)
+		ip.df.InPlace.DropCol(position - i)
 	}
 	return nil
 }
 
+// does not expect errors and does not drop columns
 func (ip InPlace) setIndex(col int) {
 	container := ip.df.vals[col]
 	newLevel := index.Level{Name: ip.df.cols.Name(col), Labels: container.Values, DataType: container.DataType}
-	ip.df.index.Levels = append(ip.df.index.Levels, newLevel)
-	// ducks error because levels are certain to be in index
-	ip.df.index.SwapLevels(0, ip.df.IndexLevels()-1)
-
-	ip.DropColumn(col)
+	// prepend
+	ip.df.index.Levels = append([]index.Level{newLevel}, ip.df.index.Levels...)
 	return
+}
+
+// drops columns after setting. For use in GroupBy
+func (ip InPlace) setIndexes(cols []int) {
+	reversedCols := make([]int, len(cols))
+	for i := 1; i <= len(cols); i++ {
+		reversedCols[len(cols)-i] = cols[i-1]
+	}
+	for _, col := range reversedCols {
+		ip.setIndex(col)
+	}
+	ip.df.index.Refresh()
+	ip.DropCols(cols)
 }
 
 // SetIndex sets a column as an index level, drops the column, and modifies the DataFrame in place. If col is the only column, nothing happens.
@@ -422,6 +433,8 @@ func (ip InPlace) SetIndex(col int) error {
 		return nil
 	}
 	ip.setIndex(col)
+	ip.df.index.Refresh()
+	ip.DropCol(col)
 	return nil
 }
 
@@ -552,10 +565,10 @@ func (df *DataFrame) InsertRow(row int, val []interface{}, idxLabels ...interfac
 	return df, err
 }
 
-// InsertColumn inserts a new column into the DataFrame immediately before the specified integer position and returns a new DataFrame.
-func (df *DataFrame) InsertColumn(row int, s *series.Series, colLabels ...string) (*DataFrame, error) {
+// InsertCol inserts a new column into the DataFrame immediately before the specified integer position and returns a new DataFrame.
+func (df *DataFrame) InsertCol(row int, s *series.Series, colLabels ...string) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.InsertColumn(row, s, colLabels...)
+	err := df.InPlace.InsertCol(row, s, colLabels...)
 	return df, err
 }
 
@@ -568,11 +581,11 @@ func (df *DataFrame) AppendRow(val []interface{}, idxLabels ...interface{}) (*Da
 	return df, nil
 }
 
-// AppendColumn adds a column at the end and returns a new DataFrame.
-func (df *DataFrame) AppendColumn(s *series.Series, colLabels ...string) (*DataFrame, error) {
-	df, err := df.InsertColumn(df.Len(), s, colLabels...)
+// AppendCol adds a column at the end and returns a new DataFrame.
+func (df *DataFrame) AppendCol(s *series.Series, colLabels ...string) (*DataFrame, error) {
+	df, err := df.InsertCol(df.Len(), s, colLabels...)
 	if err != nil {
-		return newEmptyDataFrame(), fmt.Errorf("DataFrame.AppendColumn(): %v", err)
+		return newEmptyDataFrame(), fmt.Errorf("DataFrame.AppendCol(): %v", err)
 	}
 	return df, nil
 }
@@ -591,17 +604,17 @@ func (df *DataFrame) SetRows(rowPositions []int, val interface{}) (*DataFrame, e
 	return df, err
 }
 
-// SetColumn sets all the values in the specified columns to val and returns a new DataFrame.
-func (df *DataFrame) SetColumn(col int, s *series.Series) (*DataFrame, error) {
+// SetCol sets all the values in the specified columns to val and returns a new DataFrame.
+func (df *DataFrame) SetCol(col int, s *series.Series) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.SetColumn(col, s)
+	err := df.InPlace.SetCol(col, s)
 	return df, err
 }
 
-// SetColumns sets all the values in the specified columns to val and returns a new DataFrame.
-func (df *DataFrame) SetColumns(columnPositions []int, s *series.Series) (*DataFrame, error) {
+// SetCols sets all the values in the specified columns to val and returns a new DataFrame.
+func (df *DataFrame) SetCols(columnPositions []int, s *series.Series) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.SetColumns(columnPositions, s)
+	err := df.InPlace.SetCols(columnPositions, s)
 	return df, err
 }
 
@@ -619,17 +632,17 @@ func (df *DataFrame) DropRows(positions []int) (*DataFrame, error) {
 	return df, err
 }
 
-// DropColumn drops the column at the specified integer position and returns a new DataFrame.
-func (df *DataFrame) DropColumn(col int) (*DataFrame, error) {
+// DropCol drops the column at the specified integer position and returns a new DataFrame.
+func (df *DataFrame) DropCol(col int) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.DropColumn(col)
+	err := df.InPlace.DropCol(col)
 	return df, err
 }
 
-// DropColumns drops the column at the specified integer position and returns a new DataFrame.
-func (df *DataFrame) DropColumns(columnPositions []int) (*DataFrame, error) {
+// DropCols drops the column at the specified integer position and returns a new DataFrame.
+func (df *DataFrame) DropCols(columnPositions []int) (*DataFrame, error) {
 	df = df.Copy()
-	err := df.InPlace.DropColumns(columnPositions)
+	err := df.InPlace.DropCols(columnPositions)
 	return df, err
 }
 

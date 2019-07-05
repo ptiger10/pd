@@ -79,6 +79,7 @@ type Config struct {
 type Grouping struct {
 	df     *DataFrame
 	groups map[string]*group
+	err    bool
 }
 
 func (g Grouping) String() string {

@@ -349,7 +349,7 @@ func TestDataFrame_Modify_InsertRow(t *testing.T) {
 	}
 }
 
-func TestDataFrame_Modify_InsertColumn(t *testing.T) {
+func TestDataFrame_Modify_InsertCol(t *testing.T) {
 	single := MustNew([]interface{}{[]string{"foo"}}, Config{Col: []string{"bar"}})
 	multi := MustNew([]interface{}{[]string{"foo"}}, Config{MultiCol: [][]string{{"bar"}, {"baz"}}})
 	type args struct {
@@ -408,20 +408,20 @@ func TestDataFrame_Modify_InsertColumn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input.Copy()
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.InsertColumn(tt.args.col, tt.args.s, tt.args.colLabels...)
+			err := df.InPlace.InsertCol(tt.args.col, tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
-				t.Errorf("InPlace.InsertColumn() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.InsertCol() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(df, tt.want.df) {
-					t.Errorf("InPlace.InsertColumn() got %v, want %v", df, tt.want.df)
+					t.Errorf("InPlace.InsertCol() got %v, want %v", df, tt.want.df)
 				}
 				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
 				fmt.Println(diff)
 			}
 
-			dfCopy, err := dfArchive.InsertColumn(tt.args.col, tt.args.s, tt.args.colLabels...)
+			dfCopy, err := dfArchive.InsertCol(tt.args.col, tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Insert() error = %v, want %v", err, tt.want.err)
 				return
@@ -497,7 +497,7 @@ func TestDataFrame_Modify_AppendRow(t *testing.T) {
 	}
 }
 
-func TestDataFrame_Modify_AppendColumn(t *testing.T) {
+func TestDataFrame_Modify_AppendCol(t *testing.T) {
 	type args struct {
 		s         *series.Series
 		colLabels []string
@@ -529,28 +529,28 @@ func TestDataFrame_Modify_AppendColumn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input.Copy()
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.AppendColumn(tt.args.s, tt.args.colLabels...)
+			err := df.InPlace.AppendCol(tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
-				t.Errorf("InPlace.AppendColumn() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.AppendCol() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(df, tt.want.df) {
-					t.Errorf("InPlace.AppendColumn() got %v, want %v", df, tt.want.df)
+					t.Errorf("InPlace.AppendCol() got %v, want %v", df, tt.want.df)
 				}
 			}
 
-			dfCopy, err := dfArchive.AppendColumn(tt.args.s, tt.args.colLabels...)
+			dfCopy, err := dfArchive.AppendCol(tt.args.s, tt.args.colLabels...)
 			if (err != nil) != tt.want.err {
-				t.Errorf("DataFrame.AppendColumn() error = %v, want %v", err, tt.want.err)
+				t.Errorf("DataFrame.AppendCol() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(dfCopy, tt.want.df) {
-					t.Errorf("DataFrame.AppendColumn() got %v, want %v", dfCopy, tt.want.df)
+					t.Errorf("DataFrame.AppendCol() got %v, want %v", dfCopy, tt.want.df)
 				}
 				if Equal(dfArchive, dfCopy) {
-					t.Errorf("DataFrame.AppendColumn() retained access to original, want copy")
+					t.Errorf("DataFrame.AppendCol() retained access to original, want copy")
 				}
 			}
 		})
@@ -673,7 +673,7 @@ func TestDataFrame_Modify_SetRows(t *testing.T) {
 	}
 }
 
-func TestDataFrame_Modify_SetColumn(t *testing.T) {
+func TestDataFrame_Modify_SetCol(t *testing.T) {
 	complex, _ := series.New(complex64(1))
 	type args struct {
 		col int
@@ -706,7 +706,7 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.SetColumn(tt.args.col, tt.args.s)
+			err := df.InPlace.SetCol(tt.args.col, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -715,7 +715,7 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
 			}
 
-			dfCopy, err := dfArchive.SetColumn(tt.args.col, tt.args.s)
+			dfCopy, err := dfArchive.SetCol(tt.args.col, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -732,7 +732,7 @@ func TestDataFrame_Modify_SetColumn(t *testing.T) {
 	}
 }
 
-func TestDataFrame_Modify_SetColumns(t *testing.T) {
+func TestDataFrame_Modify_SetCols(t *testing.T) {
 	type args struct {
 		columnPositions []int
 		s               *series.Series
@@ -764,7 +764,7 @@ func TestDataFrame_Modify_SetColumns(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.SetColumns(tt.args.columnPositions, tt.args.s)
+			err := df.InPlace.SetCols(tt.args.columnPositions, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -773,7 +773,7 @@ func TestDataFrame_Modify_SetColumns(t *testing.T) {
 				t.Errorf("InPlace.Set() got %v, want %v", df, tt.want.df)
 			}
 
-			dfCopy, err := dfArchive.SetColumns(tt.args.columnPositions, tt.args.s)
+			dfCopy, err := dfArchive.SetCols(tt.args.columnPositions, tt.args.s)
 			if (err != nil) != tt.want.err {
 				t.Errorf("DataFrame.Set() error = %v, want %v", err, tt.want.err)
 				return
@@ -905,7 +905,7 @@ func TestDataFrame_Modify_DropRows(t *testing.T) {
 	}
 }
 
-func TestDataFrame_Modify_DropColumn(t *testing.T) {
+func TestDataFrame_Modify_DropCol(t *testing.T) {
 	type args struct {
 		col int
 	}
@@ -933,33 +933,33 @@ func TestDataFrame_Modify_DropColumn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.DropColumn(tt.args.col)
+			err := df.InPlace.DropCol(tt.args.col)
 			if (err != nil) != tt.want.err {
-				t.Errorf("InPlace.DropColumn() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.DropCol() error = %v, want %v", err, tt.want.err)
 			}
 			if !Equal(df, tt.want.df) {
-				t.Errorf("InPlace.DropColumn() got %v, want %v", df, tt.want.df)
+				t.Errorf("InPlace.DropCol() got %v, want %v", df, tt.want.df)
 				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
 				fmt.Println(diff)
 			}
 
-			dfCopy, err := dfArchive.DropColumn(tt.args.col)
+			dfCopy, err := dfArchive.DropCol(tt.args.col)
 			if (err != nil) != tt.want.err {
-				t.Errorf("DataFrame.DropColumn() error = %v, want %v", err, tt.want.err)
+				t.Errorf("DataFrame.DropCol() error = %v, want %v", err, tt.want.err)
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(dfCopy, tt.want.df) {
-					t.Errorf("DataFrame.DropColumn() got %v, want %v", dfCopy, tt.want.df)
+					t.Errorf("DataFrame.DropCol() got %v, want %v", dfCopy, tt.want.df)
 				}
 				if Equal(dfArchive, dfCopy) {
-					t.Errorf("DataFrame.DropColumn() retained access to original, want copy")
+					t.Errorf("DataFrame.DropCol() retained access to original, want copy")
 				}
 			}
 		})
 	}
 }
 
-func TestDataFrame_Modify_DropColumns(t *testing.T) {
+func TestDataFrame_Modify_DropCols(t *testing.T) {
 	type args struct {
 		col []int
 	}
@@ -985,26 +985,26 @@ func TestDataFrame_Modify_DropColumns(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			df := tt.input
 			dfArchive := tt.input.Copy()
-			err := df.InPlace.DropColumns(tt.args.col)
+			err := df.InPlace.DropCols(tt.args.col)
 			if (err != nil) != tt.want.err {
-				t.Errorf("InPlace.DropColumns() error = %v, want %v", err, tt.want.err)
+				t.Errorf("InPlace.DropCols() error = %v, want %v", err, tt.want.err)
 			}
 			if !Equal(df, tt.want.df) {
-				t.Errorf("InPlace.DropColumns() got %v, want %v", df, tt.want.df)
+				t.Errorf("InPlace.DropCols() got %v, want %v", df, tt.want.df)
 				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
 				fmt.Println(diff)
 			}
 
-			dfCopy, err := dfArchive.DropColumns(tt.args.col)
+			dfCopy, err := dfArchive.DropCols(tt.args.col)
 			if (err != nil) != tt.want.err {
-				t.Errorf("DataFrame.DropColumns() error = %v, want %v", err, tt.want.err)
+				t.Errorf("DataFrame.DropCols() error = %v, want %v", err, tt.want.err)
 			}
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(dfCopy, tt.want.df) {
-					t.Errorf("DataFrame.DropColumns() got %v, want %v", dfCopy, tt.want.df)
+					t.Errorf("DataFrame.DropCols() got %v, want %v", dfCopy, tt.want.df)
 				}
 				if Equal(dfArchive, dfCopy) {
-					t.Errorf("DataFrame.DropColumns() retained access to original, want copy")
+					t.Errorf("DataFrame.DropCols() retained access to original, want copy")
 				}
 			}
 		})
@@ -1201,6 +1201,41 @@ func TestDataFrame_Modify_SetIndex(t *testing.T) {
 						t.Errorf("DataFrame.SetIndex() retained access to original, want copy")
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Modify_SetIndexes(t *testing.T) {
+	df := MustNew([]interface{}{"foo", "bar", "baz"}, Config{Index: 0, Col: []string{"0", "1", "2"}})
+	type args struct {
+		cols []int
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "pass",
+			input: df,
+			args:  args{cols: []int{0, 1}},
+			want: want{df: MustNew([]interface{}{"baz"}, Config{
+				Col:        []string{"2"},
+				MultiIndex: []interface{}{[]string{"foo"}, []string{"bar"}, []int{0}}, MultiIndexNames: []string{"0", "1", ""}}),
+				err: false,
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			df.InPlace.setIndexes(tt.args.cols)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.setIndexes() got %v, want %v", df, tt.want.df)
 			}
 		})
 	}
