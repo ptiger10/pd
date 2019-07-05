@@ -206,6 +206,16 @@ func MakeIntRange(min, max int) []int {
 	return a
 }
 
+// MakeNullRange returns a sequential series of null values, for use in stacking and unstacking columns.
+// Includes min and excludes max.
+func MakeNullRange(n int) []interface{} {
+	a := make([]interface{}, n)
+	for i := range a {
+		a[i] = ""
+	}
+	return a
+}
+
 // MakeIntRangeInclusive returns a sequential series of numbers, for use in making default index labels.
 // Includes start and end.
 func MakeIntRangeInclusive(start, end int) []int {
