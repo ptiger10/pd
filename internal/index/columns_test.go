@@ -33,6 +33,8 @@ func TestNewColumns(t *testing.T) {
 		maxNameWidth int
 		names        []string
 		name         string
+		multiNames   [][]string
+		multiName    []string
 	}
 	tests := []struct {
 		name string
@@ -42,14 +44,14 @@ func TestNewColumns(t *testing.T) {
 		{"empty", args{nil},
 			want{
 				columns: Columns{Levels: []ColLevel{}, NameMap: LabelMap{}},
-				len:     0, numLevels: 0, maxNameWidth: 0, names: []string{}, name: "",
+				len:     0, numLevels: 0, maxNameWidth: 0, names: []string{}, name: "", multiNames: [][]string{}, multiName: []string{},
 			}},
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
 				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}}},
-				2, 1, 3, []string{"1", "2"}, "1",
+				2, 1, 3, []string{"1", "2"}, "1", [][]string{{"1"}, {"2"}}, []string{"1"},
 			}},
 		{"two cols",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
@@ -58,7 +60,7 @@ func TestNewColumns(t *testing.T) {
 					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String},
 					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
-				2, 2, 5, []string{"1 | 3", "2 | 4"}, "1 | 3",
+				2, 2, 5, []string{"1 | 3", "2 | 4"}, "1 | 3", [][]string{{"1", "3"}, {"2", "4"}}, []string{"1", "3"},
 			}},
 	}
 	for _, tt := range tests {
@@ -86,6 +88,14 @@ func TestNewColumns(t *testing.T) {
 			gotName := got.Name(0)
 			if !reflect.DeepEqual(gotName, tt.want.name) {
 				t.Errorf("Columns.Name(): got %v, want %v", gotName, tt.want.name)
+			}
+			gotMultiNames := got.MultiNames()
+			if !reflect.DeepEqual(gotMultiNames, tt.want.multiNames) {
+				t.Errorf("Columns.Name(): got %v, want %v", gotMultiNames, tt.want.multiNames)
+			}
+			gotMultiName := got.MultiName(0)
+			if !reflect.DeepEqual(gotMultiName, tt.want.multiName) {
+				t.Errorf("Columns.Name(): got %v, want %v", gotMultiName, tt.want.multiName)
 			}
 		})
 	}

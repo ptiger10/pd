@@ -91,15 +91,25 @@ func (cols Columns) NumLevels() int {
 	return len(cols.Levels)
 }
 
-// Names returns the name of every column by concatenating the labels across every level.
-func (cols Columns) Names() []string {
-	names := make([]string, cols.Len())
+// MultiNames returns a slice of the names of the column at every level for every column position.
+func (cols Columns) MultiNames() [][]string {
+	names := make([][]string, cols.Len())
 	for k := 0; k < cols.Len(); k++ {
 		nameSlice := make([]string, cols.NumLevels())
 		for j := 0; j < cols.NumLevels(); j++ {
 			nameSlice[j] = cols.Levels[j].Labels[k]
 		}
-		names[k] = strings.Join(nameSlice, " | ")
+		names[k] = nameSlice
+	}
+	return names
+}
+
+// Names returns the name of every column by concatenating the labels across every level.
+func (cols Columns) Names() []string {
+	names := make([]string, cols.Len())
+	for i, mn := range cols.MultiNames() {
+		name := strings.Join(mn, values.GetMultiColNameSeparator())
+		names[i] = name
 	}
 	return names
 }
@@ -110,6 +120,14 @@ func (cols Columns) Name(col int) string {
 		return ""
 	}
 	return cols.Names()[col]
+}
+
+// MultiName returns the names of the column levels at col
+func (cols Columns) MultiName(col int) []string {
+	if cols.NumLevels() == 0 {
+		return []string{}
+	}
+	return cols.MultiNames()[col]
 }
 
 // MaxNameWidth returns the number of characters in the column name with the most characters.

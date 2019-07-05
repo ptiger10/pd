@@ -1,5 +1,9 @@
 package dataframe
 
+import (
+	"fmt"
+)
+
 // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and modifies the DataFrame in place.
 // If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
 //
@@ -21,7 +25,7 @@ func (ip InPlace) Join(append string, method string, df2 *DataFrame) error {
 	return nil
 }
 
-// assumes equivalent index and columns
+// assumes equivalent index levels and column positions
 func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
@@ -40,6 +44,26 @@ func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
 		ip.df.vals[m].Values.Append(df2.vals[m].Values)
 	}
 	return
+}
+
+func (ip InPlace) appendDataFrameColumn(df2 *DataFrame) error {
+	// Handling empty DataFrame
+	if Equal(ip.df, newEmptyDataFrame()) {
+		ip.df.replace(df2)
+		return nil
+	}
+
+	// Append
+	for m := 0; m < df2.NumCols(); m++ {
+		err := ip.AppendCol(
+			df2.hydrateSeries(m),
+			df2.cols.MultiName(m)...,
+		)
+		if err != nil {
+			return fmt.Errorf("appendDataFrameColumn(): %v", err)
+		}
+	}
+	return nil
 }
 
 // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and returns a new DataFrame.

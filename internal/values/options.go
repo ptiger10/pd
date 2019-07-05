@@ -4,6 +4,7 @@ var displayValuesWhitespaceBuffer = 4
 var displayColumnsWhitespaceBuffer = 2
 var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
+var multiColNameSeparator = " | "
 
 // GetDisplayValuesWhitespaceBuffer returns displayValuesWhitespaceBuffer.
 // displayValuesWhitespaceBuffer is an option when printing a Series or DataFrame.
@@ -41,4 +42,12 @@ func GetDisplayElementWhitespaceBuffer() int {
 // Default buffer: 1 space
 func GetDisplayIndexWhitespaceBuffer() int {
 	return displayIndexWhitespaceBuffer
+}
+
+// GetMultiColNameSeparator returns the multiColNameSeparator.
+// The multiColNameSeparator separates col names whenever a multicol is concatenated together (e.g., into a Series name or index level name).
+//
+// Default: " | "
+func GetMultiColNameSeparator() string {
+	return multiColNameSeparator
 }

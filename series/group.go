@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -66,8 +67,7 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 	}
 	wg.Wait()
 	close(ch)
-	container := make([]calcReturn, g.Len())
-	// iterating over channel range returns nil Series if pointer is provided instead of value
+	var container []calcReturn
 	for result := range ch {
 		container = append(container, result)
 	}
@@ -77,20 +77,20 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 
 	s := newEmptySeries()
 	for _, result := range container {
-		s.InPlace.Join(&result.s)
+		s.InPlace.Join(result.s)
 	}
 	s.index.Refresh()
 	return s
 }
 
 type calcReturn struct {
-	s Series
+	s *Series
 	n int
 }
 
 func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*Series) float64) {
 	s := g.math(group, fn)
-	ret := calcReturn{s: *s, n: n}
+	ret := calcReturn{s: s, n: n}
 	ch <- ret
 	wg.Done()
 }
@@ -159,7 +159,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 		for _, label := range labels {
 			strLabels = append(strLabels, fmt.Sprint(label))
 		}
-		groupLabel := strings.Join(strLabels, " | ")
+		groupLabel := strings.Join(strLabels, values.GetMultiColNameSeparator())
 
 		if _, ok := groups[groupLabel]; !ok {
 			groups[groupLabel] = &group{Index: labels}

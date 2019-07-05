@@ -15,4 +15,7 @@ func TestNonsettableOptions(t *testing.T) {
 	if GetDisplayIndexWhitespaceBuffer() != 1 {
 		t.Errorf("Default setting not reading for DisplayIndexWhitespaceBuffer")
 	}
+	if GetMultiColNameSeparator() != " | " {
+		t.Errorf("Default setting not reading for MultiColNameSeparator")
+	}
 }

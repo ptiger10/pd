@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/d4l3k/messagediff"
+	"github.com/ptiger10/pd/options"
+	"github.com/ptiger10/pd/series"
 )
 
 func TestGroup_Copy(t *testing.T) {
@@ -211,28 +213,28 @@ func TestGrouping_Nth(t *testing.T) {
 }
 
 func TestGrouping_Math(t *testing.T) {
-	df := MustNew([]interface{}{[]int{5, 6, 7, 8}, []int{1, 2, 3, 4}},
-		Config{Col: []string{"A", "B"}, MultiIndex: []interface{}{[]string{"foo", "foo", "bar", "bar"}, []int{1, 1, 2, 2}}})
+	df := MustNew([]interface{}{[]int{1, 2, 3, 4}},
+		Config{Col: []string{"A"}, Index: []int{1, 1, 2, 2}})
 	tests := []struct {
 		name  string
 		input *DataFrame
 		fn    func(Grouping) *DataFrame
 		want  *DataFrame
 	}{
-		// {name: "fail: empty", input: newEmptyDataFrame(), fn: Grouping.Sum,
-		// 	want: newEmptyDataFrame()},
+		{name: "fail: empty", input: newEmptyDataFrame(), fn: Grouping.Sum,
+			want: newEmptyDataFrame()},
 		{"sum", df, Grouping.Sum,
-			MustNew([]interface{}{[]float64{3, 7}}, Config{Index: []int{1, 2}})},
-		// {"mean", df, Grouping.Mean,
-		// 	MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}})},
-		// {"min", df, Grouping.Min,
-		// 	MustNew([]interface{}{[]float64{1, 3}}, Config{Index: []int{1, 2}})},
-		// {"max", df, Grouping.Max,
-		// 	MustNew([]interface{}{[]float64{2, 4}}, Config{Index: []int{1, 2}})},
-		// {"median", df, Grouping.Median,
-		// 	MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}})},
-		// {"standard deviation", df, Grouping.Std,
-		// 	MustNew([]interface{}{[]float64{0.5, 0.5}}, Config{Index: []int{1, 2}})},
+			MustNew([]interface{}{[]float64{3, 7}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"mean", df, Grouping.Mean,
+			MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"min", df, Grouping.Min,
+			MustNew([]interface{}{[]float64{1, 3}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"max", df, Grouping.Max,
+			MustNew([]interface{}{[]float64{2, 4}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"median", df, Grouping.Median,
+			MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"standard deviation", df, Grouping.Std,
+			MustNew([]interface{}{[]float64{0.5, 0.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -242,6 +244,8 @@ func TestGrouping_Math(t *testing.T) {
 			got := tt.fn(g)
 			if !Equal(got, tt.want) {
 				t.Errorf("df.GroupByIndex math operation returned %v, want %v", got, tt.want)
+				diff, _ := messagediff.PrettyDiff(got, tt.want)
+				fmt.Println(diff)
 			}
 			// // Test Synchronously
 			// options.SetAsync(false)
@@ -250,6 +254,39 @@ func TestGrouping_Math(t *testing.T) {
 			// 	t.Errorf("df.GroupByIndex synchronous math operation returned %v, want %v", gotSync, tt.want)
 			// }
 			// options.RestoreDefaults()
+		})
+	}
+}
+
+func TestTransposeSeries(t *testing.T) {
+	multi := MustNew([]interface{}{0, 1, 2}, Config{MultiIndex: []interface{}{"qux"}, MultiCol: [][]string{{"foo", "bar", "baz"}, {"4", "5", "6"}}})
+	multi.cols.Levels[1].DataType = options.Int64
+
+	type args struct {
+		s *series.Series
+	}
+	tests := []struct {
+		name string
+		args args
+		want *DataFrame
+	}{
+		// {name: "single index", args: args{s: series.MustNew([]int{0, 1, 4},
+		// 	series.Config{Index: []string{"foo", "bar", "baz"}, Name: "qux"})},
+		// 	want: MustNew([]interface{}{0, 1, 4}, Config{MultiIndex: []interface{}{"qux"}, Col: []string{"foo", "bar", "baz"}})},
+		// {name: "multi index", args: args{s: series.MustNew([]int{0, 1, 2},
+		// 	series.Config{MultiIndex: []interface{}{[]string{"foo", "bar", "baz"}, []int{4, 5, 6}}, Name: "qux"})},
+		// 	want: multi},
+		{name: "int in name to int index", args: args{s: series.MustNew([]int{0, 1, 2},
+			series.Config{Index: []string{"foo", "bar", "baz"}, Name: "0"})},
+			want: MustNew([]interface{}{0, 1, 2}, Config{Index: 0, Col: []string{"foo", "bar", "baz"}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := transposeSeries(tt.args.s)
+			if !Equal(got, tt.want) {
+				t.Errorf("transposeSeries() = %v, want %v", got, tt.want)
+			}
+
 		})
 	}
 }

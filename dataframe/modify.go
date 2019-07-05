@@ -441,7 +441,7 @@ func (ip InPlace) SetIndex(col int) error {
 func (ip InPlace) resetIndex(level int) {
 	container := values.Container{Values: ip.df.index.Levels[level].Labels, DataType: ip.df.index.Levels[level].DataType}
 	ip.df.vals = append(ip.df.vals, container)
-	names := strings.Split(ip.df.index.Levels[level].Name, " | ")
+	names := strings.Split(ip.df.index.Levels[level].Name, values.GetMultiColNameSeparator())
 	for j := 0; j < ip.df.ColLevels(); j++ {
 		ip.df.cols.Levels[j].Labels = append(ip.df.cols.Levels[j].Labels, names[j])
 		ip.df.cols.Levels[j].Refresh()

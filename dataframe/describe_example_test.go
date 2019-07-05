@@ -453,23 +453,23 @@ func ExampleInPlace_method_list() {
 	// Output:
 	// {InPlace DataFrame Handler}
 	// Methods:
-	// AppendColumn
+	// AppendCol
 	// AppendRow
-	// DropColumn
-	// DropColumns
+	// DropCol
+	// DropCols
 	// DropDuplicates
 	// DropNull
 	// DropRow
 	// DropRows
-	// InsertColumn
+	// InsertCol
 	// InsertRow
 	// Join
 	// Len
 	// Less
 	// ResetIndex
 	// Set
-	// SetColumn
-	// SetColumns
+	// SetCol
+	// SetCols
 	// SetIndex
 	// SetRow
 	// SetRows
@@ -499,5 +499,5 @@ func ExampleGrouping_method_list() {
 	g := s.GroupByIndex()
 	fmt.Println(g)
 	// Output:
-	// {DataFrame Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
+	// {DataFrame Grouping | NumGroups: 2, Groups: [0 | 100, 1 | 101]}
 }

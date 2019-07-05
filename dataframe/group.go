@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
+	"github.com/araddon/dateparse"
+	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
@@ -119,15 +123,13 @@ func (df *DataFrame) GroupBy(cols ...int) Grouping {
 }
 
 func (ip InPlace) replaceIndex(cols []int) {
-
 	lengthArchive := ip.df.IndexLevels()
 	// set new levels
 	ip.setIndexes(cols)
 
 	// Drop old levels
 	for j := len(cols); j < len(cols)+lengthArchive; j++ {
-		// use lower-level inplace method
-		// duck error because level is certain to be in index
+		// use lower-level method to change index in place and duck error because level is certain to be in index
 		ip.df.index.DropLevel(j)
 	}
 	ip.df.index.Refresh()
@@ -141,7 +143,7 @@ func (df *DataFrame) groupby() Grouping {
 		for _, label := range labels {
 			strLabels = append(strLabels, fmt.Sprint(label))
 		}
-		groupLabel := strings.Join(strLabels, " | ")
+		groupLabel := strings.Join(strLabels, values.GetMultiColNameSeparator())
 
 		// create group with groupLabel and index labels if it is not already within groups map
 		if _, ok := groups[groupLabel]; !ok {
@@ -183,6 +185,11 @@ func (g Grouping) Last() *DataFrame {
 	return ret
 }
 
+type calcReturn struct {
+	df *DataFrame
+	n  int
+}
+
 var wg sync.WaitGroup
 
 func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
@@ -195,7 +202,7 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	if !options.GetAsync() {
 		ret := newEmptyDataFrame()
 		for _, group := range g.Groups() {
-			df := g.math(group, fn)
+			df := g.mathSingleGroup(group, fn)
 			ret.InPlace.appendDataFrameRow(df)
 		}
 		return ret
@@ -209,50 +216,95 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	}
 	wg.Wait()
 	close(ch)
-	container := make([]calcReturn, g.Len())
+	var returnedData []calcReturn
 	// iterating over channel range returns nil Series if pointer is provided instead of value
 	for result := range ch {
-		container = append(container, result)
+		returnedData = append(returnedData, result)
 	}
-	sort.Slice(container, func(i, j int) bool {
-		return container[i].n < container[j].n
+	sort.Slice(returnedData, func(i, j int) bool {
+		return returnedData[i].n < returnedData[j].n
 	})
 
 	df := newEmptyDataFrame()
-	for _, result := range container {
-		df.InPlace.appendDataFrameRow((&result.df))
+	for _, result := range returnedData {
+		df.InPlace.appendDataFrameRow((result.df))
 	}
 	df.index.Refresh()
 	return df
 }
 
-type calcReturn struct {
-	df DataFrame
-	n  int
-}
-
 func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*DataFrame) *series.Series) {
-	df := g.math(group, fn)
-	ret := calcReturn{df: *df, n: n}
+	df := g.mathSingleGroup(group, fn)
+	ret := calcReturn{df: df, n: n}
 	ch <- ret
 	wg.Done()
 }
 
-func (g Grouping) math(group string, fn func(*DataFrame) *series.Series) *DataFrame {
+func transposeSeries(s *series.Series) *DataFrame {
+	// Columns
+	lvls := make([]index.ColLevel, s.NumLevels())
+	cols := index.NewColumns(lvls...)
+	container, idx := s.ToInternalComponents()
+	for j := 0; j < s.NumLevels(); j++ {
+		cols.Levels[j].IsDefault = idx.Levels[j].IsDefault
+		cols.Levels[j].DataType = idx.Levels[j].DataType
+		cols.Levels[j].Name = idx.Levels[j].Name
+		for m := 0; m < s.Len(); m++ {
+			elem := idx.Levels[j].Labels.Element(m)
+			if !elem.Null {
+				cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
+			} else {
+				cols.Levels[j].Labels = append(cols.Levels[j].Labels, "")
+			}
+		}
+	}
+	cols.Refresh()
+
+	// Index
+	names := strings.Split(s.Name(), values.GetMultiColNameSeparator())
+	idxLvls := make([]index.Level, len(names))
+	retIdx := index.New(idxLvls...)
+	for j := 0; j < len(names); j++ {
+		name := names[j]
+		idxContainer := parseStringIntoValuesContainer(name)
+		retIdx.Levels[j].Labels = idxContainer.Values
+		retIdx.Levels[j].DataType = idxContainer.DataType
+	}
+	retIdx.Refresh()
+
+	// Values
+	vals := make([]values.Container, s.Len())
+	for m := 0; m < s.Len(); m++ {
+		vals[m].Values = container.Values.Subset([]int{m})
+		vals[m].DataType = container.DataType
+	}
+
+	return newFromComponents(vals, retIdx, cols, "")
+}
+
+func parseStringIntoValuesContainer(s string) values.Container {
+	var container values.Container
+	if intVal, err := strconv.Atoi(s); err == nil {
+		container = values.MustCreateValuesFromInterface(intVal)
+	} else if floatVal, err := strconv.ParseFloat(s, 64); err == nil {
+		container = values.MustCreateValuesFromInterface(floatVal)
+	} else if boolVal, err := strconv.ParseBool(s); err == nil {
+		container = values.MustCreateValuesFromInterface(boolVal)
+	} else if dateTimeVal, err := dateparse.ParseAny(s); err == nil {
+		container = values.MustCreateValuesFromInterface(dateTimeVal)
+	} else {
+		container = values.MustCreateValuesFromInterface(s)
+	}
+	return container
+}
+
+func (g Grouping) mathSingleGroup(group string, fn func(*DataFrame) *series.Series) *DataFrame {
 	positions := g.groups[group].Positions
 	rows := g.df.subsetRows(positions)
-	// df := newEmptyDataFrame()
-	for m := 0; m < g.df.NumCols(); m++ {
-
-	}
 	calc := fn(rows)
 	calc.Rename(group)
-	fmt.Println(calc)
-	// construct new DataFrame
-
-	// df := MustNew([]interface{}{calc})
-	// df.index = g.groups[group].Index
-	return MustNew(nil)
+	df := transposeSeries(calc)
+	return df
 }
 
 // Sum for each group in the Grouping.
