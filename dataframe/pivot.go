@@ -85,8 +85,8 @@ func (df *DataFrame) stackIndex(level int) *DataFrame {
 	return newFromComponents(vals, idx, cols, df.Name())
 }
 
-// // pivot transforms data into the desired form and calls aggFunc on the reshaped data.
-func (df *DataFrame) pivot(index int, values int, columns int, aggFunc string) *DataFrame {
+// Pivot transforms data into the desired form and calls aggFunc on the reshaped data.
+func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *DataFrame {
 	df = df.Copy()
 	g := df.GroupBy(index, columns)
 	switch aggFunc {

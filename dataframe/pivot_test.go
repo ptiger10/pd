@@ -153,16 +153,46 @@ func TestDataFrame_Pivot(t *testing.T) {
 		args  args
 		want  *DataFrame
 	}{
-		{name: "pass",
+		{name: "sum",
 			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
 				Config{Col: []string{"A", "B", "C"}}),
 			args: args{index: 0, data: 2, col: 1, aggFunc: "sum"},
 			want: MustNew([]interface{}{3.0, 3.0},
 				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+		{name: "mean",
+			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
+				Config{Col: []string{"A", "B", "C"}}),
+			args: args{index: 0, data: 2, col: 1, aggFunc: "mean"},
+			want: MustNew([]interface{}{1.5, 3.0},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+		{name: "median",
+			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
+				Config{Col: []string{"A", "B", "C"}}),
+			args: args{index: 0, data: 2, col: 1, aggFunc: "median"},
+			want: MustNew([]interface{}{1.5, 3.0},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+		{name: "min",
+			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
+				Config{Col: []string{"A", "B", "C"}}),
+			args: args{index: 0, data: 2, col: 1, aggFunc: "min"},
+			want: MustNew([]interface{}{1.0, 3.0},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+		{name: "max",
+			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
+				Config{Col: []string{"A", "B", "C"}}),
+			args: args{index: 0, data: 2, col: 1, aggFunc: "max"},
+			want: MustNew([]interface{}{2.0, 3.0},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+		{name: "std",
+			input: MustNew([]interface{}{[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
+				Config{Col: []string{"A", "B", "C"}}),
+			args: args{index: 0, data: 2, col: 1, aggFunc: "std"},
+			want: MustNew([]interface{}{0.5, 0.0},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.input.pivot(tt.args.index, tt.args.data, tt.args.col, tt.args.aggFunc)
+			got := tt.input.Pivot(tt.args.index, tt.args.data, tt.args.col, tt.args.aggFunc)
 			if !Equal(got, tt.want) {
 				t.Errorf("transposeSeries() = %v, want %v", got, tt.want)
 			}
