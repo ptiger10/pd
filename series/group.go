@@ -7,22 +7,25 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ptiger10/pd/options"
-
 	"github.com/ptiger10/pd/internal/index"
+	"github.com/ptiger10/pd/options"
 )
 
 type group struct {
-	Index     index.Index
+	Index     []interface{}
 	Positions []int
 }
 
 func (grp *group) copy() *group {
-	pos := make([]int, 0)
-	for _, p := range grp.Positions {
-		pos = append(pos, p)
+	pos := make([]int, len(grp.Positions))
+	idx := make([]interface{}, len(grp.Index))
+	for i, p := range grp.Positions {
+		pos[i] = p
 	}
-	return &group{Positions: pos, Index: grp.Index.Copy()}
+	for i, ind := range grp.Index {
+		idx[i] = ind
+	}
+	return &group{Positions: pos, Index: idx}
 }
 
 // copy a grouping
@@ -97,7 +100,8 @@ func (g Grouping) math(group string, fn func(*Series) float64) *Series {
 	rows := g.s.subsetRows(positions)
 	calc := fn(rows)
 	s := MustNew(calc)
-	s.index = g.groups[group].Index
+	// ducks error because index level values are assumed to be supported by InterfaceFactory
+	s.index, _ = index.CreateMultiIndex(g.groups[group].Index, nil)
 	return s
 }
 
@@ -150,16 +154,15 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 	}
 
 	for i := 0; i < s.Len(); i++ {
-		row := s.subsetRows([]int{i})
-		labels := row.Element(0).Labels
+		labels := s.Element(i).Labels
 		var strLabels []string
 		for _, label := range labels {
 			strLabels = append(strLabels, fmt.Sprint(label))
 		}
-		groupLabel := strings.Join(strLabels, " ")
+		groupLabel := strings.Join(strLabels, " | ")
 
 		if _, ok := groups[groupLabel]; !ok {
-			groups[groupLabel] = &group{Index: row.index}
+			groups[groupLabel] = &group{Index: labels}
 		}
 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
 	}

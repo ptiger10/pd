@@ -82,19 +82,11 @@ func NewFromConfig(config Config, n int) (Index, error) {
 				"internal/index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
-		var newLevels []Level
-		for i := 0; i < len(config.MultiIndex); i++ {
-			var levelName string
-			if i < len(config.MultiIndexNames) {
-				levelName = config.MultiIndexNames[i]
-			}
-			newLevel, err := NewLevel(config.MultiIndex[i], levelName)
-			if err != nil {
-				return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
-			}
-			newLevels = append(newLevels, newLevel)
+		multi, err := CreateMultiIndex(config.MultiIndex, config.MultiIndexNames)
+		if err != nil {
+			return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 		}
-		return New(newLevels...), nil
+		return multi, nil
 	}
 	// default: single index
 	newLevel, err := NewLevel(config.Index, config.IndexName)
@@ -102,6 +94,23 @@ func NewFromConfig(config Config, n int) (Index, error) {
 		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 	}
 	return New(newLevel), nil
+}
+
+// CreateMultiIndex creates a multiindex from a slice of interface values representing different levels
+func CreateMultiIndex(levels []interface{}, names []string) (Index, error) {
+	var newLevels []Level
+	for i := 0; i < len(levels); i++ {
+		var levelName string
+		if i < len(names) {
+			levelName = names[i]
+		}
+		newLevel, err := NewLevel(levels[i], levelName)
+		if err != nil {
+			return Index{}, fmt.Errorf("CreateMultiIndex(): %v", err)
+		}
+		newLevels = append(newLevels, newLevel)
+	}
+	return New(newLevels...), nil
 }
 
 // Copy returns a deep copy of each index level

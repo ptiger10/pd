@@ -526,5 +526,5 @@ func ExampleGrouping_method_list() {
 	g := s.GroupByIndex()
 	fmt.Println(g)
 	// Output:
-	// {Series Grouping | NumGroups: 2, Groups: [0 100, 1 101]}
+	// {Series Grouping | NumGroups: 2, Groups: [0 | 100, 1 | 101]}
 }

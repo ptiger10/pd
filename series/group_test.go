@@ -9,9 +9,19 @@ import (
 	"testing"
 
 	"github.com/ptiger10/pd/options"
-
-	"github.com/ptiger10/pd/internal/index"
 )
+
+func TestGroup_Copy(t *testing.T) {
+	s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
+	got := s.GroupByIndex(0).copy().groups
+	want := map[string]*group{
+		"1": &group{Positions: []int{0, 1}, Index: []interface{}{int64(1)}},
+		"2": &group{Positions: []int{2, 3}, Index: []interface{}{int64(2)}},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("group.copy() got %v, want %v", got, want)
+	}
+}
 
 func TestGrouping_Math(t *testing.T) {
 	s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
@@ -56,8 +66,6 @@ func TestGrouping_Math(t *testing.T) {
 }
 
 func TestSeries_GroupByIndex(t *testing.T) {
-	lvl1 := index.MustNewLevel(1, "")
-	lvl2 := index.MustNewLevel(2, "")
 	multi := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]int{1, 1, 2}, []int{2, 2, 1}}})
 	type args struct {
 		levelPositions []int
@@ -72,29 +80,29 @@ func TestSeries_GroupByIndex(t *testing.T) {
 			input: MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{1, 1, 2}}),
 			args:  args{[]int{}},
 			want: map[string]*group{
-				"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
-				"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
+				"1": &group{Positions: []int{0, 1}, Index: []interface{}{int64(1)}},
+				"2": &group{Positions: []int{2}, Index: []interface{}{int64(2)}},
 			}},
 		{"multi no args",
 			multi,
 			args{[]int{}},
 			map[string]*group{
-				"1 2": &group{Positions: []int{0, 1}, Index: index.New(lvl1, lvl2)},
-				"2 1": &group{Positions: []int{2}, Index: index.New(lvl2, lvl1)},
+				"1 | 2": &group{Positions: []int{0, 1}, Index: []interface{}{int64(1), int64(2)}},
+				"2 | 1": &group{Positions: []int{2}, Index: []interface{}{int64(2), int64(1)}},
 			}},
 		{"multi one level",
 			multi,
 			args{[]int{0}},
 			map[string]*group{
-				"1": &group{Positions: []int{0, 1}, Index: index.New(lvl1)},
-				"2": &group{Positions: []int{2}, Index: index.New(lvl2)},
+				"1": &group{Positions: []int{0, 1}, Index: []interface{}{int64(1)}},
+				"2": &group{Positions: []int{2}, Index: []interface{}{int64(2)}},
 			}},
 		{"multi two levels reversed",
 			multi,
 			args{[]int{1, 0}},
 			map[string]*group{
-				"2 1": &group{Positions: []int{0, 1}, Index: index.New(lvl2, lvl1)},
-				"1 2": &group{Positions: []int{2}, Index: index.New(lvl1, lvl2)},
+				"2 | 1": &group{Positions: []int{0, 1}, Index: []interface{}{int64(2), int64(1)}},
+				"1 | 2": &group{Positions: []int{2}, Index: []interface{}{int64(1), int64(2)}},
 			}},
 		{"fail: invalid level",
 			multi,
