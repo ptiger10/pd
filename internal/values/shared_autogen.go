@@ -48,6 +48,13 @@ func (vals *float64Values) Subset(rowPositions []int) Values {
 	return &ret
 }
 
+// Append converts vals2 to float64Values and extends the original float64Values.
+func (vals *float64Values) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.Float64)
+	newVals := convertedVals.(*float64Values)
+	*vals = append(*vals, *newVals...)
+}
+
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *float64Values) Values() []interface{} {
 	var ret []interface{}
@@ -201,6 +208,13 @@ func (vals *int64Values) Subset(rowPositions []int) Values {
 		ret = append(ret, (*vals)[position])
 	}
 	return &ret
+}
+
+// Append converts vals2 to int64Values and extends the original int64Values.
+func (vals *int64Values) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.Int64)
+	newVals := convertedVals.(*int64Values)
+	*vals = append(*vals, *newVals...)
 }
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
@@ -358,6 +372,13 @@ func (vals *stringValues) Subset(rowPositions []int) Values {
 	return &ret
 }
 
+// Append converts vals2 to stringValues and extends the original stringValues.
+func (vals *stringValues) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.String)
+	newVals := convertedVals.(*stringValues)
+	*vals = append(*vals, *newVals...)
+}
+
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *stringValues) Values() []interface{} {
 	var ret []interface{}
@@ -511,6 +532,13 @@ func (vals *boolValues) Subset(rowPositions []int) Values {
 		ret = append(ret, (*vals)[position])
 	}
 	return &ret
+}
+
+// Append converts vals2 to boolValues and extends the original boolValues.
+func (vals *boolValues) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.Bool)
+	newVals := convertedVals.(*boolValues)
+	*vals = append(*vals, *newVals...)
 }
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
@@ -668,6 +696,13 @@ func (vals *dateTimeValues) Subset(rowPositions []int) Values {
 	return &ret
 }
 
+// Append converts vals2 to dateTimeValues and extends the original dateTimeValues.
+func (vals *dateTimeValues) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.DateTime)
+	newVals := convertedVals.(*dateTimeValues)
+	*vals = append(*vals, *newVals...)
+}
+
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *dateTimeValues) Values() []interface{} {
 	var ret []interface{}
@@ -821,6 +856,13 @@ func (vals *interfaceValues) Subset(rowPositions []int) Values {
 		ret = append(ret, (*vals)[position])
 	}
 	return &ret
+}
+
+// Append converts vals2 to interfaceValues and extends the original interfaceValues.
+func (vals *interfaceValues) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.Interface)
+	newVals := convertedVals.(*interfaceValues)
+	*vals = append(*vals, *newVals...)
 }
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.

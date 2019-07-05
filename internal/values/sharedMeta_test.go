@@ -42,8 +42,8 @@ func TestMeta(t *testing.T) {
 	vals.Less(0, 0)
 	vals.Values()
 	vals.Vals()
-	vals.Element(0)
 	vals.Copy()
+	vals.Element(0)
 	vals.ToFloat64()
 	vals.ToInt64()
 	vals.ToString()
@@ -59,4 +59,18 @@ func TestMeta(t *testing.T) {
 
 	v := interfaceValue{"foo", false}
 	v.tovalueType()
+}
+
+// No easy way to Convert valueTypeValues, so expect panic
+func TestPanic(t *testing.T) {
+	val := newvalueType("foo")
+	vals := valueTypeValues{val}
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	// The following is the code under test
+	vals.Append(&vals)
 }

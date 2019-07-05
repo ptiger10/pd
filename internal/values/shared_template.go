@@ -48,6 +48,13 @@ func (vals *valueTypeValues) Subset(rowPositions []int) Values {
 	return &ret
 }
 
+// Append converts vals2 to valueTypeValues and extends the original valueTypeValues.
+func (vals *valueTypeValues) Append(vals2 Values) {
+	convertedVals, _ := Convert(vals2, options.PlaceholdervalueType)
+	newVals := convertedVals.(*valueTypeValues)
+	*vals = append(*vals, *newVals...)
+}
+
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *valueTypeValues) Values() []interface{} {
 	var ret []interface{}

@@ -17,6 +17,7 @@ type Values interface {
 	Set(int, interface{})    // overwrite the value/null struct at an integer position
 	Copy() Values            // clone the Values
 	Insert(int, interface{}) // insert a Value/Null pair at an integer position
+	Append(Values)           // append Values together
 	Drop(int)                // drop a Value/Null pair at an integer position
 	Swap(i, j int)           // swap two values - necessary for sorting
 	Less(i, j int) bool      // compare two values and return the lesser - required for sorting

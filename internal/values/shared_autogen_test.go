@@ -56,6 +56,12 @@ func TestSharedFloat64(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
+	v.Append(vals)
+	wantAppend := &float64Values{float64Value{1, false}, float64Value{2, false}, float64Value{1, false}, float64Value{2, false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
+	}
+
 	subset := vals.Subset([]int{0})
 	wantSubset := &float64Values{float64Value{1, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
@@ -137,6 +143,12 @@ func TestSharedInt64(t *testing.T) {
 	v := vals.Copy()
 	if reflect.ValueOf(v).Pointer() == reflect.ValueOf(vals).Pointer() {
 		t.Errorf("Copy() retained reference to the original, want copy")
+	}
+
+	v.Append(vals)
+	wantAppend := &int64Values{int64Value{1, false}, int64Value{2, false}, int64Value{1, false}, int64Value{2, false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
 	}
 
 	subset := vals.Subset([]int{0})
@@ -222,6 +234,12 @@ func TestSharedString(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
+	v.Append(vals)
+	wantAppend := &stringValues{stringValue{"bar", false}, stringValue{"foo", false}, stringValue{"bar", false}, stringValue{"foo", false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
+	}
+
 	subset := vals.Subset([]int{0})
 	wantSubset := &stringValues{stringValue{"bar", false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
@@ -303,6 +321,12 @@ func TestSharedBool(t *testing.T) {
 	v := vals.Copy()
 	if reflect.ValueOf(v).Pointer() == reflect.ValueOf(vals).Pointer() {
 		t.Errorf("Copy() retained reference to the original, want copy")
+	}
+
+	v.Append(vals)
+	wantAppend := &boolValues{boolValue{false, false}, boolValue{true, false}, boolValue{false, false}, boolValue{true, false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
 	}
 
 	subset := vals.Subset([]int{0})
@@ -390,6 +414,12 @@ func TestSharedDateTime(t *testing.T) {
 		t.Errorf("Copy() retained reference to the original, want copy")
 	}
 
+	v.Append(vals)
+	wantAppend := &dateTimeValues{dateTimeValue{dt1, false}, dateTimeValue{dt2, false}, dateTimeValue{dt1, false}, dateTimeValue{dt2, false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
+	}
+
 	subset := vals.Subset([]int{0})
 	wantSubset := &dateTimeValues{dateTimeValue{dt1, false}}
 	if !reflect.DeepEqual(subset, wantSubset) {
@@ -471,6 +501,12 @@ func TestSharedInterface(t *testing.T) {
 	v := vals.Copy()
 	if reflect.ValueOf(v).Pointer() == reflect.ValueOf(vals).Pointer() {
 		t.Errorf("Copy() retained reference to the original, want copy")
+	}
+
+	v.Append(vals)
+	wantAppend := &interfaceValues{interfaceValue{false, false}, interfaceValue{true, false}, interfaceValue{false, false}, interfaceValue{true, false}}
+	if !reflect.DeepEqual(v, wantAppend) {
+		t.Errorf("Append() got %v, want %v", v, wantAppend)
 	}
 
 	subset := vals.Subset([]int{0})
