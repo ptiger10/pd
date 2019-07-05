@@ -1343,7 +1343,7 @@ func TestDataFrame_ModifyInPlace_DatatypeConversion(t *testing.T) {
 			if !Equal(df, tt.want.df) {
 				t.Errorf("InPlace.To... got %v, want %v", df, tt.want.df)
 			}
-			if df.dataType() != tt.want.datatype.String() {
+			if df.dataType() != tt.want.datatype {
 				t.Errorf("InPlace.To... got datatype %v, want %v", df.dataType(), tt.want.datatype.String())
 			}
 		})
@@ -1389,7 +1389,7 @@ func TestDataFrame_Modify_DatatypeConversion(t *testing.T) {
 			if !Equal(got, tt.want.df) {
 				t.Errorf("DataFrame.To... got %v, want %v", got, tt.want.df)
 			}
-			if got.dataType() != tt.want.datatype.String() {
+			if got.dataType() != tt.want.datatype {
 				t.Errorf("DataFrame.To... got datatype %v, want %v", got.dataType(), tt.want.datatype.String())
 			}
 			if !strings.Contains(tt.name, "control") {

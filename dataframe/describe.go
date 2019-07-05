@@ -234,11 +234,11 @@ func (df *DataFrame) print() string {
 		printer += fmt.Sprintln(newLine)
 	}
 	// [END rows]
-	if df.dataType() != "mixed" || df.name != "" {
+	if df.dataTypePrinter() != "mixed" || df.name != "" {
 		printer += "\n"
 	}
-	if df.dataType() != "mixed" {
-		printer += fmt.Sprintf("datatype: %s\n", df.dataType())
+	if df.dataTypePrinter() != "mixed" {
+		printer += fmt.Sprintf("datatype: %s\n", df.dataTypePrinter())
 	}
 
 	if df.name != "" {
@@ -283,15 +283,26 @@ func (df *DataFrame) DataTypes() *series.Series {
 }
 
 // dataType is the data type of the DataFrame's values. Mimics reflect.Type with the addition of time.Time as DateTime.
-func (df *DataFrame) dataType() string {
+func (df *DataFrame) dataType() options.DataType {
 	uniqueTypes := df.DataTypes().Unique()
 	if len(uniqueTypes) == 0 {
-		return "empty"
+		return options.None
 	}
 	if len(uniqueTypes) == 1 {
-		return df.vals[0].DataType.String()
+		return df.vals[0].DataType
 	}
-	return "mixed"
+	return options.Interface
+}
+
+func (df *DataFrame) dataTypePrinter() string {
+	dt := df.dataType()
+	if dt == options.Interface {
+		return "mixed"
+	}
+	if dt == options.None {
+		return "empty"
+	}
+	return dt.String()
 }
 
 // maxWidths is the max characters in each values container of a dataframe.

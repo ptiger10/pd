@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/araddon/dateparse"
-	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
@@ -238,48 +237,6 @@ func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*
 	ret := calcReturn{df: df, n: n}
 	ch <- ret
 	wg.Done()
-}
-
-func transposeSeries(s *series.Series) *DataFrame {
-	// Columns
-	lvls := make([]index.ColLevel, s.NumLevels())
-	cols := index.NewColumns(lvls...)
-	container, idx := s.ToInternalComponents()
-	for j := 0; j < s.NumLevels(); j++ {
-		cols.Levels[j].IsDefault = idx.Levels[j].IsDefault
-		cols.Levels[j].DataType = idx.Levels[j].DataType
-		cols.Levels[j].Name = idx.Levels[j].Name
-		for m := 0; m < s.Len(); m++ {
-			elem := idx.Levels[j].Labels.Element(m)
-			if !elem.Null {
-				cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
-			} else {
-				cols.Levels[j].Labels = append(cols.Levels[j].Labels, "")
-			}
-		}
-	}
-	cols.Refresh()
-
-	// Index
-	names := strings.Split(s.Name(), values.GetMultiColNameSeparator())
-	idxLvls := make([]index.Level, len(names))
-	retIdx := index.New(idxLvls...)
-	for j := 0; j < len(names); j++ {
-		name := names[j]
-		idxContainer := parseStringIntoValuesContainer(name)
-		retIdx.Levels[j].Labels = idxContainer.Values
-		retIdx.Levels[j].DataType = idxContainer.DataType
-	}
-	retIdx.Refresh()
-
-	// Values
-	vals := make([]values.Container, s.Len())
-	for m := 0; m < s.Len(); m++ {
-		vals[m].Values = container.Values.Subset([]int{m})
-		vals[m].DataType = container.DataType
-	}
-
-	return newFromComponents(vals, retIdx, cols, "")
 }
 
 func parseStringIntoValuesContainer(s string) values.Container {

@@ -11,7 +11,6 @@ import (
 
 	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
-	"github.com/ptiger10/pd/series"
 )
 
 func TestGroup_Copy(t *testing.T) {
@@ -239,7 +238,6 @@ func TestGrouping_Math(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := tt.input.GroupByIndex()
-			// fmt.Println(g)
 			// Test Asynchronously
 			got := tt.fn(g)
 			if !Equal(got, tt.want) {
@@ -247,46 +245,13 @@ func TestGrouping_Math(t *testing.T) {
 				diff, _ := messagediff.PrettyDiff(got, tt.want)
 				fmt.Println(diff)
 			}
-			// // Test Synchronously
-			// options.SetAsync(false)
-			// gotSync := tt.fn(g)
-			// if !Equal(gotSync, tt.want) {
-			// 	t.Errorf("df.GroupByIndex synchronous math operation returned %v, want %v", gotSync, tt.want)
-			// }
-			// options.RestoreDefaults()
-		})
-	}
-}
-
-func TestTransposeSeries(t *testing.T) {
-	multi := MustNew([]interface{}{0, 1, 2}, Config{MultiIndex: []interface{}{"qux"}, MultiCol: [][]string{{"foo", "bar", "baz"}, {"4", "5", "6"}}})
-	multi.cols.Levels[1].DataType = options.Int64
-
-	type args struct {
-		s *series.Series
-	}
-	tests := []struct {
-		name string
-		args args
-		want *DataFrame
-	}{
-		// {name: "single index", args: args{s: series.MustNew([]int{0, 1, 4},
-		// 	series.Config{Index: []string{"foo", "bar", "baz"}, Name: "qux"})},
-		// 	want: MustNew([]interface{}{0, 1, 4}, Config{MultiIndex: []interface{}{"qux"}, Col: []string{"foo", "bar", "baz"}})},
-		// {name: "multi index", args: args{s: series.MustNew([]int{0, 1, 2},
-		// 	series.Config{MultiIndex: []interface{}{[]string{"foo", "bar", "baz"}, []int{4, 5, 6}}, Name: "qux"})},
-		// 	want: multi},
-		{name: "int in name to int index", args: args{s: series.MustNew([]int{0, 1, 2},
-			series.Config{Index: []string{"foo", "bar", "baz"}, Name: "0"})},
-			want: MustNew([]interface{}{0, 1, 2}, Config{Index: 0, Col: []string{"foo", "bar", "baz"}})},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := transposeSeries(tt.args.s)
-			if !Equal(got, tt.want) {
-				t.Errorf("transposeSeries() = %v, want %v", got, tt.want)
+			// Test Synchronously
+			options.SetAsync(false)
+			gotSync := tt.fn(g)
+			if !Equal(gotSync, tt.want) {
+				t.Errorf("df.GroupByIndex synchronous math operation returned %v, want %v", gotSync, tt.want)
 			}
-
+			options.RestoreDefaults()
 		})
 	}
 }

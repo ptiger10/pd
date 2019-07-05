@@ -71,9 +71,9 @@ func TestDataFrame_Describe(t *testing.T) {
 			if gotNumColLevels != tt.want.numColLevels {
 				t.Errorf("df.ColLevels(): got %v, want %v", gotNumColLevels, tt.want.numColLevels)
 			}
-			gotDataType := df.dataType()
+			gotDataType := df.dataTypePrinter()
 			if gotDataType != tt.want.dataType {
-				t.Errorf("df.dataType(): got %v, want %v", gotDataType, tt.want.dataType)
+				t.Errorf("df.dataTypePrinter: got %v, want %v", gotDataType, tt.want.dataType)
 			}
 			gotDataTypes := df.DataTypes()
 			if !series.Equal(gotDataTypes, tt.want.dataTypes) {
