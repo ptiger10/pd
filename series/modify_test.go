@@ -9,6 +9,16 @@ import (
 )
 
 // Modify tests check both inplace and copy functionality in the same test, if both are available
+
+func TestConvert(t *testing.T) {
+	s := MustNew("foo", Config{Name: "baz"})
+	got := s.Convert("bool")
+	want := MustNew(true, Config{Name: "baz"})
+	if !Equal(got, want) {
+		t.Errorf("s.Convert() got %v, want %v", got, want)
+	}
+}
+
 func TestRename(t *testing.T) {
 	s := MustNew("foo", Config{Name: "baz"})
 	want := "qux"

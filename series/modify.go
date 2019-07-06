@@ -14,6 +14,14 @@ func (s *Series) Rename(name string) {
 	s.name = name
 }
 
+// Convert a Series and return as new Series.
+func (s *Series) Convert(datatype string) *Series {
+	s = s.Copy()
+	s.values, _ = values.Convert(s.values, options.DT(datatype))
+	s.datatype = options.DT(datatype)
+	return s
+}
+
 // replace one Series with another in place.
 func (s *Series) replace(s2 *Series) {
 	s.name = s2.name

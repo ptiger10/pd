@@ -173,37 +173,34 @@ func (idx Index) Set(row int, level int, val interface{}) (*Series, error) {
 
 // SetRows sets the label at the specified index rows and level to val and returns a new Series.
 // First converts val to be the same type as the index level.
-func (idx Index) SetRows(rows []int, level int, val interface{}) (*Series, error) {
-	s := idx.s.Copy()
-	err := s.index.SetRows(rows, level, val)
+func (idx Index) SetRows(rows []int, level int, val interface{}) error {
+	err := idx.s.index.SetRows(rows, level, val)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.SetRows(): %v", err)
+		return fmt.Errorf("s.Index.SetRows(): %v", err)
 	}
-	return s, nil
+	return nil
 }
 
 // DropLevel drops the specified index level and returns a new Series.
-func (idx Index) DropLevel(level int) (*Series, error) {
+func (idx Index) DropLevel(level int) error {
 	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.DropLevels(): %v", err)
+		return fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
-	s := idx.s.Copy()
-	s.index.DropLevel(level)
-	return s, nil
+	idx.s.index.DropLevel(level)
+	return nil
 }
 
 // DropLevels drops the specified index levels and returns a new Series.
-func (idx Index) DropLevels(levelPositions []int) (*Series, error) {
+func (idx Index) DropLevels(levelPositions []int) error {
 	if err := idx.s.ensureLevelPositions(levelPositions); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.DropLevels(): %v", err)
+		return fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
-	s := idx.s.Copy()
 	sort.IntSlice(levelPositions).Sort()
 	for j, position := range levelPositions {
-		s.index.DropLevel(position - j)
+		idx.s.index.DropLevel(position - j)
 	}
-	s.index.Refresh()
-	return s, nil
+	idx.s.index.Refresh()
+	return nil
 }
 
 // SelectName returns the integer position of the index level at the first occurence of the supplied name, or -1 if not a valid index level name.
@@ -303,62 +300,14 @@ func (idx Index) Filter(level int, cmp func(interface{}) bool) []int {
 	return include
 }
 
-// LevelToFloat64 converts the labels at a specified index level to float64 and returns a new Series.
-func (idx Index) LevelToFloat64(level int) (*Series, error) {
-	if level >= idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
+// Convert converts an index level to datatype in place.
+func (idx Index) Convert(dataType string, level int) error {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("df.Index.Convert(): %v", err)
 	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToFloat64()
-	return s, nil
-}
-
-// LevelToInt64 converts the labels at a specified index level to int64 and returns a new Series.
-func (idx Index) LevelToInt64(level int) (*Series, error) {
-	if level > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
+	err := idx.s.index.Levels[level].Convert(options.DT(dataType))
+	if err != nil {
+		return fmt.Errorf("df.Index.Convert(): %v", err)
 	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInt64()
-	return s, nil
-}
-
-// LevelToString converts the labels at a specified index level to string and returns a new Series.
-func (idx Index) LevelToString(level int) (*Series, error) {
-	if level > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToString()
-	return s, nil
-}
-
-// LevelToBool converts the labels at a specified index level to bool and returns a new Series.
-func (idx Index) LevelToBool(level int) (*Series, error) {
-	if level > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToBool()
-	return s, nil
-}
-
-// LevelToDateTime converts the labels at a specified index level to DateTime and returns a new Series.
-func (idx Index) LevelToDateTime(level int) (*Series, error) {
-	if level > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToDateTime()
-	return s, nil
-}
-
-// LevelToInterface converts the labels at a specified index level to interface and returns a new Series.
-func (idx Index) LevelToInterface(level int) (*Series, error) {
-	if level > idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.s.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInterface()
-	return s, nil
+	return nil
 }

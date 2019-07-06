@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/ptiger10/pd/internal/index"
 )
@@ -148,53 +147,40 @@ func TestIndex_Nil(t *testing.T) {
 	s.Index.Len()
 }
 
-func TestConversions(t *testing.T) {
-	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+func TestIndex_Convert(t *testing.T) {
 	type args struct {
-		fn    func(Index, int) (*Series, error)
-		level int
+		dataType string
+		level    int
 	}
 	type want struct {
-		series *Series
-		err    bool
+		s   *Series
+		err bool
 	}
 	tests := []struct {
-		name string
-		args args
-		want want
+		name  string
+		input *Series
+		args  args
+		want  want
 	}{
-		{"toFloat", args{Index.LevelToFloat64, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}}), false}},
-		{"fail: toFloat", args{Index.LevelToFloat64, 10}, want{newEmptySeries(), true}},
-		{"toInt", args{Index.LevelToInt64, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []int64{1, 1, 1, 0, 1.5566688e+18}}), false}},
-		{"fail: toInt", args{Index.LevelToInt64, 10}, want{newEmptySeries(), true}},
-		{"toString", args{Index.LevelToString, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}}), false}},
-		{"fail: toString", args{Index.LevelToString, 10}, want{newEmptySeries(), true}},
-		{"toBool", args{Index.LevelToBool, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []bool{true, true, true, false, true}}), false}},
-		{"fail: toBool", args{Index.LevelToBool, 10}, want{newEmptySeries(), true}},
-		{"toDateTime", args{Index.LevelToDateTime, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}}), false}},
-		{"fail: toDateTime", args{Index.LevelToDateTime, 10}, want{newEmptySeries(), true}},
-		{"toInterface", args{Index.LevelToInterface, 0},
-			want{MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []interface{}{1.5, 1, "1", false, testDate}}), false}},
-		{"fail: toInterface", args{Index.LevelToInterface, 10}, want{newEmptySeries(), true}},
+		{name: "pass", input: MustNew("foo", Config{Index: "bar"}),
+			args: args{dataType: "bool", level: 0},
+			want: want{s: MustNew("foo", Config{Index: true}), err: false}},
+		{"fail: invalid column", MustNew("foo", Config{Index: "bar"}),
+			args{dataType: "bool", level: 10},
+			want{MustNew("foo", Config{Index: "bar"}), true}},
+		{"fail: unsupported type", MustNew("foo", Config{Index: "bar"}),
+			args{dataType: "corge", level: 0},
+			want{MustNew("foo", Config{Index: "bar"}), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			idx := Index{
-				s: MustNew([]string{"a", "b", "c", "d", "e"}, Config{Index: []interface{}{1.5, 1, "1", false, testDate}}),
-			}
-			got, err := tt.args.fn(idx, tt.args.level)
+			err := tt.input.Index.Convert(tt.args.dataType, tt.args.level)
 			if (err != nil) != tt.want.err {
-				t.Errorf("Index conversion error = %v, want %v", err, tt.want.err)
+				t.Errorf("s.Index.Convert() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if !Equal(got, tt.want.series) {
-				t.Errorf("Index conversion = %v, \nwant %v", got, tt.want.series)
+			if !Equal(tt.input, tt.want.s) {
+				t.Errorf("s.Index.Convert() got %v, want %v", tt.input, tt.want.s)
 			}
 		})
 	}
@@ -539,13 +525,13 @@ func TestIndex_SetRows(t *testing.T) {
 			idx := Index{
 				s: tt.fields.s,
 			}
-			got, err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
+			err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.SetRows() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.SetRows() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.SetRows() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -577,13 +563,13 @@ func TestIndex_DropLevel(t *testing.T) {
 			idx := Index{
 				s: tt.fields.s,
 			}
-			got, err := idx.DropLevel(tt.args.level)
+			err := idx.DropLevel(tt.args.level)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.DropLevel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.DropLevel() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.DropLevel() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -608,20 +594,20 @@ func TestIndex_DropLevels(t *testing.T) {
 			want:    MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"quux", "quuz"}}}),
 			wantErr: false},
 		{"fail: invalid level", fields{s}, args{[]int{10}},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.DropLevels(tt.args.levelPositions)
+			err := idx.DropLevels(tt.args.levelPositions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.DropLevel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.DropLevel() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.DropLevel() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
