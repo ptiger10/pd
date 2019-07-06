@@ -66,9 +66,9 @@ func TestIndex_Sort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{s: tt.input}
-			got := idx.Sort(tt.asc)
-			if !Equal(got, tt.want) {
-				t.Errorf("Index.Sort() got %v, want %v", got, tt.want)
+			idx.Sort(tt.asc)
+			if !Equal(idx.s, tt.want) {
+				t.Errorf("Index.Sort() got %v, want %v", idx.s, tt.want)
 			}
 		})
 	}

@@ -80,8 +80,8 @@ func newEmptyGrouping() Grouping {
 // GroupByIndex groups a DataFrame by one or more of its index levels. If no level is provided, all index levels are used.
 func (df *DataFrame) GroupByIndex(levelPositions ...int) Grouping {
 	if len(levelPositions) != 0 {
-		var err error
-		df, err = df.Index.SubsetLevels(levelPositions)
+		df = df.Copy()
+		err := df.Index.SubsetLevels(levelPositions)
 		if err != nil {
 			if options.GetLogWarnings() {
 				log.Printf("df.GroupByIndex() %v\n", err)

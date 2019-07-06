@@ -24,15 +24,14 @@ func (idx Index) Values() [][]interface{} {
 	return ret
 }
 
-// Sort sorts the index by index level 0 and returns a new index.
-func (idx Index) Sort(asc bool) *Series {
-	idx = idx.s.Copy().Index
+// Sort sorts the index by index level 0 and modifies the index in place.
+func (idx Index) Sort(asc bool) {
 	if asc {
 		sort.Stable(idx)
 	} else {
 		sort.Stable(sort.Reverse(idx))
 	}
-	return idx.s
+	return
 }
 
 // Swap swaps two labels at index level 0 and modifies the index in place. Required by Sort interface.
@@ -146,6 +145,9 @@ func (idx Index) SubsetLevels(levelPositions []int) error {
 	err := idx.s.ensureLevelPositions(levelPositions)
 	if err != nil {
 		return fmt.Errorf("s.Index.SubsetLevels(): %v", err)
+	}
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("s.Index.SubsetLevels(): no levels provided")
 	}
 	levels := make([]index.Level, 0)
 	for _, position := range levelPositions {
