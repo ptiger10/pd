@@ -1,5 +1,7 @@
 package options
 
+import "strings"
+
 // DataType identifies the type of a data object.
 // For most values it is interchangeable with the reflect.Type value, but it supports custom identifiers as well (e.g., DateTime).
 type DataType int
@@ -16,6 +18,29 @@ const (
 	PlaceholdervalueType
 	Unsupported
 )
+
+// DT returns the DataType associated with a string.
+func DT(datatype string) DataType {
+	datatype = strings.ToLower(datatype)
+	switch datatype {
+	case "string":
+		return String
+	case "bool":
+		return Bool
+	case "datetime":
+		return DateTime
+	case "interface":
+		return Interface
+	default:
+		if strings.Contains(datatype, "float") {
+			return Float64
+		}
+		if strings.Contains(datatype, "int") {
+			return Int64
+		}
+		return Unsupported
+	}
+}
 
 func (datatype DataType) String() string {
 	datatypes := []string{
