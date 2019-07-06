@@ -112,6 +112,15 @@ func TestNew(t *testing.T) {
 				index: index.NewDefault(1),
 			},
 		},
+		{"map[string]interface without config",
+			args{[]interface{}{map[string]interface{}{"foo": []string{"bar", "baz"}}}, nil},
+			&DataFrame{
+				name:  "",
+				vals:  []values.Container{values.MustCreateValuesFromInterface([]string{"bar", "baz"})},
+				cols:  index.NewColumns(index.NewColLevel([]string{"foo"}, "")),
+				index: index.NewDefault(2),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

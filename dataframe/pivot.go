@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -69,11 +70,15 @@ func (df *DataFrame) transposeIndex(level int) *DataFrame {
 	return df
 }
 
-// stackIndex converts an index level into a column level and replaces existing column levels
+// stackIndex converts an index level into a column level and replaces existing column levels. Assumes the level being stacked is not the only level.
 func (df *DataFrame) stackIndex(level int) *DataFrame {
-	df = df.Copy()
+	archive := df.Copy()
+	archive.index.DropLevel(level)
+	archivedIndex := archive.Index.unique()
+
 	// modify index
 	g := df.GroupByIndex(level)
+
 	cols := index.NewColumns(index.NewColLevel(g.Groups(), df.index.Levels[level].Name))
 
 	vals := df.stackVals(level, g)
@@ -81,14 +86,20 @@ func (df *DataFrame) stackIndex(level int) *DataFrame {
 	// Remove index to create snapshot of a new index (if level is only level, create default range)
 	df, _ = df.ResetIndex(level)
 
-	idx := df.index.Copy()
-	return newFromComponents(vals, idx, cols, df.Name())
+	idx := archivedIndex
+	df = newFromComponents(vals, idx, cols, df.Name())
+	err := df.ensureAlignment()
+	if err != nil {
+		log.Printf("df.stackIndex(): %v\n", err)
+	}
+	return df
 }
 
 // Pivot transforms data into the desired form and calls aggFunc on the reshaped data.
 func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *DataFrame {
 	df = df.Copy()
 	g := df.GroupBy(index, columns)
+	df.InPlace.SubsetColumns([]int{values})
 	switch aggFunc {
 	case "sum":
 		df = g.Sum()

@@ -138,6 +138,39 @@ func TestCol(t *testing.T) {
 	}
 }
 
+func TestColAt(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Col: []string{"baz", "qux"}})
+	type args struct {
+		col int
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  *series.Series
+	}{
+		{name: "pass", input: df, args: args{col: 0},
+			want: series.MustNew([]string{"foo"}, series.Config{Name: "baz"})},
+		{"fail: invalid col", df, args{col: 10}, series.MustNew(nil)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			if got := tt.input.ColAt(tt.args.col); !series.Equal(got, tt.want) {
+				t.Errorf("DataFrame.ColAt() = %v, want %v", got, tt.want)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("DataFrame.ColAt() returned no log message, want log due to fail")
+				}
+			}
+		})
+	}
+}
+
 func TestSeries_SelectLabel(t *testing.T) {
 	df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []int{1, 1, 1}})
 	type args struct {

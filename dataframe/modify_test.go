@@ -25,6 +25,52 @@ func TestRename(t *testing.T) {
 	}
 }
 
+func TestRenameCols(t *testing.T) {
+	type args struct {
+		columns map[string]string
+	}
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  *DataFrame
+	}{
+		{name: "single col", input: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
+			args: args{columns: map[string]string{"bar": "baz"}},
+			want: MustNew([]interface{}{"foo"}, Config{Col: []string{"baz"}})},
+		{name: "multi col", input: MustNew([]interface{}{"foo"}, Config{MultiCol: [][]string{{"bar"}, {"baz"}}}),
+			args: args{columns: map[string]string{"bar": "qux | quuz"}},
+			want: MustNew([]interface{}{"foo"}, Config{MultiCol: [][]string{{"qux"}, {"quuz"}}})},
+		{name: "fail: invalid col label", input: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
+			args: args{columns: map[string]string{"corge": "baz"}},
+			want: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}})},
+		{name: "fail: excessive col levels", input: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}}),
+			args: args{columns: map[string]string{"bar": "baz | qux "}},
+			want: MustNew([]interface{}{"foo"}, Config{Col: []string{"bar"}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
+			tt.input.RenameCols(tt.args.columns)
+			if !Equal(tt.input, tt.want) {
+				t.Errorf("df.RenameCols() = %v, want %v", tt.input, tt.want)
+				diff, _ := messagediff.PrettyDiff(tt.input, tt.want)
+				fmt.Println(diff)
+			}
+			
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("InPlace.Set() returned no log message, want log due to fail")
+				}
+				buf.Reset()
+			}
+		})
+	}
+}
+
 // func TestDataFrame_Modify_Sort(t *testing.T) {
 // 	testDate1 := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
 // 	testDate2 := testDate1.Add(24 * time.Hour)

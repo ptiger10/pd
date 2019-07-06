@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestIndex_Less(t *testing.T) {
@@ -146,53 +145,40 @@ func TestIndex_Describe(t *testing.T) {
 // 	df.Index.Len()
 // }
 
-func TestConversions(t *testing.T) {
-	testDate := time.Date(2019, 5, 1, 0, 0, 0, 0, time.UTC)
-	epochDate := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+func TestIndex_Convert(t *testing.T) {
 	type args struct {
-		fn    func(Index, int) (*DataFrame, error)
-		level int
+		dataType string
+		level    int
 	}
 	type want struct {
-		series *DataFrame
-		err    bool
+		df  *DataFrame
+		err bool
 	}
 	tests := []struct {
-		name string
-		args args
-		want want
+		name  string
+		input *DataFrame
+		args  args
+		want  want
 	}{
-		{"toFloat", args{Index.LevelToFloat64, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []float64{1.5, 1.0, 1.0, 0, 1.5566688e+18}}), false}},
-		{"fail: toFloat", args{Index.LevelToFloat64, 10}, want{newEmptyDataFrame(), true}},
-		{"toInt", args{Index.LevelToInt64, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []int64{1, 1, 1, 0, 1.5566688e+18}}), false}},
-		{"fail: toInt", args{Index.LevelToInt64, 10}, want{newEmptyDataFrame(), true}},
-		{"toString", args{Index.LevelToString, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}}), false}},
-		{"fail: toString", args{Index.LevelToString, 10}, want{newEmptyDataFrame(), true}},
-		{"toBool", args{Index.LevelToBool, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []bool{true, true, true, false, true}}), false}},
-		{"fail: toBool", args{Index.LevelToBool, 10}, want{newEmptyDataFrame(), true}},
-		{"toDateTime", args{Index.LevelToDateTime, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}}), false}},
-		{"fail: toDateTime", args{Index.LevelToDateTime, 10}, want{newEmptyDataFrame(), true}},
-		{"toInterface", args{Index.LevelToInterface, 0},
-			want{MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []interface{}{1.5, 1, "1", false, testDate}}), false}},
-		{"fail: toInterface", args{Index.LevelToInterface, 10}, want{newEmptyDataFrame(), true}},
+		{name: "pass", input: MustNew([]interface{}{"foo"}, Config{Index: "bar"}),
+			args: args{dataType: "bool", level: 0},
+			want: want{df: MustNew([]interface{}{"foo"}, Config{Index: true}), err: false}},
+		{"fail: invalid column", MustNew([]interface{}{"foo"}, Config{Index: "bar"}),
+			args{dataType: "bool", level: 10},
+			want{MustNew([]interface{}{"foo"}, Config{Index: "bar"}), true}},
+		{"fail: unsupported type", MustNew([]interface{}{"foo"}, Config{Index: "bar"}),
+			args{dataType: "corge", level: 0},
+			want{MustNew([]interface{}{"foo"}, Config{Index: "bar"}), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			idx := Index{
-				df: MustNew([]interface{}{[]string{"a", "b", "c", "d", "e"}}, Config{Index: []interface{}{1.5, 1, "1", false, testDate}}),
-			}
-			got, err := tt.args.fn(idx, tt.args.level)
+			err := tt.input.Index.Convert(tt.args.dataType, tt.args.level)
 			if (err != nil) != tt.want.err {
-				t.Errorf("Index conversion error = %v, want %v", err, tt.want.err)
+				t.Errorf("df.Index.Convert() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if !Equal(got, tt.want.series) {
-				t.Errorf("Index conversion = %v, \nwant %v", got, tt.want.series)
+			if !Equal(tt.input, tt.want.df) {
+				t.Errorf("df.Index.Convert() got %v, want %v", tt.input, tt.want.df)
 			}
 		})
 	}
@@ -705,46 +691,46 @@ func TestIndex_SelectNames(t *testing.T) {
 	}
 }
 
-// func TestIndex_SubsetLevels(t *testing.T) {
-// 	df := MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar", "baz", "qux"}})
-// 	type fields struct {
-// 		df *DataFrame
-// 	}
-// 	type args struct {
-// 		levelPositions []int
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    *DataFrame
-// 		wantErr bool
-// 	}{
-// 		{name: "one level", fields: fields{df}, args: args{[]int{0}},
-// 			want: MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar"}}), wantErr: false},
-// 		{name: "multiple levels", fields: fields{df}, args: args{[]int{0, 1}},
-// 			want: MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar", "baz"}}), wantErr: false},
-// 		{"fail: invalid level", fields{df}, args{[]int{10}},
-// 			newEmptyDataFrame(), true},
-// 		{"fail: no levels", fields{df}, args{[]int{}},
-// 			newEmptyDataFrame(), true},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			idx := Index{
-// 				df: df,
-// 			}
-// 			got, err := idx.SubsetLevels(tt.args.levelPositions)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("Index.Subset() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("Index.Subset() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestIndex_SubsetLevels(t *testing.T) {
+	df := MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar", "baz", "qux"}})
+	type fields struct {
+		df *DataFrame
+	}
+	type args struct {
+		levelPositions []int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *DataFrame
+		wantErr bool
+	}{
+		{name: "one level", fields: fields{df}, args: args{[]int{0}},
+			want: MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar"}}), wantErr: false},
+		{name: "multiple levels", fields: fields{df}, args: args{[]int{0, 1}},
+			want: MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"bar", "baz"}}), wantErr: false},
+		{"fail: invalid level", fields{df}, args{[]int{10}},
+			newEmptyDataFrame(), true},
+		{"fail: no levels", fields{df}, args{[]int{}},
+			newEmptyDataFrame(), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{
+				df: df,
+			}
+			got, err := idx.SubsetLevels(tt.args.levelPositions)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Index.Subset() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Index.Subset() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 // func TestIndex_Filter(t *testing.T) {
 // 	s := MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []string{"bamboo", "leaves", "taboo"}})

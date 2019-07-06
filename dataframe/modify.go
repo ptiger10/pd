@@ -20,6 +20,39 @@ func (df *DataFrame) Rename(name string) {
 	df.name = name
 }
 
+// renames a column in place
+func (df *DataFrame) renameCol(col int, multiName string) error {
+	names := strings.Split(multiName, values.GetMultiColNameSeparator())
+	if len(names) > df.ColLevels() {
+		return fmt.Errorf("df.renameCol(): len(multiName) cannot exceed number of column levels (%d > %d)",
+			len(names), df.ColLevels())
+	}
+	for j := 0; j < df.ColLevels(); j++ {
+		if j < len(names) {
+			df.cols.Levels[j].Labels[col] = names[j]
+			df.cols.Levels[j].IsDefault = false
+			df.cols.Levels[j].Refresh()
+		}
+	}
+	return nil
+}
+
+// RenameCols renames the columns at the specified labels.
+func (df *DataFrame) RenameCols(columns map[string]string) {
+	for label, name := range columns {
+		colLocs := df.SelectCols([]string{label}, 0)
+		for _, loc := range colLocs {
+			err := df.renameCol(loc, name)
+			if err != nil {
+				if options.GetLogWarnings() {
+					log.Printf("RenameCols(): %v", err)
+				}
+			}
+		}
+	}
+	return
+}
+
 // replace one DataFrame with another in place.
 func (df *DataFrame) replace(df2 *DataFrame) {
 	df.name = df2.name
@@ -438,6 +471,7 @@ func (ip InPlace) SetIndex(col int) error {
 	return nil
 }
 
+// If level is the only level, a default int index is inserted.
 func (ip InPlace) resetIndex(level int) {
 	container := values.Container{Values: ip.df.index.Levels[level].Labels, DataType: ip.df.index.Levels[level].DataType}
 	ip.df.vals = append(ip.df.vals, container)
@@ -457,9 +491,6 @@ func (ip InPlace) resetIndex(level int) {
 func (ip InPlace) ResetIndex(level int) error {
 	if err := ip.df.ensureIndexLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("DataFrame.ResetIndex(): %v", err)
-	}
-	if ip.df.IndexLevels() == 1 {
-		ip.df.index.Levels = append(ip.df.index.Levels, index.NewDefaultLevel(ip.Len(), ""))
 	}
 	ip.resetIndex(level)
 	return nil

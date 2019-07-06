@@ -123,6 +123,18 @@ func (df *DataFrame) Col(label string) *series.Series {
 	return df.hydrateSeries(colPos[0])
 }
 
+// ColAt returns the Series at the specified column.
+func (df *DataFrame) ColAt(col int) *series.Series {
+	if err := df.ensureColumnPositions([]int{col}); err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("df.ColAt(): %v", err)
+		}
+		s, _ := series.New(nil)
+		return s
+	}
+	return df.hydrateSeries(col)
+}
+
 // subsetRows subsets a DataFrame to include only index items and values at the row positions supplied and modifies the DataFrame in place.
 func (ip InPlace) subsetRows(positions []int) {
 	for m := 0; m < ip.df.NumCols(); m++ {

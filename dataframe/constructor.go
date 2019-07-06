@@ -19,7 +19,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	tmp := Config{}
 	var err error
 
-	if data == nil {
+	if len(data) == 0 {
 		return newEmptyDataFrame(), nil
 	}
 	// Handling config
@@ -36,6 +36,13 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 			Col: tmp.Col, ColName: tmp.ColName,
 			MultiCol: tmp.MultiCol, MultiColNames: tmp.MultiColNames,
 		}
+	}
+
+	// Handling map
+	isSplit, extractedData, extractedColumns := values.MapSplitter(data)
+	if isSplit {
+		data = extractedData
+		configuration.Col = extractedColumns
 	}
 
 	// Handling values

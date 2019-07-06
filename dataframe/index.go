@@ -24,6 +24,18 @@ func (idx Index) Values() [][]interface{} {
 	return ret
 }
 
+// return an index stub of unique rows, for use in stack()
+func (idx Index) unique() index.Index {
+	df := idx.df.Copy()
+	g := df.GroupByIndex()
+	var rows []int
+	for _, pos := range g.groups {
+		rows = append(rows, pos.Positions[0])
+	}
+	df.index.Subset(rows)
+	return df.index
+}
+
 // Sort sorts the index by index level 0 and returns a new index.
 func (idx Index) Sort(asc bool) *DataFrame {
 	idx = idx.df.Copy().Index
@@ -307,62 +319,14 @@ func (idx Index) Filter(level int, cmp func(interface{}) bool) []int {
 	return include
 }
 
-// LevelToFloat64 converts the labels at a specified index level to float64 and returns a new DataFrame.
-func (idx Index) LevelToFloat64(level int) (*DataFrame, error) {
-	if level >= idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
+// Convert converts an index level to datatype in place.
+func (idx Index) Convert(dataType string, level int) error {
+	if err := idx.df.ensureIndexLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("df.Index.Convert(): %v", err)
 	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToFloat64()
-	return s, nil
-}
-
-// LevelToInt64 converts the labels at a specified index level to int64 and returns a new DataFrame.
-func (idx Index) LevelToInt64(level int) (*DataFrame, error) {
-	if level > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
+	err := idx.df.index.Levels[level].Convert(options.DT(dataType))
+	if err != nil {
+		return fmt.Errorf("df.Index.Convert(): %v", err)
 	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInt64()
-	return s, nil
-}
-
-// LevelToString converts the labels at a specified index level to string and returns a new DataFrame.
-func (idx Index) LevelToString(level int) (*DataFrame, error) {
-	if level > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToString()
-	return s, nil
-}
-
-// LevelToBool converts the labels at a specified index level to bool and returns a new DataFrame.
-func (idx Index) LevelToBool(level int) (*DataFrame, error) {
-	if level > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToBool()
-	return s, nil
-}
-
-// LevelToDateTime converts the labels at a specified index level to DateTime and returns a new DataFrame.
-func (idx Index) LevelToDateTime(level int) (*DataFrame, error) {
-	if level > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToDateTime()
-	return s, nil
-}
-
-// LevelToInterface converts the labels at a specified index level to interface and returns a new DataFrame.
-func (idx Index) LevelToInterface(level int) (*DataFrame, error) {
-	if level > idx.NumLevels() {
-		return newEmptyDataFrame(), fmt.Errorf("invalid index level: %d (len: %v)", level, idx.NumLevels())
-	}
-	s := idx.df.Copy()
-	s.index.Levels[level] = s.index.Levels[level].ToInterface()
-	return s, nil
+	return nil
 }
