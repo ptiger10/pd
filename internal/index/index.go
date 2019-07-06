@@ -66,16 +66,16 @@ func NewDefault(length int) Index {
 // NewFromConfig returns a new Index with default length n using a config struct.
 func NewFromConfig(config Config, n int) (Index, error) {
 	// both nil: return default index
-	if config.Index == nil && config.MultiIndex == nil {
+	if config.Index == nil && len(config.MultiIndex) == 0 {
 		lvl := NewDefaultLevel(n, config.IndexName)
 		return New(lvl), nil
 	}
 	// both not nil: return error
-	if config.Index != nil && config.MultiIndex != nil {
+	if config.Index != nil && len(config.MultiIndex) != 0 {
 		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): supplying both config.Index and config.MultiIndex is ambiguous; supply one or the other")
 	}
 	// multi index
-	if config.MultiIndex != nil {
+	if len(config.MultiIndex) != 0 {
 		// name misalignment
 		if config.MultiIndexNames != nil && len(config.MultiIndexNames) != len(config.MultiIndex) {
 			return Index{}, fmt.Errorf(
@@ -376,13 +376,13 @@ func (idx *Index) SetRows(rowPositions []int, level int, val interface{}) error 
 // dropLevel drops an index level.
 func (idx *Index) dropLevel(level int) {
 	if idx.NumLevels() == 1 {
-		return
+		idx.Levels = append(idx.Levels, NewDefaultLevel(idx.Len(), ""))
 	}
 	idx.Levels = append(idx.Levels[:level], idx.Levels[level+1:]...)
 	return
 }
 
-// DropLevel drops an index level and modifies the Index in place. If there is only one level, does nothing.
+// DropLevel drops an index level and modifies the Index in place. If there is only one level, replaces with default index.
 func (idx *Index) DropLevel(level int) error {
 	if err := idx.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("index.DropLevel(): %v", err)
@@ -392,7 +392,7 @@ func (idx *Index) DropLevel(level int) error {
 	return nil
 }
 
-// DropLevels drops the specified index levels and modifies the Index in place. If there is only one level, does nothing.
+// DropLevels drops the specified index levels and modifies the Index in place. If there is only one level, replaces with default index.
 func (idx *Index) DropLevels(levelPositions []int) error {
 	if err := idx.ensureLevelPositions(levelPositions); err != nil {
 		return fmt.Errorf("index.DropLevels(): %v", err)
@@ -468,78 +468,72 @@ func (lvl *Level) Refresh() {
 
 // [END index level]
 
-// [START conversion]
+// [START inplace conversion]
 
-// Convert an index level from one kind to another, then refresh the LabelMap
-func (lvl Level) Convert(kind options.DataType) (Level, error) {
-	var convertedLvl Level
+// Convert an index level from one kind to another in place, then refreshes the LabelMap
+func (lvl *Level) Convert(kind options.DataType) error {
 	switch kind {
 	case options.None:
-		return Level{}, fmt.Errorf("unable to convert index level: must supply a valid Kind")
+		return fmt.Errorf("unable to convert index level: must supply a valid Kind")
 	case options.Float64:
-		convertedLvl = lvl.ToFloat64()
+		lvl.ToFloat64()
 	case options.Int64:
-		convertedLvl = lvl.ToInt64()
+		lvl.ToInt64()
 	case options.String:
-		convertedLvl = lvl.ToString()
+		lvl.ToString()
 	case options.Bool:
-		convertedLvl = lvl.ToBool()
+		lvl.ToBool()
 	case options.DateTime:
-		convertedLvl = lvl.ToDateTime()
+		lvl.ToDateTime()
 	case options.Interface:
-		convertedLvl = lvl.ToInterface()
+		lvl.ToInterface()
 	default:
-		return Level{}, fmt.Errorf("unable to convert level: kind not supported: %v", kind)
+		return fmt.Errorf("unable to convert level: kind not supported: %v", kind)
 	}
-	return convertedLvl, nil
+	return nil
 }
 
 // ToFloat64 converts an index level to Float
-func (lvl Level) ToFloat64() Level {
+func (lvl *Level) ToFloat64() {
 	lvl.Labels = lvl.Labels.ToFloat64()
 	lvl.DataType = options.Float64
 	lvl.Refresh()
-	return lvl
+	return
 }
 
 // ToInt64 converts an index level to Int
-func (lvl Level) ToInt64() Level {
+func (lvl *Level) ToInt64() {
 	lvl.Labels = lvl.Labels.ToInt64()
 	lvl.DataType = options.Int64
 	lvl.Refresh()
-	return lvl
 }
 
 // ToString converts an index level to String
-func (lvl Level) ToString() Level {
+func (lvl *Level) ToString() {
 	lvl.Labels = lvl.Labels.ToString()
 	lvl.DataType = options.String
 	lvl.Refresh()
-	return lvl
 }
 
 // ToBool converts an index level to Bool
-func (lvl Level) ToBool() Level {
+func (lvl *Level) ToBool() {
 	lvl.Labels = lvl.Labels.ToBool()
 	lvl.DataType = options.Bool
 	lvl.Refresh()
-	return lvl
 }
 
 // ToDateTime converts an index level to DateTime
-func (lvl Level) ToDateTime() Level {
+func (lvl *Level) ToDateTime() {
 	lvl.Labels = lvl.Labels.ToDateTime()
 	lvl.DataType = options.DateTime
 	lvl.Refresh()
-	return lvl
 }
 
 // ToInterface converts an index level to Interface
-func (lvl Level) ToInterface() Level {
+func (lvl *Level) ToInterface() {
 	lvl.Labels = lvl.Labels.ToInterface()
 	lvl.DataType = options.Interface
 	lvl.Refresh()
-	return lvl
 }
 
 // [END conversion]

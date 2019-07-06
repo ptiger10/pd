@@ -157,6 +157,21 @@ func SliceFactory(data interface{}) (Container, error) {
 	return ret, nil
 }
 
+// MapSplitter splits map[string]interface{} into []interface (for use in dataframe constructor) and []string (for use in Column config)
+func MapSplitter(data []interface{}) (isSplit bool, extractedData []interface{}, extractedColumns []string) {
+	if len(data) == 0 {
+		return
+	}
+	if reflect.TypeOf(data[0]).String() == "map[string]interface {}" {
+		for k, v := range data[0].(map[string]interface{}) {
+			extractedColumns = append(extractedColumns, k)
+			extractedData = append(extractedData, v)
+		}
+		isSplit = true
+	}
+	return
+}
+
 // [START interface converters]
 
 // sliceFloatToSliceFloat64 converts known []float interface{} -> []float64

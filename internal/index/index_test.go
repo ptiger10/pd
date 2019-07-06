@@ -26,7 +26,6 @@ func TestIndexLevel_Nil(t *testing.T) {
 	_ = lvl.Copy()
 	_ = lvl.Len()
 	_ = lvl.maxWidth()
-	_, _ = lvl.Convert(options.None)
 	lvl.Refresh()
 }
 
@@ -549,7 +548,7 @@ func TestDropLevel(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"one level: no change", single, args{0}, want{single, false}},
+		{"one level: default index", single, args{0}, want{NewDefault(3), false}},
 		{"two levels", multi, args{0}, want{single, false}},
 		{"fail: invalid", single, args{10}, want{single, true}},
 	}
@@ -584,7 +583,7 @@ func TestDropLevels(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{"one level: no change", single, args{[]int{0}}, want{single, false}},
+		{"one level: default index", single, args{[]int{0}}, want{NewDefault(3), false}},
 		{"two levels", multi, args{[]int{0}}, want{single, false}},
 		{"fail: invalid", single, args{[]int{10}}, want{single, true}},
 		{"fail: partial invalid", single, args{[]int{0, 10}}, want{single, true}},
@@ -730,13 +729,13 @@ func TestConvertIndex_int(t *testing.T) {
 		{MustNewLevel([]interface{}{1, "2", true}, ""), options.DateTime},
 		{MustNewLevel([]interface{}{1, "2", true}, ""), options.Interface},
 	}
-	for _, test := range tests {
-		lvl, err := test.lvl.Convert(test.convertTo)
+	for _, tt := range tests {
+		err := tt.lvl.Convert(tt.convertTo)
 		if err != nil {
 			t.Error(err)
 		}
-		if lvl.DataType != test.convertTo {
-			t.Errorf("Attempted conversion to %v returned %v", test.convertTo, lvl.DataType)
+		if tt.lvl.DataType != tt.convertTo {
+			t.Errorf("index.Convert() = %v, want %v", tt.lvl, tt.convertTo)
 		}
 	}
 }
@@ -751,8 +750,8 @@ func TestConvert_Numeric_Datetime(t *testing.T) {
 		{MustNewLevel([]float64{float64(n)}, "")},
 	}
 	for _, test := range tests {
-		lvl, _ := test.lvl.Convert(options.DateTime)
-		elem := lvl.Labels.Element(0)
+		_ = test.lvl.Convert(options.DateTime)
+		elem := test.lvl.Labels.Element(0)
 		gotVal := elem.Value.(time.Time)
 		if gotVal != wantVal {
 			t.Errorf("Error converting %v to datetime: returned %v, want %v", test.lvl, gotVal, wantVal)
@@ -769,7 +768,7 @@ func TestConvert_Unsupported(t *testing.T) {
 	}
 	for _, test := range tests {
 		lvl := MustNewLevel([]float64{1, 2, 3}, "")
-		_, err := lvl.Convert(test.datatype)
+		err := lvl.Convert(test.datatype)
 		if err == nil {
 			t.Errorf("Returned nil error, expected error due to unsupported type %v", test.datatype)
 		}

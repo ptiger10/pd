@@ -32,23 +32,23 @@ func NewColumnsFromConfig(config Config, n int) (Columns, error) {
 	var columns Columns
 
 	// both nil: return default index
-	if config.Col == nil && config.MultiCol == nil {
+	if len(config.Col) == 0 && len(config.MultiCol) == 0 {
 		cols := NewDefaultColLevel(n, config.ColName)
 		return NewColumns(cols), nil
 
 	}
 	// both not nil: return error
-	if config.Col != nil && config.MultiCol != nil {
+	if len(config.Col) != 0 && len(config.MultiCol) != 0 {
 		return Columns{}, fmt.Errorf("columnFactory(): supplying both config.Col and config.MultiCol is ambiguous; supply one or the other")
 	}
 	// single-level Columns
-	if config.Col != nil {
+	if len(config.Col) != 0 {
 		newLevel := NewColLevel(config.Col, config.ColName)
 		columns = NewColumns(newLevel)
 	}
 
 	// multi-level Columns
-	if config.MultiCol != nil {
+	if len(config.MultiCol) != 0 {
 		if config.MultiColNames != nil && len(config.MultiColNames) != len(config.MultiCol) {
 			return Columns{}, fmt.Errorf(
 				"columnFactory(): if MultiColNames is not nil, it must must have same length as MultiCol: %d != %d",

@@ -259,6 +259,43 @@ func TestSliceFactory(t *testing.T) {
 	}
 }
 
+func TestMapSplitter(t *testing.T) {
+	type args struct {
+		data []interface{}
+	}
+	type want struct {
+		isSplit          bool
+		extractedData    []interface{}
+		extractedColumns []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "nil", args: args{data: nil},
+			want: want{isSplit: false, extractedData: nil, extractedColumns: nil}},
+		{"non-splitting map", args{[]interface{}{map[string]bool{"foo": true}}},
+			want{isSplit: false, extractedData: nil, extractedColumns: nil}},
+		{"pass", args{[]interface{}{map[string]interface{}{"foo": true}}},
+			want{isSplit: true, extractedData: []interface{}{true}, extractedColumns: []string{"foo"}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			isSplit, extractedData, extractedColumns := MapSplitter(tt.args.data)
+			if isSplit != tt.want.isSplit {
+				t.Errorf("MapSplitter().isSplit = %v, want %v", isSplit, tt.want.isSplit)
+			}
+			if !reflect.DeepEqual(extractedData, tt.want.extractedData) {
+				t.Errorf("MapSplitter().extractedData = %v, want %v", extractedData, tt.want.extractedData)
+			}
+			if !reflect.DeepEqual(extractedColumns, tt.want.extractedColumns) {
+				t.Errorf("MapSplitter().extractedColumns = %v, want %v", extractedColumns, tt.want.extractedColumns)
+			}
+		})
+	}
+}
+
 func TestSliceConstructor_NullFloat(t *testing.T) {
 	vals, err := SliceFactory([]float64{math.NaN()})
 	if err != nil {
@@ -286,6 +323,14 @@ func TestSliceConstructor_Unsupported(t *testing.T) {
 	_, err := SliceFactory(data)
 	if err == nil {
 		t.Errorf("Returned nil error, expected error due to unsupported type %T", data)
+	}
+}
+
+func TestMakeNullRange(t *testing.T) {
+	got := MakeNullRange(3)
+	want := []interface{}{"", "", ""}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("MakeNullRange(): got %v, want %v", got, want)
 	}
 }
 
