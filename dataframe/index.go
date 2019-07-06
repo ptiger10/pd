@@ -37,14 +37,13 @@ func (idx Index) unique() index.Index {
 }
 
 // Sort sorts the index by index level 0 and returns a new index.
-func (idx Index) Sort(asc bool) *DataFrame {
-	idx = idx.df.Copy().Index
+func (idx Index) Sort(asc bool) {
 	if asc {
 		sort.Stable(idx)
 	} else {
 		sort.Stable(sort.Reverse(idx))
 	}
-	return idx.df
+	return
 }
 
 // Swap swaps two labels at index level 0 and modifies the index in place. Required by Sort interface.

@@ -49,28 +49,28 @@ func TestIndex_Swap(t *testing.T) {
 	}
 }
 
-// func TestIndex_Sort(t *testing.T) {
-// 	var tests = []struct {
-// 		name  string
-// 		input *DataFrame
-// 		asc   bool
-// 		want  *DataFrame
-// 	}{
-// 		{"float", MustNew([]interface{}{[]float64{1, 3, 5}}, Config{Index: []int{2, 0, 1}}), true,
-// 			MustNew([]interface{}{[]float64{3, 5, 1}}, Config{Index: []int{0, 1, 2}})},
-// 		{"float reverse", MustNew([]interface{}{[]float64{1, 3, 5}}, Config{Index: []int{2, 0, 1}}), false,
-// 			MustNew([]interface{}{[]float64{1, 5, 3}}, Config{Index: []int{2, 1, 0}})},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			idx := Index{df: tt.input}
-// 			got := idx.Sort(tt.asc)
-// 			if !Equal(got, tt.want) {
-// 				t.Errorf("Index.Sort() got %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestIndex_Sort(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input *DataFrame
+		asc   bool
+		want  *DataFrame
+	}{
+		{"float", MustNew([]interface{}{[]float64{1, 3, 5}}, Config{Index: []int{2, 0, 1}}), true,
+			MustNew([]interface{}{[]float64{3, 5, 1}}, Config{Index: []int{0, 1, 2}})},
+		{"float reverse", MustNew([]interface{}{[]float64{1, 3, 5}}, Config{Index: []int{2, 0, 1}}), false,
+			MustNew([]interface{}{[]float64{1, 5, 3}}, Config{Index: []int{2, 1, 0}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{df: tt.input}
+			idx.Sort(tt.asc)
+			if !Equal(idx.df, tt.want) {
+				t.Errorf("Index.Sort() got %v, want %v", idx.df, tt.want)
+			}
+		})
+	}
+}
 
 func TestIndex_Describe(t *testing.T) {
 	singleDefault := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
