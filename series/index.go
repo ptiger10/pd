@@ -107,71 +107,66 @@ func (idx Index) null(level int) []int {
 	return ret
 }
 
-// DropNull drops null index values at the index level specified and returns a new Series.
-func (idx Index) DropNull(level int) (*Series, error) {
+// DropNull drops null index values at the index level specified and modifies the Series in place.
+func (idx Index) DropNull(level int) error {
 	if level >= idx.NumLevels() {
-		return newEmptySeries(), fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+		return fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
 	}
-	s := idx.s.Copy()
-	s.InPlace.dropMany(idx.null(level))
-	return s, nil
+	idx.s.InPlace.dropMany(idx.null(level))
+	return nil
 }
 
-// SwapLevels swaps two levels in the index and returns a new Series.
-func (idx Index) SwapLevels(i, j int) (*Series, error) {
-	s := idx.s.Copy()
-	if err := s.index.SwapLevels(i, j); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
+// SwapLevels swaps two levels in the index and modifies the Series in place.
+func (idx Index) SwapLevels(i, j int) error {
+	if err := idx.s.index.SwapLevels(i, j); err != nil {
+		return fmt.Errorf("s.Index.SwapLevels(): invalid i: %v", err)
 	}
-	return s, nil
+	return nil
 }
 
-// InsertLevel inserts a level into the index and returns a new Series.
-func (idx Index) InsertLevel(pos int, values interface{}, name string) (*Series, error) {
-	s := idx.s.Copy()
-	if err := s.index.InsertLevel(pos, values, name); err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.InsertLevel(): invalid i: %v", err)
+// InsertLevel inserts a level into the index and modifies the Series in place.
+func (idx Index) InsertLevel(pos int, values interface{}, name string) error {
+	if err := idx.s.index.InsertLevel(pos, values, name); err != nil {
+		return fmt.Errorf("s.Index.InsertLevel(): invalid i: %v", err)
 	}
-	return s, nil
+	return nil
 }
 
-// AppendLevel adds a new index level to the end of the current index  and returns a new Series.
-func (idx Index) AppendLevel(values interface{}, name string) (*Series, error) {
-	s, err := idx.InsertLevel(idx.Len(), values, name)
+// AppendLevel adds a new index level to the end of the current index  and modifies the Series in place.
+func (idx Index) AppendLevel(values interface{}, name string) error {
+	err := idx.s.index.InsertLevel(idx.Len(), values, name)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.AppendLevel(): %v", err)
+		return fmt.Errorf("s.Index.AppendLevel(): %v", err)
 	}
-	return s, err
+	return nil
 }
 
-// SubsetLevels returns a new Series with only the specified index levels.
-func (idx Index) SubsetLevels(levelPositions []int) (*Series, error) {
+// SubsetLevels modifies the Series in place with only the specified index levels.
+func (idx Index) SubsetLevels(levelPositions []int) error {
 	err := idx.s.ensureLevelPositions(levelPositions)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.SubsetLevels(): %v", err)
+		return fmt.Errorf("s.Index.SubsetLevels(): %v", err)
 	}
-	s := idx.s.Copy()
 	levels := make([]index.Level, 0)
 	for _, position := range levelPositions {
-		levels = append(levels, s.index.Levels[position])
+		levels = append(levels, idx.s.index.Levels[position])
 	}
-	s.index.Levels = levels
-	s.index.Refresh()
-	return s, nil
+	idx.s.index.Levels = levels
+	idx.s.index.Refresh()
+	return nil
 }
 
-// Set sets the label at the specified index row and level to val and returns a new Series.
+// Set sets the label at the specified index row and level to val and modifies the Series in place.
 // First converts val to be the same type as the index level.
-func (idx Index) Set(row int, level int, val interface{}) (*Series, error) {
-	s := idx.s.Copy()
-	err := s.index.Set(row, level, val)
+func (idx Index) Set(row int, level int, val interface{}) error {
+	err := idx.s.index.Set(row, level, val)
 	if err != nil {
-		return newEmptySeries(), fmt.Errorf("s.Index.Set(): %v", err)
+		return fmt.Errorf("s.Index.Set(): %v", err)
 	}
-	return s, nil
+	return nil
 }
 
-// SetRows sets the label at the specified index rows and level to val and returns a new Series.
+// SetRows sets the label at the specified index rows and level to val and modifies the Series in place.
 // First converts val to be the same type as the index level.
 func (idx Index) SetRows(rows []int, level int, val interface{}) error {
 	err := idx.s.index.SetRows(rows, level, val)
@@ -181,7 +176,7 @@ func (idx Index) SetRows(rows []int, level int, val interface{}) error {
 	return nil
 }
 
-// DropLevel drops the specified index level and returns a new Series.
+// DropLevel drops the specified index level and modifies the Series in place.
 func (idx Index) DropLevel(level int) error {
 	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("s.Index.DropLevels(): %v", err)
@@ -190,7 +185,7 @@ func (idx Index) DropLevel(level int) error {
 	return nil
 }
 
-// DropLevels drops the specified index levels and returns a new Series.
+// DropLevels drops the specified index levels and modifies the Series in place.
 func (idx Index) DropLevels(levelPositions []int) error {
 	if err := idx.s.ensureLevelPositions(levelPositions); err != nil {
 		return fmt.Errorf("s.Index.DropLevels(): %v", err)

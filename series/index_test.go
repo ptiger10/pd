@@ -302,19 +302,19 @@ func TestIndex_DropNull(t *testing.T) {
 			want: MustNew("foo", Config{Index: "baz"}), wantErr: false},
 		{name: "multi", input: MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"qux", "quux"}, []string{"baz", ""}}}), args: args{1},
 			want: MustNew("foo", Config{MultiIndex: []interface{}{"qux", "baz"}}), wantErr: false},
-		{name: "fail: invalid", input: MustNew([]string{"foo", "bar"}, Config{Index: []string{"baz", ""}}), args: args{10},
-			want: newEmptySeries(), wantErr: true},
+		{name: "fail: invalid", input: MustNew("foo"), args: args{10},
+			want: MustNew("foo"), wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.input,
+				s: tt.input.Copy(),
 			}
-			got, err := idx.DropNull(tt.args.level)
+			err := idx.DropNull(tt.args.level)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.DropNull() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if !Equal(got, tt.want) {
+			if !Equal(idx.s, tt.want) {
 				t.Errorf("Index.DropNull(): got %v, want %v", idx.s, tt.want)
 			}
 		})
@@ -344,22 +344,22 @@ func TestIndex_SwapLevels(t *testing.T) {
 			MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"quux", "quuz"}, []string{"baz", "qux"}}}),
 			false},
 		{"fail: i", fields{s}, args{10, 1},
-			newEmptySeries(), true},
+			s, true},
 		{"fail: j", fields{s}, args{0, 10},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.SwapLevels(tt.args.i, tt.args.j)
+			err := idx.SwapLevels(tt.args.i, tt.args.j)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.SwapLevels() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.SwapLevels() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.SwapLevels() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -393,24 +393,24 @@ func TestIndex_InsertLevel(t *testing.T) {
 			MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}, []string{"corge", "fred"}}}),
 			false},
 		{"fail: invalid position", fields{s}, args{10, []string{"corge", "fred"}, ""},
-			newEmptySeries(), true},
+			s, true},
 		{"fail: unsupported value", fields{s}, args{2, []complex64{1, 2}, ""},
-			newEmptySeries(), true},
+			s, true},
 		{"fail: misaligned length", fields{s}, args{2, "corge", ""},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.InsertLevel(tt.args.pos, tt.args.values, tt.args.name)
+			err := idx.InsertLevel(tt.args.pos, tt.args.values, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.InsertLevel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.InsertLevel() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.InsertLevel() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -438,22 +438,22 @@ func TestIndex_AppendLevel(t *testing.T) {
 				MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}, []string{"corge", "fred"}}}),
 			wantErr: false},
 		{"fail: unsupported value", fields{s}, args{[]complex64{1, 2}, ""},
-			newEmptySeries(), true},
+			s, true},
 		{"fail: misaligned length", fields{s}, args{"corge", ""},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.AppendLevel(tt.args.values, tt.args.name)
+			err := idx.AppendLevel(tt.args.values, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.AppendLevel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.AppendLevel() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.AppendLevel() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -479,20 +479,20 @@ func TestIndex_Set(t *testing.T) {
 			want:    MustNew("foo", Config{Index: 100}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew("foo")}, args{1, 0, complex64(1)},
-			newEmptySeries(), true},
+			MustNew("foo"), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.Set(tt.args.row, tt.args.level, tt.args.val)
+			err := idx.Set(tt.args.row, tt.args.level, tt.args.val)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.Set() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.Set() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}
@@ -518,12 +518,12 @@ func TestIndex_SetRows(t *testing.T) {
 			want:    MustNew([]string{"foo", "bar"}, Config{Index: []int64{100, 100}}),
 			wantErr: false},
 		{"fail: unsupported", fields{MustNew("foo")}, args{[]int{0}, 0, complex64(1)},
-			newEmptySeries(), true},
+			MustNew("foo"), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
 			err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
 			if (err != nil) != tt.wantErr {
@@ -556,12 +556,12 @@ func TestIndex_DropLevel(t *testing.T) {
 			want:    MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"quux", "quuz"}}}),
 			wantErr: false},
 		{"fail: invalid level", fields{s}, args{10},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
 			err := idx.DropLevel(tt.args.level)
 			if (err != nil) != tt.wantErr {
@@ -708,22 +708,22 @@ func TestIndex_SubsetLevels(t *testing.T) {
 		{name: "multiple levels", fields: fields{s}, args: args{[]int{0, 1}},
 			want: MustNew("foo", Config{MultiIndex: []interface{}{"bar", "baz"}}), wantErr: false},
 		{"fail: invalid level", fields{s}, args{[]int{10}},
-			newEmptySeries(), true},
+			s, true},
 		{"fail: no levels", fields{s}, args{[]int{}},
-			newEmptySeries(), true},
+			s, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
-				s: tt.fields.s,
+				s: tt.fields.s.Copy(),
 			}
-			got, err := idx.SubsetLevels(tt.args.levelPositions)
+			err := idx.SubsetLevels(tt.args.levelPositions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.Subset() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Index.Subset() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(idx.s, tt.want) {
+				t.Errorf("Index.Subset() = %v, want %v", idx.s, tt.want)
 			}
 		})
 	}

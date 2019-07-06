@@ -144,7 +144,8 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 	groups := make(map[string]*group)
 	if len(levelPositions) != 0 {
 		var err error
-		s, err = s.Index.SubsetLevels(levelPositions)
+		s = s.Copy()
+		err = s.Index.SubsetLevels(levelPositions)
 		if err != nil {
 			if options.GetLogWarnings() {
 				log.Printf("s.GroupByIndex() %v\n", err)

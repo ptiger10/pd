@@ -88,7 +88,7 @@ func (s *Series) XS(rowPositions []int, levelPositions []int) (*Series, error) {
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.XS() rows: %v", err)
 	}
-	s, err = s.Index.SubsetLevels(levelPositions)
+	err = s.Index.SubsetLevels(levelPositions)
 	if err != nil {
 		return newEmptySeries(), fmt.Errorf("s.XS() index levels: %v", err)
 	}
