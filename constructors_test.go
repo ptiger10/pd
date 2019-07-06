@@ -102,54 +102,54 @@ func TestReadCSV(t *testing.T) {
 		args args
 		want want
 	}{
-		// {name: "no config", args: args{filepath: "csv_test.csv",
-		// 	options: nil},
-		// 	want: want{
-		// 		df: dataframe.MustNew([]interface{}{
-		// 			[]string{"", "foo", "bar"},
-		// 			[]string{"A", "1", "2"},
-		// 		}),
-		// 		err: false}},
-		// {"drop 1 row", args{"csv_test.csv",
-		// 	[]ReadOptions{ReadOptions{DropRows: 1}}},
-		// 	want{
-		// 		dataframe.MustNew([]interface{}{
-		// 			[]string{"foo", "bar"},
-		// 			[]string{"1", "2"},
-		// 		}),
-		// 		false}},
-		// {"1 header row", args{"csv_test.csv",
-		// 	[]ReadOptions{ReadOptions{NumHeaderRows: 1}}},
-		// 	want{
-		// 		dataframe.MustNew([]interface{}{
-		// 			[]string{"foo", "bar"},
-		// 			[]string{"1", "2"},
-		// 		}, dataframe.Config{Col: []string{"", "A"}}),
-		// 		false}},
-		// {"1 index column", args{"csv_test.csv",
-		// 	[]ReadOptions{ReadOptions{NumIndexColumns: 1}}},
-		// 	want{
-		// 		dataframe.MustNew([]interface{}{
-		// 			[]string{"A", "1", "2"},
-		// 		}, dataframe.Config{Index: []string{"NaN", "foo", "bar"}}),
-		// 		false}},
-		// {"1 header row, 1 index column", args{"csv_test.csv",
-		// 	[]ReadOptions{ReadOptions{NumIndexColumns: 1, NumHeaderRows: 1}}},
-		// 	want{
-		// 		dataframe.MustNew([]interface{}{
-		// 			[]string{"1", "2"},
-		// 		}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
-		// 		false}},
-		// {"1 header row, 1 index column, datatype conversion", args{"csv_test.csv",
-		// 	[]ReadOptions{ReadOptions{
-		// 		NumIndexColumns: 1,
-		// 		NumHeaderRows:   1,
-		// 		DataTypes:       map[string]string{"A": "float"}}}},
-		// 	want{
-		// 		dataframe.MustNew([]interface{}{
-		// 			[]float64{1, 2},
-		// 		}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
-		// 		false}},
+		{name: "no config", args: args{filepath: "csv_test.csv",
+			options: nil},
+			want: want{
+				df: dataframe.MustNew([]interface{}{
+					[]string{"", "foo", "bar"},
+					[]string{"A", "1", "2"},
+				}),
+				err: false}},
+		{"drop 1 row", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{DropRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"foo", "bar"},
+					[]string{"1", "2"},
+				}),
+				false}},
+		{"1 header row", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{NumHeaderRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"foo", "bar"},
+					[]string{"1", "2"},
+				}, dataframe.Config{Col: []string{"", "A"}}),
+				false}},
+		{"1 index column", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{NumIndexColumns: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"A", "1", "2"},
+				}, dataframe.Config{Index: []string{"NaN", "foo", "bar"}}),
+				false}},
+		{"1 header row, 1 index column", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{NumIndexColumns: 1, NumHeaderRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"1", "2"},
+				}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
+				false}},
+		{"1 header row, 1 index column, datatype conversion", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{
+				NumIndexColumns: 1,
+				NumHeaderRows:   1,
+				DataTypes:       map[string]string{"A": "float"}}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]float64{1, 2},
+				}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
+				false}},
 		{"1 header row, 1 index column, rename column", args{"csv_test.csv",
 			[]ReadOptions{ReadOptions{
 				NumIndexColumns: 1,
@@ -160,6 +160,17 @@ func TestReadCSV(t *testing.T) {
 					[]string{"1", "2"},
 				}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"B"}}),
 				false}},
+		{"1 header row, 1 index column, convert index type", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{
+				NumIndexColumns: 1,
+				NumHeaderRows:   1,
+				IndexDataTypes:  map[int]string{0: "bool"}}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"1", "2"},
+				}, dataframe.Config{Index: []bool{true, true}, Col: []string{"A"}}),
+				false}},
+		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
