@@ -15,6 +15,7 @@ type DataFrame struct {
 	name    string
 	vals    []values.Container
 	cols    index.Columns
+	Columns Columns
 	index   index.Index
 	Index   Index
 	InPlace InPlace
@@ -27,13 +28,23 @@ func (df *DataFrame) String() string {
 	return df.print()
 }
 
-// Index contains index selection and conversion
+// Index contains index level data.
 type Index struct {
 	df *DataFrame
 }
 
 func (idx Index) String() string {
-	printer := fmt.Sprintf("{DataFrame Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
+	printer := fmt.Sprintf("{DataFrame Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.df.IndexLevels())
+	return printer
+}
+
+// Columns contains column level data.
+type Columns struct {
+	df *DataFrame
+}
+
+func (col Columns) String() string {
+	printer := fmt.Sprintf("{DataFrame Columns | NumCols: %d, NumLevels: %d}\n", col.df.NumCols(), col.df.ColLevels())
 	return printer
 }
 

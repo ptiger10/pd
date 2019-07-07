@@ -650,46 +650,46 @@ func TestIndex_SubsetLevels(t *testing.T) {
 	}
 }
 
-// func TestIndex_Filter(t *testing.T) {
-// 	s := MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []string{"bamboo", "leaves", "taboo"}})
-// 	fn := func(val interface{}) bool {
-// 		v, ok := val.(string)
-// 		if !ok {
-// 			return false
-// 		}
-// 		if strings.HasSuffix(v, "boo") {
-// 			return true
-// 		}
-// 		return false
-// 	}
-// 	type args struct {
-// 		level int
-// 		fn    func(interface{}) bool
-// 	}
-// 	tests := []struct {
-// 		name  string
-// 		input *DataFrame
-// 		args  args
-// 		want  []int
-// 	}{
-// 		{name: "pass", input: s, args: args{level: 0, fn: fn}, want: []int{0, 2}},
-// 		{"fail", s, args{10, fn}, []int{}},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			var buf bytes.Buffer
-// 			log.SetOutput(&buf)
-// 			defer log.SetOutput(os.Stderr)
+func TestIndex_Filter(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []string{"bamboo", "leaves", "taboo"}})
+	fn := func(val interface{}) bool {
+		v, ok := val.(string)
+		if !ok {
+			return false
+		}
+		if strings.HasSuffix(v, "boo") {
+			return true
+		}
+		return false
+	}
+	type args struct {
+		level int
+		fn    func(interface{}) bool
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  []int
+	}{
+		{name: "pass", input: df, args: args{level: 0, fn: fn}, want: []int{0, 2}},
+		{"fail", df, args{10, fn}, []int{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
 
-// 			got := s.Index.Filter(tt.args.level, tt.args.fn)
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("s.Filter() got %v, want %v", got, tt.want)
-// 			}
-// 			if strings.Contains(tt.name, "fail") {
-// 				if buf.String() == "" {
-// 					t.Errorf("s.Filter() returned no log message, want log due to fail")
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+			got := df.Index.Filter(tt.args.level, tt.args.fn)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("df.Filter() got %v, want %v", got, tt.want)
+			}
+			if strings.Contains(tt.name, "fail") {
+				if buf.String() == "" {
+					t.Errorf("df.Filter() returned no log message, want log due to fail")
+				}
+			}
+		})
+	}
+}

@@ -82,9 +82,8 @@ func TestIndex_Describe(t *testing.T) {
 		atLevel int
 	}
 	type want struct {
-		len       int
-		numLevels int
-		at        interface{}
+		len int
+		at  interface{}
 	}
 	tests := []struct {
 		name  string
@@ -93,10 +92,10 @@ func TestIndex_Describe(t *testing.T) {
 		want  want
 	}{
 		{name: "single default", input: singleDefault, args: args{atRow: 2, atLevel: 0},
-			want: want{len: 3, numLevels: 1, at: int64(2)}},
-		{"multi from config", multiConfig, args{2, 1}, want{3, 2, "quuz"}},
-		{"soft fail: at invalid row", singleDefault, args{10, 0}, want{3, 1, nil}},
-		{"soft fail: at invalid level", singleDefault, args{2, 10}, want{3, 1, nil}},
+			want: want{len: 3, at: int64(2)}},
+		{"multi from config", multiConfig, args{2, 1}, want{3, "quuz"}},
+		{"soft fail: at invalid row", singleDefault, args{10, 0}, want{3, nil}},
+		{"soft fail: at invalid level", singleDefault, args{2, 10}, want{3, nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

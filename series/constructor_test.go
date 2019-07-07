@@ -20,6 +20,9 @@ func TestNew_emptySeries(t *testing.T) {
 	if !Equal(got, want) {
 		t.Errorf("New(nil) returned %#v, want %#v", got, want)
 	}
+	_ = got.Len()
+	_ = got.NumLevels()
+	_ = got.Name()
 }
 
 func TestNew_nilWithConfig_emptySeries(t *testing.T) {

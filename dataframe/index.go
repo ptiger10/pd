@@ -252,9 +252,9 @@ func (idx Index) Flip(col int, level int) (*DataFrame, error) {
 // 	})
 //
 // Input:
-// 0    bamboo
-// 1    leaves
-// 2    taboo
+// bamboo    0
+// leaves    1
+// taboo     2
 //
 // Output:
 // []int{0,2}

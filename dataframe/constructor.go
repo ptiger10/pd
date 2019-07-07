@@ -80,7 +80,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 		name:  configuration.Name,
 	}
 
-	// df.Columns = Columns{df: df}
+	df.Columns = Columns{df: df}
 	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 
@@ -93,7 +93,7 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 
 func newEmptyDataFrame() *DataFrame {
 	df := &DataFrame{vals: nil, index: index.New(), cols: index.NewColumns()}
-	// df.Columns = Columns{df: df}
+	df.Columns = Columns{df: df}
 	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 	return df
@@ -176,9 +176,9 @@ func (df *DataFrame) Copy() *DataFrame {
 		cols:  colsCopy,
 		name:  df.name,
 	}
-	dfCopy.InPlace = InPlace{df: dfCopy}
+	dfCopy.Columns = Columns{df: dfCopy}
 	dfCopy.Index = Index{df: dfCopy}
-	// dfCopy.Columns = Columns{df: dfCopy}
+	dfCopy.InPlace = InPlace{df: dfCopy}
 	return dfCopy
 }
 

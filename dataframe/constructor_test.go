@@ -12,6 +12,19 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func TestNew_emptyDataFrame(t *testing.T) {
+	got := newEmptyDataFrame()
+	want := &DataFrame{vals: []values.Container{}, index: index.New(), cols: index.NewColumns()}
+	if !Equal(got, want) {
+		t.Errorf("New(nil) returned %#v, want %#v", got, want)
+	}
+	_ = got.Len()
+	_ = got.ColLevels()
+	_ = got.IndexLevels()
+	_ = got.NumCols()
+	_ = got.Name()
+}
+
 func TestNew(t *testing.T) {
 	type args struct {
 		data   []interface{}
