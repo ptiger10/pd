@@ -100,11 +100,16 @@ func (col Columns) SubsetLevels(levelPositions []int) error {
 }
 
 // DropLevel drops the specified cols level and modifies the DataFrame in place.
+// If there is only one col level remaining, replaces with a new default col level.
 func (col Columns) DropLevel(level int) error {
 	if err := col.df.ensureColumnLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("Columns.DropLevel(): %v", err)
 	}
+	if col.df.ColLevels() == 1 {
+		col.df.cols.Levels = append(col.df.cols.Levels, index.NewDefaultColLevel(col.df.NumCols(), ""))
+	}
 	col.df.cols.Levels = append(col.df.cols.Levels[:level], col.df.cols.Levels[level+1:]...)
+	col.df.cols.Refresh()
 	return nil
 }
 
