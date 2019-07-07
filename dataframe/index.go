@@ -14,7 +14,7 @@ import (
 // Values returns an []interface{} of the values at each level of the index
 func (idx Index) Values() [][]interface{} {
 	var ret [][]interface{}
-	for j := 0; j < idx.NumLevels(); j++ {
+	for j := 0; j < idx.df.IndexLevels(); j++ {
 		var vals []interface{}
 		for i := 0; i < idx.df.Len(); i++ {
 			vals = append(vals, idx.df.index.Levels[j].Labels.Element(i).Value)
@@ -64,27 +64,21 @@ func (idx Index) Len() int {
 	return idx.df.index.Levels[0].Len()
 }
 
-// NumLevels returns the number of levels in the index
-func (idx Index) NumLevels() int {
-	return idx.df.index.NumLevels()
-}
-
 // At returns the index values at a specified row position and index level but returns nil if either integer is out of range.
 func (idx Index) At(row int, level int) interface{} {
-	if level >= idx.NumLevels() {
+	if err := idx.df.ensureIndexLevelPositions([]int{level}); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("df.Index.At(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+			log.Printf("df.Index.At(): %v", err)
 		}
 		return nil
 	}
-	if row >= idx.Len() {
+	if err := idx.df.ensureRowPositions([]int{row}); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("df.Index.At(): invalid row: %d (max: %v)", row, idx.Len()-1)
+			log.Printf("df.Index.At(): %v", err)
 		}
 		return nil
 	}
-	elem := idx.df.Row(row)
-	return elem.Labels[level]
+	return idx.df.index.Levels[level].Labels.Element(row).Value
 }
 
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
@@ -120,8 +114,8 @@ func (idx Index) null(level int) []int {
 
 // DropNull drops null index values at the index level specified and modifies the DataFrame in place.
 func (idx Index) DropNull(level int) error {
-	if level >= idx.NumLevels() {
-		return fmt.Errorf("df.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+	if level >= idx.df.IndexLevels() {
+		return fmt.Errorf("df.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.df.IndexLevels()-1)
 	}
 	idx.df.InPlace.dropMany(idx.null(level))
 	return nil
@@ -182,35 +176,12 @@ func (idx Index) Set(row int, level int, val interface{}) error {
 	return nil
 }
 
-// SetRows sets the label at the specified index rows and level to val and modifies the DataFrame in place.
-// First converts val to be the same type as the index level.
-func (idx Index) SetRows(rows []int, level int, val interface{}) error {
-	err := idx.df.index.SetRows(rows, level, val)
-	if err != nil {
-		return fmt.Errorf("s.Index.SetRows(): %v", err)
-	}
-	return nil
-}
-
 // DropLevel drops the specified index level and modifies the DataFrame in place.
 func (idx Index) DropLevel(level int) error {
 	if err := idx.df.ensureIndexLevelPositions([]int{level}); err != nil {
 		return fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
 	idx.df.index.DropLevel(level)
-	return nil
-}
-
-// DropLevels drops the specified index levels and modifies the DataFrame in place.
-func (idx Index) DropLevels(levelPositions []int) error {
-	if err := idx.df.ensureIndexLevelPositions(levelPositions); err != nil {
-		return fmt.Errorf("df.Index.DropLevels(): %v", err)
-	}
-	sort.IntSlice(levelPositions).Sort()
-	for j, position := range levelPositions {
-		idx.df.index.DropLevel(position - j)
-	}
-	idx.df.index.Refresh()
 	return nil
 }
 

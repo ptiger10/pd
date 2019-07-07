@@ -482,54 +482,6 @@ func TestSet(t *testing.T) {
 	}
 }
 
-func TestSetRows(t *testing.T) {
-	idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, ""))
-	type args struct {
-		rowPositions []int
-		level        int
-		val          interface{}
-	}
-	type want struct {
-		index Index
-		err   bool
-	}
-	tests := []struct {
-		name  string
-		input Index
-		args  args
-		want  want
-	}{
-		{"string", idx, args{[]int{0}, 0, "corge"},
-			want{New(MustNewLevel([]string{"corge", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, "")), false}},
-		{"null string", idx, args{[]int{0}, 0, ""},
-			want{New(MustNewLevel([]string{"NaN", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, "")), false}},
-		{"float", idx, args{[]int{0, 2}, 1, 1.5},
-			want{New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"1.5", "quux", "1.5"}, "")), false}},
-		{"fail: no rows", idx, args{[]int{}, 0, "corge"},
-			want{idx, true}},
-		{"fail: invalid row", idx, args{[]int{10}, 0, "corge"},
-			want{idx, true}},
-		{"fail: partial invalid row", idx, args{[]int{0, 10}, 0, "corge"},
-			want{idx, true}},
-		{"fail: invalid level", idx, args{[]int{0}, 10, "corge"},
-			want{idx, true}},
-		{"fail: unsupported", idx, args{[]int{0}, 0, complex64(1)},
-			want{idx, true}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			idx := tt.input.Copy()
-			err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
-			if (err != nil) != tt.want.err {
-				t.Errorf("Set() error = %v, want %v", err, tt.want.err)
-			}
-			if !reflect.DeepEqual(idx, tt.want.index) {
-				t.Errorf("Set(): got %v, want %v", idx, tt.want.index)
-			}
-		})
-	}
-}
-
 func TestDropLevel(t *testing.T) {
 	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
 	single := New(lvl)

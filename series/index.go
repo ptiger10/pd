@@ -162,16 +162,6 @@ func (idx Index) Set(row int, level int, val interface{}) error {
 	return nil
 }
 
-// SetRows sets the label at the specified index rows and level to val and modifies the Series in place.
-// First converts val to be the same type as the index level.
-func (idx Index) SetRows(rows []int, level int, val interface{}) error {
-	err := idx.s.index.SetRows(rows, level, val)
-	if err != nil {
-		return fmt.Errorf("s.Index.SetRows(): %v", err)
-	}
-	return nil
-}
-
 // DropLevel drops the specified index level and modifies the Series in place.
 func (idx Index) DropLevel(level int) error {
 	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {

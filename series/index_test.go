@@ -493,45 +493,6 @@ func TestIndex_Set(t *testing.T) {
 	}
 }
 
-func TestIndex_SetRows(t *testing.T) {
-	type fields struct {
-		s *Series
-	}
-	type args struct {
-		rowPositions []int
-		level        int
-		val          interface{}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *Series
-		wantErr bool
-	}{
-		{name: "0, 0", fields: fields{MustNew([]string{"foo", "bar"}, Config{Index: []int64{0, 1}})}, args: args{[]int{0, 1}, 0, 100},
-			want:    MustNew([]string{"foo", "bar"}, Config{Index: []int64{100, 100}}),
-			wantErr: false},
-		{"fail: unsupported", fields{MustNew("foo")}, args{[]int{0}, 0, complex64(1)},
-			MustNew("foo"), true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			idx := Index{
-				s: tt.fields.s.Copy(),
-			}
-			err := idx.SetRows(tt.args.rowPositions, tt.args.level, tt.args.val)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Index.SetRows() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(idx.s, tt.want) {
-				t.Errorf("Index.SetRows() = %v, want %v", idx.s, tt.want)
-			}
-		})
-	}
-}
-
 func TestIndex_DropLevel(t *testing.T) {
 	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}}})
 	type fields struct {
