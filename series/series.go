@@ -93,6 +93,6 @@ type Index struct {
 }
 
 func (idx Index) String() string {
-	printer := fmt.Sprintf("{Series Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.NumLevels())
+	printer := fmt.Sprintf("{Series Index | Len: %d, NumLevels: %d}\n", idx.Len(), idx.s.NumLevels())
 	return printer
 }

@@ -565,43 +565,6 @@ func TestDropLevel(t *testing.T) {
 	}
 }
 
-func TestDropLevels(t *testing.T) {
-	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
-	single := New(lvl)
-	multi := New(lvl, lvl)
-
-	type args struct {
-		pos []int
-	}
-	type want struct {
-		index Index
-		err   bool
-	}
-	tests := []struct {
-		name  string
-		input Index
-		args  args
-		want  want
-	}{
-		{"one level: default index", single, args{[]int{0}}, want{NewDefault(3), false}},
-		{"two levels", multi, args{[]int{0}}, want{single, false}},
-		{"fail: invalid", single, args{[]int{10}}, want{single, true}},
-		{"fail: partial invalid", single, args{[]int{0, 10}}, want{single, true}},
-		{"fail: no rows", single, args{[]int{}}, want{single, true}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.input.DropLevels(tt.args.pos)
-			if (err != nil) != tt.want.err {
-				t.Errorf("DropLevels() error = %v, want %v", err, tt.want.err)
-			}
-			if !reflect.DeepEqual(tt.input, tt.want.index) {
-				t.Errorf("DropLevels(): got %v, want %v", tt.input, tt.want.index)
-			}
-		})
-	}
-}
-
 func Test_RefreshIndex(t *testing.T) {
 	origLvl, err := NewLevel([]int64{1, 2}, "")
 	if err != nil {

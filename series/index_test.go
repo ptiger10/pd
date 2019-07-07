@@ -113,11 +113,6 @@ func TestIndex_Describe(t *testing.T) {
 			if gotLen != wantLen {
 				t.Errorf("Index.Len(): got %v, want %v", gotLen, wantLen)
 			}
-			gotNumLevels := idx.NumLevels()
-			wantNumLevels := tt.want.numLevels
-			if gotNumLevels != wantNumLevels {
-				t.Errorf("Index.NumLevels(): got %v, want %v", gotNumLevels, wantNumLevels)
-			}
 			gotAt := idx.At(tt.args.atRow, tt.args.atLevel)
 			wantAt := tt.want.at
 			if gotAt != wantAt {
@@ -564,44 +559,6 @@ func TestIndex_DropLevel(t *testing.T) {
 				s: tt.fields.s.Copy(),
 			}
 			err := idx.DropLevel(tt.args.level)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Index.DropLevel() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(idx.s, tt.want) {
-				t.Errorf("Index.DropLevel() = %v, want %v", idx.s, tt.want)
-			}
-		})
-	}
-}
-
-func TestIndex_DropLevels(t *testing.T) {
-	s := MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"baz", "qux"}, []string{"quux", "quuz"}}})
-	type fields struct {
-		s *Series
-	}
-	type args struct {
-		levelPositions []int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *Series
-		wantErr bool
-	}{
-		{name: "pass", fields: fields{s}, args: args{[]int{0}},
-			want:    MustNew([]string{"foo", "bar"}, Config{MultiIndex: []interface{}{[]string{"quux", "quuz"}}}),
-			wantErr: false},
-		{"fail: invalid level", fields{s}, args{[]int{10}},
-			s, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			idx := Index{
-				s: tt.fields.s.Copy(),
-			}
-			err := idx.DropLevels(tt.args.levelPositions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Index.DropLevel() error = %v, wantErr %v", err, tt.wantErr)
 				return

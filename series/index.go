@@ -14,7 +14,7 @@ import (
 // Values returns an []interface{} of the values at each level of the index
 func (idx Index) Values() [][]interface{} {
 	var ret [][]interface{}
-	for j := 0; j < idx.NumLevels(); j++ {
+	for j := 0; j < idx.s.NumLevels(); j++ {
 		var vals []interface{}
 		for i := 0; i < idx.s.Len(); i++ {
 			vals = append(vals, idx.s.index.Levels[j].Labels.Element(i).Value)
@@ -52,27 +52,21 @@ func (idx Index) Len() int {
 	return idx.s.index.Levels[0].Len()
 }
 
-// NumLevels returns the number of levels in the index
-func (idx Index) NumLevels() int {
-	return idx.s.NumLevels()
-}
-
 // At returns the index value at a specified row position and index level but returns nil if either integer is out of range.
 func (idx Index) At(row int, level int) interface{} {
-	if level >= idx.NumLevels() {
+	if err := idx.s.ensureLevelPositions([]int{level}); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.At(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+			log.Printf("s.Index.At(): %v", err)
 		}
 		return nil
 	}
-	if row >= idx.Len() {
+	if err := idx.s.ensureRowPositions([]int{row}); err != nil {
 		if options.GetLogWarnings() {
-			log.Printf("s.Index.At(): invalid row: %d (max: %v)", row, idx.Len()-1)
+			log.Printf("s.Index.At(): %v", err)
 		}
 		return nil
 	}
-	elem := idx.s.Element(row)
-	return elem.Labels[level]
+	return idx.s.index.Levels[level].Labels.Element(row).Value
 }
 
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
@@ -108,8 +102,8 @@ func (idx Index) null(level int) []int {
 
 // DropNull drops null index values at the index level specified and modifies the Series in place.
 func (idx Index) DropNull(level int) error {
-	if level >= idx.NumLevels() {
-		return fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.NumLevels()-1)
+	if level >= idx.s.NumLevels() {
+		return fmt.Errorf("s.Index.DropNull(): invalid index level: %d (max: %v)", level, idx.s.NumLevels()-1)
 	}
 	idx.s.InPlace.dropMany(idx.null(level))
 	return nil
@@ -184,19 +178,6 @@ func (idx Index) DropLevel(level int) error {
 		return fmt.Errorf("s.Index.DropLevels(): %v", err)
 	}
 	idx.s.index.DropLevel(level)
-	return nil
-}
-
-// DropLevels drops the specified index levels and modifies the Series in place.
-func (idx Index) DropLevels(levelPositions []int) error {
-	if err := idx.s.ensureLevelPositions(levelPositions); err != nil {
-		return fmt.Errorf("s.Index.DropLevels(): %v", err)
-	}
-	sort.IntSlice(levelPositions).Sort()
-	for j, position := range levelPositions {
-		idx.s.index.DropLevel(position - j)
-	}
-	idx.s.index.Refresh()
 	return nil
 }
 

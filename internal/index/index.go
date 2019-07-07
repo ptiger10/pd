@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
@@ -388,19 +387,6 @@ func (idx *Index) DropLevel(level int) error {
 		return fmt.Errorf("index.DropLevel(): %v", err)
 	}
 	idx.dropLevel(level)
-	idx.Refresh()
-	return nil
-}
-
-// DropLevels drops the specified index levels and modifies the Index in place. If there is only one level, replaces with default index.
-func (idx *Index) DropLevels(levelPositions []int) error {
-	if err := idx.ensureLevelPositions(levelPositions); err != nil {
-		return fmt.Errorf("index.DropLevels(): %v", err)
-	}
-	sort.IntSlice(levelPositions).Sort()
-	for j, position := range levelPositions {
-		idx.dropLevel(position - j)
-	}
 	idx.Refresh()
 	return nil
 }
