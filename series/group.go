@@ -18,14 +18,9 @@ type group struct {
 
 func (grp *group) copy() *group {
 	pos := make([]int, len(grp.Positions))
-	// idx := make([]interface{}, len(grp.Index))
 	for i, p := range grp.Positions {
 		pos[i] = p
 	}
-	// for i, ind := range grp.Index {
-	// 	idx[i] = ind
-	// }
-	// return &group{Positions: pos, Index: idx}
 	return &group{Positions: pos}
 }
 
@@ -166,7 +161,6 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 		groupLabel := strings.Join(strLabels, values.GetMultiColNameSeparator())
 
 		if _, ok := groups[groupLabel]; !ok {
-			// groups[groupLabel] = &group{Index: labels}
 			groups[groupLabel] = &group{}
 		}
 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
