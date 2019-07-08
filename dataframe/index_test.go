@@ -693,3 +693,40 @@ func TestIndex_Filter(t *testing.T) {
 		})
 	}
 }
+
+func TestIndex_unique(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo", "bar"}},
+		Config{MultiIndex: []interface{}{[]string{"corge", "corge"}, []string{"qux", "qux"}, []string{"waldo", "fred"}}})
+	type args struct {
+		levels []int
+	}
+	type want struct {
+		labels    []string
+		positions []int
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "level 0", input: df, args: args{levels: []int{0}}, want: want{labels: []string{"corge"}, positions: []int{0}}},
+		{"levels 0 & 1", df, args{[]int{0, 1}}, want{[]string{"corge | qux"}, []int{0}}},
+		{"levels 0 & 2", df, args{[]int{0, 2}}, want{[]string{"corge | fred", "corge | waldo"}, []int{1, 0}}},
+		{"all levels", df, args{nil}, want{[]string{"corge | qux | fred", "corge | qux | waldo"}, []int{1, 0}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := Index{
+				df: df.Copy(),
+			}
+			labels, positions := idx.unique(tt.args.levels...)
+			if !reflect.DeepEqual(labels, tt.want.labels) {
+				t.Errorf("Index.unique() labels = %v, want %v", labels, tt.want.labels)
+			}
+			if !reflect.DeepEqual(positions, tt.want.positions) {
+				t.Errorf("Index.unique() positions = %v, want %v", positions, tt.want.positions)
+			}
+		})
+	}
+}

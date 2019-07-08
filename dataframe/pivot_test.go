@@ -3,12 +3,47 @@ package dataframe
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
+
+func TestDataFrame_Pivot_stack(t *testing.T) {
+	type args struct {
+		level int
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  stackContainer
+	}{
+		{name: "two groups", args: args{level: 1},
+			input: MustNew([]interface{}{[]float64{1, 2}},
+				Config{Col: []string{"A"},
+					MultiIndex: []interface{}{
+						[]string{"foo", "foo"},
+						[]string{"qux", "bar"},
+					}}),
+			want: stackContainer{
+				"foo": stackedIndexLabel{
+					"qux": stackedValues{"A": 1.0},
+					"bar": stackedValues{"A": 2.0},
+				},
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.stackValues(tt.args.level)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DataFrame.stack() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 // TODO: Support different types
 func TestDataFrame_Pivot_stackColumn(t *testing.T) {

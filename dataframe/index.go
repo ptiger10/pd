@@ -24,16 +24,14 @@ func (idx Index) Values() [][]interface{} {
 	return ret
 }
 
-// return an index stub of unique rows, for use in stack()
-func (idx Index) unique() index.Index {
-	df := idx.df.Copy()
-	g := df.GroupByIndex()
-	var rows []int
-	for _, pos := range g.groups {
-		rows = append(rows, pos.Positions[0])
+// return unique index labels and their positions, for use in stack()
+func (idx Index) unique(levels ...int) (labels []string, startPositions []int) {
+	g := idx.df.GroupByIndex(levels...)
+	labels = g.Groups()
+	for _, label := range labels {
+		startPositions = append(startPositions, g.groups[label].Positions[0])
 	}
-	df.index.Subset(rows)
-	return df.index
+	return
 }
 
 // Sort sorts the index by index level 0 and returns a new index.

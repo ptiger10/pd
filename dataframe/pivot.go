@@ -2,7 +2,6 @@ package dataframe
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -70,28 +69,99 @@ func (df *DataFrame) transposeIndex(level int) *DataFrame {
 	return df
 }
 
-// stackIndex converts an index level into a column level and replaces existing column levels. Assumes the level being stacked is not the only level.
-func (df *DataFrame) stackIndex(level int) *DataFrame {
-	archive := df.Copy()
-	archive.index.DropLevel(level)
-	archivedIndex := archive.Index.unique()
+// {"foo": {"baz": {"A": 0, "B": 1}}}
+type stackContainer map[string]stackedIndexLabel
 
-	// modify index
-	g := df.GroupByIndex(level)
+// {"baz": {"A": 0, "B": 1}}
+type stackedIndexLabel map[string]stackedValues
 
-	cols := index.NewColumns(index.NewColLevel(g.Groups(), df.index.Levels[level].Name))
+// {"A": 0, "B": 1}
+type stackedValues map[string]interface{}
 
-	vals := df.stackVals(level, g)
+// stackValues stacks Index values into a map.
+// Does not check whether the level being stacked is the only level or not.
+func (df *DataFrame) stackValues(level int) stackContainer {
 
-	// Remove index to create snapshot of a new index (if level is only level, create default range)
-	df, _ = df.ResetIndex(level)
-
-	idx := archivedIndex
-	df = newFromComponents(vals, idx, cols, df.Name())
-	err := df.ensureAlignment()
-	if err != nil {
-		log.Printf("df.stackIndex(): %v\n", err)
+	stack := make(stackContainer)
+	var unstackedIndexLevels []int
+	for j := 0; j < df.IndexLevels(); j++ {
+		if j != level {
+			unstackedIndexLevels = append(unstackedIndexLevels, j)
+		}
 	}
+	uniqueUnstackedLabels, _ := df.Index.unique(unstackedIndexLevels...)
+	labelsToStack, labelPositions := df.Index.unique(level)
+	for _, label := range uniqueUnstackedLabels {
+		if _, ok := stack[label]; !ok {
+			stack[label] = make(stackedIndexLabel)
+		}
+		for i, labelToStack := range labelsToStack {
+			position := labelPositions[i]
+			if _, ok := stack[label][labelToStack]; !ok {
+				stack[label][labelToStack] = make(stackedValues)
+			}
+			for m := 0; m < df.NumCols(); m++ {
+				colName := df.cols.Name(m)
+				stack[label][labelToStack][colName] = df.Row(position).Values[m]
+			}
+		}
+	}
+	return stack
+}
+
+// stackIndex converts an index level into a column level and replaces existing column levels.
+// Does not check whether the level being stacked is the only level or not.
+func (df *DataFrame) stackIndex(level int) *DataFrame {
+	// {"A": 0, "B": 1}
+	type stackedValues map[string]interface{}
+	// {"baz": {"A": 0, "B": 1}}
+	type stackedIndexLabel map[string]stackedValues
+	// {"foo": {"baz": {"A": 0, "B": 1}}}
+	stackContainer := map[string]stackedIndexLabel{}
+
+	var unstackedIndexLevels []int
+	for j := 0; j < df.IndexLevels(); j++ {
+		if j != level {
+			unstackedIndexLevels = append(unstackedIndexLevels, j)
+		}
+	}
+	uniqueUnstackedLabels, uniqueUnstackedPositions := df.Index.unique(unstackedIndexLevels...)
+	for i, label := range uniqueUnstackedLabels {
+		position := uniqueUnstackedPositions[i]
+		if _, ok := stackContainer[label]; !ok {
+			stackContainer[label] = make(stackedIndexLabel)
+		}
+		stackedLabel := df.index.Levels[level].Labels.Element(position).Value
+		stackedLabelStr := fmt.Sprint(stackedLabel)
+		if _, ok := stackContainer[label][stackedLabelStr]; !ok {
+			stackContainer[label][stackedLabelStr] = make(stackedValues)
+		}
+		for m := 0; m < df.NumCols(); m++ {
+			colName := df.cols.Name(m)
+			stackContainer[label][stackedLabelStr][colName] = df.Row(position).Values[m]
+		}
+	}
+
+	// 	archive := df.Copy()
+	// 	archive.index.DropLevel(level)
+	// 	archivedIndex := archive.Index.unique()
+
+	// 	// modify index
+	// 	g := df.GroupByIndex(level)
+
+	// 	cols := index.NewColumns(index.NewColLevel(g.Groups(), df.index.Levels[level].Name))
+
+	// 	vals := df.stackVals(level, g)
+
+	// 	// Remove index to create snapshot of a new index (if level is only level, create default range)
+	// 	df, _ = df.ResetIndex(level)
+
+	// 	idx := archivedIndex
+	// 	df = newFromComponents(vals, idx, cols, df.Name())
+	// 	err := df.ensureAlignment()
+	// 	if err != nil {
+	// 		log.Printf("df.stackIndex(): %v\n", err)
+	// 	}
 	return df
 }
 
