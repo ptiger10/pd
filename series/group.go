@@ -12,8 +12,8 @@ import (
 )
 
 type group struct {
-	// Index     []interface{}
-	Positions []int
+	Positions     []int
+	FirstPosition int
 }
 
 func (grp *group) copy() *group {
@@ -21,7 +21,7 @@ func (grp *group) copy() *group {
 	for i, p := range grp.Positions {
 		pos[i] = p
 	}
-	return &group{Positions: pos}
+	return &group{Positions: pos, FirstPosition: grp.FirstPosition}
 }
 
 // copy a grouping
@@ -98,7 +98,7 @@ func (g Grouping) math(group string, fn func(*Series) float64) *Series {
 
 	// index is the same as the index at the first row position of the group
 	idxCopy := g.s.index.Copy()
-	idxCopy.Subset([]int{g.groups[group].Positions[0]})
+	idxCopy.Subset([]int{g.groups[group].FirstPosition})
 	s.index = idxCopy
 	return s
 }
@@ -161,7 +161,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 		groupLabel := strings.Join(strLabels, values.GetMultiColNameSeparator())
 
 		if _, ok := groups[groupLabel]; !ok {
-			groups[groupLabel] = &group{}
+			groups[groupLabel] = &group{FirstPosition: i}
 		}
 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
 	}

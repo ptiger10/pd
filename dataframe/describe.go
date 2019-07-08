@@ -447,7 +447,7 @@ func (df *DataFrame) ensureColumnPositions(positions []int) error {
 // returns an error if any level position does not exist
 func (df *DataFrame) ensureColumnLevelPositions(positions []int) error {
 	for _, pos := range positions {
-		len := df.cols.NumLevels()
+		len := df.ColLevels()
 		if pos >= len {
 			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
 		}

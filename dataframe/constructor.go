@@ -122,7 +122,7 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 		cols:  cols,
 		name:  name,
 	}
-	// df.Columns = Columns{df: df}
+	df.Columns = Columns{df: df}
 	df.Index = Index{df: df}
 	df.InPlace = InPlace{df: df}
 

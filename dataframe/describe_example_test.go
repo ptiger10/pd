@@ -455,6 +455,7 @@ func ExampleInPlace_method_list() {
 	// Methods:
 	// AppendCol
 	// AppendRow
+	// Convert
 	// DropCol
 	// DropCols
 	// DropDuplicates

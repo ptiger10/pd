@@ -57,16 +57,9 @@ func (col Columns) RenameLevel(level int, name string) error {
 
 // InsertLevel inserts a level into the cols and modifies the DataFrame in place.
 func (col Columns) InsertLevel(pos int, labels []string, name string) error {
-	if pos > col.df.ColLevels() {
-		return fmt.Errorf("invalid column level: %d (max: %v)", pos, col.df.ColLevels()-1)
+	if err := col.df.cols.InsertLevel(pos, labels, name); err != nil {
+		return fmt.Errorf("df.Column.InsertLevel(): %v", err)
 	}
-	lvl := index.NewColLevel(labels, name)
-	if len(labels) != col.df.NumCols() {
-		return fmt.Errorf("df.cols.InsertLevel(): len(labels) must equal number of columns (%d != %d)",
-			len(labels), col.df.NumCols())
-	}
-	col.df.cols.Levels = append(col.df.cols.Levels[:pos], append([]index.ColLevel{lvl}, col.df.cols.Levels[pos:]...)...)
-	col.df.cols.Refresh()
 	return nil
 }
 

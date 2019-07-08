@@ -712,8 +712,8 @@ func TestIndex_unique(t *testing.T) {
 	}{
 		{name: "level 0", input: df, args: args{levels: []int{0}}, want: want{labels: []string{"corge"}, positions: []int{0}}},
 		{"levels 0 & 1", df, args{[]int{0, 1}}, want{[]string{"corge | qux"}, []int{0}}},
-		{"levels 0 & 2", df, args{[]int{0, 2}}, want{[]string{"corge | fred", "corge | waldo"}, []int{1, 0}}},
-		{"all levels", df, args{nil}, want{[]string{"corge | qux | fred", "corge | qux | waldo"}, []int{1, 0}}},
+		{"levels 0 & 2", df, args{[]int{0, 2}}, want{[]string{"corge | waldo", "corge | fred"}, []int{0, 1}}},
+		{"all levels", df, args{nil}, want{[]string{"corge | qux | waldo", "corge | qux | fred"}, []int{0, 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

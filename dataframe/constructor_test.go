@@ -149,6 +149,25 @@ func TestNew(t *testing.T) {
 	}
 }
 
+// TODO fix to discriminate when test is failing
+func TestDataFrame_constructor_internalReferences(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *DataFrame
+	}{
+		{"New", MustNew([]interface{}{"foo"})},
+		{"Copy", MustNew([]interface{}{"foo"}).Copy()},
+		{"newFromComponents", newFromComponents(nil, index.Index{}, index.Columns{}, "")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.input.Columns.df == nil {
+				t.Errorf("Constructor did not initialize Columns correctly")
+			}
+		})
+	}
+}
+
 func TestNew_Fail(t *testing.T) {
 	type args struct {
 		data   []interface{}

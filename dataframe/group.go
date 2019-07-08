@@ -15,7 +15,8 @@ import (
 )
 
 type group struct {
-	Positions []int
+	Positions     []int
+	FirstPosition int
 }
 
 func (grp *group) copy() *group {
@@ -23,7 +24,7 @@ func (grp *group) copy() *group {
 	for i, p := range grp.Positions {
 		pos[i] = p
 	}
-	return &group{Positions: pos}
+	return &group{Positions: pos, FirstPosition: grp.FirstPosition}
 }
 
 // copy a grouping
@@ -38,14 +39,37 @@ func (g Grouping) copy() Grouping {
 	}
 }
 
-// Groups returns all valid group labels in the Grouping.
-func (g Grouping) Groups() []string {
+// SortedGroups returns all valid group labels in the Grouping, sorted in alphabetical order.
+func (g Grouping) SortedGroups() []string {
 	var keys []string
 	for k := range g.groups {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// Groups returns all valid group labels in the Grouping, in their original group position.
+func (g Grouping) Groups() []string {
+	type groupContainer struct {
+		grp   *group
+		label string
+	}
+	var orderedGroups []groupContainer
+	for k, v := range g.groups {
+		orderedGroups = append(orderedGroups, groupContainer{grp: v, label: k})
+	}
+	sort.Slice(orderedGroups, func(i, j int) bool {
+		if orderedGroups[i].grp.FirstPosition < orderedGroups[j].grp.FirstPosition {
+			return true
+		}
+		return false
+	})
+	var labels []string
+	for _, grp := range orderedGroups {
+		labels = append(labels, grp.label)
+	}
+	return labels
 }
 
 // Len returns the number of groups in the Grouping.
@@ -141,7 +165,7 @@ func (df *DataFrame) groupby() Grouping {
 
 		// create group with groupLabel and index labels if it is not already within groups map
 		if _, ok := groups[groupLabel]; !ok {
-			groups[groupLabel] = &group{}
+			groups[groupLabel] = &group{FirstPosition: i}
 		}
 		groups[groupLabel].Positions = append(groups[groupLabel].Positions, i)
 	}
@@ -211,7 +235,6 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	wg.Wait()
 	close(ch)
 	var returnedData []calcReturn
-	// iterating over channel range returns nil Series if pointer is provided instead of value
 	for result := range ch {
 		returnedData = append(returnedData, result)
 	}

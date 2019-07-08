@@ -121,7 +121,7 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 	}
 	records = records[tmp.NumHeaderRows:]
 
-	// index and values
+	// transpose index and values
 	for i := 0; i < len(records); i++ {
 		for m := 0; m < len(records[0]); m++ {
 			if m < tmp.NumIndexColumns {

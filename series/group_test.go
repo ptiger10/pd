@@ -15,8 +15,8 @@ func TestGroup_Copy(t *testing.T) {
 	s := MustNew([]int{1, 2, 3, 4}, Config{Index: []int{1, 1, 2, 2}})
 	got := s.GroupByIndex(0).copy().groups
 	want := map[string]*group{
-		"1": &group{Positions: []int{0, 1}},
-		"2": &group{Positions: []int{2, 3}},
+		"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
+		"2": &group{Positions: []int{2, 3}, FirstPosition: 2},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("group.copy() got %v, want %v", got, want)
@@ -80,29 +80,29 @@ func TestSeries_GroupByIndex(t *testing.T) {
 			input: MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{1, 1, 2}}),
 			args:  args{[]int{}},
 			want: map[string]*group{
-				"1": &group{Positions: []int{0, 1}},
-				"2": &group{Positions: []int{2}},
+				"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
+				"2": &group{Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi no args",
 			multi,
 			args{[]int{}},
 			map[string]*group{
-				"1 | 2": &group{Positions: []int{0, 1}},
-				"2 | 1": &group{Positions: []int{2}},
+				"1 | 2": &group{Positions: []int{0, 1}, FirstPosition: 0},
+				"2 | 1": &group{Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi one level",
 			multi,
 			args{[]int{0}},
 			map[string]*group{
-				"1": &group{Positions: []int{0, 1}},
-				"2": &group{Positions: []int{2}},
+				"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
+				"2": &group{Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi two levels reversed",
 			multi,
 			args{[]int{1, 0}},
 			map[string]*group{
-				"2 | 1": &group{Positions: []int{0, 1}},
-				"1 | 2": &group{Positions: []int{2}},
+				"2 | 1": &group{Positions: []int{0, 1}, FirstPosition: 0},
+				"1 | 2": &group{Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"fail: invalid level",
 			multi,

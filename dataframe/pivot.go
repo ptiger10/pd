@@ -2,167 +2,95 @@ package dataframe
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
 	"github.com/ptiger10/pd/internal/values"
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
-func (df *DataFrame) stackVals(col int, g Grouping) []values.Container {
-	vals := make([]values.Container, len(g.Groups()))
-
-	// lookup new values
-	for n, group := range g.Groups() {
-		var d []interface{}
-		var counter int
-		for i := 0; i < df.Len(); i++ {
-			if counter >= len(g.groups[group].Positions) {
-				nulls := values.MakeNullRange(df.Len() - counter)
-				d = append(d, nulls...)
-			} else if g.groups[group].Positions[counter] == i {
-				// TODO replace with df.At()
-				d = append(d, df.Row(i).Values[0])
-				counter++
-			} else {
-				d = append(d, "")
-			}
-		}
-		container, err := values.InterfaceFactory(d)
-		if err != nil {
-			fmt.Printf("stackCol(): internal error: %v", err)
-		}
-		// ducks error because values is assumed to be supported
-		container.Values, _ = values.Convert(container.Values, df.dataType())
-		container.DataType = df.dataType()
-		vals[n] = container
-	}
-	return vals
-}
-
-// stackCol converts a column into a column level and replaces existing column levels
-func (df *DataFrame) stackCol(col int) *DataFrame {
-	df = df.Copy()
-	// preserve original values prior to index modification
-	idx := df.index.Copy()
-	name := df.cols.Name(col)
-
-	// modify index
-	df.InPlace.replaceIndex([]int{col})
-	g := df.GroupByIndex()
-	cols := index.NewColumns(index.NewColLevel(g.Groups(), name))
-
-	vals := df.stackVals(col, g)
-	return newFromComponents(vals, idx, cols, df.Name())
-}
-
-// assumes one column and that the level being dropped is not the last one
-func (df *DataFrame) transposeIndex(level int) *DataFrame {
-	archive := df.Copy()
-	archive.index.DropLevel(level)
-	archive.index.Subset([]int{0})
-
-	df = df.Copy()
-	df.index.SubsetLevels([]int{level})
-	df = df.Transpose()
-	df.index = archive.index
-	return df
-}
-
-// {"foo": {"baz": {"A": 0, "B": 1}}}
-type stackContainer map[string]stackedIndexLabel
-
-// {"baz": {"A": 0, "B": 1}}
-type stackedIndexLabel map[string]stackedValues
-
-// {"A": 0, "B": 1}
-type stackedValues map[string]interface{}
-
-// stackValues stacks Index values into a map.
-// Does not check whether the level being stacked is the only level or not.
-func (df *DataFrame) stackValues(level int) stackContainer {
-
-	stack := make(stackContainer)
+// values:
+// make a [][]interface{} valsMatrix for rows x cols
+// # rows: unique non-stacked labels
+// # cols = unique stacked labels * number of columns
+// isolate first value of the stacked label within each non-stacked label
+// transpose to []interface and feed into interface factory to create []Values.Container
+func (df *DataFrame) stack(level int) (newIdxPositions []int, valsMatrix [][]interface{}, newColLvl []string) {
 	var unstackedIndexLevels []int
 	for j := 0; j < df.IndexLevels(); j++ {
 		if j != level {
 			unstackedIndexLevels = append(unstackedIndexLevels, j)
 		}
 	}
-	uniqueUnstackedLabels, _ := df.Index.unique(unstackedIndexLevels...)
-	labelsToStack, labelPositions := df.Index.unique(level)
-	for _, label := range uniqueUnstackedLabels {
-		if _, ok := stack[label]; !ok {
-			stack[label] = make(stackedIndexLabel)
-		}
-		for i, labelToStack := range labelsToStack {
-			position := labelPositions[i]
-			if _, ok := stack[label][labelToStack]; !ok {
-				stack[label][labelToStack] = make(stackedValues)
-			}
+	g := df.GroupByIndex(unstackedIndexLevels...)
+
+	labelsToStack, _ := df.Index.unique(level)
+	numRows := g.Len()
+	numCols := len(labelsToStack) * df.NumCols()
+	valsMatrix = make([][]interface{}, numRows)
+	for i := 0; i < numRows; i++ {
+		valsMatrix[i] = make([]interface{}, numCols)
+	}
+
+	// only extend the labels for the columns-to-be-stacked once
+	extendColLevel := true
+	for i, group := range g.Groups() {
+		newIdxPositions = append(newIdxPositions, g.groups[group].Positions[0])
+		rows, _ := df.SubsetRows(g.groups[group].Positions)
+		for labelOffset, label := range labelsToStack {
+			// log warnings disabled because frequently a label will not exist in an index
+			archive := options.GetLogWarnings()
+			options.SetLogWarnings(false)
+			row := rows.SelectLabels([]string{label}, level)
+			options.SetLogWarnings(archive)
+			// log warnings restored
 			for m := 0; m < df.NumCols(); m++ {
-				colName := df.cols.Name(m)
-				stack[label][labelToStack][colName] = df.Row(position).Values[m]
+				if len(row) > 0 {
+					valsMatrix[i][m+labelOffset*df.NumCols()] = rows.vals[m].Values.Element(row[0]).Value
+				}
+				if extendColLevel {
+					newColLvl = append(newColLvl, label)
+				}
 			}
 		}
+		extendColLevel = false
 	}
-	return stack
+	return newIdxPositions, valsMatrix, newColLvl
 }
 
-// stackIndex converts an index level into a column level and replaces existing column levels.
-// Does not check whether the level being stacked is the only level or not.
 func (df *DataFrame) stackIndex(level int) *DataFrame {
-	// {"A": 0, "B": 1}
-	type stackedValues map[string]interface{}
-	// {"baz": {"A": 0, "B": 1}}
-	type stackedIndexLabel map[string]stackedValues
-	// {"foo": {"baz": {"A": 0, "B": 1}}}
-	stackContainer := map[string]stackedIndexLabel{}
-
-	var unstackedIndexLevels []int
-	for j := 0; j < df.IndexLevels(); j++ {
-		if j != level {
-			unstackedIndexLevels = append(unstackedIndexLevels, j)
-		}
-	}
-	uniqueUnstackedLabels, uniqueUnstackedPositions := df.Index.unique(unstackedIndexLevels...)
-	for i, label := range uniqueUnstackedLabels {
-		position := uniqueUnstackedPositions[i]
-		if _, ok := stackContainer[label]; !ok {
-			stackContainer[label] = make(stackedIndexLabel)
-		}
-		stackedLabel := df.index.Levels[level].Labels.Element(position).Value
-		stackedLabelStr := fmt.Sprint(stackedLabel)
-		if _, ok := stackContainer[label][stackedLabelStr]; !ok {
-			stackContainer[label][stackedLabelStr] = make(stackedValues)
-		}
-		for m := 0; m < df.NumCols(); m++ {
-			colName := df.cols.Name(m)
-			stackContainer[label][stackedLabelStr][colName] = df.Row(position).Values[m]
-		}
+	newIdxPositions, valsMatrix, newColLevel := df.stack(level)
+	transposedVals := transpose(valsMatrix)
+	var containers []values.Container
+	for i := 0; i < len(transposedVals); i++ {
+		container := values.MustCreateValuesFromInterface(transposedVals[i])
+		containers = append(containers, container)
 	}
 
-	// 	archive := df.Copy()
-	// 	archive.index.DropLevel(level)
-	// 	archivedIndex := archive.Index.unique()
+	idx := df.index.Copy()
+	idx.Subset(newIdxPositions)
+	idx.DropLevel(level)
 
-	// 	// modify index
-	// 	g := df.GroupByIndex(level)
+	cols := df.cols.Copy()
+	for j := 0; j < df.ColLevels(); j++ {
+		// duplicate each level enough times that it is same length as new column level
+		cols.Levels[j].Duplicate((len(newColLevel) / df.NumCols()) - 1)
+	}
 
-	// 	cols := index.NewColumns(index.NewColLevel(g.Groups(), df.index.Levels[level].Name))
-
-	// 	vals := df.stackVals(level, g)
-
-	// 	// Remove index to create snapshot of a new index (if level is only level, create default range)
-	// 	df, _ = df.ResetIndex(level)
-
-	// 	idx := archivedIndex
-	// 	df = newFromComponents(vals, idx, cols, df.Name())
-	// 	err := df.ensureAlignment()
-	// 	if err != nil {
-	// 		log.Printf("df.stackIndex(): %v\n", err)
-	// 	}
-	return df
+	err := cols.InsertLevel(0, newColLevel, df.index.Levels[level].Name)
+	if err != nil {
+		log.Print(err)
+	}
+	ret := newFromComponents(containers, idx, cols, df.Name())
+	if df.dataType() != options.Interface {
+		ret.InPlace.Convert(df.dataType().String())
+	}
+	if err := df.ensureAlignment(); err != nil {
+		log.Print(err)
+	}
+	return ret
 }
 
 // Pivot transforms data into the desired form and calls aggFunc on the reshaped data.
@@ -184,7 +112,8 @@ func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *
 	case "std":
 		df = g.Std()
 	}
-	df = df.transposeIndex(1)
+	df = df.stackIndex(1)
+	df.Columns.DropLevel(1)
 	return df
 }
 
@@ -194,6 +123,26 @@ func (df *DataFrame) Transpose() *DataFrame {
 	for m := 0; m < df.NumCols(); m++ {
 		row := transposeSeries(df.hydrateSeries(m))
 		ret.InPlace.appendDataFrameRow(row)
+	}
+	return ret
+}
+
+func transpose(data [][]interface{}) []interface{} {
+	var transposedData [][]interface{}
+	if len(data) > 0 {
+		transposedData = make([][]interface{}, len(data[0]))
+		for m := 0; m < len(data[0]); m++ {
+			transposedData[m] = make([]interface{}, len(data))
+		}
+		for i := 0; i < len(data); i++ {
+			for m := 0; m < len(data[0]); m++ {
+				transposedData[m][i] = data[i][m]
+			}
+		}
+	}
+	var ret []interface{}
+	for _, col := range transposedData {
+		ret = append(ret, col)
 	}
 	return ret
 }

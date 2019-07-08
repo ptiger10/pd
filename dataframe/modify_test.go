@@ -60,7 +60,7 @@ func TestRenameCols(t *testing.T) {
 				diff, _ := messagediff.PrettyDiff(tt.input, tt.want)
 				fmt.Println(diff)
 			}
-			
+
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
 					t.Errorf("InPlace.Set() returned no log message, want log due to fail")
@@ -1340,11 +1340,54 @@ func TestDataFrame_Modify_ResetIndex(t *testing.T) {
 			}
 
 			if !strings.Contains(tt.name, "fail") {
-				if !Equal(dfCopy, tt.want.df) {
-					t.Errorf("DataFrame.ResetIndex() got %v, want %v", dfCopy, tt.want.df)
-				}
 				if Equal(dfArchive, dfCopy) {
 					t.Errorf("DataFrame.ResetIndex() retained access to original, want copy")
+				}
+			}
+		})
+	}
+}
+
+func TestDataFrame_Convert(t *testing.T) {
+	type args struct {
+		dataType string
+	}
+	type want struct {
+		df  *DataFrame
+		err bool
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  want
+	}{
+		{name: "pass", input: MustNew([]interface{}{"foo"}), args: args{dataType: "bool"},
+			want: want{df: MustNew([]interface{}{true}), err: false}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			df := tt.input.Copy()
+			dfArchive := tt.input.Copy()
+			err := df.InPlace.Convert(tt.args.dataType)
+			if !Equal(df, tt.want.df) {
+				t.Errorf("InPlace.Convert() got %v, want %v", df, tt.want.df)
+			}
+			if (err != nil) != tt.want.err {
+				t.Errorf("InPlace.Convert() error = %v, want %v", err, tt.want.err)
+			}
+
+			dfCopy, err := dfArchive.Convert(tt.args.dataType)
+			if (err != nil) != tt.want.err {
+				t.Errorf("DataFrame.Convert() error = %v, want %v", err, tt.want.err)
+			}
+			if !Equal(dfCopy, tt.want.df) {
+				t.Errorf("DataFrame.Convert() got %v, want %v", dfCopy, tt.want.df)
+			}
+
+			if !strings.Contains(tt.name, "fail") {
+				if Equal(dfArchive, dfCopy) {
+					t.Errorf("DataFrame.Convert() retained access to original, want copy")
 				}
 			}
 		})

@@ -61,6 +61,26 @@ func (df *DataFrame) replace(df2 *DataFrame) {
 	df.cols = df2.cols
 }
 
+// Convert converts every series in a DataFrame to datatype and modifies the DataFrame in place.
+func (ip InPlace) Convert(dataType string) error {
+	for m := 0; m < ip.df.NumCols(); m++ {
+		newValues, err := values.Convert(ip.df.vals[m].Values, options.DT(dataType))
+		if err != nil {
+			return fmt.Errorf("df.Convert(): %v", err)
+		}
+		ip.df.vals[m].Values = newValues
+		ip.df.vals[m].DataType = options.DT(dataType)
+	}
+	return nil
+}
+
+// Convert converts every series in a DataFrame to datatype and returns a new DataFrame.
+func (df *DataFrame) Convert(dataType string) (*DataFrame, error) {
+	df = df.Copy()
+	err := df.InPlace.Convert(dataType)
+	return df, err
+}
+
 // [START InPlace]
 
 // // Sort sorts the series by its values and modifies the DataFrame in place.

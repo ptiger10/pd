@@ -122,15 +122,16 @@ func (idx Index) DropNull(level int) error {
 // SwapLevels swaps two levels in the index and modifies the DataFrame in place.
 func (idx Index) SwapLevels(i, j int) error {
 	if err := idx.df.index.SwapLevels(i, j); err != nil {
-		return fmt.Errorf("df.Index.SwapLevels(): invalid i: %v", err)
+		return fmt.Errorf("df.Index.SwapLevels(): %v", err)
 	}
 	return nil
 }
 
 // InsertLevel inserts a level into the index and modifies the DataFrame in place.
 func (idx Index) InsertLevel(pos int, values interface{}, name string) error {
-	if err := idx.df.index.InsertLevel(pos, values, name); err != nil {
-		return fmt.Errorf("df.Index.InsertLevel(): invalid i: %v", err)
+	err := idx.df.index.InsertLevel(pos, values, name)
+	if err != nil {
+		return fmt.Errorf("df.Index.InsertLevel(): %v", err)
 	}
 	return nil
 }
@@ -146,21 +147,10 @@ func (idx Index) AppendLevel(values interface{}, name string) error {
 
 // SubsetLevels modifies the DataFrame in place with only the specified index levels.
 func (idx Index) SubsetLevels(levelPositions []int) error {
-
-	err := idx.df.ensureIndexLevelPositions(levelPositions)
+	err := idx.df.index.SubsetLevels(levelPositions)
 	if err != nil {
-		return fmt.Errorf("df.Index.SubsetLevels(): %v", err)
+		return fmt.Errorf("df.Index.InsertLevel(): %v", err)
 	}
-	if len(levelPositions) == 0 {
-		return fmt.Errorf("df.Index.SubsetLevels(): no levels provided")
-	}
-
-	levels := make([]index.Level, 0)
-	for _, position := range levelPositions {
-		levels = append(levels, idx.df.index.Levels[position])
-	}
-	idx.df.index.Levels = levels
-	idx.df.index.Refresh()
 	return nil
 }
 
