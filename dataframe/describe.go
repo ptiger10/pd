@@ -42,6 +42,30 @@ func (df *DataFrame) ColLevels() int {
 	return df.cols.NumLevels()
 }
 
+// Head returns the first n rows of the DataFrame.
+func (df *DataFrame) Head(n int) *DataFrame {
+	// cannot exceed max number of rows
+	df = df.Copy()
+	if n > df.Len() {
+		n = df.Len()
+	}
+	intRange := values.MakeIntRange(0, n)
+	df.InPlace.SubsetRows(intRange)
+	return df
+}
+
+// Tail returns the last n rows of the DataFrame.
+func (df *DataFrame) Tail(n int) *DataFrame {
+	// cannot exceed max number of rows
+	df = df.Copy()
+	if n > df.Len() {
+		n = df.Len()
+	}
+	intRange := values.MakeIntRange(df.Len()-n, df.Len())
+	df.InPlace.SubsetRows(intRange)
+	return df
+}
+
 // printer for DataFrame index, values, and columns.
 // Format (optional):
 // (indexName)

@@ -96,8 +96,9 @@ func (df *DataFrame) stackIndex(level int) *DataFrame {
 // Pivot transforms data into the desired form and calls aggFunc on the reshaped data.
 func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *DataFrame {
 	df = df.Copy()
+	df.InPlace.SubsetColumns([]int{index, columns, values})
 	g := df.GroupBy(index, columns)
-	df.InPlace.SubsetColumns([]int{values})
+
 	switch aggFunc {
 	case "sum":
 		df = g.Sum()
@@ -111,6 +112,11 @@ func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *
 		df = g.Max()
 	case "std":
 		df = g.Std()
+	default:
+		if options.GetLogWarnings() {
+			log.Printf("df.Pivot(): aggFunc (%v) does not exist", aggFunc)
+		}
+		return newEmptyDataFrame()
 	}
 	df = df.stackIndex(1)
 	df.Columns.DropLevel(1)

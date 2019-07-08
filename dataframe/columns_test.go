@@ -61,6 +61,38 @@ func TestColumns_Describe(t *testing.T) {
 	}
 }
 
+func TestDataFrame_Columns_Reorder(t *testing.T) {
+	df := MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"baz", "qux"}})
+	type args struct {
+		labels []string
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  *DataFrame
+	}{
+		{name: "pass", input: df, args: args{[]string{"baz"}},
+			want: MustNew([]interface{}{"foo"}, Config{Col: []string{"baz"}})},
+		{name: "pass", input: df, args: args{[]string{"qux", "baz"}},
+			want: MustNew([]interface{}{"bar", "foo"}, Config{Col: []string{"qux", "baz"}})},
+		{name: "pass", input: MustNew([]interface{}{"foo", "bar", "corge"}, Config{Col: []string{"baz", "quuz", "baz"}}),
+			args: args{[]string{"baz", "quuz"}},
+			want: MustNew([]interface{}{"foo", "corge", "bar"}, Config{Col: []string{"baz", "baz", "quuz"}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cols := Columns{
+				df: tt.input.Copy(),
+			}
+			cols.Reorder(tt.args.labels)
+			if !Equal(cols.df, tt.want) {
+				t.Errorf("Columns.Reorder(): got %v, want %v", cols.df, tt.want)
+			}
+		})
+	}
+}
+
 func TestColumns_RenameLevel(t *testing.T) {
 	df := MustNew([]interface{}{"foo"}, Config{MultiCol: [][]string{{"bar"}, {"baz"}}, MultiColNames: []string{"qux", "quuz"}})
 	type args struct {

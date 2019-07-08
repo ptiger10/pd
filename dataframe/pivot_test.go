@@ -273,8 +273,8 @@ func TestTransposeSeries(t *testing.T) {
 func TestDataFrame_Pivot(t *testing.T) {
 	multi := MustNew([]interface{}{
 		[]string{"foo", "foo", "bar", "bar"}, []string{"baz", "baz", "baz", "qux"},
-		[]string{"qux", "quux", "quuz", "quuz"}, []int{1, 2, 3, 4}},
-		Config{Col: []string{"A", "B", "C", "D"}})
+		[]string{"qux", "quux", "quuz", "quuz"}, []int{1, 2, 3, 4}, []int{5, 6, 7, 8}},
+		Config{Col: []string{"A", "B", "C", "D", "E"}})
 	df := MustNew([]interface{}{
 		[]string{"foo", "foo", "foo"}, []string{"bar", "bar", "baz"}, []int{1, 2, 3}},
 		Config{Col: []string{"A", "B", "C"}})

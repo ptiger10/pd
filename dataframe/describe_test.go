@@ -131,17 +131,16 @@ func TestMaxColWidth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			df := MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}}, tt.config)
+			excl := df.makeColumnExclusionsTable()
+			got := df.maxColWidths(excl)
+			if !reflect.DeepEqual(got, tt.want.colWidths) {
+				t.Errorf("df.maxColWidths() got %v, want %v", got, tt.want.colWidths)
+			}
+			if !reflect.DeepEqual(excl, tt.want.exclusionsTable) {
+				t.Errorf("df.makeColumnExclusionsTable() got %v, want %v", excl, tt.want.exclusionsTable)
+			}
 		})
-		df := MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}}, tt.config)
-		excl := df.makeColumnExclusionsTable()
-		got := df.maxColWidths(excl)
-		if !reflect.DeepEqual(got, tt.want.colWidths) {
-			t.Errorf("df.maxColWidths() got %v, want %v", got, tt.want.colWidths)
-		}
-		if !reflect.DeepEqual(excl, tt.want.exclusionsTable) {
-			t.Errorf("df.makeColumnExclusionsTable() got %v, want %v", excl, tt.want.exclusionsTable)
-		}
 	}
 }
 
@@ -153,6 +152,37 @@ func TestMaxColWidthExcludeRepeat(t *testing.T) {
 	got := df.maxColWidths(excl)
 	want := []int{5, 4}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("df.maxColWidths() got %v, want %v for df \n%v", got, want, df)
+		t.Errorf("df.maxColWidths() got %v, want %v", got, want)
+	}
+}
+
+func TestHeadTail(t *testing.T) {
+	df := MustNew([]interface{}{[]string{"foo", "bar", "baz", "qux"}}, Config{Index: []int{0, 1, 2, 3}})
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		fn    func(*DataFrame, int) *DataFrame
+		args  args
+		want  *DataFrame
+	}{
+		{name: "head", input: df, fn: (*DataFrame).Head, args: args{n: 2},
+			want: MustNew([]interface{}{[]string{"foo", "bar"}}, Config{Index: []int{0, 1}})},
+		{name: "head - max", input: df, fn: (*DataFrame).Head, args: args{n: 10},
+			want: df},
+		{name: "tail", input: df, fn: (*DataFrame).Tail, args: args{n: 2},
+			want: MustNew([]interface{}{[]string{"baz", "qux"}}, Config{Index: []int{2, 3}})},
+		{name: "tail - max", input: df, fn: (*DataFrame).Tail, args: args{n: 10},
+			want: df},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.fn(tt.input, tt.args.n)
+			if !Equal(got, tt.want) {
+				t.Errorf("df.Head/Tail() got %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

@@ -18,6 +18,13 @@ func (col Columns) Values() [][]string {
 	return ret
 }
 
+// Reorder reorders the columns in the order in which the labels are supplied and excludes any unsupplied labels.
+// Reorder looks for these labels in level 0 and modifies the DataFrame in place.
+func (col Columns) Reorder(labels []string) {
+	positions := col.df.SelectCols(labels, 0)
+	col.df.InPlace.SubsetColumns(positions)
+}
+
 // SwapLevels swaps two column levels and modifies the cols in place.
 func (col Columns) SwapLevels(i, j int) error {
 	if err := col.df.ensureColumnLevelPositions([]int{i, j}); err != nil {
