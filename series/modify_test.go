@@ -145,6 +145,54 @@ func TestModify_Swap(t *testing.T) {
 	}
 }
 
+func TestSubset(t *testing.T) {
+	s := MustNew([]string{"foo", "bar", "baz"}, Config{Index: []int{0, 1, 2}})
+
+	tests := []struct {
+		name    string
+		input   *Series
+		args    []int
+		want    *Series
+		wantErr bool
+	}{
+		{name: "pass", input: s, args: []int{0}, want: MustNew("foo", Config{Index: []int{0}}), wantErr: false},
+		{"pass", s, []int{1}, MustNew("bar", Config{Index: 1}), false},
+		{"pass", s, []int{0, 1}, MustNew([]string{"foo", "bar"}, Config{Index: []int{0, 1}}), false},
+		{"pass", s, []int{1, 0}, MustNew([]string{"bar", "foo"}, Config{Index: []int{1, 0}}), false},
+		{"fail: empty", s, []int{}, newEmptySeries(), true},
+		{"fail: invalid", s, []int{3}, newEmptySeries(), true},
+		{"fail: nil positions", s, nil, newEmptySeries(), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.input.Copy()
+			sArchive := tt.input.Copy()
+
+			err := s.InPlace.Subset(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Series.InPlace.Subset() error = %v, want %v", err, tt.wantErr)
+			}
+			if !strings.Contains(tt.name, "fail") {
+				if !Equal(s, tt.want) {
+					t.Errorf("Series.InPlace.Subset() got %v, want %v", s, tt.want)
+				}
+			}
+
+			sCopy, err := sArchive.Subset(tt.args)
+			if !Equal(sCopy, tt.want) {
+				t.Errorf("Series.Subset() got %v, want %v", sCopy, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Series.Subset() error = %v, want %v", err, tt.wantErr)
+			}
+			if Equal(sArchive, sCopy) {
+				t.Errorf("Series.Subset() retained access to original, want copy")
+			}
+		})
+
+	}
+}
+
 func TestModify_Insert(t *testing.T) {
 	multi := MustNew([]string{"foo"}, Config{MultiIndex: []interface{}{"baz", 1}})
 

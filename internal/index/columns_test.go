@@ -120,6 +120,133 @@ func TestResetDefault(t *testing.T) {
 	}
 }
 
+func TestColumns_InsertLevel(t *testing.T) {
+	col := NewColumns(NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"baz"}, "quuz"))
+	type args struct {
+		pos    int
+		labels []string
+		name   string
+	}
+	type want struct {
+		col Columns
+		err bool
+	}
+	tests := []struct {
+		name  string
+		input Columns
+		args  args
+		want  want
+	}{
+		{name: "0", input: col, args: args{pos: 0, labels: []string{"qux"}, name: "corge"},
+			want: want{col: NewColumns(NewColLevel([]string{"qux"}, "corge"), NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"baz"}, "quuz")),
+				err: false}},
+		{"1", col, args{1, []string{"qux"}, "corge"},
+			want{NewColumns(NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"qux"}, "corge"), NewColLevel([]string{"baz"}, "quuz")),
+				false}},
+		{"2", col, args{2, []string{"qux"}, "corge"},
+			want{NewColumns(NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"baz"}, "quuz"), NewColLevel([]string{"qux"}, "corge")),
+				false}},
+		{"fail: invalid position", col, args{10, []string{"bar"}, "corge"},
+			want{col, true}},
+		{"fail: excessive col labels", col, args{1, []string{"bar", "waldo", "fred"}, "corge"},
+			want{col, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			col := tt.input.Copy()
+			err := col.InsertLevel(tt.args.pos, tt.args.labels, tt.args.name)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Column.InsertLevel() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(col, tt.want.col) {
+				t.Errorf("Column.InsertLevel() = %v, want %v", col, tt.want.col)
+			}
+		})
+	}
+}
+
+func TestColumns_DropLevel(t *testing.T) {
+	col := NewColumns(NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"baz"}, "quuz"))
+	type args struct {
+		level int
+	}
+	type want struct {
+		col Columns
+		err bool
+	}
+	tests := []struct {
+		name  string
+		input Columns
+		args  args
+		want  want
+	}{
+		{name: "drop level 0", input: col, args: args{0},
+			want: want{col: NewColumns(NewColLevel([]string{"baz"}, "quuz")),
+				err: false}},
+		{"drop level 1", col, args{1},
+			want{col: NewColumns(NewColLevel([]string{"bar"}, "quux")),
+				err: false}},
+		{"replace with default", NewColumns(NewColLevel([]string{"baz"}, "quuz")), args{0},
+			want{NewDefaultColumns(1),
+				false}},
+		{"fail: invalid level", col, args{10},
+			want{col, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			col := tt.input.Copy()
+			err := col.DropLevel(tt.args.level)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Column.DropLevel() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(col, tt.want.col) {
+				t.Errorf("Column.DropLevel() = %v, want %v", col, tt.want.col)
+			}
+		})
+	}
+}
+
+func TestColumns_SubsetLevels(t *testing.T) {
+	col := NewColumns(NewColLevel([]string{"bar"}, "quux"), NewColLevel([]string{"baz"}, "quuz"))
+	type args struct {
+		levelPositions []int
+	}
+	type want struct {
+		col Columns
+		err bool
+	}
+	tests := []struct {
+		name  string
+		input Columns
+		args  args
+		want  want
+	}{
+		{name: "one level", input: col, args: args{[]int{0}},
+			want: want{col: NewColumns(NewColLevel([]string{"bar"}, "quux")), err: false}},
+		{"multiple levels", col, args{[]int{0, 1}},
+			want{col, false}},
+		{"fail: invalid level", col, args{[]int{10}},
+			want{col, true}},
+		{"fail: no levels", col, args{[]int{}},
+			want{col, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			col := tt.input.Copy()
+			err := col.SubsetLevels(tt.args.levelPositions)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Column.Subset() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(col, tt.want.col) {
+				t.Errorf("Column.Subset() = %v, want %v", col, tt.want.col)
+			}
+		})
+	}
+}
+
 func TestNewColLevel(t *testing.T) {
 	got := NewColLevel([]string{"foo", "bar"}, "foobar")
 	want := ColLevel{
@@ -294,6 +421,48 @@ func TestNewDefaultColLevel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewDefaultColLevel(tt.args.n, tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewDefaultColLevel() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestColLevelDuplicate(t *testing.T) {
+	lvl := ColLevel{Name: "foo", Labels: []string{"0", "1"}, LabelMap: LabelMap{"0": []int{0}, "1": []int{1}},
+		DataType: options.Int64, IsDefault: true}
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name  string
+		input ColLevel
+		args  args
+		want  ColLevel
+	}{
+		{name: "no duplicates",
+			input: lvl,
+			args:  args{n: 0},
+			want:  lvl,
+		},
+		{"one duplicate",
+			lvl,
+			args{n: 1},
+			ColLevel{Name: "foo", Labels: []string{"0", "1", "0", "1"}, LabelMap: LabelMap{"0": []int{0, 2}, "1": []int{1, 3}},
+				DataType: options.Int64, IsDefault: true},
+		},
+		{"two duplicates",
+			lvl,
+			args{n: 2},
+			ColLevel{Name: "foo", Labels: []string{"0", "1", "0", "1", "0", "1"},
+				LabelMap: LabelMap{"0": []int{0, 2, 4}, "1": []int{1, 3, 5}},
+				DataType: options.Int64, IsDefault: true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lvl := tt.input.Copy()
+			lvl.Duplicate(tt.args.n)
+			if !reflect.DeepEqual(lvl, tt.want) {
+				t.Errorf("ColLevel.Duplicate() = %v, want %v", lvl, tt.want)
 			}
 		})
 	}

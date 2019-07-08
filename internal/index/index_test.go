@@ -377,11 +377,13 @@ func TestIndex_InsertLevel(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
+	lvl := MustNewLevel([]string{"foo", "bar", "baz"}, "")
 	type args struct {
 		pos []int
 	}
 	type want struct {
 		index Index
+		err   bool
 	}
 	tests := []struct {
 		name  string
@@ -389,19 +391,31 @@ func TestSubset(t *testing.T) {
 		args  args
 		want  want
 	}{
-
 		{name: "subsetRows multiIndex",
-			input: New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"foo", "bar", "baz"}, "")),
+			input: New(lvl, lvl),
 			args:  args{pos: []int{0, 1}},
-			want:  want{New(MustNewLevel([]string{"foo", "bar"}, ""), MustNewLevel([]string{"foo", "bar"}, ""))}},
+			want: want{index: New(MustNewLevel([]string{"foo", "bar"}, ""), MustNewLevel([]string{"foo", "bar"}, "")),
+				err: false}},
 		{"subsetRows singleIndex",
-			New(MustNewLevel([]string{"foo", "bar", "baz"}, "")),
+			New(lvl),
 			args{[]int{0, 1}},
-			want{New(MustNewLevel([]string{"foo", "bar"}, ""))}},
+			want{New(MustNewLevel([]string{"foo", "bar"}, "")), false}},
+		{"fail: invalid row",
+			New(lvl),
+			args{[]int{10}},
+			want{New(lvl), true}},
+		{"fail: no rows",
+			New(lvl),
+			args{[]int{}},
+			want{New(lvl), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.input.Subset(tt.args.pos)
+			err := tt.input.Subset(tt.args.pos)
+			if (err != nil) != tt.want.err {
+				t.Errorf("Index.Subset() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
 			if !reflect.DeepEqual(tt.input, tt.want.index) {
 				t.Errorf("Subset(): got %v, want %v", tt.input, tt.want.index)
 			}
@@ -410,11 +424,13 @@ func TestSubset(t *testing.T) {
 }
 
 func TestSubsetLevels(t *testing.T) {
+	idx := New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, ""))
 	type args struct {
 		pos []int
 	}
 	type want struct {
 		index Index
+		err   bool
 	}
 	tests := []struct {
 		name  string
@@ -424,9 +440,17 @@ func TestSubsetLevels(t *testing.T) {
 	}{
 
 		{name: "subsetLevels multiIndex",
-			input: New(MustNewLevel([]string{"foo", "bar", "baz"}, ""), MustNewLevel([]string{"qux", "quux", "quuz"}, "")),
+			input: idx,
 			args:  args{pos: []int{1}},
-			want:  want{New(MustNewLevel([]string{"qux", "quux", "quuz"}, ""))}},
+			want:  want{New(MustNewLevel([]string{"qux", "quux", "quuz"}, "")), false}},
+		{"fail: invalid level levels",
+			idx,
+			args{[]int{10}},
+			want{idx, true}},
+		{"fail: no levels",
+			idx,
+			args{[]int{}},
+			want{idx, true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

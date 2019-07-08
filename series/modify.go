@@ -59,6 +59,26 @@ func (ip InPlace) Less(i, j int) bool {
 	return ip.s.values.Less(i, j)
 }
 
+// Subset subsets a Series in place.
+func (ip InPlace) Subset(rowPositions []int) error {
+	err := ip.s.index.Subset(rowPositions)
+	if err != nil {
+		return fmt.Errorf("series.Subset(): %v", err)
+	}
+	ip.s.values = ip.s.values.Subset(rowPositions)
+	return nil
+}
+
+// Subset subsets a Series based on the supplied integer positions and returns a new Series.
+func (s *Series) Subset(rowPositions []int) (*Series, error) {
+	s = s.Copy()
+	err := s.InPlace.Subset(rowPositions)
+	if err != nil {
+		return newEmptySeries(), err
+	}
+	return s, nil
+}
+
 // Insert inserts a new row into the Series immediately before the specified integer position and modifies the Series in place.
 // If the original Series is empty, replaces it with a new Series.
 func (ip InPlace) Insert(pos int, val interface{}, idxLabels ...interface{}) error {

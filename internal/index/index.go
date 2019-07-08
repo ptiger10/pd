@@ -291,23 +291,39 @@ func (idx *Index) InsertLevel(pos int, values interface{}, name string) error {
 }
 
 // Subset subsets the index with the labels located at the specified integer positions and modifies the index in place.
-func (idx *Index) Subset(rowPositions []int) {
+func (idx *Index) Subset(rowPositions []int) error {
+	err := idx.ensureRowPositions(rowPositions)
+	if err != nil {
+		return fmt.Errorf("index.SubsetLevels(): %v", err)
+	}
+	if len(rowPositions) == 0 {
+		return fmt.Errorf("index.SubsetLevels(): no levels provided")
+	}
+
 	for j := 0; j < idx.NumLevels(); j++ {
 		idx.Levels[j].Labels = idx.Levels[j].Labels.Subset(rowPositions)
 	}
 	idx.Refresh()
-	return
+	return nil
 }
 
 // SubsetLevels subsets the index with only the levels located at specified integer positions and modifies the index in place.
-func (idx *Index) SubsetLevels(levelPositions []int) {
+func (idx *Index) SubsetLevels(levelPositions []int) error {
+	err := idx.ensureLevelPositions(levelPositions)
+	if err != nil {
+		return fmt.Errorf("index.SubsetLevels(): %v", err)
+	}
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("index.SubsetLevels(): no levels provided")
+	}
+
 	newIdx := Index{Levels: make([]Level, len(levelPositions))}
 	for i, pos := range levelPositions {
 		newIdx.Levels[i] = idx.Levels[pos]
 	}
 	newIdx.updateNameMap()
 	*idx = newIdx
-	return
+	return nil
 }
 
 func (idx Index) ensureRowPositions(rowPositions []int) error {

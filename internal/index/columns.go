@@ -20,11 +20,11 @@ func NewColumns(levels ...ColLevel) Columns {
 	if levels == nil {
 		return Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}
 	}
-	cols := Columns{
+	col := Columns{
 		Levels: levels,
 	}
-	cols.updateNameMap()
-	return cols
+	col.updateNameMap()
+	return col
 }
 
 // NewColumnsFromConfig returns new Columns with default length n using a config struct.
@@ -79,25 +79,25 @@ func NewDefaultColumns(n int) Columns {
 }
 
 // Len returns the number of labels in every level of the column.
-func (cols Columns) Len() int {
-	if cols.NumLevels() == 0 {
+func (col Columns) Len() int {
+	if col.NumLevels() == 0 {
 		return 0
 	}
-	return cols.Levels[0].Len()
+	return col.Levels[0].Len()
 }
 
 // NumLevels returns the number of column levels.
-func (cols Columns) NumLevels() int {
-	return len(cols.Levels)
+func (col Columns) NumLevels() int {
+	return len(col.Levels)
 }
 
 // MultiNames returns a slice of the names of the column at every level for every column position.
-func (cols Columns) MultiNames() [][]string {
-	names := make([][]string, cols.Len())
-	for k := 0; k < cols.Len(); k++ {
-		nameSlice := make([]string, cols.NumLevels())
-		for j := 0; j < cols.NumLevels(); j++ {
-			nameSlice[j] = cols.Levels[j].Labels[k]
+func (col Columns) MultiNames() [][]string {
+	names := make([][]string, col.Len())
+	for k := 0; k < col.Len(); k++ {
+		nameSlice := make([]string, col.NumLevels())
+		for j := 0; j < col.NumLevels(); j++ {
+			nameSlice[j] = col.Levels[j].Labels[k]
 		}
 		names[k] = nameSlice
 	}
@@ -105,9 +105,9 @@ func (cols Columns) MultiNames() [][]string {
 }
 
 // Names returns the name of every column by concatenating the labels across every level.
-func (cols Columns) Names() []string {
-	names := make([]string, cols.Len())
-	for i, mn := range cols.MultiNames() {
+func (col Columns) Names() []string {
+	names := make([]string, col.Len())
+	for i, mn := range col.MultiNames() {
 		name := strings.Join(mn, values.GetMultiColNameSeparator())
 		names[i] = name
 	}
@@ -115,25 +115,25 @@ func (cols Columns) Names() []string {
 }
 
 // Name returns the name of the column at col
-func (cols Columns) Name(col int) string {
-	if cols.NumLevels() == 0 {
+func (col Columns) Name(column int) string {
+	if col.NumLevels() == 0 {
 		return ""
 	}
-	return cols.Names()[col]
+	return col.Names()[column]
 }
 
 // MultiName returns the names of the column levels at col
-func (cols Columns) MultiName(col int) []string {
-	if cols.NumLevels() == 0 {
+func (col Columns) MultiName(column int) []string {
+	if col.NumLevels() == 0 {
 		return []string{}
 	}
-	return cols.MultiNames()[col]
+	return col.MultiNames()[column]
 }
 
 // MaxNameWidth returns the number of characters in the column name with the most characters.
-func (cols Columns) MaxNameWidth() int {
+func (col Columns) MaxNameWidth() int {
 	var max int
-	for k := range cols.NameMap {
+	for k := range col.NameMap {
 		if length := len(fmt.Sprint(k)); length > max {
 			max = length
 		}
@@ -142,22 +142,85 @@ func (cols Columns) MaxNameWidth() int {
 }
 
 // UpdateNameMap updates the holistic index map of {index level names: [index level positions]}
-func (cols *Columns) updateNameMap() {
+func (col *Columns) updateNameMap() {
 	nameMap := make(LabelMap)
-	for i, lvl := range cols.Levels {
+	for i, lvl := range col.Levels {
 		nameMap[lvl.Name] = append(nameMap[lvl.Name], i)
 	}
-	cols.NameMap = nameMap
+	col.NameMap = nameMap
 }
 
 // Refresh updates the global name map and the label mappings at every level.
 // Should be called after Series selection or index modification
-func (cols *Columns) Refresh() {
-	cols.updateNameMap()
-	for i := 0; i < len(cols.Levels); i++ {
-		cols.Levels[i].Refresh()
+func (col *Columns) Refresh() {
+	col.updateNameMap()
+	for i := 0; i < len(col.Levels); i++ {
+		col.Levels[i].Refresh()
 	}
 }
+
+// [START Columns modification methods]
+
+// returns an error if any level position does not exist
+func (col Columns) ensureLevelPositions(positions []int) error {
+	for _, pos := range positions {
+		len := col.NumLevels()
+		if pos >= len {
+			return fmt.Errorf("invalid position: %d (max %v)", pos, len-1)
+		}
+	}
+	return nil
+}
+
+// InsertLevel inserts a level into the cols and modifies the DataFrame in place.
+func (col *Columns) InsertLevel(pos int, labels []string, name string) error {
+	if pos > col.NumLevels() {
+		return fmt.Errorf("invalid column level: %d (max: %v)", pos, col.NumLevels()-1)
+	}
+	lvl := NewColLevel(labels, name)
+	if len(labels) != col.Len() {
+		return fmt.Errorf("col.InsertLevel(): len(labels) must equal number of columns (%d != %d)",
+			len(labels), col.Len())
+	}
+	col.Levels = append(col.Levels[:pos], append([]ColLevel{lvl}, col.Levels[pos:]...)...)
+	col.Refresh()
+	return nil
+}
+
+// SubsetLevels modifies the DataFrame in place with only the specified cols levels.
+func (col *Columns) SubsetLevels(levelPositions []int) error {
+	err := col.ensureLevelPositions(levelPositions)
+	if err != nil {
+		return fmt.Errorf("col.SubsetLevels(): %v", err)
+	}
+	if len(levelPositions) == 0 {
+		return fmt.Errorf("col.SubsetLevels(): no levels provided")
+	}
+
+	levels := make([]ColLevel, 0)
+	for _, position := range levelPositions {
+		levels = append(levels, col.Levels[position])
+	}
+	col.Levels = levels
+	col.Refresh()
+	return nil
+}
+
+// DropLevel drops the specified cols level and modifies the DataFrame in place.
+// If there is only one col level remaining, replaces with a new default col level.
+func (col *Columns) DropLevel(level int) error {
+	if err := col.ensureLevelPositions([]int{level}); err != nil {
+		return fmt.Errorf("Columns.DropLevel(): %v", err)
+	}
+	if col.NumLevels() == 1 {
+		col.Levels = append(col.Levels, NewDefaultColLevel(col.Len(), ""))
+	}
+	col.Levels = append(col.Levels[:level], col.Levels[level+1:]...)
+	col.Refresh()
+	return nil
+}
+
+// [END Columns modification methods]
 
 // A ColLevel is a single collection of column labels within a Columns collection, plus label mappings and metadata.
 // It is identical to an index Level except for the Labels, which are a simple []interface{} that do not satisfy the values.Values interface.
@@ -218,6 +281,16 @@ func (lvl *ColLevel) ResetDefault() {
 	return
 }
 
+// Duplicate extends the level by itself n times and modifies the level in place.
+func (lvl *ColLevel) Duplicate(n int) {
+	archive := make([]string, len(lvl.Labels))
+	copy(archive, lvl.Labels)
+	for i := 0; i < n; i++ {
+		lvl.Labels = append(lvl.Labels, archive...)
+		lvl.Refresh()
+	}
+}
+
 // Copy copies a Column Level
 func (lvl ColLevel) Copy() ColLevel {
 	if reflect.DeepEqual(lvl, ColLevel{}) {
@@ -237,26 +310,26 @@ func (lvl ColLevel) Copy() ColLevel {
 }
 
 // Copy returns a deep copy of each column level.
-func (cols Columns) Copy() Columns {
-	if reflect.DeepEqual(cols, Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}) {
+func (col Columns) Copy() Columns {
+	if reflect.DeepEqual(col, Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}) {
 		return Columns{Levels: make([]ColLevel, 0), NameMap: make(LabelMap)}
 	}
-	colsCopy := Columns{NameMap: LabelMap{}}
-	for k, v := range cols.NameMap {
-		colsCopy.NameMap[k] = v
+	colCopy := Columns{NameMap: LabelMap{}}
+	for k, v := range col.NameMap {
+		colCopy.NameMap[k] = v
 	}
-	for i := 0; i < len(cols.Levels); i++ {
-		colsCopy.Levels = append(colsCopy.Levels, cols.Levels[i].Copy())
+	for i := 0; i < len(col.Levels); i++ {
+		colCopy.Levels = append(colCopy.Levels, col.Levels[i].Copy())
 	}
-	return colsCopy
+	return colCopy
 }
 
 // Subset subsets a Columns with all the column levels located at the specified integer positions and modifies the Columns in place.
-func (cols *Columns) Subset(colPositions []int) {
-	for j := 0; j < cols.NumLevels(); j++ {
-		cols.Levels[j].Subset(colPositions)
+func (col *Columns) Subset(colPositions []int) {
+	for j := 0; j < col.NumLevels(); j++ {
+		col.Levels[j].Subset(colPositions)
 	}
-	cols.updateNameMap()
+	col.updateNameMap()
 	return
 }
 

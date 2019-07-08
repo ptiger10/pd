@@ -16,42 +16,6 @@ func (s *Series) Element(position int) Element {
 	return Element{elem.Value, elem.Null, idxElems.Labels, idxElems.DataTypes}
 }
 
-// subsetRows subsets a Series to include only index items and values at the row positions supplied and modifies the Series in place.
-func (ip InPlace) subsetRows(positions []int) {
-	ip.s.values = ip.s.values.Subset(positions)
-	ip.s.index.Subset(positions)
-}
-
-// subsetRows subsets a Series to include only index items and values at the row positions supplied and returns a new Series.
-func (s *Series) subsetRows(positions []int) *Series {
-	s = s.Copy()
-	s.InPlace.subsetRows(positions)
-	return s
-}
-
-// Subset subsets a Series in place.
-func (ip InPlace) Subset(rowPositions []int) error {
-	if err := ip.s.ensureAlignment(); err != nil {
-		return fmt.Errorf("series.Subset: internal alignment error: %v", err)
-	}
-	if err := ip.s.ensureRowPositions(rowPositions); err != nil {
-		return fmt.Errorf("series.Subset(): %v", err)
-	}
-
-	ip.s.InPlace.subsetRows(rowPositions)
-	return nil
-}
-
-// Subset subsets a Series based on the supplied integer positions and returns a new Series.
-func (s *Series) Subset(rowPositions []int) (*Series, error) {
-	s = s.Copy()
-	err := s.InPlace.Subset(rowPositions)
-	if err != nil {
-		return newEmptySeries(), err
-	}
-	return s, nil
-}
-
 // At returns the value at a single integer position, bur returns nil if the position is out of range.
 func (s *Series) At(position int) interface{} {
 	if position >= s.Len() {
@@ -68,13 +32,15 @@ func (s *Series) At(position int) interface{} {
 // If an invalid position is provided, returns empty Series.
 func (s *Series) From(start int, end int) *Series {
 	rowPositions := values.MakeIntRangeInclusive(start, end)
-	if err := s.ensureRowPositions(rowPositions); err != nil {
+	var err error
+	s, err = s.Subset(rowPositions)
+	if err != nil {
 		if options.GetLogWarnings() {
 			log.Printf("s.From(): %v", err)
 		}
 		return newEmptySeries()
 	}
-	return s.subsetRows(rowPositions)
+	return s
 }
 
 // [END Series methods]

@@ -136,19 +136,10 @@ func (idx Index) AppendLevel(values interface{}, name string) error {
 
 // SubsetLevels modifies the Series in place with only the specified index levels.
 func (idx Index) SubsetLevels(levelPositions []int) error {
-	err := idx.s.ensureLevelPositions(levelPositions)
+	err := idx.s.index.SubsetLevels(levelPositions)
 	if err != nil {
 		return fmt.Errorf("s.Index.SubsetLevels(): %v", err)
 	}
-	if len(levelPositions) == 0 {
-		return fmt.Errorf("s.Index.SubsetLevels(): no levels provided")
-	}
-	levels := make([]index.Level, 0)
-	for _, position := range levelPositions {
-		levels = append(levels, idx.s.index.Levels[position])
-	}
-	idx.s.index.Levels = levels
-	idx.s.index.Refresh()
 	return nil
 }
 

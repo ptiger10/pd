@@ -92,7 +92,7 @@ func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*
 
 func (g Grouping) math(group string, fn func(*Series) float64) *Series {
 	positions := g.groups[group].Positions
-	rows := g.s.subsetRows(positions)
+	rows, _ := g.s.Subset(positions)
 	calc := fn(rows)
 	s := MustNew(calc)
 
@@ -127,7 +127,7 @@ func (g Grouping) Group(label string) *Series {
 		}
 		return newEmptySeries()
 	}
-	s := g.s.subsetRows(group.Positions)
+	s, _ := g.s.Subset(group.Positions)
 	return s
 }
 
@@ -172,7 +172,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 func (g Grouping) First() *Series {
 	first := func(group string) *Series {
 		position := g.groups[group].Positions[0]
-		s := g.s.subsetRows([]int{position})
+		s, _ := g.s.Subset([]int{position})
 		return s
 	}
 	ret := newEmptySeries()
@@ -188,7 +188,7 @@ func (g Grouping) Last() *Series {
 	last := func(group string) *Series {
 		lastIdx := len(g.groups[group].Positions) - 1
 		position := g.groups[group].Positions[lastIdx]
-		s := g.s.subsetRows([]int{position})
+		s, _ := g.s.Subset([]int{position})
 		return s
 	}
 	ret := newEmptySeries()
