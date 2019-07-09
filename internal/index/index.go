@@ -1,3 +1,4 @@
+// Package index is an internal collection of data structures and methods for constructing and modifying n-level indexes and column headers.
 package index
 
 import (

@@ -1,3 +1,5 @@
+// Package values is an internal package that powers the values within pd/Series and pd/DataFrame.
+// This package defines the Values interface and multiple concrete implementations of the interface.
 package values
 
 import (

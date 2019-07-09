@@ -1,3 +1,4 @@
+// Package options defines custom DataTypes and settable options for use in constructing, modifying, and displaying DataFrames and Series.
 package options
 
 import "strings"
