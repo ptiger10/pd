@@ -57,29 +57,119 @@ func DataFrame(data []interface{}, config ...Config) (*dataframe.DataFrame, erro
 	return df, nil
 }
 
-// Config customizes the construction of either a DataFrame or Series.
-type Config struct {
-	Name            string
-	DataType        options.DataType
-	Index           interface{}
-	IndexName       string
-	MultiIndex      []interface{}
-	MultiIndexNames []string
-	Col             []string
-	ColName         string
-	MultiCol        [][]string
-	MultiColNames   []string
-}
+// ReadInterface converts [][]interface{}{row1{col1, ...}...} into a DataFrame
+func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.DataFrame, error) {
+	if len(input) == 0 {
+		return dataframe.MustNew(nil), fmt.Errorf("Input must contain at least one row")
+	}
+	if len(input[0]) == 0 {
+		return dataframe.MustNew(nil), fmt.Errorf("Input must contain at least one column")
+	}
 
-// ReadOptions are options for reading in files from other formats
-type ReadOptions struct {
-	DropRows        int
-	NumHeaderRows   int
-	NumIndexColumns int
-	DataTypes       map[string]string
-	IndexDataTypes  map[int]string
-	ColumnDataTypes map[int]string
-	Rename          map[string]string
+	var data [][]interface{}
+	for i := 0; i < len(input); i++ {
+		data = append(data, make([]interface{}, len(input[0])))
+		for m := 0; m < len(input[0]); m++ {
+			data[i][m] = input[i][m]
+		}
+	}
+
+	tmp := ReadOptions{}
+	if config != nil {
+		if len(config) > 1 {
+			return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): can supply at most one ReadOptions (%d > 1)",
+				len(config))
+		}
+		tmp = config[0]
+	}
+
+	tmpVals := make([][]interface{}, 0)
+	tmpMultiIndex := make([][]interface{}, 0)
+
+	var tmpMultiCol [][]interface{}
+	if tmp.DropRows > len(data) {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): DropRows cannot exceed the number of rows (%d > %d)",
+			tmp.DropRows, len(data))
+	}
+
+	data = data[tmp.DropRows:]
+	// header rows
+	if tmp.HeaderRows > len(data) {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): HeaderRows cannot exceed the number of rows (%d > %d)",
+			tmp.HeaderRows, len(data))
+	}
+
+	tmpMultiCol = data[:tmp.HeaderRows]
+	for m := 0; m < tmp.HeaderRows; m++ {
+		tmpMultiCol[m] = tmpMultiCol[m][tmp.IndexCols:]
+	}
+
+	data = data[tmp.HeaderRows:]
+
+	if tmp.IndexCols > len(data[0]) {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): IndexCols cannot exceed the number of rows (%d > %d)",
+			tmp.IndexCols, len(data))
+	}
+
+	// transpose index and values
+	for i := 0; i < len(data); i++ {
+		for m := 0; m < len(data[0]); m++ {
+			if m < tmp.IndexCols {
+				if m >= len(tmpMultiIndex) {
+					tmpMultiIndex = append(tmpMultiIndex, make([]interface{}, len(data)))
+				}
+				tmpMultiIndex[m][i] = data[i][m]
+			} else {
+				if m-tmp.IndexCols >= len(tmpVals) {
+					tmpVals = append(tmpVals, make([]interface{}, len(data)))
+				}
+				tmpVals[m-tmp.IndexCols][i] = data[i][m]
+			}
+		}
+	}
+	// convert [][]interface{} to []interface{} of []interface for compatability with DataFrame constructor
+	var (
+		multiIndex []interface{}
+		vals       []interface{}
+		multiCol   [][]string
+	)
+	for _, col := range tmpMultiIndex {
+		multiIndex = append(multiIndex, col)
+	}
+	for _, col := range tmpVals {
+		vals = append(vals, col)
+	}
+
+	if len(tmpMultiCol) > 0 {
+		for j := 0; j < len(tmpMultiCol); j++ {
+			multiCol = append(multiCol, make([]string, len(tmpMultiCol[0])))
+			for m := 0; m < len(tmpMultiCol[0]); m++ {
+				multiCol[j][m] = fmt.Sprint(tmpMultiCol[j][m])
+			}
+		}
+	}
+
+	df, err := DataFrame(vals, Config{Manual: tmp.Manual, MultiIndex: multiIndex, MultiCol: multiCol})
+	if err != nil {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): %s", err)
+	}
+	for k, v := range tmp.DataTypes {
+		colInt := df.SelectCol(k)
+		if colInt != -1 {
+			df.InPlace.SetCol(colInt, df.ColAt(colInt).Convert(v))
+		}
+	}
+	for k, v := range tmp.IndexDataTypes {
+		err := df.Index.Convert(v, k)
+		if err != nil {
+			if options.GetLogWarnings() {
+				log.Printf("warning: ReadInterface() converting IndexDataTypes: %v", err)
+			}
+		}
+	}
+	df.RenameCols(tmp.Rename)
+
+	return df, nil
 }
 
 // ReadCSV converts a CSV file into a DataFrame.
@@ -103,41 +193,48 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
 	}
 
-	tmpVals := make([][]string, 0)
-	tmpMultiIndex := make([][]string, 0)
+	tmpVals := make([][]interface{}, 0)
+	tmpMultiIndex := make([][]interface{}, 0)
 
 	var multiCol [][]string
 	if tmp.DropRows > len(records) {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): DropRows cannot exceed the number of row (%d > %d)",
+			tmp.DropRows, len(records))
 	}
 	records = records[tmp.DropRows:]
 	// header rows
-	multiCol = records[:tmp.NumHeaderRows]
-	for m := 0; m < tmp.NumHeaderRows; m++ {
-		multiCol[m] = multiCol[m][tmp.NumIndexColumns:]
+	if tmp.HeaderRows > len(records) {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): HeaderRows cannot exceed the number of rows (%d > %d)",
+			tmp.HeaderRows, len(data))
 	}
-	if tmp.NumHeaderRows > len(records) {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
+	multiCol = records[:tmp.HeaderRows]
+	for m := 0; m < tmp.HeaderRows; m++ {
+		multiCol[m] = multiCol[m][tmp.IndexCols:]
 	}
-	records = records[tmp.NumHeaderRows:]
 
+	records = records[tmp.HeaderRows:]
+
+	if tmp.IndexCols > len(records[0]) {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): IndexCols cannot exceed the number of rows (%d > %d)",
+			tmp.IndexCols, len(data))
+	}
 	// transpose index and values
 	for i := 0; i < len(records); i++ {
 		for m := 0; m < len(records[0]); m++ {
-			if m < tmp.NumIndexColumns {
+			if m < tmp.IndexCols {
 				if m >= len(tmpMultiIndex) {
-					tmpMultiIndex = append(tmpMultiIndex, make([]string, len(records)))
+					tmpMultiIndex = append(tmpMultiIndex, make([]interface{}, len(records)))
 				}
 				tmpMultiIndex[m][i] = records[i][m]
 			} else {
-				if m-tmp.NumIndexColumns >= len(tmpVals) {
-					tmpVals = append(tmpVals, make([]string, len(records)))
+				if m-tmp.IndexCols >= len(tmpVals) {
+					tmpVals = append(tmpVals, make([]interface{}, len(records)))
 				}
-				tmpVals[m-tmp.NumIndexColumns][i] = records[i][m]
+				tmpVals[m-tmp.IndexCols][i] = records[i][m]
 			}
 		}
 	}
-	// convert [][]string to []interface{} of []string for compatability with DataFrame constructor
+	// convert [][]string to []interface{} of []interface for compatability with DataFrame constructor
 	var (
 		multiIndex []interface{}
 		vals       []interface{}
@@ -149,7 +246,7 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 		vals = append(vals, col)
 	}
 
-	df, err := DataFrame(vals, Config{MultiIndex: multiIndex, MultiCol: multiCol})
+	df, err := DataFrame(vals, Config{Manual: tmp.Manual, MultiIndex: multiIndex, MultiCol: multiCol})
 	if err != nil {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
 	}
@@ -163,11 +260,38 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 		err := df.Index.Convert(v, k)
 		if err != nil {
 			if options.GetLogWarnings() {
-				log.Printf("pd.ReadCSV() converting IndexDataTypes: %v", err)
+				log.Printf("warning: ReadCSV() converting IndexDataTypes: %v", err)
 			}
 		}
 	}
 	df.RenameCols(tmp.Rename)
 
 	return df, nil
+}
+
+// Config customizes the construction of either a DataFrame or Series.
+type Config struct {
+	Name            string
+	DataType        options.DataType
+	Index           interface{}
+	IndexName       string
+	MultiIndex      []interface{}
+	MultiIndexNames []string
+	Col             []string
+	ColName         string
+	MultiCol        [][]string
+	MultiColNames   []string
+	Manual          bool
+}
+
+// ReadOptions are options for reading in files from other formats
+type ReadOptions struct {
+	DropRows        int
+	HeaderRows      int
+	IndexCols       int
+	Manual          bool
+	DataTypes       map[string]string
+	IndexDataTypes  map[int]string
+	ColumnDataTypes map[int]string
+	Rename          map[string]string
 }

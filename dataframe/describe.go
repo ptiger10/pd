@@ -1,7 +1,10 @@
 package dataframe
 
 import (
+	"bytes"
+	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"time"
 
@@ -473,3 +476,54 @@ func (df *DataFrame) ensureColumnLevelPositions(positions []int) error {
 }
 
 // [END ensure methods]
+
+// [START export methods]
+
+// Export converts index, columns, and values to [][]interface{}{row1{col1, col2, ...}, ...}.
+func (df *DataFrame) Export() [][]interface{} {
+	nCols := df.NumCols()
+	nIdxLevels := df.IndexLevels()
+	nColLevels := df.ColLevels()
+	ret := make([][]interface{}, nColLevels+df.Len())
+
+	for i := 0; i < len(ret); i++ {
+		ret[i] = make([]interface{}, nIdxLevels+nCols)
+	}
+	for j := 0; j < nColLevels; j++ {
+		for m := 0; m < nCols; m++ {
+			ret[j][m+nIdxLevels] = df.cols.Levels[j].Labels[m]
+		}
+	}
+	for i := 0; i < df.Len(); i++ {
+		row := df.Row(i)
+		for j := 0; j < nIdxLevels; j++ {
+			ret[nColLevels+i][j] = row.Labels[j]
+		}
+		for m := 0; m < nCols; m++ {
+			ret[nColLevels+i][nIdxLevels+m] = row.Values[m]
+		}
+	}
+	return ret
+}
+
+// ExportToCSV exports the DataFrame to a CSV file.
+func (df *DataFrame) ExportToCSV(filepath string) {
+
+	transposedValues := df.Export()
+	var transposedStringValues [][]string
+	for j := 0; j < len(transposedValues); j++ {
+		transposedStringValues = append(transposedStringValues, make([]string, len(transposedValues[0])))
+		for m := 0; m < len(transposedValues[0]); m++ {
+			transposedStringValues[j][m] = fmt.Sprint(transposedValues[j][m])
+		}
+	}
+	var b bytes.Buffer
+	w := csv.NewWriter(&b)
+	// ducks error because process is controlled
+	w.WriteAll(transposedStringValues)
+	// ducks error because process is controlled
+	ioutil.WriteFile(filepath, b.Bytes(), 0666)
+	return
+}
+
+// [END export methods]

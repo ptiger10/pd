@@ -202,3 +202,43 @@ func TestHeadTail(t *testing.T) {
 		})
 	}
 }
+
+func TestDataFrame_Export(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *DataFrame
+		want  [][]interface{}
+	}{
+		{name: "pass", input: MustNew([]interface{}{"foo"}, Config{Index: "bar", Col: []string{"baz"}}),
+			want: [][]interface{}{{nil, "baz"}, {"bar", "foo"}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.input.Export()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("df.Export() got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDataFrame_ExportToCSV(t *testing.T) {
+	type args struct {
+		filepath string
+	}
+	tests := []struct {
+		name  string
+		input *DataFrame
+		args  args
+		want  bool
+	}{
+		{name: "pass", input: MustNew([]interface{}{"foo"}, Config{Index: "bar", Col: []string{"baz"}}),
+			want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.input.ExportToCSV("output_test.csv")
+			//TODO: move ReadCSV to dataframe package to rehydrate output and compare to input
+		})
+	}
+}

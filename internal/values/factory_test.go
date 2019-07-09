@@ -90,6 +90,55 @@ func TestMustCreateValuesFromInterface(t *testing.T) {
 	}
 }
 
+func TestInterfaceSliceFactory(t *testing.T) {
+	type args struct {
+		data     []interface{}
+		manual   bool
+		dataType options.DataType
+	}
+	type want struct {
+		vals []Container
+		err  bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "normal", args: args{data: []interface{}{"foo"}, manual: false, dataType: options.None},
+			want: want{vals: []Container{Container{DataType: options.String, Values: &stringValues{stringValue{"foo", false}}}},
+				err: false}},
+		{name: "normal manual", args: args{data: []interface{}{"foo"}, manual: true, dataType: options.None},
+			want: want{vals: []Container{Container{DataType: options.String, Values: &stringValues{stringValue{"foo", false}}}},
+				err: false}},
+		{"interpolate []interface", args{data: []interface{}{[]interface{}{"foo"}}, manual: false, dataType: options.None},
+			want{vals: []Container{Container{DataType: options.String, Values: &stringValues{stringValue{"foo", false}}}},
+				err: false}},
+		{"no interpolation", args{data: []interface{}{[]interface{}{"foo"}}, manual: true, dataType: options.None},
+			want{vals: []Container{Container{DataType: options.Interface, Values: &interfaceValues{interfaceValue{"foo", false}}}},
+				err: false}},
+		{"with conversion", args{data: []interface{}{[]interface{}{"foo"}}, manual: true, dataType: options.Bool},
+			want{vals: []Container{Container{DataType: options.Bool, Values: &boolValues{boolValue{true, false}}}},
+				err: false}},
+		{"fail: unsupported value", args{data: []interface{}{complex64(1)}, manual: false, dataType: options.None},
+			want{vals: nil, err: true}},
+		{"fail: unsupported datatype", args{data: []interface{}{"foo"}, manual: false, dataType: options.Unsupported},
+			want{vals: nil, err: true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := InterfaceSliceFactory(tt.args.data, tt.args.manual, tt.args.dataType)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InterfaceSliceFactory() error = %v, wantErr %v", err, tt.want.err)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want.vals) {
+				t.Errorf("InterfaceSliceFactory() = %v, want %v", got, tt.want.vals)
+			}
+		})
+	}
+}
+
 func TestScalarFactory(t *testing.T) {
 	type args struct {
 		data interface{}
@@ -351,8 +400,8 @@ func TestValues_Interpolate(t *testing.T) {
 		{name: "string", args: args{data: []interface{}{"foo", "bar", "baz", "qux", 4}}, want: options.String},
 		{name: "bool", args: args{data: []interface{}{true, false, true, false, "foo"}}, want: options.Bool},
 		{name: "dateTime", args: args{data: []interface{}{dt, dt, dt, dt, "foo"}}, want: options.DateTime},
-		{name: "none", args: args{data: []interface{}{1.5, 1, "foo", true, dt}}, want: options.None},
-		{name: "none", args: args{data: long}, want: options.String},
+		{name: "none -> interface", args: args{data: []interface{}{1.5, 1, "foo", true, dt}}, want: options.Interface},
+		{name: "long string", args: args{data: long}, want: options.String},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -448,5 +497,27 @@ func TestContainer_Copy(t *testing.T) {
 	want := Container{&stringValues{stringValue{"foo", false}, stringValue{"bar", false}}, options.String}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Container.Copy(): got %v, want %v", got, want)
+	}
+}
+
+func TestValues_Transpose(t *testing.T) {
+	type args struct {
+		data [][]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []interface{}
+	}{
+		{name: "pass", args: args{[][]interface{}{{1, 2, 3}, {4, 5, 6}}},
+			want: []interface{}{[]interface{}{1, 4}, []interface{}{2, 5}, []interface{}{3, 6}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := TransposeValues(tt.args.data)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TransposeValues() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

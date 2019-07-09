@@ -11,7 +11,7 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
-// InterfaceFactory converts interface{} to Values
+// InterfaceFactory converts interface{} to Container
 func InterfaceFactory(data interface{}) (Container, error) {
 	var container Container
 	var err error
@@ -35,6 +35,38 @@ func InterfaceFactory(data interface{}) (Container, error) {
 		}
 	}
 	return container, err
+}
+
+// InterfaceSliceFactory converts []interface{} to []Container
+func InterfaceSliceFactory(data []interface{}, manualMode bool, dataType options.DataType) ([]Container, error) {
+	vals := make([]Container, len(data))
+	for i := 0; i < len(data); i++ {
+		container, err := InterfaceFactory(data[i])
+		if err != nil {
+			return nil, fmt.Errorf("dataframe.New(): %v", err)
+		}
+		_, isInterfaceSlice := data[i].([]interface{})
+		if !manualMode && isInterfaceSlice {
+			vals, _ := data[i].([]interface{})
+			interpolateAs := Interpolate(vals)
+			if interpolateAs != options.Interface {
+				// ducks error because interpolation is controlled
+				container.Values, _ = Convert(container.Values, interpolateAs)
+			}
+			container.DataType = interpolateAs
+		}
+
+		// optional DataType conversion
+		if dataType != options.None {
+			container.Values, err = Convert(container.Values, dataType)
+			if err != nil {
+				return nil, fmt.Errorf("dataframe.New(): %v", err)
+			}
+			container.DataType = dataType
+		}
+		vals[i] = container
+	}
+	return vals, nil
 }
 
 // MustCreateValuesFromInterface returns a container that satisfies the Values interface or panics.
@@ -259,7 +291,7 @@ func Interpolate(data interface{}) options.DataType {
 	if r.Float64+r.Int64 >= GetInterpolationThreshold() {
 		return options.Float64
 	}
-	return options.None
+	return options.Interface
 }
 
 // InterpolateString converts a string into another datatype if possible, or retains as string otherwise,
@@ -340,4 +372,25 @@ func (vc Container) Copy() Container {
 		Values:   vc.Values.Copy(),
 		DataType: vc.DataType,
 	}
+}
+
+// TransposeValues pivots [][]interface{}{row1{col1, col2, col3}} to []interface{}{col1{row1}, col2{row1}, col3{row1}}
+func TransposeValues(data [][]interface{}) []interface{} {
+	var transposedData [][]interface{}
+	if len(data) > 0 {
+		transposedData = make([][]interface{}, len(data[0]))
+		for m := 0; m < len(data[0]); m++ {
+			transposedData[m] = make([]interface{}, len(data))
+		}
+		for i := 0; i < len(data); i++ {
+			for m := 0; m < len(data[0]); m++ {
+				transposedData[m][i] = data[i][m]
+			}
+		}
+	}
+	var ret []interface{}
+	for _, col := range transposedData {
+		ret = append(ret, col)
+	}
+	return ret
 }

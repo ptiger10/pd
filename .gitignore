@@ -4,6 +4,6 @@
 *.sh
 Makefile
 notebooks/
-profile.out
+output_test.csv
 debug
 go.sum

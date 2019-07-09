@@ -129,6 +129,18 @@ func TestNewFromConfig(t *testing.T) {
 		{"multiIndex",
 			args{Config{MultiIndex: []interface{}{[]string{"foo", "bar"}, []string{"baz", "qux"}}, MultiIndexNames: []string{"quux", "quuz"}}, 2},
 			want{New(MustNewLevel([]string{"foo", "bar"}, "quux"), MustNewLevel([]string{"baz", "qux"}, "quuz")), false}},
+		{"singleIndex interpolated",
+			args{Config{Index: []interface{}{"foo", "bar"}, IndexName: "baz"}, 2},
+			want{New(MustNewLevel([]string{"foo", "bar"}, "baz")), false}},
+		{"singleIndex not interpolated",
+			args{Config{Manual: true, Index: []interface{}{"foo", "bar"}, IndexName: "baz"}, 2},
+			want{New(MustNewLevel([]interface{}{"foo", "bar"}, "baz")), false}},
+		{"multiIndex interpolated",
+			args{Config{MultiIndex: []interface{}{[]interface{}{"foo", "bar"}}, MultiIndexNames: []string{"baz"}}, 2},
+			want{New(MustNewLevel([]string{"foo", "bar"}, "baz")), false}},
+		{"multiIndex not interpolated",
+			args{Config{Manual: true, MultiIndex: []interface{}{[]interface{}{"foo", "bar"}}, MultiIndexNames: []string{"baz"}}, 2},
+			want{New(MustNewLevel([]interface{}{"foo", "bar"}, "baz")), false}},
 		{"fail: singleIndex unsupported type",
 			args{Config{Index: complex64(1)}, 2},
 			want{Index{}, true}},
@@ -195,6 +207,12 @@ func TestIndex_NewLevel(t *testing.T) {
 					Name: "bar", DataType: options.String,
 					Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
 				false}},
+		{"[]interface no interpolation", args{[]interface{}{"foo"}, ""},
+			want{
+				Level{
+					DataType: options.Interface,
+					Labels:   values.MustCreateValuesFromInterface([]interface{}{"foo"}).Values, LabelMap: LabelMap{"foo": []int{0}}},
+				false}},
 		{"fail unsupported", args{complex64(1), "bar"},
 			want{Level{}, true}},
 	}
@@ -206,6 +224,46 @@ func TestIndex_NewLevel(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want.level) {
 				t.Errorf("NewLevel() = %v, want %v", got, tt.want.level)
+			}
+		})
+	}
+}
+
+func TestIndex_InterpolatedNewLevel(t *testing.T) {
+	type args struct {
+		data interface{}
+		name string
+	}
+	type want struct {
+		level Level
+		err   bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "empty", args: args{data: nil, name: ""},
+			want: want{level: Level{}, err: false}},
+		{name: "no interpolation", args: args{data: "foo", name: ""},
+			want: want{level: Level{DataType: options.String,
+				Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+				err: false}},
+		{name: "interpolated string", args: args{data: []interface{}{"foo"}, name: ""},
+			want: want{level: Level{DataType: options.String,
+				Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+				err: false}},
+		{"fail unsupported", args{complex64(1), "bar"},
+			want{Level{}, true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := InterpolatedNewLevel(tt.args.data, tt.args.name)
+			if (err != nil) != tt.want.err {
+				t.Errorf("InterpolatedNewLevel() error = %v, want %v", err, tt.want.err)
+			}
+			if !reflect.DeepEqual(got, tt.want.level) {
+				t.Errorf("InterpolatedNewLevel() = %v, want %v", got, tt.want.level)
 			}
 		})
 	}

@@ -39,6 +39,7 @@ type Config struct {
 	ColName         string
 	MultiCol        [][]string
 	MultiColNames   []string
+	Manual          bool
 }
 
 // [START constructors]
@@ -81,14 +82,20 @@ func NewFromConfig(config Config, n int) (Index, error) {
 				"internal/index.NewFromConfig(): if MultiIndexNames is not nil, it must must have same length as MultiIndex: %d != %d",
 				len(config.MultiIndexNames), len(config.MultiIndex))
 		}
-		multi, err := CreateMultiIndex(config.MultiIndex, config.MultiIndexNames)
+		multi, err := CreateMultiIndex(config.MultiIndex, config.MultiIndexNames, config.Manual)
 		if err != nil {
 			return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 		}
 		return multi, nil
 	}
 	// default: single index
-	newLevel, err := NewLevel(config.Index, config.IndexName)
+	var newLevel Level
+	var err error
+	if !config.Manual {
+		newLevel, err = InterpolatedNewLevel(config.Index, config.IndexName)
+	} else {
+		newLevel, err = NewLevel(config.Index, config.IndexName)
+	}
 	if err != nil {
 		return Index{}, fmt.Errorf("internal/index.NewFromConfig(): %v", err)
 	}
@@ -96,14 +103,20 @@ func NewFromConfig(config Config, n int) (Index, error) {
 }
 
 // CreateMultiIndex creates a multiindex from a slice of interface values representing different levels
-func CreateMultiIndex(levels []interface{}, names []string) (Index, error) {
+func CreateMultiIndex(levels []interface{}, names []string, manualMode bool) (Index, error) {
 	var newLevels []Level
 	for i := 0; i < len(levels); i++ {
 		var levelName string
 		if i < len(names) {
 			levelName = names[i]
 		}
-		newLevel, err := NewLevel(levels[i], levelName)
+		var newLevel Level
+		var err error
+		if !manualMode {
+			newLevel, err = InterpolatedNewLevel(levels[i], levelName)
+		} else {
+			newLevel, err = NewLevel(levels[i], levelName)
+		}
 		if err != nil {
 			return Index{}, fmt.Errorf("CreateMultiIndex(): %v", err)
 		}
@@ -136,16 +149,39 @@ func NewDefaultLevel(n int, name string) Level {
 	return lvl
 }
 
+// InterpolatedNewLevel creates an Index Level and interpolates []interface{}
+func InterpolatedNewLevel(data interface{}, name string) (Level, error) {
+	if data == nil {
+		return Level{}, nil
+	}
+	container, err := values.InterfaceFactory(data)
+	if err != nil {
+		return Level{}, fmt.Errorf("NewLevel(): %v", err)
+	}
+	if vals, isInterfaceSlice := data.([]interface{}); isInterfaceSlice {
+		interpolateAs := values.Interpolate(vals)
+		if interpolateAs != options.Interface {
+			// ducks error because interpolation is controlled
+			container.Values, _ = values.Convert(container.Values, interpolateAs)
+		}
+		container.DataType = interpolateAs
+	}
+
+	lvl := Level{Labels: container.Values, DataType: container.DataType, Name: name}
+	lvl.Refresh()
+	return lvl, nil
+}
+
 // NewLevel creates an Index Level from a Scalar or Slice interface{} but returns an error if interface{} is not supported by factory.
 func NewLevel(data interface{}, name string) (Level, error) {
 	if data == nil {
 		return Level{}, nil
 	}
-	factory, err := values.InterfaceFactory(data)
+	container, err := values.InterfaceFactory(data)
 	if err != nil {
 		return Level{}, fmt.Errorf("NewLevel(): %v", err)
 	}
-	lvl := Level{Labels: factory.Values, DataType: factory.DataType, Name: name}
+	lvl := Level{Labels: container.Values, DataType: container.DataType, Name: name}
 	lvl.Refresh()
 	return lvl, nil
 }

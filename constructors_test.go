@@ -119,7 +119,7 @@ func TestReadCSV(t *testing.T) {
 				}),
 				false}},
 		{"1 header row", args{"csv_test.csv",
-			[]ReadOptions{ReadOptions{NumHeaderRows: 1}}},
+			[]ReadOptions{ReadOptions{HeaderRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"foo", "bar"},
@@ -127,14 +127,14 @@ func TestReadCSV(t *testing.T) {
 				}, dataframe.Config{Col: []string{"", "A"}}),
 				false}},
 		{"1 index column", args{"csv_test.csv",
-			[]ReadOptions{ReadOptions{NumIndexColumns: 1}}},
+			[]ReadOptions{ReadOptions{IndexCols: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"A", "1", "2"},
 				}, dataframe.Config{Index: []string{"NaN", "foo", "bar"}}),
 				false}},
 		{"1 header row, 1 index column", args{"csv_test.csv",
-			[]ReadOptions{ReadOptions{NumIndexColumns: 1, NumHeaderRows: 1}}},
+			[]ReadOptions{ReadOptions{IndexCols: 1, HeaderRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"1", "2"},
@@ -142,9 +142,9 @@ func TestReadCSV(t *testing.T) {
 				false}},
 		{"1 header row, 1 index column, datatype conversion", args{"csv_test.csv",
 			[]ReadOptions{ReadOptions{
-				NumIndexColumns: 1,
-				NumHeaderRows:   1,
-				DataTypes:       map[string]string{"A": "float"}}}},
+				IndexCols:  1,
+				HeaderRows: 1,
+				DataTypes:  map[string]string{"A": "float"}}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]float64{1, 2},
@@ -152,9 +152,9 @@ func TestReadCSV(t *testing.T) {
 				false}},
 		{"1 header row, 1 index column, rename column", args{"csv_test.csv",
 			[]ReadOptions{ReadOptions{
-				NumIndexColumns: 1,
-				NumHeaderRows:   1,
-				Rename:          map[string]string{"A": "B"}}}},
+				IndexCols:  1,
+				HeaderRows: 1,
+				Rename:     map[string]string{"A": "B"}}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"1", "2"},
@@ -162,15 +162,27 @@ func TestReadCSV(t *testing.T) {
 				false}},
 		{"1 header row, 1 index column, convert index type", args{"csv_test.csv",
 			[]ReadOptions{ReadOptions{
-				NumIndexColumns: 1,
-				NumHeaderRows:   1,
-				IndexDataTypes:  map[int]string{0: "bool"}}}},
+				IndexCols:      1,
+				HeaderRows:     1,
+				IndexDataTypes: map[int]string{0: "bool"}}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"1", "2"},
 				}, dataframe.Config{Index: []bool{true, true}, Col: []string{"A"}}),
 				false}},
 		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: too many headers", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{
+				HeaderRows: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: too many index columns", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{
+				IndexCols: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: drop too many rows", args{"csv_test.csv",
+			[]ReadOptions{ReadOptions{
+				DropRows: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -180,6 +192,119 @@ func TestReadCSV(t *testing.T) {
 			}
 			if !dataframe.Equal(got, tt.want.df) {
 				t.Errorf("ReadCSV() got \n%v, \nwant \n%v", got, tt.want.df)
+				diff, _ := messagediff.PrettyDiff(got, tt.want.df)
+				fmt.Println(diff)
+			}
+		})
+	}
+}
+
+func TestInterface(t *testing.T) {
+	data := [][]interface{}{{"foo", "bar"}, {"baz", "qux"}}
+	type args struct {
+		data    [][]interface{}
+		options []ReadOptions
+	}
+	type want struct {
+		df  *dataframe.DataFrame
+		err bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "no config", args: args{data: data, options: nil},
+			want: want{
+				df: dataframe.MustNew([]interface{}{
+					[]string{"foo", "baz"},
+					[]string{"bar", "qux"},
+				}),
+				err: false}},
+		{"drop 1 row", args{data, []ReadOptions{ReadOptions{DropRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"baz"},
+					[]string{"qux"},
+				}),
+				false}},
+		{"1 header row", args{data, []ReadOptions{ReadOptions{HeaderRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"baz"},
+					[]string{"qux"},
+				}, dataframe.Config{Col: []string{"foo", "bar"}}),
+				false}},
+		{"1 index column", args{data, []ReadOptions{ReadOptions{IndexCols: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"bar", "qux"},
+				}, dataframe.Config{Index: []string{"foo", "baz"}}),
+				false}},
+		{"1 header row, 1 index column", args{data, []ReadOptions{ReadOptions{IndexCols: 1, HeaderRows: 1}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"qux"},
+				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
+				false}},
+		{"1 header row, 1 index column, datatype conversion", args{data,
+			[]ReadOptions{ReadOptions{
+				IndexCols:  1,
+				HeaderRows: 1,
+				DataTypes:  map[string]string{"bar": "bool"},
+			}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]bool{true},
+				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
+				false}},
+		{"1 header row, 1 index column, rename column", args{data,
+			[]ReadOptions{ReadOptions{
+				IndexCols:  1,
+				HeaderRows: 1,
+				Rename:     map[string]string{"bar": "corge"}}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"qux"},
+				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"corge"}}),
+				false}},
+		{"1 header row, 1 index column, convert index type", args{data,
+			[]ReadOptions{ReadOptions{
+				IndexCols:      1,
+				HeaderRows:     1,
+				IndexDataTypes: map[int]string{0: "bool"}}}},
+			want{
+				dataframe.MustNew([]interface{}{
+					[]string{"qux"},
+				}, dataframe.Config{Index: []bool{true}, Col: []string{"bar"}}),
+				false}},
+		{"fail: too many headers", args{data,
+			[]ReadOptions{ReadOptions{
+				HeaderRows: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: too many index columns", args{data,
+			[]ReadOptions{ReadOptions{
+				IndexCols: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: drop too many rows", args{data,
+			[]ReadOptions{ReadOptions{
+				DropRows: 10,
+			}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: excessive ReadOptions", args{data,
+			[]ReadOptions{ReadOptions{}, ReadOptions{}}}, want{dataframe.MustNew(nil), true}},
+		{"fail: no rows", args{[][]interface{}{}, nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: no columns", args{[][]interface{}{[]interface{}{}}, nil}, want{dataframe.MustNew(nil), true}},
+		// TODO: []interface{}{complex64} should fail
+		// {"fail: unsupported data", args{[][]interface{}{{complex64(1)}}, nil}, want{dataframe.MustNew(nil), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ReadInterface(tt.args.data, tt.args.options...)
+			if (err != nil) != tt.want.err {
+				t.Errorf("ReadInterface():  error = %v, want %v", err, tt.want.err)
+			}
+			if !dataframe.Equal(got, tt.want.df) {
+				t.Errorf("ReadInterface() got \n%v, \nwant \n%v", got, tt.want.df)
 				diff, _ := messagediff.PrettyDiff(got, tt.want.df)
 				fmt.Println(diff)
 			}

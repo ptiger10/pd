@@ -151,28 +151,6 @@ func TestDataFrame_Pivot_stack(t *testing.T) {
 // 	}
 // }
 
-func TestDataFrame_transpose(t *testing.T) {
-	type args struct {
-		data [][]interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want []interface{}
-	}{
-		{name: "pass", args: args{[][]interface{}{{1, 2, 3}, {4, 5, 6}}},
-			want: []interface{}{[]interface{}{1, 4}, []interface{}{2, 5}, []interface{}{3, 6}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := transpose(tt.args.data)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("transpose() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 // TODO: Multiple index levels
 func TestDataFrame_Pivot_stackIndex(t *testing.T) {
 	type args struct {

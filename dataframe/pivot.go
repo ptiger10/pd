@@ -61,7 +61,7 @@ func (df *DataFrame) stack(level int) (newIdxPositions []int, valsMatrix [][]int
 
 func (df *DataFrame) stackIndex(level int) *DataFrame {
 	newIdxPositions, valsMatrix, newColLevel := df.stack(level)
-	transposedVals := transpose(valsMatrix)
+	transposedVals := values.TransposeValues(valsMatrix)
 	var containers []values.Container
 	for i := 0; i < len(transposedVals); i++ {
 		container := values.MustCreateValuesFromInterface(transposedVals[i])
@@ -121,26 +121,6 @@ func (df *DataFrame) Transpose() *DataFrame {
 	for m := 0; m < df.NumCols(); m++ {
 		row := transposeSeries(df.hydrateSeries(m))
 		ret.InPlace.appendDataFrameRow(row)
-	}
-	return ret
-}
-
-func transpose(data [][]interface{}) []interface{} {
-	var transposedData [][]interface{}
-	if len(data) > 0 {
-		transposedData = make([][]interface{}, len(data[0]))
-		for m := 0; m < len(data[0]); m++ {
-			transposedData[m] = make([]interface{}, len(data))
-		}
-		for i := 0; i < len(data); i++ {
-			for m := 0; m < len(data[0]); m++ {
-				transposedData[m][i] = data[i][m]
-			}
-		}
-	}
-	var ret []interface{}
-	for _, col := range transposedData {
-		ret = append(ret, col)
 	}
 	return ret
 }
