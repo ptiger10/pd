@@ -4,17 +4,19 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
 
 func TestDataFrame_Describe(t *testing.T) {
 	type want struct {
-		len          int
-		numCols      int
-		numIdxLevels int
-		numColLevels int
-		dataType     string
-		dataTypes    *series.Series
+		len             int
+		numCols         int
+		numIdxLevels    int
+		numColLevels    int
+		dataType        options.DataType
+		dataTypePrinter string
+		dataTypes       *series.Series
 	}
 	tests := []struct {
 		name  string
@@ -25,31 +27,31 @@ func TestDataFrame_Describe(t *testing.T) {
 			input: newEmptyDataFrame(),
 			want: want{
 				len: 0, numCols: 0, numIdxLevels: 0, numColLevels: 0,
-				dataType: "empty", dataTypes: series.MustNew(nil),
+				dataType: options.None, dataTypePrinter: "empty", dataTypes: series.MustNew(nil),
 			}},
 		{"default index, col",
 			MustNew([]interface{}{"foo"}),
 			want{
 				len: 1, numCols: 1, numIdxLevels: 1, numColLevels: 1,
-				dataType: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
+				dataType: options.String, dataTypePrinter: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
 			}},
 		{"multi index, single col",
 			MustNew([]interface{}{"foo"}, Config{MultiIndex: []interface{}{"baz", "qux"}}),
 			want{
 				len: 1, numCols: 1, numIdxLevels: 2, numColLevels: 1,
-				dataType: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
+				dataType: options.String, dataTypePrinter: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
 			}},
 		{"single index, two cols",
-			MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"baz", "qux"}}),
+			MustNew([]interface{}{"foo", 5}, Config{Col: []string{"baz", "qux"}}),
 			want{
 				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 1,
-				dataType: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
+				dataType: options.Interface, dataTypePrinter: "mixed", dataTypes: series.MustNew([]string{"string", "int64"}, series.Config{Name: "datatypes"}),
 			}},
 		{"single index, multi col",
 			MustNew([]interface{}{"foo", "bar"}, Config{MultiCol: [][]string{{"baz", "qux"}, {"corge", "fred"}}}),
 			want{
 				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 2,
-				dataType: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
+				dataType: options.String, dataTypePrinter: "string", dataTypes: series.MustNew([]string{"string", "string"}, series.Config{Name: "datatypes"}),
 			}},
 	}
 	for _, tt := range tests {
@@ -71,9 +73,13 @@ func TestDataFrame_Describe(t *testing.T) {
 			if gotNumColLevels != tt.want.numColLevels {
 				t.Errorf("df.ColLevels(): got %v, want %v", gotNumColLevels, tt.want.numColLevels)
 			}
-			gotDataType := df.dataTypePrinter()
+			gotDataType := df.dataType()
 			if gotDataType != tt.want.dataType {
-				t.Errorf("df.dataTypePrinter: got %v, want %v", gotDataType, tt.want.dataType)
+				t.Errorf("df.gotDataType: got %v, want %v", gotDataType, tt.want.dataType)
+			}
+			gotDataTypePrinter := df.dataTypePrinter()
+			if gotDataTypePrinter != tt.want.dataTypePrinter {
+				t.Errorf("df.dataTypePrinter: got %v, want %v", gotDataTypePrinter, tt.want.dataTypePrinter)
 			}
 			gotDataTypes := df.DataTypes()
 			if !series.Equal(gotDataTypes, tt.want.dataTypes) {
@@ -94,10 +100,17 @@ func TestEqual(t *testing.T) {
 		args  args
 		want  bool
 	}{
-		{name: "equal", input: df, args: args{df2: df}, want: true},
+		{name: "equal", input: df,
+			args: args{df2: MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Index: "corge", Col: []string{"baz", "qux"}})},
+			want: true},
 		{"equal empty", newEmptyDataFrame(), args{newEmptyDataFrame()}, true},
 		{"equal empty copy", newEmptyDataFrame().Copy(), args{newEmptyDataFrame()}, true},
-		{"not equal", df, args{MustNew([]interface{}{[]string{"foo"}, []string{"bar"}})}, false},
+		{"not equal: values", df,
+			args{MustNew([]interface{}{[]string{"foo"}, []string{"bar"}})}, false},
+		{"not equal: cols", df,
+			args{MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Index: "corge", Col: []string{"fred", "qux"}})}, false},
+		{"not equal: name", df,
+			args{MustNew([]interface{}{[]string{"foo"}, []string{"bar"}}, Config{Index: "corge", Col: []string{"baz", "qux"}, Name: "quux"})}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -115,30 +128,33 @@ func TestMaxColWidth(t *testing.T) {
 		exclusionsTable [][]bool
 	}
 	tests := []struct {
-		name   string
-		config Config
-		want   want
+		name  string
+		input *DataFrame
+		want  want
 	}{
-		{name: "empty config", config: Config{},
+		{name: "empty config", input: MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}}),
 			want: want{colWidths: []int{3, 4}, exclusionsTable: [][]bool{{false, false}}}},
 		{"single level",
-			Config{Col: []string{"corge", "bar"}, ColName: "grapply"},
+			MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}},
+				Config{Col: []string{"corge", "bar"}, ColName: "grapply"}),
 			want{[]int{5, 4}, [][]bool{{false, false}}}},
 		{"multi level",
-			Config{MultiCol: [][]string{{"corge", "bar"}, {"qux", "quuz"}}, MultiColNames: []string{"grapply", "grault"}},
+			MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}},
+				Config{MultiCol: [][]string{{"corge", "bar"}, {"qux", "quuz"}}, MultiColNames: []string{"grapply", "grault"}}),
 			want{[]int{5, 4}, [][]bool{{false, false}, {false, false}}}},
+		{"nil: empty colWidths", newEmptyDataFrame(), want{nil, [][]bool{}}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			df := MustNew([]interface{}{[]string{"a", "foo"}, []string{"b", "quux"}}, tt.config)
+			df := tt.input
 			excl := df.makeColumnExclusionsTable()
 			got := df.maxColWidths(excl)
-			if !reflect.DeepEqual(got, tt.want.colWidths) {
-				t.Errorf("df.maxColWidths() got %v, want %v", got, tt.want.colWidths)
-			}
 			if !reflect.DeepEqual(excl, tt.want.exclusionsTable) {
 				t.Errorf("df.makeColumnExclusionsTable() got %v, want %v", excl, tt.want.exclusionsTable)
+			}
+			if !reflect.DeepEqual(got, tt.want.colWidths) {
+				t.Errorf("df.maxColWidths() got %v, want %v", got, tt.want.colWidths)
 			}
 		})
 	}

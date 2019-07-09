@@ -1,29 +1,25 @@
 package dataframe
 
-import (
-	"fmt"
-)
+// // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and modifies the DataFrame in place.
+// // If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
+// //
+// // Allowable append values: "rows", "cols", "both"
+// //
+// // Allowable method values: "left", "right", "inner", "outer"
+// func (ip InPlace) Join(append string, method string, df2 *DataFrame) error {
+// 	if ip.df.vals == nil {
+// 		ip.df.replace(df2)
+// 		return nil
+// 	}
+// 	switch append {
+// 	case "rows":
+// 		switch method {
+// 		case "left":
 
-// Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and modifies the DataFrame in place.
-// If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
-//
-// Allowable append values: "rows", "cols", "both"
-//
-// Allowable method values: "left", "right", "inner", "outer"
-func (ip InPlace) Join(append string, method string, df2 *DataFrame) error {
-	if ip.df.vals == nil {
-		ip.df.replace(df2)
-		return nil
-	}
-	switch append {
-	case "rows":
-		switch method {
-		case "left":
-
-		}
-	}
-	return nil
-}
+// 		}
+// 	}
+// 	return nil
+// }
 
 // assumes equivalent index levels and column positions
 func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
@@ -55,21 +51,23 @@ func (ip InPlace) appendDataFrameColumn(df2 *DataFrame) error {
 
 	// Append
 	for m := 0; m < df2.NumCols(); m++ {
-		err := ip.AppendCol(
+		// drop errors for now, because input is controlled
+		// err := ip.AppendCol(
+		ip.AppendCol(
 			df2.hydrateSeries(m),
 			df2.cols.MultiName(m)...,
 		)
-		if err != nil {
-			return fmt.Errorf("appendDataFrameColumn(): %v", err)
-		}
+		// if err != nil {
+		// 	return fmt.Errorf("appendDataFrameColumn(): %v", err)
+		// }
 	}
 	return nil
 }
 
-// Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and returns a new DataFrame.
-// If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
-func (df *DataFrame) Join(append string, method string, df2 *DataFrame) *DataFrame {
-	df = df.Copy()
-	df.InPlace.Join(append, method, df2)
-	return df
-}
+// // Join extends the columns, rows, or columns and rows of a dataframe by appending s2 and returns a new DataFrame.
+// // If extending rows, the values within a Values container are converted to []interface if the container datatypes are not the same.
+// func (df *DataFrame) Join(append string, method string, df2 *DataFrame) *DataFrame {
+// 	df = df.Copy()
+// 	df.InPlace.Join(append, method, df2)
+// 	return df
+// }

@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/araddon/dateparse"
 	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
@@ -211,17 +209,12 @@ type calcReturn struct {
 var wg sync.WaitGroup
 
 func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
-	g = g.copy()
-	if g.Len() == 0 {
-		return newEmptyDataFrame()
-	}
-
 	// synchronous option
 	if !options.GetAsync() {
 		ret := newEmptyDataFrame()
 		for _, group := range g.Groups() {
-			df := g.mathSingleGroup(group, fn)
-			ret.InPlace.appendDataFrameRow(df)
+			calc := g.mathSingleGroup(group, fn)
+			ret.InPlace.appendDataFrameRow(calc)
 		}
 		return ret
 	}
@@ -255,22 +248,6 @@ func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*
 	ret := calcReturn{df: df, n: n}
 	ch <- ret
 	wg.Done()
-}
-
-func parseStringIntoValuesContainer(s string) values.Container {
-	var container values.Container
-	if intVal, err := strconv.Atoi(s); err == nil {
-		container = values.MustCreateValuesFromInterface(intVal)
-	} else if floatVal, err := strconv.ParseFloat(s, 64); err == nil {
-		container = values.MustCreateValuesFromInterface(floatVal)
-	} else if boolVal, err := strconv.ParseBool(s); err == nil {
-		container = values.MustCreateValuesFromInterface(boolVal)
-	} else if dateTimeVal, err := dateparse.ParseAny(s); err == nil {
-		container = values.MustCreateValuesFromInterface(dateTimeVal)
-	} else {
-		container = values.MustCreateValuesFromInterface(s)
-	}
-	return container
 }
 
 func (g Grouping) mathSingleGroup(group string, fn func(*DataFrame) *series.Series) *DataFrame {

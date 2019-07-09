@@ -137,6 +137,7 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 			}
 		}
 	}
+	// convert [][]string to []interface{} of []string for compatability with DataFrame constructor
 	var (
 		multiIndex []interface{}
 		vals       []interface{}

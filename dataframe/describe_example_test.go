@@ -3,6 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/ptiger10/pd/options"
 )
@@ -31,6 +32,20 @@ func ExampleNew_float64() {
 	// bar    1.50  3.00
 	//
 	// datatype: float64
+}
+
+func ExampleNew_datetime() {
+	df, err := New([]interface{}{[]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC)}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(df)
+	// Output:
+	//                      0
+	// 0    1/1/2019T00:00:00
+	// 1    1/2/2019T00:00:00
+	//
+	// datatype: dateTime
 }
 
 func ExampleNew_string_indexUnnamed() {
@@ -382,6 +397,19 @@ func ExampleNew_exceed_maxRows_odd() {
 	// datatype: float64
 }
 
+func ExampleNew_exceed_maxColumns_even() {
+	options.SetDisplayMaxColumns(4)
+	s := MustNew([]interface{}{0, 1, 2, 3, 4})
+	fmt.Println(s)
+	options.RestoreDefaults()
+
+	// Output:
+	//      0  1  ...  3  4
+	// 0    0  1       3  4
+	//
+	// datatype: int64
+}
+
 func ExampleNew_exceed_maxColumns_odd() {
 	options.SetDisplayMaxColumns(3)
 	s := MustNew([]interface{}{0, 1, 2, 3, 4})
@@ -464,9 +492,7 @@ func ExampleInPlace_method_list() {
 	// DropRows
 	// InsertCol
 	// InsertRow
-	// Join
 	// Len
-	// Less
 	// ResetIndex
 	// Set
 	// SetCol
@@ -492,6 +518,13 @@ func ExampleIndex_valid_printer() {
 	fmt.Println(df.Index)
 	// Output:
 	// {DataFrame Index | Len: 3, NumLevels: 1}
+}
+
+func ExampleColumns_valid_printer() {
+	df := MustNew([]interface{}{[]string{"foo", "bar", "baz"}})
+	fmt.Println(df.Columns)
+	// Output:
+	// {DataFrame Columns | NumCols: 1, NumLevels: 1}
 }
 func ExampleGrouping_method_list() {
 	s := MustNew(

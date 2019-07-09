@@ -23,6 +23,14 @@ func TestNew_emptyDataFrame(t *testing.T) {
 	_ = got.IndexLevels()
 	_ = got.NumCols()
 	_ = got.Name()
+	_ = got.ensureAlignment()
+	_ = got.valsAligned()
+	_ = got.ensureColumnLevelPositions([]int{})
+	_ = got.ensureColumnPositions([]int{})
+	_ = got.ensureIndexLevelPositions([]int{})
+	_ = got.ensureRowPositions([]int{})
+	_ = got.Index.Len()
+
 }
 
 func TestNew(t *testing.T) {

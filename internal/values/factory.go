@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/araddon/dateparse"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -205,6 +206,24 @@ func sliceUIntToSliceInt64(data interface{}) []int64 {
 		vals = append(vals, int64(v))
 	}
 	return vals
+}
+
+// ParseStringIntoValuesContainer converts a string into another datatype if possible, or retains as string otherwise
+// and creates a Container from the new data. Primary use is translating column data into index data or reading from [][]string.
+func ParseStringIntoValuesContainer(s string) Container {
+	var container Container
+	if intVal, err := strconv.Atoi(s); err == nil {
+		container = MustCreateValuesFromInterface(intVal)
+	} else if floatVal, err := strconv.ParseFloat(s, 64); err == nil {
+		container = MustCreateValuesFromInterface(floatVal)
+	} else if boolVal, err := strconv.ParseBool(s); err == nil {
+		container = MustCreateValuesFromInterface(boolVal)
+	} else if dateTimeVal, err := dateparse.ParseAny(s); err == nil {
+		container = MustCreateValuesFromInterface(dateTimeVal)
+	} else {
+		container = MustCreateValuesFromInterface(s)
+	}
+	return container
 }
 
 // [END interface converters]

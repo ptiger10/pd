@@ -1364,6 +1364,8 @@ func TestDataFrame_Convert(t *testing.T) {
 	}{
 		{name: "pass", input: MustNew([]interface{}{"foo"}), args: args{dataType: "bool"},
 			want: want{df: MustNew([]interface{}{true}), err: false}},
+		{name: "fail", input: MustNew([]interface{}{"foo"}), args: args{dataType: "other"},
+			want: want{df: MustNew([]interface{}{"foo"}), err: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

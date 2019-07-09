@@ -54,7 +54,7 @@ func TestMerge_appendDataFrameColumn(t *testing.T) {
 			args{MustNew([]interface{}{"bar"}, Config{Col: []string{"2"}})},
 			want{MustNew([]interface{}{"foo", "bar"}, Config{Col: []string{"1", "2"}}), false}},
 		// fix to append multiple columns in order
-		// {"fail: too many columns in df2", MustNew([]interface{}{"foo"}, Config{Col: []string{"1"}}),
+		// {"extra columns in df2", MustNew([]interface{}{"foo"}, Config{Col: []string{"1"}}),
 		// 	args{MustNew([]interface{}{"bar", "baz"}, Config{Col: []string{"1", "2"}})},
 		// 	want{MustNew([]interface{}{"foo"}, Config{Col: []string{"1"}}), false}},
 	}
@@ -63,7 +63,7 @@ func TestMerge_appendDataFrameColumn(t *testing.T) {
 			df := tt.input.Copy()
 			err := df.InPlace.appendDataFrameColumn(tt.args.df2)
 			if (err != nil) != tt.want.err {
-				t.Errorf("DataFrame.SwapColumns() error = %v, want %v", err, tt.want.err)
+				t.Errorf("DataFrame.appendDataFrameColumn() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if !Equal(df, tt.want.df) {

@@ -133,10 +133,10 @@ func (ip InPlace) SwapColumns(i, j int) {
 	}
 }
 
-// Less returns true if the value at i > j in col.
-func (ip InPlace) Less(col int, i, j int) bool {
-	return ip.df.vals[col].Values.Less(i, j)
-}
+// // Less returns true if the value at i > j in col.
+// func (ip InPlace) Less(col int, i, j int) bool {
+// 	return ip.df.vals[col].Values.Less(i, j)
+// }
 
 // InsertRow inserts a new row into the DataFrame immediately before the specified integer position and modifies the DataFrame in place.
 // If the original DataFrame is empty, replaces it with a new DataFrame.
@@ -202,6 +202,7 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 }
 
 // InsertCol inserts a column with an indefinite number of column labels immediately before the specified column position and modifies the DataFrame in place.
+// TODO: derive colLabels from name
 func (ip InPlace) InsertCol(col int, s *series.Series, colLabels ...string) error {
 	// Handling empty DataFrame
 	if Equal(ip.df, newEmptyDataFrame()) {
@@ -263,6 +264,7 @@ func (ip InPlace) AppendRow(val []interface{}, idxLabels ...interface{}) error {
 }
 
 // AppendCol adds a row at a specified integer position and modifies the DataFrame in place.
+// TODO take colLabels from series
 func (ip InPlace) AppendCol(s *series.Series, colLabels ...string) error {
 	err := ip.df.InPlace.InsertCol(ip.Len(), s, colLabels...)
 	if err != nil {

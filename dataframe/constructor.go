@@ -129,25 +129,6 @@ func newFromComponents(vals []values.Container, idx index.Index, cols index.Colu
 	return df
 }
 
-// deriveSeries constructs a Series with a single-level index from raw values and index slices. Used to convert DataFrames to Series.
-func deriveSeries(values []interface{}, idx []interface{}, name string) (*series.Series, error) {
-	ret, err := series.New(nil)
-	if err != nil {
-		return nil, fmt.Errorf("internal error: deriveSeries(): %v", err)
-	}
-	if len(values) != len(idx) {
-		return nil, fmt.Errorf("internal error: deriveSeries(): values must have same length as index: %d != %d", len(values), len(idx))
-	}
-	for i := 0; i < len(values); i++ {
-		s, err := series.New(values[i], series.Config{Index: idx[i], Name: name})
-		if err != nil {
-			return nil, fmt.Errorf("internal error: deriveSeries(): %v", err)
-		}
-		ret.InPlace.Join(s)
-	}
-	return ret, nil
-}
-
 func (df *DataFrame) valsAligned() error {
 	if df.NumCols() == 0 {
 		return nil

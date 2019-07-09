@@ -296,6 +296,41 @@ func TestMapSplitter(t *testing.T) {
 	}
 }
 
+func TestValues_ParseStringIntoContainer(t *testing.T) {
+	type args struct {
+		s string
+	}
+	type want struct {
+		container Container
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{name: "int64", args: args{s: "1"},
+			want: want{container: Container{Values: &int64Values{int64Value{1, false}}, DataType: options.Int64}}},
+		{"float64", args{s: "1.0"},
+			want{container: Container{Values: &float64Values{float64Value{1, false}}, DataType: options.Float64}}},
+		{"bool", args{s: "true"},
+			want{container: Container{Values: &boolValues{boolValue{true, false}}, DataType: options.Bool}}},
+		{"datetime", args{s: "Jan 1, 2019"},
+			want{container: Container{Values: &dateTimeValues{dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}},
+				DataType: options.DateTime}}},
+		{"default to string", args{s: "anything else"},
+			want{container: Container{Values: &stringValues{stringValue{"anything else", false}},
+				DataType: options.String}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ParseStringIntoValuesContainer(tt.args.s)
+			if !reflect.DeepEqual(got, tt.want.container) {
+				t.Errorf("parseStringIntoContainer = %v, want %v", got, tt.want.container)
+			}
+		})
+	}
+}
+
 func TestSliceConstructor_NullFloat(t *testing.T) {
 	vals, err := SliceFactory([]float64{math.NaN()})
 	if err != nil {

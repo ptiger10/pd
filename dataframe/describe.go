@@ -2,7 +2,6 @@ package dataframe
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -276,16 +275,11 @@ func Equal(df, df2 *DataFrame) bool {
 	if df.NumCols() != df2.NumCols() {
 		return false
 	}
+	// this check ensures that index and columns are equivalent too
 	for i := 0; i < df.NumCols(); i++ {
 		if !series.Equal(df.hydrateSeries(i), df2.hydrateSeries(i)) {
 			return false
 		}
-	}
-	if !reflect.DeepEqual(df.index, df2.index) {
-		return false
-	}
-	if !reflect.DeepEqual(df.cols, df2.cols) {
-		return false
 	}
 	if df.name != df2.name {
 		return false
@@ -360,9 +354,6 @@ func (df *DataFrame) maxColWidths(exclusions [][]bool) []int {
 	if len(exclusions) != df.ColLevels() || len(exclusions) == 0 {
 		return nil
 	}
-	if len(exclusions[0]) != df.NumCols() {
-		return nil
-	}
 	maxValWidths := df.maxWidths()
 
 	for m := 0; m < df.NumCols(); m++ {
@@ -413,8 +404,10 @@ func (df *DataFrame) ensureAlignment() error {
 	if err := df.index.Aligned(); err != nil {
 		return fmt.Errorf("dataframe out of alignment: %v", err)
 	}
-	if labels := df.index.Levels[0].Len(); df.Len() != labels {
-		return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
+	if len(df.index.Levels) != 0 {
+		if labels := df.index.Levels[0].Len(); df.Len() != labels {
+			return fmt.Errorf("dataframe out of alignment: dataframe must have same number of values as index labels (%d != %d)", df.Len(), labels)
+		}
 	}
 
 	// check columns

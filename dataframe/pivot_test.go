@@ -286,45 +286,58 @@ func TestDataFrame_Pivot(t *testing.T) {
 		aggFunc string
 	}
 	tests := []struct {
-		name  string
-		input *DataFrame
-		args  args
-		want  *DataFrame
+		name    string
+		input   *DataFrame
+		args    args
+		want    *DataFrame
+		wantErr bool
 	}{
 		{name: "NaN: sum",
 			input: multi,
 			args:  args{index: 0, data: 3, col: 1, aggFunc: "sum"},
 			want: MustNew([]interface{}{[]string{"3", "3"}, []string{"NaN", "4"}},
-				Config{Col: []string{"baz", "qux"}, Index: []string{"foo", "bar"}})},
+				Config{Col: []string{"baz", "qux"}, Index: []string{"foo", "bar"}}),
+			wantErr: false},
 		{name: "mean",
 			input: df,
 			args:  args{index: 0, data: 2, col: 1, aggFunc: "mean"},
 			want: MustNew([]interface{}{1.5, 3.0},
-				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"}),
+			wantErr: false},
 		{name: "median",
 			input: df,
 			args:  args{index: 0, data: 2, col: 1, aggFunc: "median"},
 			want: MustNew([]interface{}{1.5, 3.0},
-				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"}),
+			wantErr: false},
 		{name: "min",
 			input: df,
 			args:  args{index: 0, data: 2, col: 1, aggFunc: "min"},
 			want: MustNew([]interface{}{1.0, 3.0},
-				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"}),
+			wantErr: false},
 		{name: "max",
 			input: df,
 			args:  args{index: 0, data: 2, col: 1, aggFunc: "max"},
 			want: MustNew([]interface{}{2.0, 3.0},
-				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"}),
+			wantErr: false},
 		{name: "std",
 			input: df,
 			args:  args{index: 0, data: 2, col: 1, aggFunc: "std"},
 			want: MustNew([]interface{}{0.5, 0.0},
-				Config{Col: []string{"bar", "baz"}, Index: "foo"})},
+				Config{Col: []string{"bar", "baz"}, Index: "foo"}),
+			wantErr: false},
+		{name: "fail", input: df, args: args{index: 0, data: 2, col: 1, aggFunc: "unsupported"},
+			want: newEmptyDataFrame(), wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.input.Pivot(tt.args.index, tt.args.data, tt.args.col, tt.args.aggFunc)
+			got, err := tt.input.Pivot(tt.args.index, tt.args.data, tt.args.col, tt.args.aggFunc)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("df.Pivot() error = %v, want %v", err, tt.wantErr)
+				return
+			}
 			// convert to compare NaN
 			if strings.Contains(tt.name, "NaN") {
 				gotConverted, _ := got.Convert(options.String.String())

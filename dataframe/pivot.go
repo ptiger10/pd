@@ -2,7 +2,6 @@ package dataframe
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/ptiger10/pd/internal/index"
@@ -79,22 +78,18 @@ func (df *DataFrame) stackIndex(level int) *DataFrame {
 		cols.Levels[j].Duplicate((len(newColLevel) / df.NumCols()) - 1)
 	}
 
-	err := cols.InsertLevel(0, newColLevel, df.index.Levels[level].Name)
-	if err != nil {
-		log.Print(err)
-	}
+	// ducks error because input is controlled
+	cols.InsertLevel(0, newColLevel, df.index.Levels[level].Name)
+
 	ret := newFromComponents(containers, idx, cols, df.Name())
 	if df.dataType() != options.Interface {
 		ret.InPlace.Convert(df.dataType().String())
-	}
-	if err := df.ensureAlignment(); err != nil {
-		log.Print(err)
 	}
 	return ret
 }
 
 // Pivot transforms data into the desired form and calls aggFunc on the reshaped data.
-func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *DataFrame {
+func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) (*DataFrame, error) {
 	df = df.Copy()
 	df.InPlace.SubsetColumns([]int{index, columns, values})
 	g := df.GroupBy(index, columns)
@@ -113,14 +108,11 @@ func (df *DataFrame) Pivot(index int, values int, columns int, aggFunc string) *
 	case "std":
 		df = g.Std()
 	default:
-		if options.GetLogWarnings() {
-			log.Printf("df.Pivot(): aggFunc (%v) does not exist", aggFunc)
-		}
-		return newEmptyDataFrame()
+		return newEmptyDataFrame(), fmt.Errorf("df.Pivot(): aggFunc (%v) does not exist", aggFunc)
 	}
 	df = df.stackIndex(1)
 	df.Columns.DropLevel(1)
-	return df
+	return df, nil
 }
 
 // Transpose transforms all rows to columns.
@@ -164,11 +156,13 @@ func transposeSeries(s *series.Series) *DataFrame {
 		cols.Levels[j].Name = idx.Levels[j].Name
 		for m := 0; m < s.Len(); m++ {
 			elem := idx.Levels[j].Labels.Element(m)
-			if !elem.Null {
-				cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
-			} else {
-				cols.Levels[j].Labels = append(cols.Levels[j].Labels, "")
-			}
+			// TODO: test null value
+			// if !elem.Null {
+			// 	cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
+			// } else {
+			// 	cols.Levels[j].Labels = append(cols.Levels[j].Labels, "")
+			// }
+			cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
 		}
 	}
 	cols.Refresh()
@@ -179,7 +173,7 @@ func transposeSeries(s *series.Series) *DataFrame {
 	retIdx := index.New(idxLvls...)
 	for j := 0; j < len(names); j++ {
 		name := names[j]
-		idxContainer := parseStringIntoValuesContainer(name)
+		idxContainer := values.ParseStringIntoValuesContainer(name)
 		retIdx.Levels[j].Labels = idxContainer.Values
 		retIdx.Levels[j].DataType = idxContainer.DataType
 	}

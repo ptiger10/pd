@@ -1,18 +1,14 @@
 package dataframe
 
 import (
-	"fmt"
-	"log"
 	"math"
-	"strings"
 
 	"github.com/ptiger10/pd/series"
 )
 
 func (df *DataFrame) math(name string, fn func(s *series.Series) float64) *series.Series {
-	if df == nil {
-		s, _ := series.New(nil)
-		return s
+	if Equal(df, newEmptyDataFrame()) {
+		return series.MustNew(nil)
 	}
 	var vals []interface{}
 	var idx []interface{}
@@ -23,13 +19,14 @@ func (df *DataFrame) math(name string, fn func(s *series.Series) float64) *serie
 			idx = append(idx, s.Name())
 		}
 	}
-
-	s, err := deriveSeries(vals, idx, name)
-	if err != nil {
-		log.Printf("%v: %v", fmt.Sprintf("%v()", strings.Title(name)), err)
-		return nil
+	ret := series.MustNew(nil)
+	for i := 0; i < len(vals); i++ {
+		// ducks safe method because values are assumed to be supported
+		s := series.MustNew(vals[i], series.Config{Index: idx[i], Name: name})
+		ret.InPlace.Join(s)
 	}
-	return s
+
+	return ret
 }
 
 // Sum all numerical or boolean columns.

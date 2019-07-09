@@ -172,24 +172,6 @@ func (df *DataFrame) SubsetRows(rowPositions []int) (*DataFrame, error) {
 	return df, err
 }
 
-// subsetCols subsets a DataFrame to include only columns at the column positions supplied and modifies the DataFrame in place.
-func (ip InPlace) subsetCols(positions []int) {
-	vals := make([]values.Container, len(positions))
-	for i, pos := range positions {
-		vals[i] = ip.df.vals[pos]
-	}
-	ip.df.vals = vals
-	ip.df.cols.Subset(positions)
-}
-
-// subsetCols subsets a DataFrame to include only index items and values at the columns positions supplied and returns a copy of the DataFrame.
-// For use in internal functions that do not expect en error.
-func (df *DataFrame) subsetCols(positions []int) *DataFrame {
-	df = df.Copy()
-	df.InPlace.subsetCols(positions)
-	return df
-}
-
 // SubsetColumns subsets a DataFrame to include only the columns at supplied integer positions and modifies the DataFrame in place.
 func (ip InPlace) SubsetColumns(columnPositions []int) error {
 	if len(columnPositions) == 0 {
@@ -200,7 +182,12 @@ func (ip InPlace) SubsetColumns(columnPositions []int) error {
 		return fmt.Errorf("dataframe.SubsetColumns(): %v", err)
 	}
 
-	ip.subsetCols(columnPositions)
+	vals := make([]values.Container, len(columnPositions))
+	for i, pos := range columnPositions {
+		vals[i] = ip.df.vals[pos]
+	}
+	ip.df.vals = vals
+	ip.df.cols.Subset(columnPositions)
 
 	return nil
 }
