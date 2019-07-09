@@ -349,32 +349,27 @@ func TestValues_InterpolateString(t *testing.T) {
 	type args struct {
 		s string
 	}
-	type want struct {
-		container Container
-	}
 	tests := []struct {
 		name string
 		args args
-		want want
+		want interface{}
 	}{
 		{name: "int64", args: args{s: "1"},
-			want: want{container: Container{Values: &int64Values{int64Value{1, false}}, DataType: options.Int64}}},
+			want: 1},
 		{"float64", args{s: "1.0"},
-			want{container: Container{Values: &float64Values{float64Value{1, false}}, DataType: options.Float64}}},
+			1.0},
 		{"bool", args{s: "true"},
-			want{container: Container{Values: &boolValues{boolValue{true, false}}, DataType: options.Bool}}},
+			true},
 		{"datetime", args{s: "Jan 1, 2019"},
-			want{container: Container{Values: &dateTimeValues{dateTimeValue{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), false}},
-				DataType: options.DateTime}}},
+			time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)},
 		{"default to string", args{s: "anything else"},
-			want{container: Container{Values: &stringValues{stringValue{"anything else", false}},
-				DataType: options.String}}},
+			"anything else"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := InterpolateString(tt.args.s)
-			if !reflect.DeepEqual(got, tt.want.container) {
-				t.Errorf("parseStringIntoContainer = %v, want %v", got, tt.want.container)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("InterpolateString = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -296,20 +296,17 @@ func Interpolate(data interface{}) options.DataType {
 
 // InterpolateString converts a string into another datatype if possible, or retains as string otherwise,
 // then creates a Container from the new datatype. Primary use is translating column data into index data or reading from [][]string.
-func InterpolateString(s string) Container {
-	var container Container
+func InterpolateString(s string) interface{} {
 	if intVal, err := strconv.Atoi(s); err == nil {
-		container = MustCreateValuesFromInterface(intVal)
+		return intVal
 	} else if floatVal, err := strconv.ParseFloat(s, 64); err == nil {
-		container = MustCreateValuesFromInterface(floatVal)
+		return floatVal
 	} else if boolVal, err := strconv.ParseBool(s); err == nil {
-		container = MustCreateValuesFromInterface(boolVal)
+		return boolVal
 	} else if dateTimeVal, err := dateparse.ParseAny(s); err == nil {
-		container = MustCreateValuesFromInterface(dateTimeVal)
-	} else {
-		container = MustCreateValuesFromInterface(s)
+		return dateTimeVal
 	}
-	return container
+	return s
 }
 
 // [END interface converters]

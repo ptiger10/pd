@@ -508,7 +508,6 @@ func (df *DataFrame) Export() [][]interface{} {
 
 // ExportToCSV exports the DataFrame to a CSV file.
 func (df *DataFrame) ExportToCSV(filepath string) {
-
 	transposedValues := df.Export()
 	var transposedStringValues [][]string
 	for j := 0; j < len(transposedValues); j++ {

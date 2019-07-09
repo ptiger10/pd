@@ -153,9 +153,8 @@ func transposeSeries(s *series.Series) *DataFrame {
 	retIdx := index.New(idxLvls...)
 	for j := 0; j < len(names); j++ {
 		name := names[j]
-		idxContainer := values.InterpolateString(name)
-		retIdx.Levels[j].Labels = idxContainer.Values
-		retIdx.Levels[j].DataType = idxContainer.DataType
+		// ducks error because type is known to be supported
+		retIdx.Levels[j], _ = index.NewLevel(values.InterpolateString(name), "")
 	}
 	retIdx.Refresh()
 

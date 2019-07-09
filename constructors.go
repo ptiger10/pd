@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/ptiger10/pd/dataframe"
+	"github.com/ptiger10/pd/internal/values"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
@@ -60,10 +61,10 @@ func DataFrame(data []interface{}, config ...Config) (*dataframe.DataFrame, erro
 // ReadInterface converts [][]interface{}{row1{col1, ...}...} into a DataFrame
 func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.DataFrame, error) {
 	if len(input) == 0 {
-		return dataframe.MustNew(nil), fmt.Errorf("Input must contain at least one row")
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): Input must contain at least one row")
 	}
 	if len(input[0]) == 0 {
-		return dataframe.MustNew(nil), fmt.Errorf("Input must contain at least one column")
+		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): must contain at least one column")
 	}
 
 	var data [][]interface{}
@@ -192,80 +193,31 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 	if error != nil {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
 	}
-
-	tmpVals := make([][]interface{}, 0)
-	tmpMultiIndex := make([][]interface{}, 0)
-
-	var multiCol [][]string
-	if tmp.DropRows > len(records) {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): DropRows cannot exceed the number of row (%d > %d)",
-			tmp.DropRows, len(records))
+	if len(records) == 0 {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): input must contain at least one row")
 	}
-	records = records[tmp.DropRows:]
-	// header rows
-	if tmp.HeaderRows > len(records) {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): HeaderRows cannot exceed the number of rows (%d > %d)",
-			tmp.HeaderRows, len(data))
-	}
-	multiCol = records[:tmp.HeaderRows]
-	for m := 0; m < tmp.HeaderRows; m++ {
-		multiCol[m] = multiCol[m][tmp.IndexCols:]
+	if len(records[0]) == 0 {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): input must contain at least one column")
 	}
 
-	records = records[tmp.HeaderRows:]
-
-	if tmp.IndexCols > len(records[0]) {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): IndexCols cannot exceed the number of rows (%d > %d)",
-			tmp.IndexCols, len(data))
-	}
-	// transpose index and values
-	for i := 0; i < len(records); i++ {
+	// convert to [][]interface
+	var interfaceRecords [][]interface{}
+	for j := 0; j < len(records); j++ {
+		interfaceRecords = append(interfaceRecords, make([]interface{}, len(records[0])))
 		for m := 0; m < len(records[0]); m++ {
-			if m < tmp.IndexCols {
-				if m >= len(tmpMultiIndex) {
-					tmpMultiIndex = append(tmpMultiIndex, make([]interface{}, len(records)))
-				}
-				tmpMultiIndex[m][i] = records[i][m]
+			// optional interpolation if not in Manual mode
+			if !tmp.Manual {
+				interfaceRecords[j][m] = values.InterpolateString(records[j][m])
 			} else {
-				if m-tmp.IndexCols >= len(tmpVals) {
-					tmpVals = append(tmpVals, make([]interface{}, len(records)))
-				}
-				tmpVals[m-tmp.IndexCols][i] = records[i][m]
+				interfaceRecords[j][m] = records[j][m]
 			}
 		}
 	}
-	// convert [][]string to []interface{} of []interface for compatability with DataFrame constructor
-	var (
-		multiIndex []interface{}
-		vals       []interface{}
-	)
-	for _, col := range tmpMultiIndex {
-		multiIndex = append(multiIndex, col)
-	}
-	for _, col := range tmpVals {
-		vals = append(vals, col)
-	}
 
-	df, err := DataFrame(vals, Config{Manual: tmp.Manual, MultiIndex: multiIndex, MultiCol: multiCol})
+	df, err := ReadInterface(interfaceRecords, tmp)
 	if err != nil {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %v", err)
 	}
-	for k, v := range tmp.DataTypes {
-		colInt := df.SelectCol(k)
-		if colInt != -1 {
-			df.InPlace.SetCol(colInt, df.ColAt(colInt).Convert(v))
-		}
-	}
-	for k, v := range tmp.IndexDataTypes {
-		err := df.Index.Convert(v, k)
-		if err != nil {
-			if options.GetLogWarnings() {
-				log.Printf("warning: ReadCSV() converting IndexDataTypes: %v", err)
-			}
-		}
-	}
-	df.RenameCols(tmp.Rename)
-
 	return df, nil
 }
 
