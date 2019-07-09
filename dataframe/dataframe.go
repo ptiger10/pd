@@ -84,6 +84,7 @@ type Config struct {
 	ColName         string
 	MultiCol        [][]string
 	MultiColNames   []string
+	Manual          bool
 }
 
 // A Grouping returns a collection of index labels with mutually exclusive integer positions.

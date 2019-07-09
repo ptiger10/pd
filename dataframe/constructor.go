@@ -46,20 +46,9 @@ func New(data []interface{}, config ...Config) (*DataFrame, error) {
 	}
 
 	// Handling values
-	for i := 0; i < len(data); i++ {
-		container, err := values.InterfaceFactory(data[i])
-		if err != nil {
-			return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
-		}
-		// optional DataType conversion
-		if configuration.DataType != options.None {
-			container.Values, err = values.Convert(container.Values, configuration.DataType)
-			if err != nil {
-				return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
-			}
-			container.DataType = configuration.DataType
-		}
-		vals = append(vals, container)
+	vals, err = values.InterfaceSliceFactory(data, tmp.Manual, configuration.DataType)
+	if err != nil {
+		return newEmptyDataFrame(), fmt.Errorf("dataframe.New(): %v", err)
 	}
 
 	// Handling index

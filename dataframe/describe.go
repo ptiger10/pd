@@ -257,10 +257,10 @@ func (df *DataFrame) print() string {
 		printer += fmt.Sprintln(newLine)
 	}
 	// [END rows]
-	if df.dataTypePrinter() != "mixed" || df.name != "" {
+	if df.dataType() != options.Unsupported || df.name != "" {
 		printer += "\n"
 	}
-	if df.dataTypePrinter() != "mixed" {
+	if df.dataType() != options.Unsupported {
 		printer += fmt.Sprintf("datatype: %s\n", df.dataTypePrinter())
 	}
 
@@ -309,12 +309,12 @@ func (df *DataFrame) dataType() options.DataType {
 	if len(uniqueTypes) == 1 {
 		return df.vals[0].DataType
 	}
-	return options.Interface
+	return options.Unsupported
 }
 
 func (df *DataFrame) dataTypePrinter() string {
 	dt := df.dataType()
-	if dt == options.Interface {
+	if dt == options.Unsupported {
 		return "mixed"
 	}
 	if dt == options.None {

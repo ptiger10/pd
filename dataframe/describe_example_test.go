@@ -48,6 +48,17 @@ func ExampleNew_datetime() {
 	// datatype: dateTime
 }
 
+func ExampleNew_no_interpolation() {
+	df := MustNew([]interface{}{[]interface{}{"foo", "bar"}}, Config{Manual: true})
+	fmt.Println(df)
+	// Output:
+	//        0
+	// 0    foo
+	// 1    bar
+	//
+	// datatype: interface
+}
+
 func ExampleNew_string_indexUnnamed() {
 	df, err := New([]interface{}{"foo", "bar"},
 		Config{Name: "foobar", Index: "baz"})

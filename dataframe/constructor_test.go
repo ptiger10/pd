@@ -157,6 +157,24 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestDataFrame_Interpolate(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *DataFrame
+		want  *DataFrame
+	}{
+		{name: "interpolate []interface", input: MustNew([]interface{}{[]interface{}{"foo", "bar"}}),
+			want: MustNew([]interface{}{[]string{"foo", "bar"}})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !Equal(tt.input, tt.want) {
+				t.Errorf("New() did not interpolate correctly: got %v, want %v", tt.input, tt.want)
+			}
+		})
+	}
+}
+
 // TODO fix to discriminate when test is failing
 func TestDataFrame_constructor_internalReferences(t *testing.T) {
 	tests := []struct {

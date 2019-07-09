@@ -41,11 +41,11 @@ func TestDataFrame_Describe(t *testing.T) {
 				len: 1, numCols: 1, numIdxLevels: 2, numColLevels: 1,
 				dataType: options.String, dataTypePrinter: "string", dataTypes: series.MustNew("string", series.Config{Name: "datatypes"}),
 			}},
-		{"single index, two cols",
+		{"single index, two cols, mixed types",
 			MustNew([]interface{}{"foo", 5}, Config{Col: []string{"baz", "qux"}}),
 			want{
 				len: 1, numCols: 2, numIdxLevels: 1, numColLevels: 1,
-				dataType: options.Interface, dataTypePrinter: "mixed", dataTypes: series.MustNew([]string{"string", "int64"}, series.Config{Name: "datatypes"}),
+				dataType: options.Unsupported, dataTypePrinter: "mixed", dataTypes: series.MustNew([]string{"string", "int64"}, series.Config{Name: "datatypes"}),
 			}},
 		{"single index, multi col",
 			MustNew([]interface{}{"foo", "bar"}, Config{MultiCol: [][]string{{"baz", "qux"}, {"corge", "fred"}}}),
