@@ -1,3 +1,7 @@
+// Package pd (aka GoPandas) is a library for cleaning, manipulating, and reshaping 2-dimensional data from a spreadsheet or table.
+// GoPandas is inspired by pandas, a Python library frequently used for similar purposes.
+// GoPandas combines a flexibile and extensive API with the customary strengths of Go,
+// including type safety, predictable error handling, and concurrent processing.
 package pd
 
 import (

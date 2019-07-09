@@ -1,3 +1,5 @@
+// Package dataframe defines the DataFrame, a 2-dimensional data structure with an n-level index, n-level column headers,
+// and columns of typed data. It is analogous to a spreadsheet.
 package dataframe
 
 import (

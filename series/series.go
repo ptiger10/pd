@@ -1,3 +1,4 @@
+// Package series defines the Series, a typed 1-dimensional data structure with an n-level index, analogous to a column in a spreadsheet.
 package series
 
 import (
