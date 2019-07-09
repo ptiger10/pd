@@ -173,7 +173,7 @@ func transposeSeries(s *series.Series) *DataFrame {
 	retIdx := index.New(idxLvls...)
 	for j := 0; j < len(names); j++ {
 		name := names[j]
-		idxContainer := values.ParseStringIntoValuesContainer(name)
+		idxContainer := values.InterpolateString(name)
 		retIdx.Levels[j].Labels = idxContainer.Values
 		retIdx.Levels[j].DataType = idxContainer.DataType
 	}

@@ -296,7 +296,7 @@ func TestMapSplitter(t *testing.T) {
 	}
 }
 
-func TestValues_ParseStringIntoContainer(t *testing.T) {
+func TestValues_InterpolateString(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -323,9 +323,42 @@ func TestValues_ParseStringIntoContainer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ParseStringIntoValuesContainer(tt.args.s)
+			got := InterpolateString(tt.args.s)
 			if !reflect.DeepEqual(got, tt.want.container) {
 				t.Errorf("parseStringIntoContainer = %v, want %v", got, tt.want.container)
+			}
+		})
+	}
+}
+
+func TestValues_Interpolate(t *testing.T) {
+	dt := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
+	long := make([]interface{}, 100)
+	for i := 0; i < 100; i++ {
+		long[i] = "foo"
+	}
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want options.DataType
+	}{
+		{name: "float64", args: args{data: []interface{}{"foo", 1.2, 2.2, float32(3), float64(4)}}, want: options.Float64},
+		{name: "int64", args: args{data: []interface{}{"foo", 1, 2, int8(3), uint(4)}}, want: options.Int64},
+		{name: "mixed numbers -> float64", args: args{data: []interface{}{"foo", 1.0, float64(2), int8(3), uint(4)}}, want: options.Float64},
+		{name: "string", args: args{data: []interface{}{"foo", "bar", "baz", "qux", 4}}, want: options.String},
+		{name: "bool", args: args{data: []interface{}{true, false, true, false, "foo"}}, want: options.Bool},
+		{name: "dateTime", args: args{data: []interface{}{dt, dt, dt, dt, "foo"}}, want: options.DateTime},
+		{name: "none", args: args{data: []interface{}{1.5, 1, "foo", true, dt}}, want: options.None},
+		{name: "none", args: args{data: long}, want: options.String},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Interpolate(tt.args.data)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Interpolate = %v, want %v", got, tt.want)
 			}
 		})
 	}

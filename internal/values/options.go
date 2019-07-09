@@ -5,6 +5,8 @@ var displayColumnsWhitespaceBuffer = 2
 var displayElementWhitespaceBuffer = 1
 var displayIndexWhitespaceBuffer = 1
 var multiColNameSeparator = " | "
+var interpolationMaximum = 50
+var interpolationThreshold = .80
 
 // GetDisplayValuesWhitespaceBuffer returns displayValuesWhitespaceBuffer.
 // displayValuesWhitespaceBuffer is an option when printing a Series or DataFrame.
@@ -50,4 +52,18 @@ func GetDisplayIndexWhitespaceBuffer() int {
 // Default: " | "
 func GetMultiColNameSeparator() string {
 	return multiColNameSeparator
+}
+
+// GetInterpolationMaximum returns the max number of records that will be checked during an interpolation check.
+//
+// Default: 50
+func GetInterpolationMaximum() int {
+	return interpolationMaximum
+}
+
+// GetInterpolationThreshold returns the ratio of type inclusion required for a dataType to be interpolated.
+//
+// Default: .80
+func GetInterpolationThreshold() float64 {
+	return interpolationThreshold
 }

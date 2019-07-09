@@ -208,9 +208,63 @@ func sliceUIntToSliceInt64(data interface{}) []int64 {
 	return vals
 }
 
-// ParseStringIntoValuesContainer converts a string into another datatype if possible, or retains as string otherwise
-// and creates a Container from the new data. Primary use is translating column data into index data or reading from [][]string.
-func ParseStringIntoValuesContainer(s string) Container {
+// Interpolate counts the number of instances of each dataType option within data, which must be []interface.
+// If any ratio exceeeds the Interpoliation Threshold ratio, returns the dataType with the highest ratio.
+func Interpolate(data interface{}) options.DataType {
+	count := make(map[options.DataType]float64)
+	vals := data.([]interface{})
+	if n := GetInterpolationMaximum(); len(vals) > n {
+		vals = vals[:n]
+	}
+	for _, val := range vals {
+		switch val.(type) {
+		case float32, float64:
+			count[options.Float64]++
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			count[options.Int64]++
+		case string:
+			count[options.String]++
+		case bool:
+			count[options.Bool]++
+		case time.Time:
+			count[options.DateTime]++
+		}
+	}
+	type ratios struct {
+		Float64  float64
+		Int64    float64
+		String   float64
+		Bool     float64
+		DateTime float64
+	}
+	r := ratios{
+		Float64:  count[options.Float64] / float64(len(vals)),
+		Int64:    count[options.Int64] / float64(len(vals)),
+		String:   count[options.String] / float64(len(vals)),
+		Bool:     count[options.Bool] / float64(len(vals)),
+		DateTime: count[options.DateTime] / float64(len(vals)),
+	}
+	var max float64
+	var maxType string
+	v := reflect.ValueOf(r)
+	for i := 0; i < v.NumField(); i++ {
+		if ratio := v.Field(i).Float(); ratio > max {
+			max = ratio
+			maxType = v.Type().Field(i).Name
+		}
+	}
+	if max >= GetInterpolationThreshold() {
+		return options.DT(maxType)
+	}
+	if r.Float64+r.Int64 >= GetInterpolationThreshold() {
+		return options.Float64
+	}
+	return options.None
+}
+
+// InterpolateString converts a string into another datatype if possible, or retains as string otherwise,
+// then creates a Container from the new datatype. Primary use is translating column data into index data or reading from [][]string.
+func InterpolateString(s string) Container {
 	var container Container
 	if intVal, err := strconv.Atoi(s); err == nil {
 		container = MustCreateValuesFromInterface(intVal)
