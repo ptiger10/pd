@@ -11,9 +11,9 @@ import (
 
 // Values returns an []string of the values at each level of the cols.
 func (col Columns) Values() [][]string {
-	var ret [][]string
+	ret := make([][]string, col.df.ColLevels())
 	for j := 0; j < col.df.ColLevels(); j++ {
-		ret = append(ret, col.df.cols.Levels[j].Labels)
+		ret[j] = col.df.cols.Levels[j].Labels
 	}
 	return ret
 }
@@ -90,9 +90,9 @@ func (col Columns) SubsetLevels(levelPositions []int) error {
 		return fmt.Errorf("df.cols.SubsetLevels(): no levels provided")
 	}
 
-	levels := make([]index.ColLevel, 0)
-	for _, position := range levelPositions {
-		levels = append(levels, col.df.cols.Levels[position])
+	levels := make([]index.ColLevel, len(levelPositions))
+	for j := 0; j < len(levelPositions); j++ {
+		levels[j] = col.df.cols.Levels[levelPositions[j]]
 	}
 	col.df.cols.Levels = levels
 	col.df.cols.Refresh()

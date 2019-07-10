@@ -117,58 +117,57 @@ func (vals *float64Values) Insert(pos int, val interface{}) {
 
 // ToFloat converts float64Values to floatValues.
 func (vals *float64Values) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts float64Values to intValues.
 func (vals *float64Values) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts float64Values to stringValues.
 func (vals *float64Values) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts float64Values to boolValues.
 func (vals *float64Values) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts float64Values to dateTimeValues.
 func (vals *float64Values) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts float64Values to interfaceValues.
 func (vals *float64Values) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret
@@ -284,58 +283,57 @@ func (vals *int64Values) Insert(pos int, val interface{}) {
 
 // ToFloat converts int64Values to floatValues.
 func (vals *int64Values) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts int64Values to intValues.
 func (vals *int64Values) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts int64Values to stringValues.
 func (vals *int64Values) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts int64Values to boolValues.
 func (vals *int64Values) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts int64Values to dateTimeValues.
 func (vals *int64Values) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts int64Values to interfaceValues.
 func (vals *int64Values) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret
@@ -451,58 +449,57 @@ func (vals *stringValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts stringValues to floatValues.
 func (vals *stringValues) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts stringValues to intValues.
 func (vals *stringValues) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts stringValues to stringValues.
 func (vals *stringValues) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts stringValues to boolValues.
 func (vals *stringValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts stringValues to dateTimeValues.
 func (vals *stringValues) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts stringValues to interfaceValues.
 func (vals *stringValues) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret
@@ -618,58 +615,57 @@ func (vals *boolValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts boolValues to floatValues.
 func (vals *boolValues) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts boolValues to intValues.
 func (vals *boolValues) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts boolValues to stringValues.
 func (vals *boolValues) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts boolValues to boolValues.
 func (vals *boolValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts boolValues to dateTimeValues.
 func (vals *boolValues) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts boolValues to interfaceValues.
 func (vals *boolValues) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret
@@ -785,58 +781,57 @@ func (vals *dateTimeValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts dateTimeValues to floatValues.
 func (vals *dateTimeValues) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts dateTimeValues to intValues.
 func (vals *dateTimeValues) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts dateTimeValues to stringValues.
 func (vals *dateTimeValues) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts dateTimeValues to boolValues.
 func (vals *dateTimeValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts dateTimeValues to dateTimeValues.
 func (vals *dateTimeValues) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts dateTimeValues to interfaceValues.
 func (vals *dateTimeValues) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret
@@ -952,58 +947,57 @@ func (vals *interfaceValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts interfaceValues to floatValues.
 func (vals *interfaceValues) ToFloat64() Values {
-	v := *vals
-	ret := make(float64Values, len(v))
-	for i := 0; i < len(v); i++ {
-		ret[i] = v[i].toFloat64()
+	ret := make(float64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toFloat64()
 	}
 	return &ret
 }
 
 // ToInt converts interfaceValues to intValues.
 func (vals *interfaceValues) ToInt64() Values {
-	var ret int64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toInt64())
+	ret := make(int64Values, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toInt64()
 	}
 	return &ret
 }
 
 // ToString converts interfaceValues to stringValues.
 func (vals *interfaceValues) ToString() Values {
-	var ret stringValues
-	for _, val := range *vals {
-		ret = append(ret, val.toString())
+	ret := make(stringValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toString()
 	}
 	return &ret
 }
 
 // ToBool converts interfaceValues to boolValues.
 func (vals *interfaceValues) ToBool() Values {
-	var ret boolValues
-	for _, val := range *vals {
-		ret = append(ret, val.toBool())
+	ret := make(boolValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toBool()
 	}
 	return &ret
 }
 
 // ToBool converts interfaceValues to dateTimeValues.
 func (vals *interfaceValues) ToDateTime() Values {
-	var ret dateTimeValues
-	for _, val := range *vals {
-		ret = append(ret, val.toDateTime())
+	ret := make(dateTimeValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		ret[i] = (*vals)[i].toDateTime()
 	}
 	return &ret
 }
 
 // ToInterface converts interfaceValues to interfaceValues.
 func (vals *interfaceValues) ToInterface() Values {
-	var ret interfaceValues
-	for _, val := range *vals {
-		if val.null {
-			ret = append(ret, interfaceValue{val.v, true})
+	ret := make(interfaceValues, len(*vals))
+	for i := 0; i < len(*vals); i++ {
+		if (*vals)[i].null {
+			ret[i] = interfaceValue{(*vals)[i].v, true}
 		} else {
-			ret = append(ret, interfaceValue{val.v, false})
+			ret[i] = interfaceValue{(*vals)[i].v, false}
 		}
 	}
 	return &ret

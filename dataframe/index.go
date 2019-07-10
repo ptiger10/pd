@@ -24,14 +24,10 @@ func (idx Index) Values() [][]interface{} {
 	return ret
 }
 
-// return unique index labels and their positions, for use in stack()
-func (idx Index) unique(levels ...int) (labels []string, startPositions []int) {
+// return unique index labels, for use in stack()
+func (idx Index) unique(levels ...int) []string {
 	g := idx.df.GroupByIndex(levels...)
-	labels = g.Groups()
-	for _, label := range labels {
-		startPositions = append(startPositions, g.groups[label].Positions[0])
-	}
-	return
+	return g.Groups()
 }
 
 // Sort sorts the index by index level 0 and returns a new index.

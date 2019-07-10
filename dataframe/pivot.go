@@ -25,7 +25,7 @@ func (df *DataFrame) stack(level int) (newIdxPositions []int, valsMatrix [][]int
 	}
 	g := df.GroupByIndex(unstackedIndexLevels...)
 
-	labelsToStack, _ := df.Index.unique(level)
+	labelsToStack := df.Index.unique(level)
 	numRows := g.Len()
 	numCols := len(labelsToStack) * df.NumCols()
 	valsMatrix = make([][]interface{}, numRows)

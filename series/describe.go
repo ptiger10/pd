@@ -237,24 +237,28 @@ func (s *Series) NumLevels() int {
 
 // valid returns integer positions of valid (i.e., non-null) values in the series.
 func (s *Series) valid() []int {
-	var ret []int
+	ret := make([]int, s.Len())
+	var counter int
 	for i := 0; i < s.Len(); i++ {
 		if !s.values.Element(i).Null {
-			ret = append(ret, i)
+			ret[counter] = i
+			counter++
 		}
 	}
-	return ret
+	return ret[:counter]
 }
 
 // null returns the integer position of all null values in the collection.
 func (s *Series) null() []int {
-	var ret []int
+	ret := make([]int, s.Len())
+	var counter int
 	for i := 0; i < s.Len(); i++ {
 		if s.values.Element(i).Null {
-			ret = append(ret, i)
+			ret[counter] = i
+			counter++
 		}
 	}
-	return ret
+	return ret[:counter]
 }
 
 // Values returns all the values (including null values) in the Series as an interface slice.

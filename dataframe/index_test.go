@@ -701,8 +701,7 @@ func TestIndex_unique(t *testing.T) {
 		levels []int
 	}
 	type want struct {
-		labels    []string
-		positions []int
+		labels []string
 	}
 	tests := []struct {
 		name  string
@@ -710,23 +709,21 @@ func TestIndex_unique(t *testing.T) {
 		args  args
 		want  want
 	}{
-		{name: "level 0", input: df, args: args{levels: []int{0}}, want: want{labels: []string{"corge"}, positions: []int{0}}},
-		{"levels 0 & 1", df, args{[]int{0, 1}}, want{[]string{"corge | qux"}, []int{0}}},
-		{"levels 0 & 2", df, args{[]int{0, 2}}, want{[]string{"corge | waldo", "corge | fred"}, []int{0, 1}}},
-		{"all levels", df, args{nil}, want{[]string{"corge | qux | waldo", "corge | qux | fred"}, []int{0, 1}}},
+		{name: "level 0", input: df, args: args{levels: []int{0}}, want: want{labels: []string{"corge"}}},
+		{"levels 0 & 1", df, args{[]int{0, 1}}, want{[]string{"corge | qux"}}},
+		{"levels 0 & 2", df, args{[]int{0, 2}}, want{[]string{"corge | waldo", "corge | fred"}}},
+		{"all levels", df, args{nil}, want{[]string{"corge | qux | waldo", "corge | qux | fred"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			idx := Index{
 				df: df.Copy(),
 			}
-			labels, positions := idx.unique(tt.args.levels...)
+			labels := idx.unique(tt.args.levels...)
 			if !reflect.DeepEqual(labels, tt.want.labels) {
 				t.Errorf("Index.unique() labels = %v, want %v", labels, tt.want.labels)
 			}
-			if !reflect.DeepEqual(positions, tt.want.positions) {
-				t.Errorf("Index.unique() positions = %v, want %v", positions, tt.want.positions)
-			}
+
 		})
 	}
 }
