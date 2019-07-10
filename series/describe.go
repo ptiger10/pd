@@ -377,9 +377,9 @@ func ensureFloatFromNumerics(vals interface{}) []float64 {
 }
 
 func convertIntToFloat(vals []int64) []float64 {
-	var ret []float64
-	for _, val := range vals {
-		ret = append(ret, float64(val))
+	ret := make([]float64, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = float64(vals[i])
 	}
 	return ret
 }

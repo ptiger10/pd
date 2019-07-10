@@ -15,18 +15,23 @@ func (s *Series) validVals() interface{} {
 	return valid.Vals()
 }
 
-// Sum of non-null series elements. For bool values, sum of true values.
-//
-// Applies to: Float, Int, Bool. If inapplicable, defaults to math.Nan().
+// Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
-	vals := s.validVals()
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		return gonum.Sum(data)
+		data := ensureFloatFromNumerics(s.values.Vals())
+		var sum float64
+
+		// null int values are represented as 0, but that's ok for sum
+		for _, d := range data {
+			if !math.IsNaN(d) {
+				sum += d
+			}
+		}
+		return sum
 	case options.Bool:
 		var sum float64
-		data := ensureBools(vals)
+		data := ensureBools(s.values.Vals())
 		for _, d := range data {
 			if d {
 				sum++
