@@ -202,7 +202,7 @@ func MustNewLevel(data interface{}, name string) Level {
 
 // Copy copies an Index Level
 func (lvl Level) Copy() Level {
-	if reflect.DeepEqual(lvl, Level{}) {
+	if lvl.Labels == nil {
 		return Level{}
 	}
 	lvlCopy := Level{}

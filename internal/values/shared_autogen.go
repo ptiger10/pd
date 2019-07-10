@@ -23,9 +23,9 @@ type float64Value struct {
 
 // newSliceFloat64 converts []Float64 -> Container with float64Values
 func newSliceFloat64(vals []float64) Container {
-	var ret float64Values
-	for _, val := range vals {
-		ret = append(ret, newFloat64(val))
+	ret := make(float64Values, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newFloat64(vals[i])
 	}
 	return Container{&ret, options.Float64}
 }
@@ -41,9 +41,9 @@ func (vals *float64Values) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *float64Values) Subset(rowPositions []int) Values {
-	var ret float64Values
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(float64Values, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -57,9 +57,10 @@ func (vals *float64Values) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *float64Values) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -68,23 +69,26 @@ func (vals *float64Values) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *float64Values) Vals() interface{} {
-	var ret []float64
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]float64, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *float64Values) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current float64Values container into a new Values container
 func (vals *float64Values) Copy() Values {
-	newValues := float64Values{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -113,9 +117,10 @@ func (vals *float64Values) Insert(pos int, val interface{}) {
 
 // ToFloat converts float64Values to floatValues.
 func (vals *float64Values) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }
@@ -185,9 +190,9 @@ type int64Value struct {
 
 // newSliceInt64 converts []Int64 -> Container with int64Values
 func newSliceInt64(vals []int64) Container {
-	var ret int64Values
-	for _, val := range vals {
-		ret = append(ret, newInt64(val))
+	ret := make(int64Values, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newInt64(vals[i])
 	}
 	return Container{&ret, options.Int64}
 }
@@ -203,9 +208,9 @@ func (vals *int64Values) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *int64Values) Subset(rowPositions []int) Values {
-	var ret int64Values
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(int64Values, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -219,9 +224,10 @@ func (vals *int64Values) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *int64Values) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -230,23 +236,26 @@ func (vals *int64Values) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *int64Values) Vals() interface{} {
-	var ret []int64
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]int64, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *int64Values) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current int64Values container into a new Values container
 func (vals *int64Values) Copy() Values {
-	newValues := int64Values{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(int64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -275,9 +284,10 @@ func (vals *int64Values) Insert(pos int, val interface{}) {
 
 // ToFloat converts int64Values to floatValues.
 func (vals *int64Values) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }
@@ -347,9 +357,9 @@ type stringValue struct {
 
 // newSliceString converts []String -> Container with stringValues
 func newSliceString(vals []string) Container {
-	var ret stringValues
-	for _, val := range vals {
-		ret = append(ret, newString(val))
+	ret := make(stringValues, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newString(vals[i])
 	}
 	return Container{&ret, options.String}
 }
@@ -365,9 +375,9 @@ func (vals *stringValues) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *stringValues) Subset(rowPositions []int) Values {
-	var ret stringValues
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(stringValues, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -381,9 +391,10 @@ func (vals *stringValues) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *stringValues) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -392,23 +403,26 @@ func (vals *stringValues) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *stringValues) Vals() interface{} {
-	var ret []string
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]string, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *stringValues) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current stringValues container into a new Values container
 func (vals *stringValues) Copy() Values {
-	newValues := stringValues{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(stringValues, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -437,9 +451,10 @@ func (vals *stringValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts stringValues to floatValues.
 func (vals *stringValues) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }
@@ -509,9 +524,9 @@ type boolValue struct {
 
 // newSliceBool converts []Bool -> Container with boolValues
 func newSliceBool(vals []bool) Container {
-	var ret boolValues
-	for _, val := range vals {
-		ret = append(ret, newBool(val))
+	ret := make(boolValues, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newBool(vals[i])
 	}
 	return Container{&ret, options.Bool}
 }
@@ -527,9 +542,9 @@ func (vals *boolValues) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *boolValues) Subset(rowPositions []int) Values {
-	var ret boolValues
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(boolValues, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -543,9 +558,10 @@ func (vals *boolValues) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *boolValues) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -554,23 +570,26 @@ func (vals *boolValues) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *boolValues) Vals() interface{} {
-	var ret []bool
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]bool, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *boolValues) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current boolValues container into a new Values container
 func (vals *boolValues) Copy() Values {
-	newValues := boolValues{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(boolValues, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -599,9 +618,10 @@ func (vals *boolValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts boolValues to floatValues.
 func (vals *boolValues) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }
@@ -671,9 +691,9 @@ type dateTimeValue struct {
 
 // newSliceDateTime converts []DateTime -> Container with dateTimeValues
 func newSliceDateTime(vals []time.Time) Container {
-	var ret dateTimeValues
-	for _, val := range vals {
-		ret = append(ret, newDateTime(val))
+	ret := make(dateTimeValues, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newDateTime(vals[i])
 	}
 	return Container{&ret, options.DateTime}
 }
@@ -689,9 +709,9 @@ func (vals *dateTimeValues) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *dateTimeValues) Subset(rowPositions []int) Values {
-	var ret dateTimeValues
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(dateTimeValues, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -705,9 +725,10 @@ func (vals *dateTimeValues) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *dateTimeValues) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -716,23 +737,26 @@ func (vals *dateTimeValues) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *dateTimeValues) Vals() interface{} {
-	var ret []time.Time
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]time.Time, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *dateTimeValues) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current dateTimeValues container into a new Values container
 func (vals *dateTimeValues) Copy() Values {
-	newValues := dateTimeValues{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(dateTimeValues, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -761,9 +785,10 @@ func (vals *dateTimeValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts dateTimeValues to floatValues.
 func (vals *dateTimeValues) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }
@@ -833,9 +858,9 @@ type interfaceValue struct {
 
 // newSliceInterface converts []Interface -> Container with interfaceValues
 func newSliceInterface(vals []interface{}) Container {
-	var ret interfaceValues
-	for _, val := range vals {
-		ret = append(ret, newInterface(val))
+	ret := make(interfaceValues, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newInterface(vals[i])
 	}
 	return Container{&ret, options.Interface}
 }
@@ -851,9 +876,9 @@ func (vals *interfaceValues) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *interfaceValues) Subset(rowPositions []int) Values {
-	var ret interfaceValues
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(interfaceValues, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -867,9 +892,10 @@ func (vals *interfaceValues) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *interfaceValues) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -878,23 +904,26 @@ func (vals *interfaceValues) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *interfaceValues) Vals() interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *interfaceValues) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current interfaceValues container into a new Values container
 func (vals *interfaceValues) Copy() Values {
-	newValues := interfaceValues{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(interfaceValues, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -923,9 +952,10 @@ func (vals *interfaceValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts interfaceValues to floatValues.
 func (vals *interfaceValues) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }

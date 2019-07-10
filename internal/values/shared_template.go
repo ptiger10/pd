@@ -23,9 +23,9 @@ type valueTypeValue struct {
 
 // newSlicevalueType converts []valueType -> Container with valueTypeValues
 func newSlicevalueType(vals []valueType) Container {
-	var ret valueTypeValues
-	for _, val := range vals {
-		ret = append(ret, newvalueType(val))
+	ret := make(valueTypeValues, len(vals))
+	for i := 0; i < len(vals); i++ {
+		ret[i] = newvalueType(vals[i])
 	}
 	return Container{&ret, options.PlaceholdervalueType}
 }
@@ -41,9 +41,9 @@ func (vals *valueTypeValues) Swap(i, j int) {
 
 // Subset returns the values located at specific index positions.
 func (vals *valueTypeValues) Subset(rowPositions []int) Values {
-	var ret valueTypeValues
-	for _, position := range rowPositions {
-		ret = append(ret, (*vals)[position])
+	ret := make(valueTypeValues, len(rowPositions))
+	for i := 0; i < len(rowPositions); i++ {
+		ret[i] = (*vals)[rowPositions[i]]
 	}
 	return &ret
 }
@@ -57,9 +57,10 @@ func (vals *valueTypeValues) Append(vals2 Values) {
 
 // Values returns only the Value fields for the collection of Value/Null structs as an interface slice.
 func (vals *valueTypeValues) Values() []interface{} {
-	var ret []interface{}
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]interface{}, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
@@ -68,23 +69,26 @@ func (vals *valueTypeValues) Values() []interface{} {
 //
 // Caution: This operation excludes the Null field but retains any null values.
 func (vals *valueTypeValues) Vals() interface{} {
-	var ret []valueType
-	for _, val := range *vals {
-		ret = append(ret, val.v)
+	v := *vals
+	ret := make([]valueType, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].v
 	}
 	return ret
 }
 
 // Element returns a Value/Null pair at an integer position.
 func (vals *valueTypeValues) Element(position int) Elem {
-	return Elem{(*vals)[position].v, (*vals)[position].null}
+	v := (*vals)[position]
+	return Elem{v.v, v.null}
 }
 
 // Copy transfers every value from the current valueTypeValues container into a new Values container
 func (vals *valueTypeValues) Copy() Values {
-	newValues := valueTypeValues{}
-	for _, val := range *vals {
-		newValues = append(newValues, val)
+	v := *vals
+	newValues := make(valueTypeValues, len(v))
+	for i := 0; i < len(v); i++ {
+		newValues[i] = v[i]
 	}
 	return &newValues
 }
@@ -113,9 +117,10 @@ func (vals *valueTypeValues) Insert(pos int, val interface{}) {
 
 // ToFloat converts valueTypeValues to floatValues.
 func (vals *valueTypeValues) ToFloat64() Values {
-	var ret float64Values
-	for _, val := range *vals {
-		ret = append(ret, val.toFloat64())
+	v := *vals
+	ret := make(float64Values, len(v))
+	for i := 0; i < len(v); i++ {
+		ret[i] = v[i].toFloat64()
 	}
 	return &ret
 }

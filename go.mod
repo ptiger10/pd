@@ -10,5 +10,6 @@ require (
 	github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82
 	github.com/gonum/internal v0.0.0-20181124074243-f884aa714029 // indirect
 	github.com/montanaflynn/stats v0.5.0
+	github.com/pkg/profile v1.3.0
 	github.com/stretchr/testify v1.3.0 // indirect
 )

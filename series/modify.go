@@ -403,3 +403,15 @@ func (s *Series) ToInterface() *Series {
 }
 
 // [END Copy]
+
+// // Resample resamples a datetime Series up to a higher level of time aggregation.
+// func (ip InPlace) Resample(s string) {
+// 	if ip.s.datatype != options.DateTime {
+// 		return
+// 	}
+// 	ip.s = ip.s.Apply(func(date interface{}) interface{} {
+// 		t := date.(time.Time)
+// 		if s == time.Minute.String()
+// 		return t.Truncate(d)
+// 	})
+// }
