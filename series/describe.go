@@ -277,7 +277,7 @@ func (s *Series) null() []int {
 	ret := make([]int, s.Len())
 	var counter int
 	for i := 0; i < s.Len(); i++ {
-		if s.values.Element(i).Null {
+		if s.values.Null(i) {
 			ret[counter] = i
 			counter++
 		}

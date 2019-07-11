@@ -35,11 +35,17 @@ func TestSharedFloat64(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{1.0, false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := 1.0
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
 	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
+	}
+
 	gotLess := vals.Less(0, 1)
 	wantLess := true
 	if gotLess != wantLess {
@@ -81,7 +87,7 @@ func TestSharedFloat64(t *testing.T) {
 	}
 
 	vals.Set(0, "")
-	if elem := vals.Element(0); !math.IsNaN(elem.Value.(float64)) || elem.Null != true {
+	if !math.IsNaN(vals.Value(0).(float64)) || !vals.Null(0) {
 		t.Errorf("Set() on null value did not return null values")
 	}
 
@@ -124,10 +130,15 @@ func TestSharedInt64(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{int64(1), false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := int64(1)
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
+	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
 	}
 	gotLess := vals.Less(0, 1)
 	wantLess := true
@@ -213,10 +224,15 @@ func TestSharedString(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{"bar", false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := "bar"
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
+	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
 	}
 	gotLess := vals.Less(0, 1)
 	wantLess := true
@@ -302,10 +318,15 @@ func TestSharedBool(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{false, false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := false
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
+	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
 	}
 	gotLess := vals.Less(0, 1)
 	wantLess := true
@@ -393,10 +414,15 @@ func TestSharedDateTime(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{dt1, false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := dt1
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
+	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
 	}
 	gotLess := vals.Less(0, 1)
 	wantLess := true
@@ -482,10 +508,15 @@ func TestSharedInterface(t *testing.T) {
 		t.Errorf("Values() got %v, want %v", gotValues, wantValues)
 	}
 
-	e := vals.Element(0)
-	wantElem := Elem{false, false}
-	if !reflect.DeepEqual(e, wantElem) {
-		t.Errorf("Element() got %v, want %v", e, wantElem)
+	val := vals.Value(0)
+	n := vals.Null(0)
+	wantVal := false
+	wantN := false
+	if val != wantVal {
+		t.Errorf("Value() got %v, want %v", val, wantVal)
+	}
+	if n != wantN {
+		t.Errorf("Null() got %v, want %v", n, wantN)
 	}
 	gotLess := vals.Less(0, 1)
 	wantLess := true
@@ -741,9 +772,9 @@ func TestConvert(t *testing.T) {
 			if err != nil {
 				t.Errorf("Convert(): %v", err)
 			}
-			elem := converted.Element(0)
-			val := elem.Value
-			null := elem.Null
+
+			val := converted.Value(0)
+			null := converted.Null(0)
 			if strings.Contains(tt.name, "(null)->float") {
 				if !math.IsNaN(val.(float64)) {
 					t.Errorf("Convert(): got %v, want NaN", val)

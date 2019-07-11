@@ -10,22 +10,27 @@ import (
 )
 
 // Element returns information about the value and index labels at this position but panics if an out-of-range position is provided.
-func (s *Series) Element(position int) Element {
-	elem := s.values.Element(position)
-	idxElems := s.index.Elements(position)
-	return Element{elem.Value, elem.Null, idxElems.Labels, idxElems.DataTypes}
+func (s *Series) Element(p int) Element {
+	idxElems := s.index.Elements(p)
+	return Element{
+		s.values.Value(p),
+		s.values.Null(p),
+		idxElems.Labels,
+		idxElems.DataTypes,
+	}
 }
 
-// At returns the value at a single integer position, bur returns nil if the position is out of range.
+// At returns the value at a single integer position, but returns nil if value is null. Panics if position is out of range.
 func (s *Series) At(position int) interface{} {
 	if position >= s.Len() {
 		if options.GetLogWarnings() {
 			log.Printf("s.Index.At(): invalid position: %d (max: %v)", position, s.Len()-1)
 		}
+	}
+	if s.values.Null(position) {
 		return nil
 	}
-	elem := s.Element(position)
-	return elem.Value
+	return s.values.Value(position)
 }
 
 // From subsets the Series from start to end (inclusive) and returns a new Series.

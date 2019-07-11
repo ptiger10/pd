@@ -229,14 +229,14 @@ func (df *DataFrame) print() string {
 				continue
 			}
 
-			valElem := df.vals[m].Values.Element(i)
+			valElem := df.vals[m].Values.Value(i)
 			var valStr string
 			if df.vals[m].DataType == options.DateTime {
-				valStr = valElem.Value.(time.Time).Format(options.GetDisplayTimeFormat())
+				valStr = valElem.(time.Time).Format(options.GetDisplayTimeFormat())
 			} else if df.vals[m].DataType == options.Float64 {
-				valStr = fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), valElem.Value.(float64))
+				valStr = fmt.Sprintf("%.*f", options.GetDisplayFloatPrecision(), valElem.(float64))
 			} else {
-				valStr = fmt.Sprint(valElem.Value)
+				valStr = fmt.Sprint(valElem)
 			}
 
 			padding := maxColWidths[m]
@@ -390,7 +390,7 @@ func (df *DataFrame) null(cols ...int) []int {
 	var ret []int
 	for _, col := range cols {
 		for i := 0; i < df.Len(); i++ {
-			if df.vals[col].Values.Element(i).Null {
+			if df.vals[col].Values.Null(i) {
 				ret = append(ret, i)
 			}
 		}

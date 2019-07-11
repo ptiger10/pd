@@ -230,7 +230,7 @@ func (idx Index) Elements(position int) Elements {
 	var labels []interface{}
 	var datatypes []options.DataType
 	for _, lvl := range idx.Levels {
-		label := lvl.Labels.Element(position).Value
+		label := lvl.Labels.Value(position)
 		labels = append(labels, label)
 		datatypes = append(datatypes, lvl.DataType)
 	}
@@ -468,7 +468,7 @@ func (lvl *Level) maxWidth() int {
 func (lvl *Level) updateLabelMap() {
 	labelMap := make(LabelMap, lvl.Len())
 	for i := 0; i < lvl.Len(); i++ {
-		key := fmt.Sprint(lvl.Labels.Element(i).Value)
+		key := fmt.Sprint(lvl.Labels.Value(i))
 		labelMap[key] = append(labelMap[key], i)
 	}
 	lvl.LabelMap = labelMap

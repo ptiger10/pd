@@ -223,7 +223,7 @@ func TestScalarConstructor_NullFloat(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to construct values from null float: %v", err)
 	}
-	val := vals.Values.Element(0).Value.(float64)
+	val := vals.Values.Value(0).(float64)
 	if !math.IsNaN(val) {
 		t.Errorf("Returned %v, want NaN", val)
 	}
@@ -413,7 +413,7 @@ func TestSliceConstructor_NullFloat(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to construct values from null float: %v", err)
 	}
-	val := vals.Values.Element(0).Value.(float64)
+	val := vals.Values.Value(0).(float64)
 	if !math.IsNaN(val) {
 		t.Errorf("Returned %v, want NaN", val)
 	}
@@ -424,7 +424,7 @@ func TestSliceConstructor_NullFloatInterface(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to construct values from null float: %v", err)
 	}
-	val := vals.Values.Element(0).Value.(float64)
+	val := vals.Values.Value(0).(float64)
 	if !math.IsNaN(val) {
 		t.Errorf("Returned %v, want NaN", val)
 	}

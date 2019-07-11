@@ -47,7 +47,7 @@ func (df *DataFrame) stack(level int) (newIdxPositions []int, valsMatrix [][]int
 			// log warnings restored
 			for m := 0; m < df.NumCols(); m++ {
 				if len(row) > 0 {
-					valsMatrix[i][m+labelOffset*df.NumCols()] = rows.vals[m].Values.Element(row[0]).Value
+					valsMatrix[i][m+labelOffset*df.NumCols()] = rows.vals[m].Values.Value(row[0])
 				}
 				if extendColLevel {
 					newColLvl = append(newColLvl, label)
@@ -135,14 +135,14 @@ func transposeSeries(s *series.Series) *DataFrame {
 		cols.Levels[j].DataType = idx.Levels[j].DataType
 		cols.Levels[j].Name = idx.Levels[j].Name
 		for m := 0; m < s.Len(); m++ {
-			elem := idx.Levels[j].Labels.Element(m)
+			val := idx.Levels[j].Labels.Value(m)
 			// TODO: test null value
 			// if !elem.Null {
 			// 	cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
 			// } else {
 			// 	cols.Levels[j].Labels = append(cols.Levels[j].Labels, "")
 			// }
-			cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(elem.Value))
+			cols.Levels[j].Labels = append(cols.Levels[j].Labels, fmt.Sprint(val))
 		}
 	}
 	cols.Refresh()

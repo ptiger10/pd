@@ -48,30 +48,38 @@ func TestSeries_At(t *testing.T) {
 		position int
 	}
 	tests := []struct {
-		name     string
-		input    *Series
-		args     args
-		want     interface{}
-		wantFail bool
+		name  string
+		input *Series
+		args  args
+		want  interface{}
 	}{
-		{name: "pass", input: MustNew([]string{"foo", "bar", "baz"}), args: args{1}, want: "bar", wantFail: false},
-		{"soft fail: invalid position", MustNew([]string{"foo", "bar", "baz"}), args{10}, nil, true},
+		{name: "pass", input: MustNew([]string{"foo", "bar", "baz"}), args: args{1}, want: "bar"},
+		{name: "nil", input: MustNew([]string{"", "bar", "baz"}), args: args{0}, want: nil},
+		{"fail: invalid position", MustNew([]string{"foo", "bar", "baz"}), args{10}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			log.SetOutput(&buf)
 			defer log.SetOutput(os.Stderr)
+			// test panic
+			if strings.Contains(tt.name, "fail") {
+				defer func() {
+					if r := recover(); r == nil {
+						t.Errorf("The code did not panic")
+					}
+				}()
 
+				tt.input.At(tt.args.position)
+				if buf.String() == "" {
+					t.Errorf("Series.At() returned no log message, want log due to fail")
+				}
+				return
+			}
 			if got := tt.input.At(tt.args.position); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Series.At() = %v, want %v", got, tt.want)
 			}
 
-			if tt.wantFail {
-				if buf.String() == "" {
-					t.Errorf("Series.At() returned no log message, want log due to fail")
-				}
-			}
 		})
 	}
 }

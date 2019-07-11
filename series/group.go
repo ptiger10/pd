@@ -152,7 +152,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 	}
 
 	for i := 0; i < s.Len(); i++ {
-		labels := s.Element(i).Labels
+		labels := s.index.Elements(i).Labels
 		var strLabels []string
 		for _, label := range labels {
 			strLabels = append(strLabels, fmt.Sprint(label))

@@ -17,7 +17,7 @@ func (idx Index) Values() [][]interface{} {
 	for j := 0; j < idx.s.NumLevels(); j++ {
 		var vals []interface{}
 		for i := 0; i < idx.s.Len(); i++ {
-			vals = append(vals, idx.s.index.Levels[j].Labels.Element(i).Value)
+			vals = append(vals, idx.s.index.Levels[j].Labels.Value(i))
 		}
 		ret = append(ret, vals)
 	}
@@ -66,7 +66,7 @@ func (idx Index) At(row int, level int) interface{} {
 		}
 		return nil
 	}
-	return idx.s.index.Levels[level].Labels.Element(row).Value
+	return idx.s.index.Levels[level].Labels.Value(row)
 }
 
 // RenameLevel renames an index level in place but does not change anything if level is out of range.
@@ -93,7 +93,7 @@ func (idx Index) Reindex(level int) error {
 func (idx Index) null(level int) []int {
 	var ret []int
 	for i := 0; i < idx.Len(); i++ {
-		if idx.s.index.Levels[level].Labels.Element(i).Null {
+		if idx.s.index.Levels[level].Labels.Null(i) {
 			ret = append(ret, i)
 		}
 	}

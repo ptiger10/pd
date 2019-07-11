@@ -77,12 +77,6 @@ func (vals *valueTypeValues) Vals() interface{} {
 	return ret
 }
 
-// Element returns a Value/Null pair at an integer position.
-func (vals *valueTypeValues) Element(position int) Elem {
-	v := (*vals)[position]
-	return Elem{v.v, v.null}
-}
-
 // Value returns the Value field at the specified integer position.
 func (vals *valueTypeValues) Value(position int) interface{} {
 	return (*vals)[position].v

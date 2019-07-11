@@ -15,9 +15,8 @@ func (df *DataFrame) Row(position int) Row {
 	nulls := make([]bool, df.NumCols())
 	types := make([]options.DataType, df.NumCols())
 	for m := 0; m < df.NumCols(); m++ {
-		elem := df.vals[m].Values.Element(position)
-		vals[m] = elem.Value
-		nulls[m] = elem.Null
+		vals[m] = df.vals[m].Values.Value(position)
+		nulls[m] = df.vals[m].Values.Null(position)
 		types[m] = df.vals[m].DataType
 	}
 	idxElems := df.index.Elements(position)

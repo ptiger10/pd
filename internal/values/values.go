@@ -15,7 +15,6 @@ type Values interface {
 	Vals() interface{}       // an interface of values, ready for type assertion into a slice of their native type
 	Values() []interface{}   // an interface slice of values, for handling values as a predictable slice
 	Subset([]int) Values     // a new Values object comprised of the Value/Null pairs at one or more integer positions
-	Element(int) Elem        // Value/Null pair at an integer position
 	Value(int) interface{}   // the value field at an integer position
 	Null(int) bool           // the null field at an integer position
 	Set(int, interface{})    // overwrite the value/null struct at an integer position
@@ -38,12 +37,6 @@ type Values interface {
 type Container struct {
 	Values   Values
 	DataType options.DataType
-}
-
-// An Elem is a single Value/Null pair.
-type Elem struct {
-	Value interface{}
-	Null  bool
 }
 
 // Convert a collection of values from one type to another, and coerce to null if a value cannot be converted sensibly
