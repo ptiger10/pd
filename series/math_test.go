@@ -30,12 +30,12 @@ func TestMath_numerics(t *testing.T) {
 		wantQ3     float64
 		wantStd    float64
 	}{
-		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 1, 2, 3}), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
+		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1}), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
 		{"float from string with null", MustNew([]string{"", "", "1", "2", "3"}).ToFloat64(), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
 		{"int from string with null", MustNew([]string{"", "", "1", "2", "3"}).ToInt64(), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
-		{"int", MustNew([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
+		{"int", MustNew([]int{2, 1, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
 		{"float", MustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
-		{"float with negative", MustNew([]float64{-1, 2, 3, 4}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
+		{"float with negative", MustNew([]float64{2, -1, 4, 3}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

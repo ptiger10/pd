@@ -4,7 +4,7 @@ import (
 	"math"
 	"sort"
 
-	gonum "github.com/gonum/floats" // uses optimized gonum/floats methods where available
+	// uses optimized gonum/floats methods where available
 	"github.com/montanaflynn/stats" // and stats package otherwise
 	"github.com/ptiger10/pd/options"
 )
@@ -105,9 +105,7 @@ func (s *Series) Median() float64 {
 	}
 }
 
-// Min of a series.
-//
-// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
+// Min of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Min() float64 {
 	min := math.NaN()
 	switch s.datatype {
@@ -140,18 +138,34 @@ func (s *Series) Min() float64 {
 	}
 }
 
-// Max of a series.
-//
-// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
+// Max of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Max() float64 {
-	vals := s.validVals()
+	max := math.NaN()
 	switch s.datatype {
-	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		if len(data) == 0 {
-			return math.NaN()
+	case options.Float64:
+		data := ensureFloatFromNumerics(s.Vals())
+		for _, d := range data {
+			if !math.IsNaN(d) {
+				if math.IsNaN(max) {
+					max = d
+				} else if d > max {
+					max = d
+				}
+			}
 		}
-		return gonum.Max(data)
+		return max
+	case options.Int64:
+		data := ensureFloatFromNumerics(s.Vals())
+		for i, d := range data {
+			if !s.values.Null(i) {
+				if math.IsNaN(max) {
+					max = d
+				} else if d > max {
+					max = d
+				}
+			}
+		}
+		return max
 	default:
 		return math.NaN()
 	}
