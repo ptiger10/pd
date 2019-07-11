@@ -170,7 +170,7 @@ func (df *DataFrame) groupby() Grouping {
 	return Grouping{df: df, groups: groups}
 }
 
-// First returns the first occurence of each grouping in the DataFrame.
+// First returns the first occurrence of each grouping in the DataFrame.
 func (g Grouping) First() *DataFrame {
 	first := func(group string) *DataFrame {
 		position := g.groups[group].Positions[0]
@@ -185,7 +185,7 @@ func (g Grouping) First() *DataFrame {
 	return ret
 }
 
-// Last returns the last occurence of each grouping in the DataFrame.
+// Last returns the last occurrence of each grouping in the DataFrame.
 func (g Grouping) Last() *DataFrame {
 	last := func(group string) *DataFrame {
 		lastIdx := len(g.groups[group].Positions) - 1

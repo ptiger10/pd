@@ -17,11 +17,10 @@ func (s *Series) validVals() interface{} {
 
 // Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
+	var sum float64
 	switch s.datatype {
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(s.values.Vals())
-		var sum float64
-
 		// null int values are represented as 0, but that's ok for sum
 		for _, d := range data {
 			if !math.IsNaN(d) {
@@ -30,8 +29,8 @@ func (s *Series) Sum() float64 {
 		}
 		return sum
 	case options.Bool:
-		var sum float64
 		data := ensureBools(s.values.Vals())
+		// null bool values are represented as false, but that's ok for sum
 		for _, d := range data {
 			if d {
 				sum++
@@ -47,41 +46,36 @@ func (s *Series) Sum() float64 {
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s *Series) Mean() float64 {
-	var sum float64
-	vals := s.validVals()
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		for _, d := range data {
-			sum += d
-		}
-		return sum / float64(len(data))
+		return s.Sum() / float64(len(s.valid()))
 	case options.Bool:
-		data := ensureBools(vals)
-		l := len(data)
-		return s.Sum() / float64(l)
+		return s.Sum() / float64(len(s.valid()))
 	default:
 		return math.NaN()
 	}
 }
 
-// Median of a series.
-//
-// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
+// Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Median() float64 {
-	vals := s.validVals()
+	// vals := s.validVals()
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
+		data := ensureFloatFromNumerics(s.values.Vals())
 		if len(data) == 0 {
 			return math.NaN()
 		}
-		sort.Float64s(data)
-		mNumber := len(data) / 2
-		if len(data)%2 != 0 { // checks if sequence has odd number of elements
-			return data[mNumber]
+		validPositions := s.valid()
+		valid := make([]float64, len(validPositions))
+		for i := 0; i < len(validPositions); i++ {
+			valid[i] = s.values.Value(i).(float64)
 		}
-		return (data[mNumber-1] + data[mNumber]) / 2
+		sort.Float64s(valid)
+		mNumber := len(valid) / 2
+		if len(valid)%2 != 0 { // checks if sequence has odd number of elements
+			return valid[mNumber]
+		}
+		return (valid[mNumber-1] + valid[mNumber]) / 2
 	default:
 		return math.NaN()
 	}

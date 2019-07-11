@@ -37,7 +37,7 @@ func InterfaceFactory(data interface{}) (Container, error) {
 	return container, err
 }
 
-// InterfaceSliceFactory converts []interface{} to []Container
+// InterfaceSliceFactory converts []interface{} to []Container. If manualMode is true, []interface{} columns will not be interpolated.
 func InterfaceSliceFactory(data []interface{}, manualMode bool, dataType options.DataType) ([]Container, error) {
 	vals := make([]Container, len(data))
 	for i := 0; i < len(data); i++ {

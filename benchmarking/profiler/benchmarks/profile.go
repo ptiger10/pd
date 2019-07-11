@@ -58,11 +58,11 @@ func ProfileGo(f func(b *testing.B)) Result {
 	case benchmark < int64(time.Microsecond):
 		speed = fmt.Sprintf("%vns", benchmark)
 	case benchmark < int64(time.Millisecond):
-		speed = fmt.Sprintf("%.2fμs", float64(benchmark)/float64(time.Microsecond))
+		speed = fmt.Sprintf("%.1fμs", float64(benchmark)/float64(time.Microsecond))
 	case benchmark < int64(time.Second):
-		speed = fmt.Sprintf("%.2fms", float64(benchmark)/float64(time.Millisecond))
+		speed = fmt.Sprintf("%.1fms", float64(benchmark)/float64(time.Millisecond))
 	default:
-		speed = fmt.Sprintf("%.2fs", float64(benchmark)/float64(time.Second))
+		speed = fmt.Sprintf("%.fs", float64(benchmark)/float64(time.Second))
 	}
 	return Result{speed, float64(benchmark)}
 }

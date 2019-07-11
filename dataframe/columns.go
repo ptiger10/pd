@@ -113,7 +113,7 @@ func (col Columns) DropLevel(level int) error {
 	return nil
 }
 
-// SelectName returns the integer position of the cols level at the first occurence of the supplied name, or -1 if not a valid cols level name.
+// SelectName returns the integer position of the cols level at the first occurrence of the supplied name, or -1 if not a valid cols level name.
 func (col Columns) SelectName(name string) int {
 	v, ok := col.df.cols.NameMap[name]
 	if !ok {

@@ -83,6 +83,16 @@ func (vals *float64Values) Element(position int) Elem {
 	return Elem{v.v, v.null}
 }
 
+// Value returns the Value field at the specified integer position.
+func (vals *float64Values) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *float64Values) Null(position int) bool {
+	return (*vals)[position].null
+}
+
 // Copy transfers every value from the current float64Values container into a new Values container
 func (vals *float64Values) Copy() Values {
 	v := *vals
@@ -247,6 +257,16 @@ func (vals *int64Values) Vals() interface{} {
 func (vals *int64Values) Element(position int) Elem {
 	v := (*vals)[position]
 	return Elem{v.v, v.null}
+}
+
+// Value returns the Value field at the specified integer position.
+func (vals *int64Values) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *int64Values) Null(position int) bool {
+	return (*vals)[position].null
 }
 
 // Copy transfers every value from the current int64Values container into a new Values container
@@ -415,6 +435,16 @@ func (vals *stringValues) Element(position int) Elem {
 	return Elem{v.v, v.null}
 }
 
+// Value returns the Value field at the specified integer position.
+func (vals *stringValues) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *stringValues) Null(position int) bool {
+	return (*vals)[position].null
+}
+
 // Copy transfers every value from the current stringValues container into a new Values container
 func (vals *stringValues) Copy() Values {
 	v := *vals
@@ -579,6 +609,16 @@ func (vals *boolValues) Vals() interface{} {
 func (vals *boolValues) Element(position int) Elem {
 	v := (*vals)[position]
 	return Elem{v.v, v.null}
+}
+
+// Value returns the Value field at the specified integer position.
+func (vals *boolValues) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *boolValues) Null(position int) bool {
+	return (*vals)[position].null
 }
 
 // Copy transfers every value from the current boolValues container into a new Values container
@@ -747,6 +787,16 @@ func (vals *dateTimeValues) Element(position int) Elem {
 	return Elem{v.v, v.null}
 }
 
+// Value returns the Value field at the specified integer position.
+func (vals *dateTimeValues) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *dateTimeValues) Null(position int) bool {
+	return (*vals)[position].null
+}
+
 // Copy transfers every value from the current dateTimeValues container into a new Values container
 func (vals *dateTimeValues) Copy() Values {
 	v := *vals
@@ -911,6 +961,16 @@ func (vals *interfaceValues) Vals() interface{} {
 func (vals *interfaceValues) Element(position int) Elem {
 	v := (*vals)[position]
 	return Elem{v.v, v.null}
+}
+
+// Value returns the Value field at the specified integer position.
+func (vals *interfaceValues) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *interfaceValues) Null(position int) bool {
+	return (*vals)[position].null
 }
 
 // Copy transfers every value from the current interfaceValues container into a new Values container

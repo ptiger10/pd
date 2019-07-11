@@ -40,13 +40,13 @@ def timer(n):
             mcs = 1000000
             ms = 1000
             if duration * mcs < 1:
-                speed = "{:.2f}ns".format(duration*ns)
+                speed = "{:.1f}ns".format(duration*ns)
             if duration * ms < 1:
-                speed = "{:.2f}μs".format(duration*mcs)
+                speed = "{:.1f}μs".format(duration*mcs)
             elif duration < 1:
-                speed = "{:.2f}ms".format(duration*ms)
+                speed = "{:.1f}ms".format(duration*ms)
             else:
-                speed = "{:.2f}s".format(duration)
+                speed = "{:.1f}s".format(duration)
             return speed, int(duration*ns)
         return wrapper
     return decorator

@@ -168,7 +168,7 @@ func (s *Series) GroupByIndex(levelPositions ...int) Grouping {
 	return Grouping{s: s, groups: groups}
 }
 
-// First returns the first occurence of each grouping in the Series.
+// First returns the first occurrence of each grouping in the Series.
 func (g Grouping) First() *Series {
 	first := func(group string) *Series {
 		position := g.groups[group].Positions[0]
@@ -183,7 +183,7 @@ func (g Grouping) First() *Series {
 	return ret
 }
 
-// Last returns the last occurence of each grouping in the Series.
+// Last returns the last occurrence of each grouping in the Series.
 func (g Grouping) Last() *Series {
 	last := func(group string) *Series {
 		lastIdx := len(g.groups[group].Positions) - 1

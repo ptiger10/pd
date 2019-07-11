@@ -83,6 +83,16 @@ func (vals *valueTypeValues) Element(position int) Elem {
 	return Elem{v.v, v.null}
 }
 
+// Value returns the Value field at the specified integer position.
+func (vals *valueTypeValues) Value(position int) interface{} {
+	return (*vals)[position].v
+}
+
+// Value returns the Null field at the specified integer position.
+func (vals *valueTypeValues) Null(position int) bool {
+	return (*vals)[position].null
+}
+
 // Copy transfers every value from the current valueTypeValues container into a new Values container
 func (vals *valueTypeValues) Copy() Values {
 	v := *vals

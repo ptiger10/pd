@@ -162,7 +162,7 @@ func (idx Index) DropLevel(level int) error {
 	return nil
 }
 
-// SelectName returns the integer position of the index level at the first occurence of the supplied name, or -1 if not a valid index level name.
+// SelectName returns the integer position of the index level at the first occurrence of the supplied name, or -1 if not a valid index level name.
 func (idx Index) SelectName(name string) int {
 	v, ok := idx.s.index.NameMap[name]
 	if !ok {

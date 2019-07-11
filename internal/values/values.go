@@ -16,6 +16,8 @@ type Values interface {
 	Values() []interface{}   // an interface slice of values, for handling values as a predictable slice
 	Subset([]int) Values     // a new Values object comprised of the Value/Null pairs at one or more integer positions
 	Element(int) Elem        // Value/Null pair at an integer position
+	Value(int) interface{}   // the value field at an integer position
+	Null(int) bool           // the null field at an integer position
 	Set(int, interface{})    // overwrite the value/null struct at an integer position
 	Copy() Values            // clone the Values
 	Insert(int, interface{}) // insert a Value/Null pair at an integer position
