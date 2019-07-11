@@ -17,13 +17,37 @@ func (s *Series) validVals() interface{} {
 	return valid.Vals()
 }
 
+func partitionFloat(data []float64) (numPartitions int, valsPerPartition int) {
+	numPartitions = runtime.GOMAXPROCS(0)
+	// when partition is applied, residual values go in last partition
+	// 8 values, 3 partitions -> [2 values], [2 values], [4 values]
+	valsPerPartition = len(data) / numPartitions
+	return
+}
+
+func asyncMath(data []float64, awaitFn func([]float64, chan<- interface{}), ch chan interface{}, wg *sync.WaitGroup) {
+	numPartitions, valsPerPartition := partitionFloat(data)
+	for i := 0; i < numPartitions; i++ {
+		var sub []float64
+		if i != numPartitions-1 {
+			sub = data[i*valsPerPartition : (i+1)*(valsPerPartition)]
+		} else {
+			sub = data[i*valsPerPartition:] // residual values go in last partition
+		}
+		wg.Add(1)
+		go awaitFn(sub, ch)
+	}
+	wg.Wait()
+	close(ch)
+}
+
 // Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
 	var sum float64
 	var wg sync.WaitGroup
 
 	// null int values are represented as 0, but that's ok for sum
-	calc := func(data []float64) float64 {
+	sumFunc := func(data []float64) float64 {
 		var sum float64
 		for _, d := range data {
 			if !math.IsNaN(d) {
@@ -33,9 +57,8 @@ func (s *Series) Sum() float64 {
 		return sum
 	}
 
-	awaitSum := func(data []float64, ch chan<- float64) {
-		sum := calc(data)
-		ch <- sum
+	awaitSumFunc := func(data []float64, ch chan<- interface{}) {
+		ch <- sumFunc(data)
 		wg.Done()
 	}
 
@@ -44,25 +67,15 @@ func (s *Series) Sum() float64 {
 		data := ensureFloatFromNumerics(s.Vals())
 
 		if !options.GetAsync() {
-			return calc(data)
+			return sumFunc(data)
 		}
-		numPartitions := runtime.GOMAXPROCS(0)
-		valsPerPartition := len(data) / numPartitions
-		ch := make(chan float64, numPartitions)
-		for i := 0; i < numPartitions; i++ {
-			var sub []float64
-			if i != numPartitions-1 {
-				sub = data[i*valsPerPartition : (i+1)*(valsPerPartition)]
-			} else {
-				sub = data[i*valsPerPartition:]
-			}
-			wg.Add(1)
-			go awaitSum(sub, ch)
-		}
+		numPartitions, _ := partitionFloat(data)
+		ch := make(chan interface{}, numPartitions)
+		asyncMath(data, awaitSumFunc, ch, &wg)
 		wg.Wait()
-		close(ch)
+
 		for partitionSum := range ch {
-			sum += partitionSum
+			sum += partitionSum.(float64)
 		}
 		return sum
 
@@ -83,18 +96,44 @@ func (s *Series) Sum() float64 {
 // Mean of non-null series values. For bool values, mean of true values.
 // Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Mean() float64 {
-	switch s.datatype {
-	case options.Float64:
-		var sum float64
-		var counter int
-		data := ensureFloatFromNumerics(s.Vals())
+	var wg sync.WaitGroup
+	meanFunc := func(data []float64) (sum float64, counter int) {
 		for _, d := range data {
 			if !math.IsNaN(d) {
 				sum += d
 				counter++
 			}
 		}
-		return sum / float64(counter)
+		return
+	}
+	awaitMeanFunc := func(data []float64, ch chan<- interface{}) {
+		sum, counter := meanFunc(data)
+		ch <- []float64{sum, float64(counter)}
+		wg.Done()
+	}
+
+	switch s.datatype {
+	case options.Float64:
+		data := ensureFloatFromNumerics(s.Vals())
+		if !options.GetAsync() {
+			sum, validCount := meanFunc(data)
+			return sum / float64(validCount)
+		}
+
+		var sum float64
+		var validCount float64
+		numPartitions, _ := partitionFloat(data)
+		ch := make(chan interface{}, numPartitions)
+		asyncMath(data, awaitMeanFunc, ch, &wg)
+		wg.Wait()
+		for partitionMean := range ch {
+			// partition form: [sum, validCount]
+			p := partitionMean.([]float64)
+			sum += p[0]
+			validCount += p[1]
+		}
+		return sum / validCount
+
 	case options.Int64:
 		return s.Sum() / float64(s.validCount())
 	case options.Bool:

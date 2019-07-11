@@ -21,6 +21,7 @@ var Descriptions = map[string]desc{
 	"std":        desc{6, "Standard deviation of one column"},
 	"readCSVSum": desc{7, "Read in CSV then calculate sum"},
 	"sum2":       desc{8, "Sum two columns"},
+	"mean2":      desc{8, "Mean of two columns"},
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
@@ -39,37 +40,37 @@ func read100k() {
 	got := math.Round(df100k.Sum().At(0).(float64)*100) / 100
 	want := 50408.63
 	if got != want {
-		log.Fatalf("Reading in test data: df.Sum() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Sum() got %v, want %v", got, want)
 	}
 
 	got = math.Round(df100k.Mean().At(0).(float64)*100) / 100
 	want = 0.5
 	if got != want {
-		log.Fatalf("Reading in test data: df.Mean() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Mean() got %v, want %v", got, want)
 	}
 
 	got = math.Round(df100k.Median().At(0).(float64)*100) / 100
 	want = 0.50
 	if got != want {
-		log.Fatalf("Reading in test data: df.Median() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Median() got %v, want %v", got, want)
 	}
 
 	got = math.Round(df100k.Min().At(0).(float64)*100) / 100
 	want = 0.0
 	if got != want {
-		log.Fatalf("Reading in test data: df.Min() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Min() got %v, want %v", got, want)
 	}
 
 	got = math.Round(df100k.Max().At(0).(float64)*100) / 100
 	want = 1.0
 	if got != want {
-		log.Fatalf("Reading in test data: df.Max() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Max() got %v, want %v", got, want)
 	}
 
 	got = math.Round(df100k.Std().At(0).(float64)*100) / 100
 	want = 0.29
 	if got != want {
-		log.Fatalf("Reading in test data: df.Std() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Std() got %v, want %v", got, want)
 	}
 
 }
@@ -84,7 +85,13 @@ func read500k() {
 	got := math.Round(df500k.Sum().At(0).(float64)*100) / 100
 	want := 130598.19
 	if got != want {
-		log.Fatalf("Reading in test data: df.Sum500() got %v, want %v", got, want)
+		log.Fatalf("profiler/config.go: reading in test data: df.Sum500() got %v, want %v", got, want)
+	}
+
+	got = math.Round(df500k.Mean().At(0).(float64)*100) / 100
+	want = 0.26
+	if got != want {
+		log.Fatalf("profiler/config.go: reading in test data: df.Mean() got %v, want %v", got, want)
 	}
 }
 
@@ -102,12 +109,12 @@ var files = map[string]string{
 func getPath(s string) string {
 	basename, ok := files[s]
 	if !ok {
-		log.Fatalf("Reading in test data: df.%v not in %v", s, files)
+		log.Fatalf("profiler/config.go: reading in test data: df.%v not in %v", s, files)
 	}
 	_, thisFile, _, _ := runtime.Caller(0)
 	path := filepath.Join(filepath.Dir(thisFile), basename)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Fatalf("Reading in test data: df.File does not exist at %s", path)
+		log.Fatalf("profiler/config.go: reading in test data: df.File does not exist at %s", path)
 	}
 	return path
 }

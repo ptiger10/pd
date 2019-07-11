@@ -11,14 +11,15 @@ def main():
         "100k": {
             "sum": sumTest(),
             "mean": meanTest(),
-            "median": medianTest(),
-            "min": minTest(),
-            "max": maxTest(),
-            "std": stdTest(),
-            "readCSVSum": readCSVSumTest(),
+            # "median": medianTest(),
+            # "min": minTest(),
+            # "max": maxTest(),
+            # "std": stdTest(),
+            # "readCSVSum": readCSVSumTest(),
             },
         "500k": {
-            "sum2": sumTest500()
+            "sum2": sumTest500(),
+            "mean2": meanTest500(),
         }
     }
     json.dump(results, sys.stdout)
@@ -84,6 +85,12 @@ def sumTest500():
 def meanTest():
     s = df100.mean()
     assert round(s.iloc[0], 2) == 0.5
+
+
+@timer(100)
+def meanTest500():
+    s = df500.mean()
+    assert round(s.iloc[0], 2) == 0.26
 
 
 @timer(1000)

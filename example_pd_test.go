@@ -2,14 +2,10 @@ package pd
 
 import (
 	"fmt"
-	"log"
 )
 
 func ExampleSeries_defaultIndex() {
-	s, err := Series([]string{"foo", "bar", "baz"})
-	if err != nil {
-		log.Fatal(err)
-	}
+	s, _ := Series([]string{"foo", "bar", "baz"})
 	fmt.Println(s)
 	// Output:
 	// 0    foo
@@ -20,10 +16,7 @@ func ExampleSeries_defaultIndex() {
 }
 
 func ExampleDataFrame_default() {
-	df, err := DataFrame([]interface{}{[]string{"foo", "bar", "baz"}, []int{7, 11, 19}})
-	if err != nil {
-		log.Fatal(err)
-	}
+	df, _ := DataFrame([]interface{}{[]string{"foo", "bar", "baz"}, []int{7, 11, 19}})
 	fmt.Println(df)
 	// Output:
 	//        0   1
