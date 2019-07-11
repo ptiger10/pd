@@ -36,9 +36,8 @@ func (g Grouping) copy() Grouping {
 	}
 }
 
-var wg sync.WaitGroup
-
 func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
+	var wg sync.WaitGroup
 	g = g.copy()
 	if g.Len() == 0 {
 		return newEmptySeries()
@@ -58,7 +57,7 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 	ch := make(chan calcReturn, g.Len())
 	for i, group := range g.Groups() {
 		wg.Add(1)
-		go g.awaitMath(ch, i, group, fn)
+		go g.awaitMath(ch, i, group, fn, &wg)
 	}
 	wg.Wait()
 	close(ch)
@@ -83,7 +82,7 @@ type calcReturn struct {
 	n int
 }
 
-func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*Series) float64) {
+func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*Series) float64, wg *sync.WaitGroup) {
 	s := g.math(group, fn)
 	ret := calcReturn{s: s, n: n}
 	ch <- ret

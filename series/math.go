@@ -4,6 +4,7 @@ import (
 	"math"
 	"runtime"
 	"sort"
+	"sync"
 
 	// uses optimized gonum/floats methods where available
 	"github.com/montanaflynn/stats" // and stats package otherwise
@@ -19,6 +20,7 @@ func (s *Series) validVals() interface{} {
 // Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
 	var sum float64
+	var wg sync.WaitGroup
 
 	// null int values are represented as 0, but that's ok for sum
 	calc := func(data []float64) float64 {
