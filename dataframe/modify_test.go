@@ -2,14 +2,12 @@ package dataframe
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
@@ -57,8 +55,6 @@ func TestRenameCols(t *testing.T) {
 			tt.input.RenameCols(tt.args.columns)
 			if !Equal(tt.input, tt.want) {
 				t.Errorf("df.RenameCols() = %v, want %v", tt.input, tt.want)
-				diff, _ := messagediff.PrettyDiff(tt.input, tt.want)
-				fmt.Println(diff)
 			}
 
 			if strings.Contains(tt.name, "fail") {
@@ -373,8 +369,6 @@ func TestDataFrame_Modify_InsertRow(t *testing.T) {
 			if !strings.Contains(tt.name, "fail") {
 				if !Equal(df, tt.want.df) {
 					t.Errorf("InPlace.InsertRow() got %v, want %v", df, tt.want.df)
-					diff, _ := messagediff.PrettyDiff(df, tt.want.df)
-					fmt.Println(diff)
 				}
 			}
 
@@ -463,8 +457,6 @@ func TestDataFrame_Modify_InsertCol(t *testing.T) {
 				if !Equal(df, tt.want.df) {
 					t.Errorf("InPlace.InsertCol() got %v, want %v", df, tt.want.df)
 				}
-				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
-				fmt.Println(diff)
 			}
 
 			dfCopy, err := dfArchive.InsertCol(tt.args.col, tt.args.s, tt.args.colLabels...)
@@ -982,8 +974,6 @@ func TestDataFrame_Modify_DropCol(t *testing.T) {
 			}
 			if !Equal(df, tt.want.df) {
 				t.Errorf("InPlace.DropCol() got %v, want %v", df, tt.want.df)
-				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
-				fmt.Println(diff)
 			}
 
 			dfCopy, err := dfArchive.DropCol(tt.args.col)
@@ -1034,8 +1024,6 @@ func TestDataFrame_Modify_DropCols(t *testing.T) {
 			}
 			if !Equal(df, tt.want.df) {
 				t.Errorf("InPlace.DropCols() got %v, want %v", df, tt.want.df)
-				diff, _ := messagediff.PrettyDiff(df, tt.want.df)
-				fmt.Println(diff)
 			}
 
 			dfCopy, err := dfArchive.DropCols(tt.args.col)

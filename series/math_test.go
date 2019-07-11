@@ -32,9 +32,9 @@ func TestMath_numerics(t *testing.T) {
 		wantQ3     float64
 		wantStd    float64
 	}{
-		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1}), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
-		{"float from string with null", MustNew([]string{"", "", "1", "2", "3"}).ToFloat64(), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
-		{"int from string with null", MustNew([]string{"", "", "1", "2", "3"}).ToInt64(), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
+		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1, 4}), 10, 2.5, 2.5, 1, 4, 1.5, 2.5, 3.5, 1.12},
+		{"float from string with null", MustNew([]string{"", "", "1", "2", "3", "4", "5"}).ToFloat64(), 15, 3, 3, 1, 5, 1.5, 3, 4.5, 1.41},
+		{"int from string with null", MustNew([]string{"", "", "1", "2", "3", "4", "5"}).ToInt64(), 15, 3, 3, 1, 5, 1.5, 3, 4.5, 1.41},
 		{"int", MustNew([]int{2, 1, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
 		{"float", MustNew([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9}), 45, 5, 5, 1, 9, 2.5, 5, 7.5, 2.58},
 		{"float with negative", MustNew([]float64{2, -1, 4, 3}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
@@ -96,7 +96,7 @@ func TestMath_numerics_async(t *testing.T) {
 		wantQ3     float64
 		wantStd    float64
 	}{
-		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1}), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
+		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1, 4}), 10, 2.5, 2.5, 1, 4, 1.5, 2.5, 3.5, 1.12},
 	}
 	for _, tt := range tests {
 		options.SetAsync(false)
@@ -225,9 +225,20 @@ func TestMath_unsupported_other(t *testing.T) {
 	if !math.IsNaN(got) {
 		t.Errorf("Median()returned %v, want NaN", got)
 	}
+	gotQuartiles := s.quartiles()
+	if gotQuartiles != nil {
+		t.Errorf("Empty quartiles()returned %v, want nil", gotQuartiles)
+	}
+
 	s = MustNew([]float64{1})
 	got = s.Quartile(10)
 	if !math.IsNaN(got) {
 		t.Errorf("Quartile()returned %v, want NaN", got)
+	}
+
+	s = MustNew([]float64{1})
+	gotQuartiles = s.quartiles()
+	if !math.IsNaN(gotQuartiles[0]) || gotQuartiles[1] != 1 || !math.IsNaN(gotQuartiles[2]) {
+		t.Errorf("quartiles() of len < 4 returned %v, want NaN, median, NaN", gotQuartiles)
 	}
 }

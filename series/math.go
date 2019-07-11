@@ -6,7 +6,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/montanaflynn/stats" // and stats package otherwise
 	"github.com/ptiger10/pd/options"
 )
 
@@ -132,44 +131,6 @@ func (s *Series) Mean() float64 {
 	}
 }
 
-// Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
-func (s *Series) Median() float64 {
-	medianFunc := func(data []float64) float64 {
-		if len(data) == 0 {
-			return math.NaN()
-		}
-		// rounds down if there are even number of elements
-		mNumber := len(data) / 2
-
-		// odd number of elements
-		if len(data)%2 != 0 {
-			return data[mNumber]
-		}
-		// even number of elements
-		return (data[mNumber-1] + data[mNumber]) / 2
-	}
-
-	switch s.datatype {
-	case options.Float64:
-		// sort then slice out the nulls from the beginning
-		data := ensureFloatFromNumerics(s.Vals())
-		sort.Float64s(data)
-		numValids := s.validCount()
-		firstValid := len(data) - numValids
-		data = data[firstValid:]
-		return medianFunc(data)
-
-	case options.Int64:
-		vals := s.validVals()
-		data := ensureFloatFromNumerics(vals)
-		sort.Float64s(data)
-		return medianFunc(data)
-
-	default:
-		return math.NaN()
-	}
-}
-
 // Min of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Min() float64 {
 	minFunc := func(data []float64) float64 {
@@ -270,33 +231,6 @@ func (s *Series) Max() float64 {
 	}
 }
 
-// Quartile i (must be 1, 2, 3)
-//
-// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
-func (s *Series) Quartile(i int) float64 {
-	vals := s.validVals()
-	switch s.datatype {
-	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		val, err := stats.Quartile(data)
-		if err != nil {
-			return math.NaN()
-		}
-		switch i {
-		case 1:
-			return val.Q1
-		case 2:
-			return val.Q2
-		case 3:
-			return val.Q3
-		default:
-			return math.NaN()
-		}
-	default:
-		return math.NaN()
-	}
-}
-
 // Std returns the Standard Deviation of a series.
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
@@ -346,6 +280,105 @@ func (s *Series) Std() float64 {
 			}
 		}
 		return math.Pow(variance/float64(counter), 0.5)
+	default:
+		return math.NaN()
+	}
+}
+
+// isolated as its own function for us in Median() and Quartile()
+func median(data []float64) float64 {
+	if len(data) == 0 {
+		return math.NaN()
+	}
+	// rounds down if there are even number of elements
+	mNumber := len(data) / 2
+
+	// odd number of elements
+	if len(data)%2 != 0 {
+		return data[mNumber]
+	}
+	// even number of elements
+	return (data[mNumber-1] + data[mNumber]) / 2
+}
+
+// Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
+func (s *Series) Median() float64 {
+	switch s.datatype {
+	case options.Float64:
+		// sort then slice out the nulls from the beginning
+		data := ensureFloatFromNumerics(s.Vals())
+		sort.Float64s(data)
+		numValids := s.validCount()
+		firstValid := len(data) - numValids
+		data = data[firstValid:]
+		return median(data)
+
+	case options.Int64:
+		vals := s.validVals()
+		data := ensureFloatFromNumerics(vals)
+		sort.Float64s(data)
+		return median(data)
+
+	default:
+		return math.NaN()
+	}
+}
+
+// returns [q1, median, q3] if n >=4, [NaN, median, NaN] if 0>n<4, nil if n == 0
+func (s *Series) quartiles() []float64 {
+	vals := s.validVals()
+	switch s.datatype {
+	case options.Float64, options.Int64:
+		data := ensureFloatFromNumerics(vals)
+		if len(data) == 0 {
+			return nil
+		}
+
+		c := make([]float64, len(data))
+		copy(c, data)
+		sort.Float64s(c)
+
+		Q2 := median(c)
+		if len(data) < 4 {
+			return []float64{math.NaN(), Q2, math.NaN()}
+		}
+
+		var q1, q2 int
+		// even
+		if len(data)%2 == 0 {
+			q1 = len(data) / 2
+			q2 = len(data) / 2
+			//odd
+		} else {
+			q1 = (len(data) - 1) / 2
+			q2 = q1 + 1
+		}
+
+		Q1 := median(c[:q1])
+		Q3 := median(c[q2:])
+
+		return []float64{Q1, Q2, Q3}
+	}
+	return nil
+}
+
+// Quartile returns the data's ith quartile point.
+// 1: median between min and median,
+// 2: median,
+// 3: median between median and max.
+// Applies to float and int. If inapplicable, defaults to math.Nan().
+func (s *Series) Quartile(i int) float64 {
+	quartiles := s.quartiles()
+	if len(quartiles) == 0 {
+		return math.NaN()
+	}
+	switch i {
+	case 1:
+		return quartiles[0]
+	case 2:
+		return quartiles[1]
+	case 3:
+		return quartiles[2]
 	default:
 		return math.NaN()
 	}

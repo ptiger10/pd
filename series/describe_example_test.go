@@ -349,9 +349,6 @@ func ExampleSeries_Describe_float_empty() {
 	//  null      0
 	//  mean    NaN
 	//   min    NaN
-	//   25%    NaN
-	//   50%    NaN
-	//   75%    NaN
 	//   max    NaN
 	//
 	// datatype: float64

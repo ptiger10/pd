@@ -1,12 +1,10 @@
 package dataframe
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 	"github.com/ptiger10/pd/series"
 )
@@ -100,8 +98,6 @@ func TestDataFrame_Pivot_stack(t *testing.T) {
 			}
 			if !reflect.DeepEqual(vals, tt.want.vals) {
 				t.Errorf("DataFrame.stackIndex() valsMatrix = %v, want %v", vals, tt.want.vals)
-				diff, _ := messagediff.PrettyDiff(vals, tt.want.vals)
-				fmt.Println(diff)
 			}
 			if !reflect.DeepEqual(newColLevel, tt.want.newColLevel) {
 				t.Errorf("DataFrame.stackIndex() newColLevel = %v, want %v", newColLevel, tt.want.newColLevel)
@@ -208,8 +204,6 @@ func TestTranspose(t *testing.T) {
 			got := tt.input.Transpose()
 			if !Equal(got, tt.want) {
 				t.Errorf("DataFrame.Transpose() = %v, want %v", got, tt.want)
-				diff, _ := messagediff.PrettyDiff(got, tt.want)
-				fmt.Println(diff)
 			}
 		})
 	}

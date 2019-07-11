@@ -2,14 +2,12 @@ package dataframe
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/options"
 )
 
@@ -90,8 +88,6 @@ func TestDataFrame_GroupByIndex(t *testing.T) {
 			got := df.GroupByIndex(tt.args.levelPositions...).groups
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DataFrame.GroupByIndex() = %v, want %v", got, tt.want)
-				diff, _ := messagediff.PrettyDiff(got, tt.want)
-				fmt.Println(diff)
 			}
 
 			if strings.Contains(tt.name, "fail") {
@@ -156,8 +152,6 @@ func TestDataFrame_GroupBy(t *testing.T) {
 			got := df.GroupBy(tt.args.cols...).groups
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DataFrame.GroupBy() = %#v, want %#v", got, tt.want)
-				diff, _ := messagediff.PrettyDiff(got, tt.want)
-				fmt.Println(diff)
 			}
 
 			if strings.Contains(tt.name, "fail") {
@@ -281,8 +275,6 @@ func TestGrouping_Math(t *testing.T) {
 			got := tt.fn(g)
 			if !Equal(got, tt.want) {
 				t.Errorf("df.GroupByIndex math operation returned %v, want %v", got, tt.want)
-				diff, _ := messagediff.PrettyDiff(got, tt.want)
-				fmt.Println(diff)
 			}
 			// Test Synchronously
 			options.SetAsync(false)

@@ -1,10 +1,8 @@
 package pd
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/d4l3k/messagediff"
 	"github.com/ptiger10/pd/dataframe"
 	"github.com/ptiger10/pd/series"
 )
@@ -125,8 +123,6 @@ func TestReadCSV(t *testing.T) {
 			}
 			if !dataframe.Equal(got, tt.want.df) {
 				t.Errorf("ReadCSV() got \n%v, \nwant \n%v", got, tt.want.df)
-				diff, _ := messagediff.PrettyDiff(got, tt.want.df)
-				fmt.Println(diff)
 			}
 		})
 	}
@@ -238,8 +234,6 @@ func TestInterface(t *testing.T) {
 			}
 			if !dataframe.Equal(got, tt.want.df) {
 				t.Errorf("ReadInterface() got \n%v, \nwant \n%v", got, tt.want.df)
-				diff, _ := messagediff.PrettyDiff(got, tt.want.df)
-				fmt.Println(diff)
 			}
 		})
 	}

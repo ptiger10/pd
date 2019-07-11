@@ -28,16 +28,30 @@ func (s *Series) Describe() {
 	// type-specific data
 	switch s.datatype {
 	case options.Float64, options.Int64:
+		// quartiles requires sorting, so is too expensive to call 3x
+		quartiles := s.quartiles()
+		var q1, q2, q3 float64
+		if len(quartiles) > 0 {
+			q1 = quartiles[0]
+			q2 = quartiles[1]
+			q3 = quartiles[2]
+		}
 		precision := options.GetDisplayFloatPrecision()
 		mean := fmt.Sprintf("%.*f", precision, s.Mean())
 		min := fmt.Sprintf("%.*f", precision, s.Min())
-		q1 := fmt.Sprintf("%.*f", precision, s.Quartile(1))
-		q2 := fmt.Sprintf("%.*f", precision, s.Quartile(2))
-		q3 := fmt.Sprintf("%.*f", precision, s.Quartile(3))
+		q1s := fmt.Sprintf("%.*f", precision, q1)
+		q2s := fmt.Sprintf("%.*f", precision, q2)
+		q3s := fmt.Sprintf("%.*f", precision, q3)
 		max := fmt.Sprintf("%.*f", precision, s.Max())
 
-		values = []string{length, valid, null, mean, min, q1, q2, q3, max}
-		idx = []string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"}
+		// exclude quartiles if nil
+		if len(quartiles) == 0 {
+			values = []string{length, valid, null, mean, min, max}
+			idx = []string{"len", "valid", "null", "mean", "min", "max"}
+		} else {
+			values = []string{length, valid, null, mean, min, q1s, q2s, q3s, max}
+			idx = []string{"len", "valid", "null", "mean", "min", "25%", "50%", "75%", "max"}
+		}
 
 	case options.String:
 		unique := fmt.Sprint(len(s.Unique()))
