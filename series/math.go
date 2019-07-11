@@ -20,7 +20,7 @@ func (s *Series) Sum() float64 {
 	var sum float64
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(s.values.Vals())
+		data := ensureFloatFromNumerics(s.Vals())
 		// null int values are represented as 0, but that's ok for sum
 		for _, d := range data {
 			if !math.IsNaN(d) {
@@ -29,7 +29,7 @@ func (s *Series) Sum() float64 {
 		}
 		return sum
 	case options.Bool:
-		data := ensureBools(s.values.Vals())
+		data := ensureBools(s.Vals())
 		// null bool values are represented as false, but that's ok for sum
 		for _, d := range data {
 			if d {
@@ -50,7 +50,7 @@ func (s *Series) Mean() float64 {
 	case options.Float64:
 		var sum float64
 		var counter int
-		data := ensureFloatFromNumerics(s.values.Vals())
+		data := ensureFloatFromNumerics(s.Vals())
 		for _, d := range data {
 			if !math.IsNaN(d) {
 				sum += d
@@ -69,25 +69,37 @@ func (s *Series) Mean() float64 {
 
 // Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Median() float64 {
-	vals := s.validVals()
-	switch s.datatype {
-	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
+	calculateMedian := func(data []float64) float64 {
 		if len(data) == 0 {
 			return math.NaN()
 		}
-		// validPositions := s.valid()
-		// valid := make([]float64, len(validPositions))
-		// for i := 0; i < len(validPositions); i++ {
-		// 	valid[i] = s.values.Value(i).(float64)
-		// }
-
-		sort.Float64s(data)
+		// rounds down if there are even number of elements
 		mNumber := len(data) / 2
-		if len(data)%2 != 0 { // checks if sequence has odd number of elements
+
+		// odd number of elements
+		if len(data)%2 != 0 {
 			return data[mNumber]
 		}
+		// even number of elements
 		return (data[mNumber-1] + data[mNumber]) / 2
+	}
+
+	switch s.datatype {
+	case options.Float64:
+		// sort then slice out the nulls from the beginning
+		data := ensureFloatFromNumerics(s.Vals())
+		sort.Float64s(data)
+		numValids := s.validCount()
+		firstValid := len(data) - numValids
+		data = data[firstValid:]
+		return calculateMedian(data)
+
+	case options.Int64:
+		vals := s.validVals()
+		data := ensureFloatFromNumerics(vals)
+		sort.Float64s(data)
+		return calculateMedian(data)
+
 	default:
 		return math.NaN()
 	}
@@ -97,14 +109,32 @@ func (s *Series) Median() float64 {
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s *Series) Min() float64 {
-	vals := s.validVals()
+	min := math.NaN()
 	switch s.datatype {
-	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		if len(data) == 0 {
-			return math.NaN()
+	case options.Float64:
+		data := ensureFloatFromNumerics(s.Vals())
+		for _, d := range data {
+			if !math.IsNaN(d) {
+				if math.IsNaN(min) {
+					min = d
+				} else if d < min {
+					min = d
+				}
+			}
 		}
-		return gonum.Min(data)
+		return min
+	case options.Int64:
+		data := ensureFloatFromNumerics(s.Vals())
+		for i, d := range data {
+			if !s.values.Null(i) {
+				if math.IsNaN(min) {
+					min = d
+				} else if d < min {
+					min = d
+				}
+			}
+		}
+		return min
 	default:
 		return math.NaN()
 	}

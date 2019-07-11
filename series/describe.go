@@ -276,6 +276,12 @@ func (s *Series) Values() []interface{} {
 	return s.values.Values()
 }
 
+// Vals returns all the values (including null values) in the Series as an interface
+// Use Vals for type assertion.
+func (s *Series) Vals() interface{} {
+	return s.values.Vals()
+}
+
 // MaxWidth returns the max number of characters in any value in the Series.
 // For use in printing Series.
 func (s *Series) MaxWidth() int {

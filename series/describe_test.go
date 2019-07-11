@@ -17,6 +17,7 @@ func TestSeries_Describe(t *testing.T) {
 		numIdxLevels int
 		maxWidth     int
 		values       []interface{}
+		vals         interface{}
 		datatype     string
 		name         string
 		valid        []int
@@ -30,12 +31,14 @@ func TestSeries_Describe(t *testing.T) {
 		{"empty",
 			newEmptySeries(),
 			want{len: 0, numIdxLevels: 0, maxWidth: 0,
-				values: []interface{}{}, datatype: "none", name: "",
+				values: []interface{}{}, vals: []interface{}{}, datatype: "none", name: "",
 				valid: []int{}, null: []int{}}},
 		{name: "default index",
 			input: MustNew([]string{"foo", "", "bar", ""}),
 			want: want{len: 4, numIdxLevels: 1, maxWidth: 3,
-				values: []interface{}{"foo", "NaN", "bar", "NaN"}, datatype: "string", name: "",
+				values:   []interface{}{"foo", "NaN", "bar", "NaN"},
+				vals:     []string{"foo", "NaN", "bar", "NaN"},
+				datatype: "string", name: "",
 				valid: []int{0, 2}, null: []int{1, 3}}},
 		{"multi index",
 			MustNew(
@@ -43,7 +46,8 @@ func TestSeries_Describe(t *testing.T) {
 				Config{MultiIndex: []interface{}{"baz", "qux"}, Name: "foo"},
 			),
 			want{len: 1, numIdxLevels: 2, maxWidth: 4,
-				values: []interface{}{1.0}, datatype: "float64", name: "foo",
+				values: []interface{}{1.0}, vals: []float64{1},
+				datatype: "float64", name: "foo",
 				valid: []int{0}, null: []int{}}},
 	}
 	for _, tt := range tests {
@@ -64,6 +68,10 @@ func TestSeries_Describe(t *testing.T) {
 			gotValues := s.Values()
 			if !reflect.DeepEqual(gotValues, tt.want.values) {
 				t.Errorf("s.Values(): got %v, want %v", gotValues, tt.want.values)
+			}
+			gotVals := s.Vals()
+			if !reflect.DeepEqual(gotVals, tt.want.vals) {
+				t.Errorf("s.Vals(): got %#v, want %v", gotVals, tt.want.vals)
 			}
 			gotDatatype := s.DataType()
 			if gotDatatype != tt.want.datatype {
