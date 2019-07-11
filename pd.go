@@ -70,9 +70,9 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): must contain at least one column")
 	}
 
-	var data [][]interface{}
+	data := make([][]interface{}, len(input))
 	for i := 0; i < len(input); i++ {
-		data = append(data, make([]interface{}, len(input[0])))
+		data[i] = make([]interface{}, len(input[0]))
 		for m := 0; m < len(input[0]); m++ {
 			data[i][m] = input[i][m]
 		}
@@ -86,9 +86,6 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 		}
 		tmp = config[0]
 	}
-
-	tmpVals := make([][]interface{}, 0)
-	tmpMultiIndex := make([][]interface{}, 0)
 
 	var tmpMultiCol [][]interface{}
 	if tmp.DropRows > len(data) {
@@ -115,18 +112,22 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 			tmp.IndexCols, len(data))
 	}
 
+	tmpVals := make([][]interface{}, len(data[0])-tmp.IndexCols)
+	tmpMultiIndex := make([][]interface{}, tmp.IndexCols)
+
+	for m := 0; m < len(data[0])-tmp.IndexCols; m++ {
+		tmpVals[m] = make([]interface{}, len(data))
+	}
+	for m := 0; m < tmp.IndexCols; m++ {
+		tmpMultiIndex[m] = make([]interface{}, len(data))
+	}
+
 	// transpose index and values
 	for i := 0; i < len(data); i++ {
 		for m := 0; m < len(data[0]); m++ {
 			if m < tmp.IndexCols {
-				if m >= len(tmpMultiIndex) {
-					tmpMultiIndex = append(tmpMultiIndex, make([]interface{}, len(data)))
-				}
 				tmpMultiIndex[m][i] = data[i][m]
 			} else {
-				if m-tmp.IndexCols >= len(tmpVals) {
-					tmpVals = append(tmpVals, make([]interface{}, len(data)))
-				}
 				tmpVals[m-tmp.IndexCols][i] = data[i][m]
 			}
 		}
@@ -135,7 +136,6 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 	var (
 		multiIndex []interface{}
 		vals       []interface{}
-		multiCol   [][]string
 	)
 	for _, col := range tmpMultiIndex {
 		multiIndex = append(multiIndex, col)
@@ -143,20 +143,20 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 	for _, col := range tmpVals {
 		vals = append(vals, col)
 	}
+	multiCol := make([][]string, len(tmpMultiCol))
 
 	if len(tmpMultiCol) > 0 {
 		for j := 0; j < len(tmpMultiCol); j++ {
-			multiCol = append(multiCol, make([]string, len(tmpMultiCol[0])))
+			multiCol[j] = make([]string, len(tmpMultiCol[0]))
 			for m := 0; m < len(tmpMultiCol[0]); m++ {
 				multiCol[j][m] = fmt.Sprint(tmpMultiCol[j][m])
 			}
 		}
 	}
 
-	df, err := DataFrame(vals, Config{Manual: tmp.Manual, MultiIndex: multiIndex, MultiCol: multiCol})
-	if err != nil {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadInterface(): %s", err)
-	}
+	// ducks error because all []interface{} values are supported and Config properties are controlled
+	df, _ := DataFrame(vals, Config{Manual: tmp.Manual, MultiIndex: multiIndex, MultiCol: multiCol})
+
 	for k, v := range tmp.DataTypes {
 		colInt := df.SelectCol(k)
 		if colInt != -1 {
@@ -192,15 +192,10 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
 	}
 	reader := csv.NewReader(bytes.NewReader(data))
-	records, error := reader.ReadAll()
-	if error != nil {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
-	}
+	// ducks error because reader is controlled by csv.NewReader, so error cannot be simulated
+	records, _ := reader.ReadAll()
 	if len(records) == 0 {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): input must contain at least one row")
-	}
-	if len(records[0]) == 0 {
-		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): input must contain at least one column")
 	}
 
 	// convert to [][]interface

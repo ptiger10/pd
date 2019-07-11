@@ -1,6 +1,10 @@
 package pd
 
 import (
+	"bytes"
+	"log"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/ptiger10/pd/dataframe"
@@ -100,20 +104,25 @@ func TestReadCSV(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "no interpolation", args: args{filepath: "csv_test.csv", options: []ReadOptions{{Manual: true}}},
+		{name: "no interpolation", args: args{filepath: "csv_tests/pass.csv", options: []ReadOptions{{Manual: true}}},
 			want: want{
 				df: dataframe.MustNew([]interface{}{
 					[]string{"", "foo", "bar"},
 					[]string{"A", "1", "2"},
 				}),
 				err: false}},
-		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
-		{"interpolation", args{"csv_test.csv", []ReadOptions{{IndexCols: 1, HeaderRows: 1}}},
+		{"interpolation", args{"csv_tests/pass.csv", []ReadOptions{{IndexCols: 1, HeaderRows: 1}}},
 			want{
-				df: dataframe.MustNew([]interface{}{
+				dataframe.MustNew([]interface{}{
 					[]int64{1, 2},
 				}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
-			}},
+				false}},
+		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: empty", args{"csv_tests/empty.csv", nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: corrupted file", args{"csv_tests/corrupted.csv", nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: too many configs", args{"csv_tests/pass.csv", []ReadOptions{{}, {}}}, want{dataframe.MustNew(nil), true}},
+		{"fail within ReadInterface", args{"csv_tests/pass.csv", []ReadOptions{{HeaderRows: 10}}},
+			want{dataframe.MustNew(nil), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,6 +139,10 @@ func TestReadCSV(t *testing.T) {
 
 func TestInterface(t *testing.T) {
 	data := [][]interface{}{{"foo", "bar"}, {"baz", "qux"}}
+	noConfig := dataframe.MustNew([]interface{}{
+		[]string{"foo", "baz"},
+		[]string{"bar", "qux"},
+	})
 	type args struct {
 		data    [][]interface{}
 		options []ReadOptions
@@ -145,10 +158,7 @@ func TestInterface(t *testing.T) {
 	}{
 		{name: "no config", args: args{data: data, options: nil},
 			want: want{
-				df: dataframe.MustNew([]interface{}{
-					[]string{"foo", "baz"},
-					[]string{"bar", "qux"},
-				}),
+				df:  noConfig,
 				err: false}},
 		{"drop 1 row", args{data, []ReadOptions{{DropRows: 1}}},
 			want{
@@ -182,20 +192,18 @@ func TestInterface(t *testing.T) {
 				HeaderRows: 1,
 				DataTypes:  map[string]string{"bar": "bool"},
 			}}},
-			want{
-				dataframe.MustNew([]interface{}{
-					[]bool{true},
-				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
+			want{dataframe.MustNew([]interface{}{
+				[]bool{true},
+			}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
 				false}},
 		{"1 header row, 1 index column, rename column", args{data,
 			[]ReadOptions{{
 				IndexCols:  1,
 				HeaderRows: 1,
 				Rename:     map[string]string{"bar": "corge"}}}},
-			want{
-				dataframe.MustNew([]interface{}{
-					[]string{"qux"},
-				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"corge"}}),
+			want{dataframe.MustNew([]interface{}{
+				[]string{"qux"},
+			}, dataframe.Config{Index: []string{"baz"}, Col: []string{"corge"}}),
 				false}},
 		{"1 header row, 1 index column, convert index type", args{data,
 			[]ReadOptions{{
@@ -223,17 +231,45 @@ func TestInterface(t *testing.T) {
 			[]ReadOptions{{}, {}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: no rows", args{[][]interface{}{}, nil}, want{dataframe.MustNew(nil), true}},
 		{"fail: no columns", args{[][]interface{}{{}}, nil}, want{dataframe.MustNew(nil), true}},
+		{"soft fail: missing column in value conversion", args{data,
+			[]ReadOptions{{
+				DataTypes: map[string]string{"NOSUCHCOLUMN": "string"},
+			}}}, want{noConfig, false}},
+		{"soft fail: unsupported value conversion",
+			args{data, []ReadOptions{{
+				HeaderRows: 1,
+				DataTypes:  map[string]string{"NOSUCHCOLUMN": "unsupported"}}}},
+			want{dataframe.MustNew([]interface{}{
+				[]string{"baz"},
+				[]string{"qux"},
+			}, dataframe.Config{Col: []string{"foo", "bar"}}),
+				false}},
+		{"soft fail: unsupported index conversion", args{data,
+			[]ReadOptions{{
+				IndexDataTypes: map[int]string{0: "unsupported"},
+			}}}, want{noConfig, false}},
+
 		// TODO: []interface{}{complex64} should fail
 		// {"fail: unsupported data", args{[][]interface{}{{complex64(1)}}, nil}, want{dataframe.MustNew(nil), true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			defer log.SetOutput(os.Stderr)
+
 			got, err := ReadInterface(tt.args.data, tt.args.options...)
 			if (err != nil) != tt.want.err {
 				t.Errorf("ReadInterface():  error = %v, want %v", err, tt.want.err)
 			}
 			if !dataframe.Equal(got, tt.want.df) {
 				t.Errorf("ReadInterface() got \n%v, \nwant \n%v", got, tt.want.df)
+			}
+
+			if strings.Contains(tt.name, "soft fail") {
+				if buf.String() == "" {
+					t.Errorf("pd.ReadInterface() returned no log message, want log due to fail")
+				}
 			}
 		})
 	}

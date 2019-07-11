@@ -2,6 +2,7 @@ package series
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/ptiger10/pd/internal/values"
@@ -17,7 +18,14 @@ func (s *Series) Rename(name string) {
 // Convert a Series and return as new Series.
 func (s *Series) Convert(datatype string) *Series {
 	s = s.Copy()
-	s.values, _ = values.Convert(s.values, options.DT(datatype))
+	values, err := values.Convert(s.values, options.DT(datatype))
+	if err != nil {
+		if options.GetLogWarnings() {
+			log.Printf("s.Convert(): %v", err)
+		}
+		return s
+	}
+	s.values = values
 	s.datatype = options.DT(datatype)
 	return s
 }
