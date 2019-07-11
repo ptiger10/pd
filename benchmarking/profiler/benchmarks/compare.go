@@ -2,13 +2,14 @@ package benchmarks
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
 // CompareBenchmarks creates a comparison table of GoPandas <> Pandas for equivalent operations
-func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]string) string {
+func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]desc) string {
 
 	var printer string
 	printer += "GoPandas vs Pandas speed comparison\n"
@@ -52,16 +53,28 @@ func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]stri
 
 	// Rows
 	var i int
+	type orderedDesc struct {
+		n     int
+		label string
+	}
+	var orderedDescs []orderedDesc
+	for k, v := range descs {
+		orderedDescs = append(orderedDescs, orderedDesc{v.order, k})
+	}
+	sort.Slice(orderedDescs, func(i, j int) bool {
+		if orderedDescs[i].n < orderedDescs[j].n {
+			return true
+		}
+		return false
+	})
 	for sample, Results := range goBenchmarks {
-		for testName, goResult := range Results {
+		for _, desc := range orderedDescs {
+			testName := desc.label
+			goResult := Results[desc.label]
 			i++
 			gospeed, gons := goResult[0], goResult[1]
 			goSpeed := gospeed.(string)
 			goNS := gons.(float64)
-			desc, ok := descs[testName]
-			if !ok {
-				desc = "n/a"
-			}
 			pySpeed := "n/a"
 			comparison := "n/a"
 			py, ok := pyBenchmarks[sample]
@@ -76,7 +89,7 @@ func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]stri
 			}
 
 			rowComponents := []string{
-				strconv.Itoa(i), desc, sample, goSpeed, pySpeed, comparison,
+				strconv.Itoa(i), descs[desc.label].str, sample, goSpeed, pySpeed, comparison,
 			}
 			for i := range rowComponents {
 				rowComponents[i] = fmt.Sprintf(

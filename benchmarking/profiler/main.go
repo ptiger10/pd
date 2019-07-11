@@ -19,5 +19,4 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf(">> %v\n", dest)
-
 }

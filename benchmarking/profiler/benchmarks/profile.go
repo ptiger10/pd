@@ -9,11 +9,20 @@ import (
 	"time"
 )
 
+type desc struct {
+	order int
+	str   string
+}
+
 // Descriptions of the benchmarking tests
-var Descriptions = map[string]string{
-	"sum":    "Sum one column",
-	"mean":   "Simple mean of one column",
-	"median": "Median of one column",
+var Descriptions = map[string]desc{
+	"sum":        desc{1, "Sum one column"},
+	"mean":       desc{2, "Simple mean of one column"},
+	"median":     desc{3, "Median of one column"},
+	"min":        desc{4, "Min of one column"},
+	"max":        desc{5, "Max of one column"},
+	"std":        desc{6, "Standard deviation of one column"},
+	"readCSVSum": desc{7, "Read in CSV then calculate sum"},
 }
 
 // RunGoProfiler specifies all the benchmarks to profile and return in the benchmark table.
@@ -21,9 +30,13 @@ func RunGoProfiler() Results {
 	fmt.Println("Profiling Go")
 	Results := Results{
 		"100k": {
-			"sum":    ProfileGo(benchmarkSumFloat64_100000),
-			"mean":   ProfileGo(benchmarkMeanFloat64_100000),
-			"median": ProfileGo(benchmarkMedianFloat64_100000),
+			"sum":        ProfileGo(benchmarkSumFloat64_100000),
+			"mean":       ProfileGo(benchmarkMeanFloat64_100000),
+			"median":     ProfileGo(benchmarkMedianFloat64_100000),
+			"min":        ProfileGo(benchmarkMinFloat64_100000),
+			"max":        ProfileGo(benchmarkMaxFloat64_100000),
+			"std":        ProfileGo(benchmarkStdFloat64_100000),
+			"readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
 		},
 	}
 	return Results

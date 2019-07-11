@@ -11,6 +11,10 @@ def main():
             "sum": sumTest(),
             "mean": meanTest(),
             "median": medianTest(),
+            "min": minTest(),
+            "max": maxTest(),
+            "std": stdTest(),
+            "readCSVSum": readCSVSumTest(),
             }
         }
     json.dump(results, sys.stdout)
@@ -63,10 +67,35 @@ def meanTest():
     assert round(s.iloc[0], 2) == 0.5
 
 
+@timer(1000)
+def minTest():
+    s = df.min()
+    assert round(s.iloc[0], 2) == 0.0
+
+
+@timer(1000)
+def maxTest():
+    s = df.max()
+    assert round(s.iloc[0], 2) == 1.0
+
+
+@timer(1000)
+def stdTest():
+    s = df.std()
+    assert round(s.iloc[0], 2) == 0.29
+
+
 @timer(100)
 def medianTest():
     s = df.median()
     assert round(s.iloc[0], 2) == 0.5
+
+
+@timer(50)
+def readCSVSumTest():
+    df = pd.read_csv('RandomNumbers.csv')
+    s = df.sum()
+    assert round(s.iloc[0], 2) == 50408.63
 
 
 if __name__ == "__main__":
