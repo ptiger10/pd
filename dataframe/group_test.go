@@ -15,8 +15,8 @@ func TestGroup_Copy(t *testing.T) {
 	s := MustNew([]interface{}{[]int{1, 2, 3, 4}}, Config{Index: []int{1, 1, 2, 2}})
 	got := s.GroupByIndex(0).copy().groups
 	want := map[string]*group{
-		"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-		"2": &group{Positions: []int{2, 3}, FirstPosition: 2},
+		"1": {Positions: []int{0, 1}, FirstPosition: 0},
+		"2": {Positions: []int{2, 3}, FirstPosition: 2},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("group.copy() got %v, want %v", got, want)
@@ -38,36 +38,36 @@ func TestDataFrame_GroupByIndex(t *testing.T) {
 			input: MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{Index: []int{1, 1, 2}}),
 			args:  args{[]int{}},
 			want: map[string]*group{
-				"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"2": &group{Positions: []int{2}, FirstPosition: 2},
+				"1": {Positions: []int{0, 1}, FirstPosition: 0},
+				"2": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi no args",
 			multi,
 			args{[]int{}},
 			map[string]*group{
-				"1 | 2": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"2 | 1": &group{Positions: []int{2}, FirstPosition: 2},
+				"1 | 2": {Positions: []int{0, 1}, FirstPosition: 0},
+				"2 | 1": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi, select one level",
 			multi,
 			args{[]int{0}},
 			map[string]*group{
-				"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"2": &group{Positions: []int{2}, FirstPosition: 2},
+				"1": {Positions: []int{0, 1}, FirstPosition: 0},
+				"2": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi in reverse order, select two levels",
 			MustNew([]interface{}{[]string{"foo", "bar", "baz"}}, Config{MultiIndex: []interface{}{[]int{2, 2, 1}, []int{1, 1, 2}}}),
 			args{[]int{0, 1}},
 			map[string]*group{
-				"2 | 1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"1 | 2": &group{Positions: []int{2}, FirstPosition: 2},
+				"2 | 1": {Positions: []int{0, 1}, FirstPosition: 0},
+				"1 | 2": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi - select two levels in reverse",
 			multi,
 			args{[]int{1, 0}},
 			map[string]*group{
-				"2 | 1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"1 | 2": &group{Positions: []int{2}, FirstPosition: 2},
+				"2 | 1": {Positions: []int{0, 1}, FirstPosition: 0},
+				"1 | 2": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"fail: invalid level",
 			multi,
@@ -115,15 +115,15 @@ func TestDataFrame_GroupBy(t *testing.T) {
 			input: single,
 			args:  args{[]int{1}},
 			want: map[string]*group{
-				"1": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"2": &group{Positions: []int{2}, FirstPosition: 2},
+				"1": {Positions: []int{0, 1}, FirstPosition: 0},
+				"2": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"multi",
 			multi,
 			args{[]int{1, 2}},
 			map[string]*group{
-				"1 | 2": &group{Positions: []int{0, 1}, FirstPosition: 0},
-				"2 | 1": &group{Positions: []int{2}, FirstPosition: 2},
+				"1 | 2": {Positions: []int{0, 1}, FirstPosition: 0},
+				"2 | 1": {Positions: []int{2}, FirstPosition: 2},
 			}},
 		{"fail: invalid level",
 			single,

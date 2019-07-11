@@ -129,7 +129,7 @@ func TestIndex_Describe(t *testing.T) {
 func TestIndex_Values(t *testing.T) {
 	s := MustNew([]string{"foo", "bar", "baz"}, Config{MultiIndex: []interface{}{[]float64{1, 2, 3}, []string{"qux", "quux", "quuz"}}})
 	got := s.Index.Values()
-	want := [][]interface{}{[]interface{}{1.0, 2.0, 3.0}, []interface{}{"qux", "quux", "quuz"}}
+	want := [][]interface{}{{1.0, 2.0, 3.0}, {"qux", "quux", "quuz"}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Index.Values(): got %v, want %v", got, want)
 	}

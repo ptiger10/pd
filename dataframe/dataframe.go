@@ -62,11 +62,11 @@ type Row struct {
 func (r Row) String() string {
 	var printStr string
 	for _, pair := range [][]interface{}{
-		[]interface{}{"Values", r.Values},
-		[]interface{}{"IsNull", r.Nulls},
-		[]interface{}{"ValueTypes", r.ValueTypes},
-		[]interface{}{"Labels", r.Labels},
-		[]interface{}{"LabelTypes", r.LabelTypes},
+		{"Values", r.Values},
+		{"IsNull", r.Nulls},
+		{"ValueTypes", r.ValueTypes},
+		{"Labels", r.Labels},
+		{"LabelTypes", r.LabelTypes},
 	} {
 		// LabelTypes is 10 characters wide, so left padding set to 10
 		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", values.GetDisplayElementWhitespaceBuffer()), pair[1])

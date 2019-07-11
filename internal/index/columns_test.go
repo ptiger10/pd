@@ -49,7 +49,7 @@ func TestNewColumns(t *testing.T) {
 		{"one col",
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo")}},
 			want{Columns{
-				Levels:  []ColLevel{ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String}},
+				Levels:  []ColLevel{{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}}},
 				2, 1, 3, []string{"1", "2"}, "1", [][]string{{"1"}, {"2"}}, []string{"1"},
 			}},
@@ -57,8 +57,8 @@ func TestNewColumns(t *testing.T) {
 			args{[]ColLevel{NewColLevel([]string{"1", "2"}, "foo"), NewColLevel([]string{"3", "4"}, "corge")}},
 			want{Columns{
 				Levels: []ColLevel{
-					ColLevel{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String},
-					ColLevel{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}, DataType: options.String}},
+					{Name: "foo", LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: []string{"1", "2"}, DataType: options.String},
+					{Name: "corge", LabelMap: LabelMap{"3": []int{0}, "4": []int{1}}, Labels: []string{"3", "4"}, DataType: options.String}},
 				NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
 				2, 2, 5, []string{"1 | 3", "2 | 4"}, "1 | 3", [][]string{{"1", "3"}, {"2", "4"}}, []string{"1", "3"},
 			}},

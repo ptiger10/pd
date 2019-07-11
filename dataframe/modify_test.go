@@ -1456,7 +1456,7 @@ func TestDataFrame_Modify_DatatypeConversion(t *testing.T) {
 		{"bool row", singleRow, args{(*DataFrame).ToBool}, want{MustNew([]interface{}{true, true, true, false, true}), options.Bool}},
 		{"bool col", singleColumn, args{(*DataFrame).ToBool}, want{MustNew([]interface{}{[]bool{true, true, true, false, true}}), options.Bool}},
 		{"datetime row", singleRow, args{(*DataFrame).ToDateTime}, want{MustNew([]interface{}{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
-		{"datetime col", singleColumn, args{(*DataFrame).ToDateTime}, want{MustNew([]interface{}{[]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}}), options.DateTime}},
+		{"datetime col", singleColumn, args{(*DataFrame).ToDateTime}, want{MustNew([]interface{}{[]time.Time{epochDate, epochDate, {}, epochDate, testDate}}), options.DateTime}},
 		{"control row", singleRow, args{(*DataFrame).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}, Config{DataType: options.Interface}), options.Interface}},
 		{"control col", singleColumn, args{(*DataFrame).ToInterface}, want{MustNew([]interface{}{[]interface{}{1.5, 1, "1", false, testDate}}), options.Interface}},
 	}

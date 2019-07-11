@@ -131,7 +131,7 @@ func ReadInterface(input [][]interface{}, config ...ReadOptions) (*dataframe.Dat
 			}
 		}
 	}
-	// convert [][]interface{} to []interface{} of []interface for compatability with DataFrame constructor
+	// convert [][]interface{} to []interface{} of []interface for compatibility with DataFrame constructor
 	var (
 		multiIndex []interface{}
 		vals       []interface{}

@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with name",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Name: "foobar"}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{Name: "foobar"}}},
 			&DataFrame{
 				name:  "foobar",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -62,7 +62,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with datatype",
-			args{[]interface{}{1.0, 2.0}, []Config{Config{DataType: options.Int64}}},
+			args{[]interface{}{1.0, 2.0}, []Config{{DataType: options.Int64}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface(int64(1)), values.MustCreateValuesFromInterface(int64(2))},
@@ -71,7 +71,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with index",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Index: "baz"}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{Index: "baz"}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -80,7 +80,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with named index",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Index: "baz", IndexName: "corge"}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{Index: "baz", IndexName: "corge"}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -89,7 +89,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with multiIndex",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiIndex: []interface{}{"baz", "qux"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{MultiIndex: []interface{}{"baz", "qux"}}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -98,7 +98,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with named multiIndex",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiIndex: []interface{}{"baz", "qux"}, MultiIndexNames: []string{"waldo", "fred"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{MultiIndex: []interface{}{"baz", "qux"}, MultiIndexNames: []string{"waldo", "fred"}}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -107,7 +107,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with columns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{Col: []string{"baz", "qux"}}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -116,7 +116,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with named columns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{Col: []string{"baz", "qux"}, ColName: "corge"}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{Col: []string{"baz", "qux"}, ColName: "corge"}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},
@@ -125,7 +125,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{"config with multicolumns",
-			args{[]interface{}{"foo", "bar"}, []Config{Config{MultiCol: [][]string{{"baz", "qux"}, {"quux", "quuz"}}, MultiColNames: []string{"fred", "waldo"}}}},
+			args{[]interface{}{"foo", "bar"}, []Config{{MultiCol: [][]string{{"baz", "qux"}, {"quux", "quuz"}}, MultiColNames: []string{"fred", "waldo"}}}},
 			&DataFrame{
 				name:  "",
 				vals:  []values.Container{values.MustCreateValuesFromInterface("foo"), values.MustCreateValuesFromInterface("bar")},

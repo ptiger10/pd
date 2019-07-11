@@ -55,10 +55,10 @@ type Element struct {
 func (el Element) String() string {
 	var printStr string
 	for _, pair := range [][]interface{}{
-		[]interface{}{"Value", el.Value},
-		[]interface{}{"Null", el.Null},
-		[]interface{}{"Labels", el.Labels},
-		[]interface{}{"LabelTypes", el.LabelTypes},
+		{"Value", el.Value},
+		{"Null", el.Null},
+		{"Labels", el.Labels},
+		{"LabelTypes", el.LabelTypes},
 	} {
 		// LabelTypes is 10 characters wide, so left padding set to 10
 		printStr += fmt.Sprintf("%10v:%v%v\n", pair[0], strings.Repeat(" ", values.GetDisplayElementWhitespaceBuffer()), pair[1])

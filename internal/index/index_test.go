@@ -58,7 +58,7 @@ func TestNew(t *testing.T) {
 			args{[]Level{MustNewLevel([]int{1, 2}, "foo")}},
 			want{
 				index: Index{
-					Levels:  []Level{Level{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
+					Levels:  []Level{{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
 					NameMap: LabelMap{"foo": []int{0}}},
 				len: 2, numLevels: 1, maxWidths: []int{3}, unnamed: false, datatypes: []options.DataType{options.Int64},
 			}},
@@ -67,8 +67,8 @@ func TestNew(t *testing.T) {
 			want{
 				index: Index{
 					Levels: []Level{
-						Level{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels},
-						Level{Name: "corge", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
+						{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels},
+						{Name: "corge", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
 					NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
 				len: 2, numLevels: 2, maxWidths: []int{3, 5}, unnamed: false, datatypes: []options.DataType{options.Int64, options.Int64},
 			}},
@@ -338,8 +338,8 @@ func TestAligned(t *testing.T) {
 		input Index
 		err   bool
 	}{
-		{"aligned", Index{Levels: []Level{Level{Labels: labels1}, Level{Labels: labels1}}}, false},
-		{"fail: misaligned", Index{Levels: []Level{Level{Labels: labels1}, Level{Labels: labels2}}}, true},
+		{"aligned", Index{Levels: []Level{{Labels: labels1}, {Labels: labels1}}}, false},
+		{"fail: misaligned", Index{Levels: []Level{{Labels: labels1}, {Labels: labels2}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

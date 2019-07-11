@@ -23,13 +23,13 @@ func TestSeries(t *testing.T) {
 	}{
 		{"no config", args{"foo", nil}, want{series.MustNew("foo"), false}},
 		{"config",
-			args{"foo", []Config{Config{Name: "bar"}}},
+			args{"foo", []Config{{Name: "bar"}}},
 			want{series.MustNew("foo", series.Config{Name: "bar"}), false}},
 		{"config with df field",
-			args{"foo", []Config{Config{Name: "bar", Col: []string{"baz"}}}},
+			args{"foo", []Config{{Name: "bar", Col: []string{"baz"}}}},
 			want{series.MustNew("foo", series.Config{Name: "bar"}), false}},
 		{"fail: multiple configs",
-			args{"foo", []Config{Config{Name: "bar"}, Config{Name: "baz"}}},
+			args{"foo", []Config{{Name: "bar"}, {Name: "baz"}}},
 			want{series.MustNew(nil), true}},
 		{"fail: unsupported value",
 			args{complex64(1), nil},
@@ -64,10 +64,10 @@ func TestDataFrame(t *testing.T) {
 	}{
 		{"no config", args{[]interface{}{"foo"}, nil}, want{dataframe.MustNew([]interface{}{"foo"}), false}},
 		{"config",
-			args{[]interface{}{"foo"}, []Config{Config{Name: "bar"}}},
+			args{[]interface{}{"foo"}, []Config{{Name: "bar"}}},
 			want{dataframe.MustNew([]interface{}{"foo"}, dataframe.Config{Name: "bar"}), false}},
 		{"fail: multiple configs",
-			args{[]interface{}{"foo"}, []Config{Config{Name: "bar"}, Config{Name: "baz"}}},
+			args{[]interface{}{"foo"}, []Config{{Name: "bar"}, {Name: "baz"}}},
 			want{dataframe.MustNew(nil), true}},
 		{"fail: unsupported value",
 			args{[]interface{}{complex64(1)}, nil},
@@ -100,7 +100,7 @@ func TestReadCSV(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "no interpolation", args: args{filepath: "csv_test.csv", options: []ReadOptions{ReadOptions{Manual: true}}},
+		{name: "no interpolation", args: args{filepath: "csv_test.csv", options: []ReadOptions{{Manual: true}}},
 			want: want{
 				df: dataframe.MustNew([]interface{}{
 					[]string{"", "foo", "bar"},
@@ -108,7 +108,7 @@ func TestReadCSV(t *testing.T) {
 				}),
 				err: false}},
 		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
-		{"interpolation", args{"csv_test.csv", []ReadOptions{ReadOptions{IndexCols: 1, HeaderRows: 1}}},
+		{"interpolation", args{"csv_test.csv", []ReadOptions{{IndexCols: 1, HeaderRows: 1}}},
 			want{
 				df: dataframe.MustNew([]interface{}{
 					[]int64{1, 2},
@@ -150,34 +150,34 @@ func TestInterface(t *testing.T) {
 					[]string{"bar", "qux"},
 				}),
 				err: false}},
-		{"drop 1 row", args{data, []ReadOptions{ReadOptions{DropRows: 1}}},
+		{"drop 1 row", args{data, []ReadOptions{{DropRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"baz"},
 					[]string{"qux"},
 				}),
 				false}},
-		{"1 header row", args{data, []ReadOptions{ReadOptions{HeaderRows: 1}}},
+		{"1 header row", args{data, []ReadOptions{{HeaderRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"baz"},
 					[]string{"qux"},
 				}, dataframe.Config{Col: []string{"foo", "bar"}}),
 				false}},
-		{"1 index column", args{data, []ReadOptions{ReadOptions{IndexCols: 1}}},
+		{"1 index column", args{data, []ReadOptions{{IndexCols: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"bar", "qux"},
 				}, dataframe.Config{Index: []string{"foo", "baz"}}),
 				false}},
-		{"1 header row, 1 index column", args{data, []ReadOptions{ReadOptions{IndexCols: 1, HeaderRows: 1}}},
+		{"1 header row, 1 index column", args{data, []ReadOptions{{IndexCols: 1, HeaderRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
 					[]string{"qux"},
 				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
 				false}},
 		{"1 header row, 1 index column, datatype conversion", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				IndexCols:  1,
 				HeaderRows: 1,
 				DataTypes:  map[string]string{"bar": "bool"},
@@ -188,7 +188,7 @@ func TestInterface(t *testing.T) {
 				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"bar"}}),
 				false}},
 		{"1 header row, 1 index column, rename column", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				IndexCols:  1,
 				HeaderRows: 1,
 				Rename:     map[string]string{"bar": "corge"}}}},
@@ -198,7 +198,7 @@ func TestInterface(t *testing.T) {
 				}, dataframe.Config{Index: []string{"baz"}, Col: []string{"corge"}}),
 				false}},
 		{"1 header row, 1 index column, convert index type", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				IndexCols:      1,
 				HeaderRows:     1,
 				IndexDataTypes: map[int]string{0: "bool"}}}},
@@ -208,21 +208,21 @@ func TestInterface(t *testing.T) {
 				}, dataframe.Config{Index: []bool{true}, Col: []string{"bar"}}),
 				false}},
 		{"fail: too many headers", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				HeaderRows: 10,
 			}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: too many index columns", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				IndexCols: 10,
 			}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: drop too many rows", args{data,
-			[]ReadOptions{ReadOptions{
+			[]ReadOptions{{
 				DropRows: 10,
 			}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: excessive ReadOptions", args{data,
-			[]ReadOptions{ReadOptions{}, ReadOptions{}}}, want{dataframe.MustNew(nil), true}},
+			[]ReadOptions{{}, {}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: no rows", args{[][]interface{}{}, nil}, want{dataframe.MustNew(nil), true}},
-		{"fail: no columns", args{[][]interface{}{[]interface{}{}}, nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: no columns", args{[][]interface{}{{}}, nil}, want{dataframe.MustNew(nil), true}},
 		// TODO: []interface{}{complex64} should fail
 		// {"fail: unsupported data", args{[][]interface{}{{complex64(1)}}, nil}, want{dataframe.MustNew(nil), true}},
 	}

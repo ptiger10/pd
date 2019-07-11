@@ -680,7 +680,7 @@ func TestModifyInPlace_DatatypeConversion(t *testing.T) {
 		{"int", args{(InPlace).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
 		{"string", args{(InPlace).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
 		{"bool", args{(InPlace).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
-		{"datetime", args{(InPlace).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"datetime", args{(InPlace).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, {}, epochDate, testDate}), options.DateTime}},
 		{"control", args{(InPlace).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
 	}
 	for _, tt := range tests {
@@ -716,7 +716,7 @@ func TestModify_DatatypeConversion(t *testing.T) {
 		{"int", args{(*Series).ToInt64}, want{MustNew([]int64{1, 1, 1, 0, 1.5566688e+18}), options.Int64}},
 		{"string", args{(*Series).ToString}, want{MustNew([]string{"1.5", "1", "1", "false", "2019-05-01 00:00:00 +0000 UTC"}), options.String}},
 		{"bool", args{(*Series).ToBool}, want{MustNew([]bool{true, true, true, false, true}), options.Bool}},
-		{"datetime", args{(*Series).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, time.Time{}, epochDate, testDate}), options.DateTime}},
+		{"datetime", args{(*Series).ToDateTime}, want{MustNew([]time.Time{epochDate, epochDate, {}, epochDate, testDate}), options.DateTime}},
 		{"control: interface", args{(*Series).ToInterface}, want{MustNew([]interface{}{1.5, 1, "1", false, testDate}), options.Interface}},
 	}
 	for _, tt := range tests {

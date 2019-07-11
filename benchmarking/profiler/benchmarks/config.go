@@ -13,15 +13,15 @@ import (
 
 // Descriptions of the benchmarking tests
 var Descriptions = map[string]desc{
-	"sum":        desc{1, "Sum one column"},
-	"mean":       desc{2, "Simple mean of one column"},
-	"median":     desc{3, "Median of one column"},
-	"min":        desc{4, "Min of one column"},
-	"max":        desc{5, "Max of one column"},
-	"std":        desc{6, "Standard deviation of one column"},
-	"readCSVSum": desc{7, "Read in CSV then calculate sum"},
-	"sum2":       desc{8, "Sum two columns"},
-	"mean2":      desc{8, "Mean of two columns"},
+	"sum":        {1, "Sum one column"},
+	"mean":       {2, "Simple mean of one column"},
+	"median":     {3, "Median of one column"},
+	"min":        {4, "Min of one column"},
+	"max":        {5, "Max of one column"},
+	"std":        {6, "Standard deviation of one column"},
+	"readCSVSum": {7, "Read in CSV then calculate sum"},
+	"sum2":       {8, "Sum two columns"},
+	"mean2":      {8, "Mean of two columns"},
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.

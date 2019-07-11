@@ -412,7 +412,7 @@ func ExampleSeries_Describe_datetime() {
 	s, _ := New([]time.Time{
 		time.Date(2019, 4, 18, 15, 0, 0, 0, time.UTC),
 		time.Date(2019, 4, 19, 15, 0, 0, 0, time.UTC),
-		time.Time{},
+		{},
 	})
 	s.Describe()
 	// Output:
@@ -427,7 +427,7 @@ func ExampleSeries_Describe_datetime() {
 }
 
 func ExampleSeries_Describe_datetime_empty() {
-	s, _ := New([]time.Time{time.Time{}})
+	s, _ := New([]time.Time{{}})
 	s.Describe()
 	// Output:
 	//      len                                1

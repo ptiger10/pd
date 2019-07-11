@@ -9,17 +9,17 @@ def main():
     # Start tests
     results = {
         "100k": {
-            "sum": sumTest(),
-            "mean": meanTest(),
-            # "median": medianTest(),
-            "min": minTest(),
-            "max": maxTest(),
-            "std": stdTest(),
-            # "readCSVSum": readCSVSumTest(),
+            # "sum": sumTest(),
+            # "mean": meanTest(),
+            # # "median": medianTest(),
+            # "min": minTest(),
+            # "max": maxTest(),
+            # "std": stdTest(),
+            "readCSVSum": readCSVSumTest(),
             },
         "500k": {
-            "sum2": sumTest500(),
-            "mean2": meanTest500(),
+            # "sum2": sumTest500(),
+            # "mean2": meanTest500(),
         }
     }
     json.dump(results, sys.stdout)

@@ -21,13 +21,13 @@ func RunGoProfiler() Results {
 	fmt.Println("Profiling Go")
 	Results := Results{
 		"100k": {
-			"sum":  ProfileGo(benchmarkSumFloat64_100000),
-			"mean": ProfileGo(benchmarkMeanFloat64_100000),
-			// "median":     ProfileGo(benchmarkMedianFloat64_100000),
-			"min": ProfileGo(benchmarkMinFloat64_100000),
-			"max": ProfileGo(benchmarkMaxFloat64_100000),
-			"std": ProfileGo(benchmarkStdFloat64_100000),
-			// "readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
+			// "sum":  ProfileGo(benchmarkSumFloat64_100000),
+			// "mean": ProfileGo(benchmarkMeanFloat64_100000),
+			// // "median":     ProfileGo(benchmarkMedianFloat64_100000),
+			// "min": ProfileGo(benchmarkMinFloat64_100000),
+			// "max": ProfileGo(benchmarkMaxFloat64_100000),
+			// "std": ProfileGo(benchmarkStdFloat64_100000),
+			"readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
 		},
 		"500k": {
 			"sum2":  ProfileGo(benchmarkSumFloat64_500000),
