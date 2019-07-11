@@ -2,6 +2,7 @@ package benchmarks
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -9,7 +10,11 @@ import (
 )
 
 // CompareBenchmarks creates a comparison table of GoPandas <> Pandas for equivalent operations
-func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]desc) string {
+func CompareBenchmarks(
+	goBenchmarks, pyBenchmarks Results,
+	sampleSizes []string,
+	descs map[string]desc,
+) string {
 
 	var printer string
 	printer += "GoPandas vs Pandas speed comparison\n"
@@ -67,10 +72,18 @@ func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]desc
 		}
 		return false
 	})
-	for sample, Results := range goBenchmarks {
+	for _, sample := range sampleSizes {
+		results, ok := goBenchmarks[sample]
+		if !ok {
+			log.Printf("sample size %v not in %v", sample, goBenchmarks)
+			continue
+		}
 		for _, desc := range orderedDescs {
 			testName := desc.label
-			goResult := Results[desc.label]
+			goResult, ok := results[desc.label]
+			if !ok {
+				continue
+			}
 			i++
 			gospeed, gons := goResult[0], goResult[1]
 			goSpeed := gospeed.(string)
@@ -97,6 +110,7 @@ func CompareBenchmarks(goBenchmarks, pyBenchmarks Results, descs map[string]desc
 			}
 			printer += vChar + strings.Join(rowComponents, vChar) + vChar + "\n"
 			printer += breakLine
+
 		}
 	}
 	return printer

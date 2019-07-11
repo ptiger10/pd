@@ -6,6 +6,10 @@ func BenchmarkSumFloat64_100000(b *testing.B) {
 	benchmarkSumFloat64_100000(b)
 }
 
+func BenchmarkSumFloat64_500000(b *testing.B) {
+	benchmarkSumFloat64_500000(b)
+}
+
 func BenchmarkMeanFloat64_100000(b *testing.B) {
 	benchmarkMeanFloat64_100000(b)
 }

@@ -10,14 +10,17 @@ def main():
     results = {
         "100k": {
             "sum": sumTest(),
-            "mean": meanTest(),
-            "median": medianTest(),
-            "min": minTest(),
-            "max": maxTest(),
-            "std": stdTest(),
-            "readCSVSum": readCSVSumTest(),
-            }
+            # "mean": meanTest(),
+            # "median": medianTest(),
+            # "min": minTest(),
+            # "max": maxTest(),
+            # "std": stdTest(),
+            # "readCSVSum": readCSVSumTest(),
+            },
+        "500k": {
+            "sum2": sumTest500()
         }
+    }
     json.dump(results, sys.stdout)
 
 
@@ -61,7 +64,8 @@ def get_filepath(s):
 
 
 files = {
-    '100k': '../RandomNumbers.csv'
+    '100k': '../RandomNumbers.csv',
+    '500k': '../500kRandomNumbers.csv',
 }
 df = pd.read_csv(get_filepath('100k'))
 
@@ -70,6 +74,15 @@ df = pd.read_csv(get_filepath('100k'))
 def sumTest():
     s = df.sum()
     assert round(s.iloc[0], 2) == 50408.63
+
+
+df500 = pd.read_csv(get_filepath('500k'))
+
+
+@timer(10)
+def sumTest500():
+    s = df500.sum()
+    assert round(s.iloc[0], 2) == 130598.19
 
 
 @timer(1000)

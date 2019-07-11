@@ -16,7 +16,9 @@ func main() {
 
 	// fmt.Println(goBenchmarks, pyBenchmarks)
 
-	table := benchmarks.CompareBenchmarks(goBenchmarks, pyBenchmarks, benchmarks.Descriptions)
+	table := benchmarks.CompareBenchmarks(
+		goBenchmarks, pyBenchmarks,
+		benchmarks.SampleSizes, benchmarks.Descriptions)
 	_, thisFile, _, _ := runtime.Caller(0)
 	basename := "comparison_summary.txt"
 	dest := filepath.Join(filepath.Dir(thisFile), basename)

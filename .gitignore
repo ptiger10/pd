@@ -8,3 +8,4 @@ output_test.csv
 debug
 go.sum
 benchmarking/archive
+data*.csv

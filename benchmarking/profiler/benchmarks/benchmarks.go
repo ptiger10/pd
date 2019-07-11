@@ -13,6 +13,7 @@ import (
 
 var files = map[string]string{
 	"100k": "../RandomNumbers.csv",
+	"500k": "../500kRandomNumbers.csv",
 }
 
 func getPath(s string) string {
@@ -26,6 +27,21 @@ func getPath(s string) string {
 		log.Fatalf("File does not exist at %s", path)
 	}
 	return path
+}
+
+func benchmarkSumFloat64_500000(b *testing.B) {
+	df, err := pd.ReadCSV(getPath("500k"), pd.ReadOptions{HeaderRows: 1})
+	if err != nil {
+		log.Fatal(err)
+	}
+	for n := 0; n < b.N; n++ {
+		df.Sum()
+	}
+	got := math.Round(df.Sum().At(0).(float64)*100) / 100
+	want := 130598.19
+	if got != want {
+		log.Fatalf("Sum500() got %v, want %v", got, want)
+	}
 }
 
 func benchmarkSumFloat64_100000(b *testing.B) {

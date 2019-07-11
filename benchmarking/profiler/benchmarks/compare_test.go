@@ -13,6 +13,7 @@ func TestCompareBenchmarks(t *testing.T) {
 	type args struct {
 		goBenchmarks Results
 		pyBenchmarks Results
+		sampleSizes  []string
 		descs        map[string]desc
 	}
 	tests := []struct {
@@ -23,11 +24,12 @@ func TestCompareBenchmarks(t *testing.T) {
 			goBenchmarks: Results{"100k": {
 				"sum": []interface{}{"50ms", 50.0}, "mean": []interface{}{"50ms", 50.0}}},
 			pyBenchmarks: Results{"100k": {"sum": []interface{}{"100ms", 100.0}}},
-			descs:        map[string]desc{"sum": desc{1, "Simple sum"}}}},
+			descs:        map[string]desc{"sum": desc{1, "Simple sum"}, "mean": desc{2, "Simple mean"}},
+			sampleSizes:  []string{"100k", "200k"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := CompareBenchmarks(tt.args.goBenchmarks, tt.args.pyBenchmarks, tt.args.descs)
+			got := CompareBenchmarks(tt.args.goBenchmarks, tt.args.pyBenchmarks, tt.args.sampleSizes, tt.args.descs)
 			print(got)
 		})
 	}
