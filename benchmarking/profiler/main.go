@@ -14,6 +14,8 @@ func main() {
 	goBenchmarks := benchmarks.RunGoProfiler()
 	pyBenchmarks := benchmarks.RunPythonProfiler()
 
+	// fmt.Println(goBenchmarks, pyBenchmarks)
+
 	table := benchmarks.CompareBenchmarks(goBenchmarks, pyBenchmarks, benchmarks.Descriptions)
 	_, thisFile, _, _ := runtime.Caller(0)
 	basename := "comparison_summary.txt"

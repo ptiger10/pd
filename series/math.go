@@ -202,15 +202,19 @@ func (s *Series) Quartile(i int) float64 {
 //
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s *Series) Std() float64 {
-	vals := s.validVals()
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(vals)
-		std, err := stats.StandardDeviation(data)
-		if err != nil {
-			return math.NaN()
+		data := ensureFloatFromNumerics(s.Vals())
+		mean := s.Mean()
+		var variance float64
+		var counter int
+		for i, d := range data {
+			if !s.values.Null(i) {
+				variance += (d - mean) * (d - mean)
+				counter++
+			}
 		}
-		return std
+		return math.Pow(variance/float64(counter), 0.5)
 	default:
 		return math.NaN()
 	}

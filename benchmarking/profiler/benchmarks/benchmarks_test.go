@@ -21,3 +21,7 @@ func BenchmarkMinFloat64_100000(b *testing.B) {
 func BenchmarkMaxFloat64_100000(b *testing.B) {
 	benchmarkMaxFloat64_100000(b)
 }
+
+func BenchmarkStdFloat64_100000(b *testing.B) {
+	benchmarkStdFloat64_100000(b)
+}
