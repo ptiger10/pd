@@ -3,6 +3,8 @@ package series
 import (
 	"math"
 	"testing"
+
+	"github.com/ptiger10/pd/options"
 )
 
 func TestSeriesMath(t *testing.T) {
@@ -38,6 +40,67 @@ func TestMath_numerics(t *testing.T) {
 		{"float with negative", MustNew([]float64{2, -1, 4, 3}), 8, 2, 2.5, -1, 4, 0.5, 2.5, 3.5, 1.87},
 	}
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotSum := tt.s.Sum()
+			if gotSum != tt.wantSum {
+				t.Errorf("Sum()returned %v, want %v", gotSum, tt.wantSum)
+			}
+			gotMean := tt.s.Mean()
+			if gotMean != tt.wantMean {
+				t.Errorf("Mean()returned %v, want %v", gotMean, tt.wantMean)
+			}
+			gotMedian := tt.s.Median()
+			if gotMedian != tt.wantMedian {
+				t.Errorf("Median()returned %v, want %v", gotMedian, tt.wantMedian)
+			}
+			gotMin := tt.s.Min()
+			if gotMin != tt.wantMin {
+				t.Errorf("Min()returned %v, want %v", gotMin, tt.wantMin)
+			}
+			gotMax := tt.s.Max()
+			if gotMax != tt.wantMax {
+				t.Errorf("Max()returned %v, want %v", gotMax, tt.wantMax)
+			}
+			gotQ1 := tt.s.Quartile(1)
+			if gotQ1 != tt.wantQ1 {
+				t.Errorf("Quartile(1)returned %v, want %v", gotQ1, tt.wantQ1)
+			}
+			gotQ2 := tt.s.Quartile(2)
+			if gotQ2 != tt.wantQ2 {
+				t.Errorf("Quartile(2)returned %v, want %v", gotQ2, tt.wantQ2)
+			}
+			gotQ3 := tt.s.Quartile(3)
+			if gotQ3 != tt.wantQ3 {
+				t.Errorf("Quartile(3)returned %v, want %v", gotQ3, tt.wantQ3)
+			}
+			gotStd := tt.s.Std()
+			if math.Round(gotStd*100)/100 != math.Round(tt.wantStd*100)/100 {
+				t.Errorf("Std()returned %v, want %v", gotStd, tt.wantStd)
+			}
+		})
+
+	}
+}
+
+func TestMath_numerics_async(t *testing.T) {
+	var tests = []struct {
+		name       string
+		s          *Series
+		wantSum    float64
+		wantMean   float64
+		wantMedian float64
+		wantMin    float64
+		wantMax    float64
+		wantQ1     float64
+		wantQ2     float64
+		wantQ3     float64
+		wantStd    float64
+	}{
+		{"float with null", MustNew([]float64{math.NaN(), math.NaN(), 2, 3, 1}), 6, 2, 2, 1, 3, 1, 2, 3, 0.82},
+	}
+	for _, tt := range tests {
+		options.SetAsync(false)
+		defer options.RestoreDefaults()
 		t.Run(tt.name, func(t *testing.T) {
 			gotSum := tt.s.Sum()
 			if gotSum != tt.wantSum {

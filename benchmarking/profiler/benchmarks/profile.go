@@ -26,7 +26,7 @@ func RunGoProfiler() Results {
 			// "median":     ProfileGo(benchmarkMedianFloat64_100000),
 			"min": ProfileGo(benchmarkMinFloat64_100000),
 			"max": ProfileGo(benchmarkMaxFloat64_100000),
-			// "std":        ProfileGo(benchmarkStdFloat64_100000),
+			"std": ProfileGo(benchmarkStdFloat64_100000),
 			// "readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
 		},
 		"500k": {

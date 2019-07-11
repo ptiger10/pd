@@ -14,7 +14,7 @@ def main():
             # "median": medianTest(),
             "min": minTest(),
             "max": maxTest(),
-            # "std": stdTest(),
+            "std": stdTest(),
             # "readCSVSum": readCSVSumTest(),
             },
         "500k": {

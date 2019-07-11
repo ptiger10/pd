@@ -10,6 +10,9 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+// Async calculations not implemented for most integer operations,
+// because they require a lookup on the underlying Series null value at every position
+
 // an interface of valid (non-null) values; appropriate for type assertion
 func (s *Series) validVals() interface{} {
 	valid := s.values.Subset(s.valid())
@@ -25,14 +28,14 @@ func asyncMath(data []float64, awaitFn func([]float64, chan<- interface{}, *sync
 
 	ch := make(chan interface{}, numPartitions)
 	for i := 0; i < numPartitions; i++ {
-		var sub []float64
+		var partition []float64
 		if i != numPartitions-1 {
-			sub = data[i*valsPerPartition : (i+1)*(valsPerPartition)]
+			partition = data[i*valsPerPartition : (i+1)*(valsPerPartition)]
 		} else {
-			sub = data[i*valsPerPartition:] // residual values go in last partition
+			partition = data[i*valsPerPartition:] // residual values go in last partition
 		}
 		wg.Add(1)
-		go awaitFn(sub, ch, &wg)
+		go awaitFn(partition, ch, &wg)
 	}
 	wg.Wait()
 	close(ch)
@@ -42,8 +45,6 @@ func asyncMath(data []float64, awaitFn func([]float64, chan<- interface{}, *sync
 // Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
 	var sum float64
-
-	// null int values are represented as 0, but that's ok for sum
 	sumFunc := func(data []float64) float64 {
 		var sum float64
 		for _, d := range data {
@@ -60,6 +61,7 @@ func (s *Series) Sum() float64 {
 	}
 
 	switch s.datatype {
+	// null int values are represented as 0, but that's ok for sum
 	case options.Float64, options.Int64:
 		data := ensureFloatFromNumerics(s.Vals())
 
@@ -123,9 +125,7 @@ func (s *Series) Mean() float64 {
 		}
 		return sum / validCount
 
-	case options.Int64:
-		return s.Sum() / float64(s.validCount())
-	case options.Bool:
+	case options.Int64, options.Bool:
 		return s.Sum() / float64(s.validCount())
 	default:
 		return math.NaN()
@@ -134,7 +134,7 @@ func (s *Series) Mean() float64 {
 
 // Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Median() float64 {
-	calculateMedian := func(data []float64) float64 {
+	medianFunc := func(data []float64) float64 {
 		if len(data) == 0 {
 			return math.NaN()
 		}
@@ -157,13 +157,13 @@ func (s *Series) Median() float64 {
 		numValids := s.validCount()
 		firstValid := len(data) - numValids
 		data = data[firstValid:]
-		return calculateMedian(data)
+		return medianFunc(data)
 
 	case options.Int64:
 		vals := s.validVals()
 		data := ensureFloatFromNumerics(vals)
 		sort.Float64s(data)
-		return calculateMedian(data)
+		return medianFunc(data)
 
 	default:
 		return math.NaN()
