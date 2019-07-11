@@ -72,6 +72,28 @@ func benchmarkStdFloat64_100000(b *testing.B) {
 	}
 }
 
+func benchmarkSyncStdFloat64_100000(b *testing.B) {
+	options.SetAsync(false)
+	for n := 0; n < b.N; n++ {
+		df100k.Std()
+	}
+	options.RestoreDefaults()
+}
+
+func benchmarkStdFloat64_500000(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		df500k.Max()
+	}
+}
+
+func benchmarkSyncStdFloat64_500000(b *testing.B) {
+	options.SetAsync(false)
+	for n := 0; n < b.N; n++ {
+		df500k.Std()
+	}
+	options.RestoreDefaults()
+}
+
 func benchmarkReadSumFloat64_100000(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		df, err := pd.ReadCSV(getPath("100k"), pd.ReadOptions{HeaderRows: 1})
