@@ -16,33 +16,18 @@ type desc struct {
 	str   string
 }
 
-// Descriptions of the benchmarking tests
-var Descriptions = map[string]desc{
-	"sum": desc{1, "Sum one column"},
-	// "mean":       desc{2, "Simple mean of one column"},
-	// "median":     desc{3, "Median of one column"},
-	// "min":        desc{4, "Min of one column"},
-	// "max":        desc{5, "Max of one column"},
-	// "std":        desc{6, "Standard deviation of one column"},
-	// "readCSVSum": desc{7, "Read in CSV then calculate sum"},
-	"sum2": desc{8, "Sum two columns"},
-}
-
-// SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
-var SampleSizes = []string{"100k", "500k"}
-
 // RunGoProfiler specifies all the benchmarks to profile and return in the benchmark table.
 func RunGoProfiler() Results {
 	fmt.Println("Profiling Go")
 	Results := Results{
 		"100k": {
-			"sum": ProfileGo(benchmarkSumFloat64_100000),
-			// 	"mean":       ProfileGo(benchmarkMeanFloat64_100000),
-			// 	"median":     ProfileGo(benchmarkMedianFloat64_100000),
-			// 	"min":        ProfileGo(benchmarkMinFloat64_100000),
-			// 	"max":        ProfileGo(benchmarkMaxFloat64_100000),
-			// 	"std":        ProfileGo(benchmarkStdFloat64_100000),
-			// 	"readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
+			"sum":        ProfileGo(benchmarkSumFloat64_100000),
+			"mean":       ProfileGo(benchmarkMeanFloat64_100000),
+			"median":     ProfileGo(benchmarkMedianFloat64_100000),
+			"min":        ProfileGo(benchmarkMinFloat64_100000),
+			"max":        ProfileGo(benchmarkMaxFloat64_100000),
+			"std":        ProfileGo(benchmarkStdFloat64_100000),
+			"readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
 		},
 		"500k": {
 			"sum2": ProfileGo(benchmarkSumFloat64_500000),
@@ -81,7 +66,7 @@ func ProfileGo(f func(b *testing.B)) Result {
 func RunPythonProfiler() Results {
 	fmt.Println("Profiling Python")
 	_, thisFile, _, _ := runtime.Caller(0)
-	script := "main.py"
+	script := "profile.py"
 	scriptPath := path.Join(path.Dir(thisFile), script)
 	cmd := exec.Command("python", scriptPath)
 	out, err := cmd.Output()

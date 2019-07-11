@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	benchmarks.ReadData()
 	goBenchmarks := benchmarks.RunGoProfiler()
 	pyBenchmarks := benchmarks.RunPythonProfiler()
 
@@ -26,5 +27,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf(">> %v\n", dest)
+	fmt.Printf(">> %v\n", basename)
 }

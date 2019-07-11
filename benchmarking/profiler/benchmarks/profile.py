@@ -10,12 +10,12 @@ def main():
     results = {
         "100k": {
             "sum": sumTest(),
-            # "mean": meanTest(),
-            # "median": medianTest(),
-            # "min": minTest(),
-            # "max": maxTest(),
-            # "std": stdTest(),
-            # "readCSVSum": readCSVSumTest(),
+            "mean": meanTest(),
+            "median": medianTest(),
+            "min": minTest(),
+            "max": maxTest(),
+            "std": stdTest(),
+            "readCSVSum": readCSVSumTest(),
             },
         "500k": {
             "sum2": sumTest500()
@@ -37,9 +37,6 @@ def timer(n):
                 duration = (end-start).total_seconds()
                 times.append(duration)
             duration = sum(times)/len(times)
-            # print("{}: ".format(fn.__name__).ljust(15), end='')
-            # print(
-            # "{}".format(round(duration*1000000000), 0).rjust(10), " ns/op")
             ns = 1000000000
             mcs = 1000000
             ms = 1000
@@ -64,22 +61,20 @@ def get_filepath(s):
 
 
 files = {
-    '100k': '../RandomNumbers.csv',
-    '500k': '../500kRandomNumbers.csv',
+    '100k': '../dataRandom100k1Col.csv',
+    '500k': '../dataRandom500k2Col.csv',
 }
-df = pd.read_csv(get_filepath('100k'))
+df100 = pd.read_csv(get_filepath('100k'))
+df500 = pd.read_csv(get_filepath('500k'))
 
 
 @timer(1000)
 def sumTest():
-    s = df.sum()
+    s = df100.sum()
     assert round(s.iloc[0], 2) == 50408.63
 
 
-df500 = pd.read_csv(get_filepath('500k'))
-
-
-@timer(10)
+@timer(100)
 def sumTest500():
     s = df500.sum()
     assert round(s.iloc[0], 2) == 130598.19
@@ -87,31 +82,31 @@ def sumTest500():
 
 @timer(1000)
 def meanTest():
-    s = df.mean()
+    s = df100.mean()
     assert round(s.iloc[0], 2) == 0.5
 
 
 @timer(1000)
 def minTest():
-    s = df.min()
+    s = df100.min()
     assert round(s.iloc[0], 2) == 0.0
 
 
 @timer(1000)
 def maxTest():
-    s = df.max()
+    s = df100.max()
     assert round(s.iloc[0], 2) == 1.0
 
 
 @timer(1000)
 def stdTest():
-    s = df.std()
+    s = df100.std()
     assert round(s.iloc[0], 2) == 0.29
 
 
 @timer(100)
 def medianTest():
-    s = df.median()
+    s = df100.median()
     assert round(s.iloc[0], 2) == 0.5
 
 

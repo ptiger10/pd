@@ -206,9 +206,8 @@ type calcReturn struct {
 	n  int
 }
 
-var wg sync.WaitGroup
-
 func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
+	var wg sync.WaitGroup
 	// synchronous option
 	if !options.GetAsync() {
 		ret := newEmptyDataFrame()
@@ -223,7 +222,7 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	ch := make(chan calcReturn, g.Len())
 	for i, group := range g.Groups() {
 		wg.Add(1)
-		go g.awaitMath(ch, i, group, fn)
+		go g.awaitMath(ch, i, group, fn, &wg)
 	}
 	wg.Wait()
 	close(ch)
@@ -243,7 +242,10 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	return df
 }
 
-func (g Grouping) awaitMath(ch chan<- calcReturn, n int, group string, fn func(*DataFrame) *series.Series) {
+func (g Grouping) awaitMath(
+	ch chan<- calcReturn, n int, group string,
+	fn func(*DataFrame) *series.Series, wg *sync.WaitGroup,
+) {
 	df := g.mathSingleGroup(group, fn)
 	ret := calcReturn{df: df, n: n}
 	ch <- ret
