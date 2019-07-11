@@ -88,6 +88,7 @@ func (s *Series) Describe() {
 
 // expects to receive a slice of typed value structs (eg values.float64Values)
 func (s *Series) print() string {
+	s.index.Refresh()
 	numLevels := len(s.index.Levels)
 	var header string
 	var printer string

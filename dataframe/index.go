@@ -81,7 +81,7 @@ func (idx Index) RenameLevel(level int, name string) error {
 		return fmt.Errorf("df.Index.RenameLevel(): %v", err)
 	}
 	idx.df.index.Levels[level].Name = name
-	idx.df.index.Refresh()
+	idx.df.index.NeedsRefresh = true
 	return nil
 }
 
@@ -171,6 +171,7 @@ func (idx Index) DropLevel(level int) error {
 
 // SelectName returns the integer position of the index level at the first occurrence of the supplied name, or -1 if not a valid index level name.
 func (idx Index) SelectName(name string) int {
+	idx.df.index.UpdateNameMap()
 	v, ok := idx.df.index.NameMap[name]
 	if !ok {
 		if options.GetLogWarnings() {
@@ -183,6 +184,7 @@ func (idx Index) SelectName(name string) int {
 
 // SelectNames returns the integer positions of the index levels with the supplied names.
 func (idx Index) SelectNames(names []string) []int {
+	idx.df.index.UpdateNameMap()
 	include := make([]int, 0)
 	empty := make([]int, 0)
 	for _, name := range names {
@@ -212,7 +214,7 @@ func (idx Index) Flip(col int, level int) (*DataFrame, error) {
 	df.index.Levels[level].Labels, df.vals[col].Values = df.vals[col].Values, df.index.Levels[level].Labels
 	df.index.Levels[level].Name, df.name = df.name, df.index.Levels[level].Name
 	df.index.Levels[level].DataType, df.vals[col].DataType = df.vals[col].DataType, df.index.Levels[level].DataType
-	df.index.Refresh()
+	df.index.NeedsRefresh = true
 	return df, nil
 }
 

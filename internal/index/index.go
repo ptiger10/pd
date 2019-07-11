@@ -12,17 +12,19 @@ import (
 
 // An Index is a collection of levels, plus label mappings
 type Index struct {
-	Levels  []Level
-	NameMap LabelMap
+	Levels       []Level
+	NameMap      LabelMap
+	NeedsRefresh bool
 }
 
 // A Level is a single collection of labels within an index, plus label mappings and metadata
 type Level struct {
-	DataType  options.DataType
-	Labels    values.Values
-	LabelMap  LabelMap
-	Name      string
-	IsDefault bool
+	DataType     options.DataType
+	Labels       values.Values
+	LabelMap     LabelMap
+	NeedsRefresh bool
+	Name         string
+	IsDefault    bool
 }
 
 // A LabelMap records the position of labels, in the form {label name: [label position(s)]}
@@ -54,7 +56,7 @@ func New(levels ...Level) Index {
 	idx := Index{
 		Levels: levels,
 	}
-	idx.updateNameMap()
+	idx.NeedsRefresh = true
 	return idx
 }
 
@@ -131,10 +133,15 @@ func (idx Index) Copy() Index {
 	if reflect.DeepEqual(idx, Index{NameMap: LabelMap{}, Levels: []Level{}}) {
 		return Index{NameMap: LabelMap{}, Levels: []Level{}}
 	}
-	idxCopy := Index{NameMap: LabelMap{}}
-	for k, v := range idx.NameMap {
-		idxCopy.NameMap[k] = v
+	idxCopy := Index{}
+	if idx.NameMap != nil {
+		idxCopy.NameMap = make(LabelMap)
+		for k, v := range idx.NameMap {
+			idxCopy.NameMap[k] = v
+		}
+
 	}
+	idxCopy.NeedsRefresh = idx.NeedsRefresh
 	for i := 0; i < len(idx.Levels); i++ {
 		idxCopy.Levels = append(idxCopy.Levels, idx.Levels[i].Copy())
 	}
@@ -146,7 +153,7 @@ func NewDefaultLevel(n int, name string) Level {
 	vals := values.MakeIntRange(0, n)
 	container := values.MustCreateValuesFromInterface(vals)
 	lvl := Level{Labels: container.Values, DataType: container.DataType, Name: name, IsDefault: true}
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 	return lvl
 }
 
@@ -169,7 +176,7 @@ func InterpolatedNewLevel(data interface{}, name string) (Level, error) {
 	}
 
 	lvl := Level{Labels: container.Values, DataType: container.DataType, Name: name}
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 	return lvl, nil
 }
 
@@ -183,7 +190,7 @@ func NewLevel(data interface{}, name string) (Level, error) {
 		return Level{}, fmt.Errorf("NewLevel(): %v", err)
 	}
 	lvl := Level{Labels: container.Values, DataType: container.DataType, Name: name}
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 	return lvl, nil
 }
 
@@ -208,9 +215,11 @@ func (lvl Level) Copy() Level {
 	lvlCopy := Level{}
 	lvlCopy = lvl
 	lvlCopy.Labels = lvlCopy.Labels.Copy()
-	lvlCopy.LabelMap = make(LabelMap)
-	for k, v := range lvl.LabelMap {
-		lvlCopy.LabelMap[k] = v
+	if lvl.LabelMap != nil {
+		lvlCopy.LabelMap = make(LabelMap)
+		for k, v := range lvl.LabelMap {
+			lvlCopy.LabelMap[k] = v
+		}
 	}
 	return lvlCopy
 }
@@ -306,7 +315,7 @@ func (idx *Index) SwapLevels(i, j int) error {
 		return fmt.Errorf("invalid j: %v", err)
 	}
 	idx.Levels[i], idx.Levels[j] = idx.Levels[j], idx.Levels[i]
-	idx.Refresh()
+	idx.NeedsRefresh = true
 	return nil
 }
 
@@ -323,7 +332,7 @@ func (idx *Index) InsertLevel(pos int, values interface{}, name string) error {
 		return fmt.Errorf("values to insert must have same length as existing index: %d != %d", lvl.Len(), idx.Len())
 	}
 	idx.Levels = append(idx.Levels[:pos], append([]Level{lvl}, idx.Levels[pos:]...)...)
-	idx.Refresh()
+	idx.NeedsRefresh = true
 	return nil
 }
 
@@ -339,8 +348,8 @@ func (idx *Index) Subset(rowPositions []int) error {
 
 	for j := 0; j < idx.NumLevels(); j++ {
 		idx.Levels[j].Labels = idx.Levels[j].Labels.Subset(rowPositions)
+		idx.Levels[j].NeedsRefresh = true
 	}
-	idx.Refresh()
 	return nil
 }
 
@@ -358,7 +367,7 @@ func (idx *Index) SubsetLevels(levelPositions []int) error {
 	for i, pos := range levelPositions {
 		newIdx.Levels[i] = idx.Levels[pos]
 	}
-	newIdx.updateNameMap()
+	newIdx.NeedsRefresh = true
 	*idx = newIdx
 	return nil
 }
@@ -395,7 +404,7 @@ func (idx *Index) Set(row int, level int, val interface{}) error {
 	}
 
 	idx.Levels[level].Labels.Set(row, val)
-	idx.Levels[level].Refresh()
+	idx.Levels[level].NeedsRefresh = true
 	return nil
 }
 
@@ -414,25 +423,28 @@ func (idx *Index) DropLevel(level int) error {
 		return fmt.Errorf("index.DropLevel(): %v", err)
 	}
 	idx.dropLevel(level)
-	idx.Refresh()
+	idx.NeedsRefresh = true
 	return nil
 }
 
-// updateNameMap updates the holistic index map of {index level names: [index level positions]}
-func (idx *Index) updateNameMap() {
-	nameMap := make(LabelMap)
-	for i, lvl := range idx.Levels {
-		nameMap[lvl.Name] = append(nameMap[lvl.Name], i)
+// UpdateNameMap updates the holistic index map of {index level names: [index level positions]}
+func (idx *Index) UpdateNameMap() {
+	if idx.NeedsRefresh {
+		nameMap := make(LabelMap)
+		for i, lvl := range idx.Levels {
+			nameMap[lvl.Name] = append(nameMap[lvl.Name], i)
+		}
+		idx.NameMap = nameMap
+		idx.NeedsRefresh = false
 	}
-	idx.NameMap = nameMap
 }
 
 // Refresh updates the global name map and the label mappings at every level.
 // Should be called after index modification
 func (idx *Index) Refresh() {
-	idx.updateNameMap()
+	idx.UpdateNameMap()
 	for i := 0; i < idx.NumLevels(); i++ {
-		idx.Levels[i].Refresh()
+		idx.Levels[i].UpdateLabelMap()
 	}
 }
 
@@ -463,21 +475,28 @@ func (lvl *Level) maxWidth() int {
 	return max
 }
 
-// updateLabelMap updates a single index level's map of {label values: [label positions]}.
+// UpdateLabelMap updates a single index level's map of {label values: [label positions]}.
 // A level's label map is unaware of the actual values in those positions.
-func (lvl *Level) updateLabelMap() {
-	labelMap := make(LabelMap, lvl.Len())
-	for i := 0; i < lvl.Len(); i++ {
-		key := fmt.Sprint(lvl.Labels.Value(i))
-		labelMap[key] = append(labelMap[key], i)
+func (lvl *Level) UpdateLabelMap() {
+	if lvl.NeedsRefresh {
+		labelMap := make(LabelMap, lvl.Len())
+		for i := 0; i < lvl.Len(); i++ {
+			key := fmt.Sprint(lvl.Labels.Value(i))
+			labelMap[key] = append(labelMap[key], i)
+		}
+		lvl.LabelMap = labelMap
+		lvl.NeedsRefresh = false
 	}
-	lvl.LabelMap = labelMap
 }
 
-// Refresh updates all the label mappings value within a level.
-func (lvl *Level) Refresh() {
-	lvl.updateLabelMap()
-}
+// // refresh updates the global name map and the label mappings at every level.
+// // Should be called after index creation for testing.
+// func (idx *Index) refresh() {
+// 	idx.UpdateNameMap()
+// 	for i := 0; i < idx.NumLevels(); i++ {
+// 		idx.Levels[i].UpdateLabelMap()
+// 	}
+// }
 
 // [END index level]
 
@@ -510,7 +529,7 @@ func (lvl *Level) Convert(kind options.DataType) error {
 func (lvl *Level) ToFloat64() {
 	lvl.Labels = lvl.Labels.ToFloat64()
 	lvl.DataType = options.Float64
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 	return
 }
 
@@ -518,35 +537,35 @@ func (lvl *Level) ToFloat64() {
 func (lvl *Level) ToInt64() {
 	lvl.Labels = lvl.Labels.ToInt64()
 	lvl.DataType = options.Int64
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 }
 
 // ToString converts an index level to String
 func (lvl *Level) ToString() {
 	lvl.Labels = lvl.Labels.ToString()
 	lvl.DataType = options.String
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 }
 
 // ToBool converts an index level to Bool
 func (lvl *Level) ToBool() {
 	lvl.Labels = lvl.Labels.ToBool()
 	lvl.DataType = options.Bool
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 }
 
 // ToDateTime converts an index level to DateTime
 func (lvl *Level) ToDateTime() {
 	lvl.Labels = lvl.Labels.ToDateTime()
 	lvl.DataType = options.DateTime
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 }
 
 // ToInterface converts an index level to Interface
 func (lvl *Level) ToInterface() {
 	lvl.Labels = lvl.Labels.ToInterface()
 	lvl.DataType = options.Interface
-	lvl.Refresh()
+	lvl.NeedsRefresh = true
 }
 
 // [END conversion]

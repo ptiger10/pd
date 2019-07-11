@@ -253,20 +253,20 @@ func TestGrouping_Math(t *testing.T) {
 		fn    func(Grouping) *DataFrame
 		want  *DataFrame
 	}{
-		// {name: "fail: empty", input: newEmptyDataFrame(), fn: Grouping.Sum,
-		// 	want: newEmptyDataFrame()},
+		{name: "fail: empty", input: newEmptyDataFrame(), fn: Grouping.Sum,
+			want: newEmptyDataFrame()},
 		{"sum", df, Grouping.Sum,
 			MustNew([]interface{}{[]float64{3, 7}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
-		// {"mean", df, Grouping.Mean,
-		// 	MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
-		// {"min", df, Grouping.Min,
-		// 	MustNew([]interface{}{[]float64{1, 3}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
-		// {"max", df, Grouping.Max,
-		// 	MustNew([]interface{}{[]float64{2, 4}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
-		// {"median", df, Grouping.Median,
-		// 	MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
-		// {"standard deviation", df, Grouping.Std,
-		// 	MustNew([]interface{}{[]float64{0.5, 0.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"mean", df, Grouping.Mean,
+			MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"min", df, Grouping.Min,
+			MustNew([]interface{}{[]float64{1, 3}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"max", df, Grouping.Max,
+			MustNew([]interface{}{[]float64{2, 4}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"median", df, Grouping.Median,
+			MustNew([]interface{}{[]float64{1.5, 3.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
+		{"standard deviation", df, Grouping.Std,
+			MustNew([]interface{}{[]float64{0.5, 0.5}}, Config{Index: []int{1, 2}, Col: []string{"A"}})},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1209,7 +1209,7 @@ func TestDataFrame_Modify_SetIndex(t *testing.T) {
 			dfArchive := tt.input.Copy()
 			err := df.InPlace.SetIndex(tt.args.col)
 			if !Equal(df, tt.want.df) {
-				t.Errorf("InPlace.SetIndex() got %v, want %v", df, tt.want.df)
+				t.Errorf("InPlace.SetIndex() got %#v, want %#v", df, tt.want.df)
 			}
 			if (err != nil) != tt.want.err {
 				t.Errorf("InPlace.SetIndex() error = %v, want %v", err, tt.want.err)

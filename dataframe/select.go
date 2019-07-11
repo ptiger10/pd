@@ -31,6 +31,7 @@ func (df *DataFrame) SelectLabel(label string) int {
 		}
 		return -1
 	}
+	df.index.Levels[0].UpdateLabelMap()
 	val, ok := df.index.Levels[0].LabelMap[label]
 	if !ok {
 		if options.GetLogWarnings() {
@@ -52,6 +53,7 @@ func (df *DataFrame) SelectLabels(labels []string, level int) []int {
 		}
 		return empty
 	}
+	df.index.Levels[level].UpdateLabelMap()
 	include := make([]int, 0)
 	for _, label := range labels {
 		val, ok := df.index.Levels[level].LabelMap[label]

@@ -74,6 +74,7 @@ func (s *Series) SelectLabel(label string) int {
 		}
 		return -1
 	}
+	s.index.Levels[0].UpdateLabelMap()
 	val, ok := s.index.Levels[0].LabelMap[label]
 	if !ok {
 		if options.GetLogWarnings() {
@@ -95,6 +96,7 @@ func (s *Series) SelectLabels(labels []string, level int) []int {
 		}
 		return empty
 	}
+	s.index.Levels[level].UpdateLabelMap()
 	include := make([]int, 0)
 	for _, label := range labels {
 		val, ok := s.index.Levels[level].LabelMap[label]

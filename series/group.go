@@ -73,7 +73,7 @@ func (g Grouping) asyncMath(fn func(*Series) float64) *Series {
 	for _, result := range container {
 		s.InPlace.Join(result.s)
 	}
-	s.index.Refresh()
+	s.index.NeedsRefresh = true
 	return s
 }
 

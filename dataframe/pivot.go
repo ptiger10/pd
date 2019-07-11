@@ -156,7 +156,7 @@ func transposeSeries(s *series.Series) *DataFrame {
 		// ducks error because type is known to be supported
 		retIdx.Levels[j], _ = index.NewLevel(values.InterpolateString(name), "")
 	}
-	retIdx.Refresh()
+	retIdx.NeedsRefresh = true
 
 	// Values
 	vals := make([]values.Container, s.Len())

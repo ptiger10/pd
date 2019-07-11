@@ -51,7 +51,7 @@ func (ip InPlace) Swap(i, j int) {
 	ip.s.values.Swap(i, j)
 	for lvl := 0; lvl < ip.s.NumLevels(); lvl++ {
 		ip.s.index.Levels[lvl].Labels.Swap(i, j)
-		ip.s.index.Levels[lvl].Refresh()
+		ip.s.index.Levels[lvl].NeedsRefresh = true
 	}
 }
 
@@ -124,7 +124,7 @@ func (ip InPlace) Insert(pos int, val interface{}, idxLabels ...interface{}) err
 			// ducks error because index level is known to be in series.
 			ip.s.Index.Reindex(j)
 		} else {
-			ip.s.index.Levels[j].Refresh()
+			ip.s.index.Levels[j].NeedsRefresh = true
 		}
 	}
 	ip.s.values.Insert(pos, val)
@@ -243,7 +243,7 @@ func (ip InPlace) dropMany(positions []int) error {
 func (ip InPlace) dropOne(pos int) {
 	for i := 0; i < ip.s.NumLevels(); i++ {
 		ip.s.index.Levels[i].Labels.Drop(pos)
-		ip.s.index.Levels[i].Refresh()
+		ip.s.index.Levels[i].NeedsRefresh = true
 	}
 	ip.s.values.Drop(pos)
 	return

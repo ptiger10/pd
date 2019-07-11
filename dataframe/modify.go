@@ -120,7 +120,7 @@ func (ip InPlace) SwapRows(i, j int) {
 	}
 	for l := 0; l < ip.df.IndexLevels(); l++ {
 		ip.df.index.Levels[l].Labels.Swap(i, j)
-		ip.df.index.Levels[l].Refresh()
+		ip.df.index.Levels[l].NeedsRefresh = true
 	}
 }
 
@@ -190,7 +190,7 @@ func (ip InPlace) InsertRow(row int, val []interface{}, idxLabels ...interface{}
 			// ducks error because index level is known to be in series.
 			ip.df.Index.Reindex(j)
 		} else {
-			ip.df.index.Levels[j].Refresh()
+			ip.df.index.Levels[j].NeedsRefresh = true
 		}
 	}
 
@@ -416,7 +416,7 @@ func (ip InPlace) dropMany(positions []int) error {
 func (ip InPlace) dropOne(pos int) {
 	for i := 0; i < ip.df.index.NumLevels(); i++ {
 		ip.df.index.Levels[i].Labels.Drop(pos)
-		ip.df.index.Levels[i].Refresh()
+		ip.df.index.Levels[i].NeedsRefresh = true
 	}
 	for m := 0; m < ip.df.NumCols(); m++ {
 		ip.df.vals[m].Values.Drop(pos)
@@ -460,7 +460,7 @@ func (ip InPlace) DropCols(columnPositions []int) error {
 // does not expect errors and does not drop columns
 func (ip InPlace) setIndex(col int) {
 	container := ip.df.vals[col]
-	newLevel := index.Level{Name: ip.df.cols.Name(col), Labels: container.Values, DataType: container.DataType}
+	newLevel := index.Level{Name: ip.df.cols.Name(col), Labels: container.Values, DataType: container.DataType, NeedsRefresh: true}
 	// prepend
 	ip.df.index.Levels = append([]index.Level{newLevel}, ip.df.index.Levels...)
 	return
@@ -475,7 +475,7 @@ func (ip InPlace) setIndexes(cols []int) {
 	for _, col := range reversedCols {
 		ip.setIndex(col)
 	}
-	ip.df.index.Refresh()
+	ip.df.index.NeedsRefresh = true
 	ip.DropCols(cols)
 }
 
@@ -488,7 +488,7 @@ func (ip InPlace) SetIndex(col int) error {
 		return nil
 	}
 	ip.setIndex(col)
-	ip.df.index.Refresh()
+	ip.df.index.NeedsRefresh = true
 	ip.DropCol(col)
 	return nil
 }

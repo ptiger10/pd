@@ -33,7 +33,7 @@ func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
 	// Index Levels
 	for j := 0; j < ip.df.IndexLevels(); j++ {
 		ip.df.index.Levels[j].Labels.Append(df2.index.Levels[j].Labels)
-		ip.df.index.Levels[j].Refresh()
+		ip.df.index.Levels[j].NeedsRefresh = true
 	}
 	// Values
 	for m := 0; m < ip.df.NumCols(); m++ {
@@ -41,6 +41,7 @@ func (ip InPlace) appendDataFrameRow(df2 *DataFrame) {
 	}
 	return
 }
+
 
 func (ip InPlace) appendDataFrameColumn(df2 *DataFrame) error {
 	// Handling empty DataFrame

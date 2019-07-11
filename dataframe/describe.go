@@ -79,6 +79,7 @@ func (df *DataFrame) Tail(n int) *DataFrame {
 // j -> index or column levels
 // m -> number of columns
 func (df *DataFrame) print() string {
+	df.index.Refresh()
 	numLevels := df.IndexLevels()
 	var indexNameRow string
 	var printer string

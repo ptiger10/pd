@@ -229,11 +229,11 @@ func TestSeries_SelectLabels(t *testing.T) {
 			defer log.SetOutput(os.Stderr)
 
 			if got := tt.input.SelectLabels(tt.args.labels, tt.args.level); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Series.SelectLabels() = %v, want %v", got, tt.want)
+				t.Errorf("df.SelectLabels() = %#v, want %#v", got, tt.want)
 			}
 			if strings.Contains(tt.name, "fail") {
 				if buf.String() == "" {
-					t.Errorf("Series.SelectLabels() returned no log message, want log due to fail")
+					t.Errorf("df.SelectLabels() returned no log message, want log due to fail")
 				}
 			}
 		})

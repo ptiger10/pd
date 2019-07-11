@@ -148,7 +148,7 @@ func (ip InPlace) replaceIndex(cols []int) {
 		// use lower-level method to change index in place and duck error because level is certain to be in index
 		ip.df.index.DropLevel(j)
 	}
-	ip.df.index.Refresh()
+	ip.df.index.UpdateNameMap()
 }
 
 func (df *DataFrame) groupby() Grouping {
@@ -238,7 +238,7 @@ func (g Grouping) asyncMath(fn func(*DataFrame) *series.Series) *DataFrame {
 	for _, result := range returnedData {
 		df.InPlace.appendDataFrameRow((result.df))
 	}
-	df.index.Refresh()
+	df.index.NeedsRefresh = true
 	return df
 }
 

@@ -18,7 +18,7 @@ func TestIndex_Nil(t *testing.T) {
 	_ = idx.Copy()
 	_ = idx.Len()
 	_ = idx.NumLevels()
-	idx.Refresh()
+	idx.UpdateNameMap()
 }
 
 func TestIndexLevel_Nil(t *testing.T) {
@@ -26,7 +26,7 @@ func TestIndexLevel_Nil(t *testing.T) {
 	_ = lvl.Copy()
 	_ = lvl.Len()
 	_ = lvl.maxWidth()
-	lvl.Refresh()
+	lvl.UpdateLabelMap()
 }
 
 func TestNew(t *testing.T) {
@@ -58,8 +58,8 @@ func TestNew(t *testing.T) {
 			args{[]Level{MustNewLevel([]int{1, 2}, "foo")}},
 			want{
 				index: Index{
-					Levels:  []Level{{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
-					NameMap: LabelMap{"foo": []int{0}}},
+					Levels:       []Level{{Name: "foo", DataType: options.Int64, NeedsRefresh: true, Labels: labels}},
+					NeedsRefresh: true},
 				len: 2, numLevels: 1, maxWidths: []int{3}, unnamed: false, datatypes: []options.DataType{options.Int64},
 			}},
 		{"two levels",
@@ -67,9 +67,9 @@ func TestNew(t *testing.T) {
 			want{
 				index: Index{
 					Levels: []Level{
-						{Name: "foo", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels},
-						{Name: "corge", DataType: options.Int64, LabelMap: LabelMap{"1": []int{0}, "2": []int{1}}, Labels: labels}},
-					NameMap: LabelMap{"foo": []int{0}, "corge": []int{1}}},
+						{Name: "foo", DataType: options.Int64, NeedsRefresh: true, Labels: labels},
+						{Name: "corge", DataType: options.Int64, NeedsRefresh: true, Labels: labels}},
+					NeedsRefresh: true},
 				len: 2, numLevels: 2, maxWidths: []int{3, 5}, unnamed: false, datatypes: []options.DataType{options.Int64, options.Int64},
 			}},
 	}
@@ -174,7 +174,7 @@ func TestNewFromConfig(t *testing.T) {
 func Test_NewDefault(t *testing.T) {
 	got := NewDefault(2)
 	want := New(Level{Labels: values.MustCreateValuesFromInterface([]int64{0, 1}).Values,
-		LabelMap: LabelMap{"0": []int{0}, "1": []int{1}}, Name: "", DataType: options.Int64, IsDefault: true})
+		NeedsRefresh: true, Name: "", DataType: options.Int64, IsDefault: true})
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Default constructor returned %v, want %v", got, want)
 	}
@@ -205,13 +205,15 @@ func TestIndex_NewLevel(t *testing.T) {
 			want{
 				Level{
 					Name: "bar", DataType: options.String,
-					Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+					Labels:       values.MustCreateValuesFromInterface("foo").Values,
+					NeedsRefresh: true},
 				false}},
 		{"[]interface no interpolation", args{[]interface{}{"foo"}, ""},
 			want{
 				Level{
-					DataType: options.Interface,
-					Labels:   values.MustCreateValuesFromInterface([]interface{}{"foo"}).Values, LabelMap: LabelMap{"foo": []int{0}}},
+					DataType:     options.Interface,
+					Labels:       values.MustCreateValuesFromInterface([]interface{}{"foo"}).Values,
+					NeedsRefresh: true},
 				false}},
 		{"fail unsupported", args{complex64(1), "bar"},
 			want{Level{}, true}},
@@ -247,11 +249,13 @@ func TestIndex_InterpolatedNewLevel(t *testing.T) {
 			want: want{level: Level{}, err: false}},
 		{name: "no interpolation", args: args{data: "foo", name: ""},
 			want: want{level: Level{DataType: options.String,
-				Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+				Labels:       values.MustCreateValuesFromInterface("foo").Values,
+				NeedsRefresh: true},
 				err: false}},
 		{name: "interpolated string", args: args{data: []interface{}{"foo"}, name: ""},
 			want: want{level: Level{DataType: options.String,
-				Labels: values.MustCreateValuesFromInterface("foo").Values, LabelMap: LabelMap{"foo": []int{0}}},
+				Labels:       values.MustCreateValuesFromInterface("foo").Values,
+				NeedsRefresh: true},
 				err: false}},
 		{"fail unsupported", args{complex64(1), "bar"},
 			want{Level{}, true}},
@@ -282,7 +286,7 @@ func TestNewIndexLevel_Copy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.input.Copy()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Level.Copy() = %v, want %v", got, tt.want)
+				t.Errorf("Level.Copy() = %#v, want %#v", got, tt.want)
 			}
 		})
 	}
@@ -299,7 +303,10 @@ func TestNewIndex_Copy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.input.Copy()
+			got := tt.input
+			got.UpdateNameMap()
+			got.Copy()
+			tt.want.UpdateNameMap()
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Index.Copy() = %#v, want %#v", got, tt.want)
 			}
@@ -613,7 +620,7 @@ func Test_RefreshIndex(t *testing.T) {
 		t.Error(err)
 	}
 	idx.Levels[0] = newLvl
-	idx.Refresh()
+	idx.UpdateNameMap()
 	wantNameMap := LabelMap{"ints": []int{0}}
 	wantName := "ints"
 	if !reflect.DeepEqual(idx.NameMap, wantNameMap) {
@@ -627,6 +634,7 @@ func Test_RefreshIndex(t *testing.T) {
 func Test_LevelCopy(t *testing.T) {
 	idxLvl := MustNewLevel([]int{1, 2, 3}, "")
 	idxLvl.Name = "foo"
+	idxLvl.UpdateLabelMap()
 	copyLvl := idxLvl.Copy()
 	if !reflect.DeepEqual(idxLvl.LabelMap, copyLvl.LabelMap) {
 		t.Error("Level.Copy() did not copy LabelMap")
@@ -645,30 +653,104 @@ func Test_LevelCopy(t *testing.T) {
 	}
 }
 
-func Test_RefreshLevel(t *testing.T) {
-	var tests = []struct {
-		newLabels    values.Values
-		wantLabelMap LabelMap
-		wantLongest  int
-	}{
-		{MustNewLevel([]int64{3, 4}, "").Labels, LabelMap{"3": []int{0}, "4": []int{1}}, 1},
-		{MustNewLevel([]int64{10, 20}, "").Labels, LabelMap{"10": []int{0}, "20": []int{1}}, 2},
+func Test_UpdateLabelMap(t *testing.T) {
+	type want struct {
+		labelMap LabelMap
+		maxWidth int
 	}
-	for _, test := range tests {
-		lvl := MustNewLevel([]int64{1, 2}, "")
-		origLabelMap := LabelMap{"1": []int{0}, "2": []int{1}}
-		if !reflect.DeepEqual(lvl.LabelMap, origLabelMap) {
-			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, origLabelMap)
-		}
+	var tests = []struct {
+		name  string
+		input Level
+		want  want
+	}{
+		{name: "pass",
+			input: MustNewLevel([]string{"foo", "baz", "foo"}, "bar"),
+			want: want{
+				labelMap: LabelMap{"foo": []int{0, 2}, "baz": []int{1}},
+				maxWidth: 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lvl := tt.input
+			if lvl.NeedsRefresh != true {
+				t.Errorf("lvl.NeedsRefresh should be true after initialization")
+			}
+			lvl.UpdateLabelMap()
+			if !reflect.DeepEqual(lvl.LabelMap, tt.want.labelMap) {
+				t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, tt.want.labelMap)
+			}
+			if lvl.NeedsRefresh != false {
+				t.Errorf("lvl.NeedsRefresh should be false after updating")
+			}
+			gotMaxWidth := lvl.maxWidth()
+			if gotMaxWidth != tt.want.maxWidth {
+				t.Errorf("Returned maxWidth %v, want %v", gotMaxWidth, tt.want.maxWidth)
+			}
+		})
+	}
+}
 
-		lvl.Labels = test.newLabels
-		lvl.Refresh()
-		if !reflect.DeepEqual(lvl.LabelMap, test.wantLabelMap) {
-			t.Errorf("Returned labelMap %v, want %v", lvl.LabelMap, test.wantLabelMap)
-		}
-		if lvl.maxWidth() != test.wantLongest {
-			t.Errorf("Returned longest length %v, want %v", lvl.maxWidth(), test.wantLongest)
-		}
+func Test_UpdateNameMap(t *testing.T) {
+	var tests = []struct {
+		name  string
+		input Index
+		want  LabelMap
+	}{
+		{name: "pass",
+			input: New(MustNewLevel("foo", "bar"), MustNewLevel("baz", "qux")),
+			want:  LabelMap{"bar": []int{0}, "qux": []int{1}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := tt.input
+			if idx.NeedsRefresh != true {
+				t.Errorf("idx.NeedsRefresh should be true after initialization")
+			}
+			idx.UpdateNameMap()
+			if !reflect.DeepEqual(idx.NameMap, tt.want) {
+				t.Errorf("Returned labelMap %v, want %v", idx.NameMap, tt.want)
+			}
+			if idx.NeedsRefresh != false {
+				t.Errorf("idx.NeedsRefresh should be false after updating")
+			}
+		})
+	}
+}
+
+func Test_Refresh(t *testing.T) {
+	type want struct {
+		nameMap  LabelMap
+		labelMap LabelMap
+	}
+	var tests = []struct {
+		name  string
+		input Index
+		want  want
+	}{
+		{name: "pass",
+			input: New(MustNewLevel([]string{"foo", "baz", "foo"}, "bar")),
+			want:  want{nameMap: LabelMap{"bar": []int{0}}, labelMap: LabelMap{"foo": []int{0, 2}, "baz": []int{1}}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			idx := tt.input
+			if idx.NeedsRefresh != true {
+				t.Errorf("idx.NeedsRefresh should be true after initialization")
+			}
+			idx.Refresh()
+			if !reflect.DeepEqual(idx.NameMap, tt.want.nameMap) {
+				t.Errorf("Returned name map %v, want %v", idx.NameMap, tt.want.nameMap)
+			}
+			if !reflect.DeepEqual(idx.Levels[0].LabelMap, tt.want.labelMap) {
+				t.Errorf("Returned label map %v, want %v", idx.Levels[0].LabelMap, tt.want.labelMap)
+			}
+			if idx.NeedsRefresh != false {
+				t.Errorf("idx.NeedsRefresh should be false after updating")
+			}
+			if idx.Levels[0].NeedsRefresh != false {
+				t.Errorf("lvl.NeedsRefresh should be false after updating")
+			}
+		})
 	}
 }
 
