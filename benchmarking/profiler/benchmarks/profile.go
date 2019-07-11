@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -71,7 +73,10 @@ func ProfileGo(f func(b *testing.B)) Result {
 // in the form of Results. This command is expected to be initiated from the directory above.
 func RunPythonProfiler() Results {
 	fmt.Println("Profiling Python")
-	cmd := exec.Command("python", "benchmarks/main.py")
+	_, thisFile, _, _ := runtime.Caller(0)
+	script := "main.py"
+	scriptPath := path.Join(path.Dir(thisFile), script)
+	cmd := exec.Command("python", scriptPath)
 	out, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)

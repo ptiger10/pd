@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 import json
 import sys
+import os
 
 
 def main():
@@ -52,7 +53,17 @@ def timer(n):
     return decorator
 
 
-df = pd.read_csv('RandomNumbers.csv')
+def get_filepath(s):
+    basename = files[s]
+    thisFile = sys.argv[0]
+    path = os.path.join(os.path.dirname(thisFile), basename)
+    return path
+
+
+files = {
+    '100k': '../RandomNumbers.csv'
+}
+df = pd.read_csv(get_filepath('100k'))
 
 
 @timer(1000)
@@ -93,7 +104,7 @@ def medianTest():
 
 @timer(50)
 def readCSVSumTest():
-    df = pd.read_csv('RandomNumbers.csv')
+    df = pd.read_csv(get_filepath('100k'))
     s = df.sum()
     assert round(s.iloc[0], 2) == 50408.63
 

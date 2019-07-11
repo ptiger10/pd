@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
+	"runtime"
 
 	"github.com/ptiger10/pd/benchmarking/profiler/benchmarks"
 )
@@ -13,7 +15,9 @@ func main() {
 	pyBenchmarks := benchmarks.RunPythonProfiler()
 
 	table := benchmarks.CompareBenchmarks(goBenchmarks, pyBenchmarks, benchmarks.Descriptions)
-	dest := "comparison_summary.txt"
+	_, thisFile, _, _ := runtime.Caller(0)
+	basename := "comparison_summary.txt"
+	dest := filepath.Join(filepath.Dir(thisFile), basename)
 	err := ioutil.WriteFile(dest, []byte(table), 0666)
 	if err != nil {
 		log.Fatal(err)

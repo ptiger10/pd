@@ -235,6 +235,16 @@ func (s *Series) NumLevels() int {
 	return s.index.NumLevels()
 }
 
+func (s *Series) validCount() int {
+	var counter int
+	for i := 0; i < s.Len(); i++ {
+		if !s.values.Null(i) {
+			counter++
+		}
+	}
+	return counter
+}
+
 // valid returns integer positions of valid (i.e., non-null) values in the series.
 func (s *Series) valid() []int {
 	ret := make([]int, s.Len())

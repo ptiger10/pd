@@ -47,10 +47,21 @@ func (s *Series) Sum() float64 {
 // Applies to: Float, Int. If inapplicable, defaults to math.Nan().
 func (s *Series) Mean() float64 {
 	switch s.datatype {
-	case options.Float64, options.Int64:
-		return s.Sum() / float64(len(s.valid()))
+	case options.Float64:
+		var sum float64
+		var counter int
+		data := ensureFloatFromNumerics(s.values.Vals())
+		for _, d := range data {
+			if !math.IsNaN(d) {
+				sum += d
+				counter++
+			}
+		}
+		return sum / float64(counter)
+	case options.Int64:
+		return s.Sum() / float64(s.validCount())
 	case options.Bool:
-		return s.Sum() / float64(len(s.valid()))
+		return s.Sum() / float64(s.validCount())
 	default:
 		return math.NaN()
 	}
@@ -58,24 +69,25 @@ func (s *Series) Mean() float64 {
 
 // Median of a series. Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Median() float64 {
-	// vals := s.validVals()
+	vals := s.validVals()
 	switch s.datatype {
 	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(s.values.Vals())
+		data := ensureFloatFromNumerics(vals)
 		if len(data) == 0 {
 			return math.NaN()
 		}
-		validPositions := s.valid()
-		valid := make([]float64, len(validPositions))
-		for i := 0; i < len(validPositions); i++ {
-			valid[i] = s.values.Value(i).(float64)
+		// validPositions := s.valid()
+		// valid := make([]float64, len(validPositions))
+		// for i := 0; i < len(validPositions); i++ {
+		// 	valid[i] = s.values.Value(i).(float64)
+		// }
+
+		sort.Float64s(data)
+		mNumber := len(data) / 2
+		if len(data)%2 != 0 { // checks if sequence has odd number of elements
+			return data[mNumber]
 		}
-		sort.Float64s(valid)
-		mNumber := len(valid) / 2
-		if len(valid)%2 != 0 { // checks if sequence has odd number of elements
-			return valid[mNumber]
-		}
-		return (valid[mNumber-1] + valid[mNumber]) / 2
+		return (data[mNumber-1] + data[mNumber]) / 2
 	default:
 		return math.NaN()
 	}
