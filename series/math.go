@@ -2,6 +2,7 @@ package series
 
 import (
 	"math"
+	"runtime"
 	"sort"
 
 	// uses optimized gonum/floats methods where available
@@ -18,16 +19,51 @@ func (s *Series) validVals() interface{} {
 // Sum of non-null float64 or int64 Series values. For bool values, sum of true values. If inapplicable, defaults to math.Nan().
 func (s *Series) Sum() float64 {
 	var sum float64
-	switch s.datatype {
-	case options.Float64, options.Int64:
-		data := ensureFloatFromNumerics(s.Vals())
-		// null int values are represented as 0, but that's ok for sum
+
+	// null int values are represented as 0, but that's ok for sum
+	calc := func(data []float64) float64 {
+		var sum float64
 		for _, d := range data {
 			if !math.IsNaN(d) {
 				sum += d
 			}
 		}
 		return sum
+	}
+
+	awaitSum := func(data []float64, ch chan<- float64) {
+		sum := calc(data)
+		ch <- sum
+		wg.Done()
+	}
+
+	switch s.datatype {
+	case options.Float64, options.Int64:
+		data := ensureFloatFromNumerics(s.Vals())
+
+		if !options.GetAsync() {
+			return calc(data)
+		}
+		numPartitions := runtime.GOMAXPROCS(0)
+		valsPerPartition := len(data) / numPartitions
+		ch := make(chan float64, numPartitions)
+		for i := 0; i < numPartitions; i++ {
+			var sub []float64
+			if i != numPartitions-1 {
+				sub = data[i*valsPerPartition : (i+1)*(valsPerPartition)]
+			} else {
+				sub = data[i*valsPerPartition:]
+			}
+			wg.Add(1)
+			go awaitSum(sub, ch)
+		}
+		wg.Wait()
+		close(ch)
+		for partitionSum := range ch {
+			sum += partitionSum
+		}
+		return sum
+
 	case options.Bool:
 		data := ensureBools(s.Vals())
 		// null bool values are represented as false, but that's ok for sum
@@ -43,8 +79,7 @@ func (s *Series) Sum() float64 {
 }
 
 // Mean of non-null series values. For bool values, mean of true values.
-//
-// Applies to: Float, Int. If inapplicable, defaults to math.Nan().
+// Applies to float64 and int64. If inapplicable, defaults to math.Nan().
 func (s *Series) Mean() float64 {
 	switch s.datatype {
 	case options.Float64:
