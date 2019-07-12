@@ -28,4 +28,4 @@ To use Go in a Jupyter notebook, check out Gophernotes or lgo. I have successful
 ## Replicating Benchmark Tests
 * Requires Python 3.x and pandas
 * Download data from [here](https://github.com/ptiger10/pdTestData) and save in benchmarking/profiler
-* `go run benchmarking/profiler/main.go`
+* `go run -tags=benchmarks benchmarking/profiler/main.go`

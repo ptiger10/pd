@@ -1,3 +1,5 @@
+// +build benchmarks
+
 package main
 
 import (

@@ -1,3 +1,5 @@
+// +build benchmarks
+
 package benchmarks
 
 // func TestPythonProfiler(t *testing.T) {

@@ -1,3 +1,5 @@
+// +build benchmarks
+
 package benchmarks
 
 import (
@@ -24,7 +26,11 @@ var Descriptions = map[string]desc{
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
-var SampleSizes = []string{"100k", "500k", "5m"}
+var SampleSizes = []string{
+	"100k",
+	"500k",
+	// "5m",
+}
 
 var df100k *dataframe.DataFrame
 var df500k *dataframe.DataFrame
