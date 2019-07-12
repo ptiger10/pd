@@ -16,15 +16,15 @@ func ExampleNew_empty_dataframe() {
 }
 
 func ExampleNew_float64() {
-	df, err := New(
-		[]interface{}{[]float64{0, 1.5}, []float64{2.5, 3}},
+	df, _ := New(
+		[]interface{}{
+			[]float64{0, 1.5},
+			[]float64{2.5, 3},
+		},
 		Config{
 			Index: []string{"foo", "bar"},
 			Col:   []string{"baz", "qux"},
 		})
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println(df)
 	// Output:
 	//         baz   qux
@@ -34,7 +34,7 @@ func ExampleNew_float64() {
 	// datatype: float64
 }
 
-func ExampleNew_datetime() {
+func ExampleNew_datetime_full() {
 	df, err := New([]interface{}{[]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2019, 1, 2, 0, 0, 0, 0, time.UTC)}})
 	if err != nil {
 		log.Fatal(err)
