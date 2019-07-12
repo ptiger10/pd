@@ -24,3 +24,8 @@ Some notable features of GoPandas:
 Check out the Jupyter notebook examples in the [guides](https://github.com/ptiger10/pd/tree/master/guides).
 
 To use Go in a Jupyter notebook, check out Gophernotes or lgo. I have successfully used both (but lgo only via Docker and only through Go 1.9). Unfortunately neither is well configured yet for off-the-shelf use as in Python. If someone could help improve these services and their setup documentation, that would be a huge boon to this project.
+
+## Replicating Benchmark Tests
+* Requires Python 3.x and pandas
+* Download data from [here](https://github.com/ptiger10/pdTestData) and save in benchmarking/profiler
+* `go run benchmarking/profiler/main.go`
