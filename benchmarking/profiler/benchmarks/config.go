@@ -15,13 +15,12 @@ import (
 var Descriptions = map[string]desc{
 	"sum":        {1, "Sum one column"},
 	"mean":       {2, "Simple mean of one column"},
-	"median":     {3, "Median of one column"},
 	"min":        {4, "Min of one column"},
 	"max":        {5, "Max of one column"},
 	"std":        {6, "Standard deviation of one column"},
 	"readCSVSum": {7, "Read in CSV then calculate sum"},
 	"sum2":       {8, "Sum two columns"},
-	"mean2":      {8, "Mean of two columns"},
+	"mean2":      {9, "Mean of two columns"},
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
