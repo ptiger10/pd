@@ -19,7 +19,10 @@ def main():
         "500k": {
             "sum2": sumTest500(),
             "mean2": meanTest500(),
-        }
+        },
+        # "5m": {
+        #     "sum": sumTest5m(),
+        # }
     }
     json.dump(results, sys.stdout)
 
@@ -63,9 +66,11 @@ def get_filepath(s):
 files = {
     '100k': '../dataRandom100k1Col.csv',
     '500k': '../dataRandom500k2Col.csv',
+    '5m': '../dataRandom5m1Col.csv',
 }
 df100 = pd.read_csv(get_filepath('100k'))
 df500 = pd.read_csv(get_filepath('500k'))
+# df5m = pd.read_csv(get_filepath('5m'))
 
 
 @timer(1000)
@@ -78,6 +83,12 @@ def sumTest():
 def sumTest500():
     s = df500.sum()
     assert round(s.iloc[0], 2) == 130598.19
+
+
+# @timer(20)
+# def sumTest5m():
+#     s = df5m.sum()
+#     assert round(s.iloc[0], 2) == 2520431.67
 
 
 @timer(1000)

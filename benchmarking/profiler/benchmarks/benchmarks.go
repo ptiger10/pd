@@ -8,6 +8,12 @@ import (
 	"github.com/ptiger10/pd/options"
 )
 
+func benchmarkSumFloat64_5m(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		df5m.Sum()
+	}
+}
+
 func benchmarkSumFloat64_500000(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		df500k.Sum()

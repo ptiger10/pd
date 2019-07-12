@@ -24,10 +24,11 @@ var Descriptions = map[string]desc{
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
-var SampleSizes = []string{"100k", "500k"}
+var SampleSizes = []string{"100k", "500k", "5m"}
 
 var df100k *dataframe.DataFrame
 var df500k *dataframe.DataFrame
+var df5m *dataframe.DataFrame
 
 func read100k() {
 	var err error
@@ -94,15 +95,31 @@ func read500k() {
 	}
 }
 
+func read5m() {
+	var err error
+	df5m, err = pd.ReadCSV(getPath("5m"), pd.ReadOptions{HeaderRows: 1})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	got := math.Round(df5m.Sum().At(0).(float64)*100) / 100
+	want := 2520431.67
+	if got != want {
+		log.Fatalf("profiler/config.go: reading in test data: df.Sum() got %v, want %v", got, want)
+	}
+}
+
 // ReadData initializes data for use in comparison tetss
 func ReadData() {
 	read100k()
 	read500k()
+	// read5m()
 }
 
 var files = map[string]string{
 	"100k": "../dataRandom100k1Col.csv",
 	"500k": "../dataRandom500k2Col.csv",
+	"5m":   "../dataRandom5m1Col.csv",
 }
 
 func getPath(s string) string {

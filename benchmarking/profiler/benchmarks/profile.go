@@ -32,6 +32,9 @@ func RunGoProfiler() Results {
 			"sum2":  ProfileGo(benchmarkSumFloat64_500000),
 			"mean2": ProfileGo(benchmarkMeanFloat64_500000),
 		},
+		// "5m": {
+		// 	"sum": ProfileGo(benchmarkSumFloat64_5m),
+		// },
 	}
 	return Results
 }
