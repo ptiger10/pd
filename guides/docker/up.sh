@@ -3,7 +3,7 @@
 echo $1
 if [ "$1" = "-r" ]; then
     echo rebuilding
-    docker build --no-cache -t jupyter_jupyter .
+    docker build --no-cache -t docker_default .
 fi
 docker-compose up -d
 
