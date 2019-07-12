@@ -11,6 +11,7 @@ The API is still version 0 and subject to major revisions. Use in production cod
 
 Some notable features of GoPandas:
 * flexible constructor that supports float, int, string, bool, time.Time, and interface Series
+* seamlessly handles null data and type conversions
 * well-suited to either the Jupyter notebook style of data exploration or conventional programming
 * advanced filtering, grouping, and pivoting
 * hierarchical indexing (i.e., multi-level indexes and columns)
