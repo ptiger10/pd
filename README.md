@@ -1,5 +1,11 @@
 # pd
+[![Go Report Card](https://goreportcard.com/badge/github.com/ptiger10/pd)](https://goreportcard.com/report/github.com/ptiger10/pd) 
+[![GoDoc](https://godoc.org/github.com/ptiger10/pd?status.svg)](https://godoc.org/github.com/ptiger10/pd) 
+[![Build Status](https://travis-ci.org/ptiger10/pd.svg?branch=master)](https://travis-ci.org/ptiger10/pd)
+
 pd (informally known as "GoPandas") is a library for cleaning, aggregating, and transforming data using Series and DataFrames. GoPandas combines a flexible API familiar to Python pandas users with the strengths of Go, including type safety, predictable error handling, and concurrent processing.
+
+The API is still version 0 and subject to major revisions. Use in production code at your own risk.
 
 Some notable features of GoPandas:
 * flexible constructor that supports float, int, string, bool, time.Time, and interface Series
