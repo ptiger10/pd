@@ -1,7 +1,7 @@
 .vscode/
 *.out
 *.test
-*.sh
+cleanGeneratedCode.sh
 Makefile
 notebooks/
 output_test.csv

@@ -23,7 +23,11 @@ Some notable features of GoPandas:
 ## Getting Started
 Check out the Jupyter notebook examples in the [guides](https://github.com/ptiger10/pd/tree/master/guides). Github sometimes has trouble rendering .ipynb, backup views are here: [Series](https://nbviewer.jupyter.org/github/ptiger10/pd/blob/master/guides/Series.ipynb?flush_cache=true), [DataFrame](https://nbviewer.jupyter.org/github/ptiger10/pd/blob/master/guides/DataFrame.ipynb?flush_cache=true), [Options](https://nbviewer.jupyter.org/github/ptiger10/pd/blob/master/guides/Options.ipynb?flush_cache=true).
 
-To use Go in a Jupyter notebook, check out Gophernotes or lgo. I have successfully used both (but lgo only via Docker and only through Go 1.9). Unfortunately neither is well configured yet for off-the-shelf use as in Python. If someone could help improve these services and their setup documentation, that would be a huge boon to this project.
+To run the Jupyter notebooks yourself, I recommend lgo (Docker required)
+* `cd guides/docker`
+* start: `./up.sh`
+* stop: `./down.sh`
+* rebuild package to newest version: `./up.sh -r`
 
 ## Replicating Benchmark Tests
 * Requires Python 3.x and pandas
