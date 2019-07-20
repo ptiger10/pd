@@ -23,16 +23,18 @@ func RunGoProfiler() Results {
 	fmt.Println("Profiling Go")
 	Results := Results{
 		"100k": {
-			"sum":        ProfileGo(benchmarkSumFloat64_100000),
-			"mean":       ProfileGo(benchmarkMeanFloat64_100000),
-			"min":        ProfileGo(benchmarkMinFloat64_100000),
-			"max":        ProfileGo(benchmarkMaxFloat64_100000),
-			"std":        ProfileGo(benchmarkStdFloat64_100000),
-			"readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
+			"sum": ProfileGo(benchmarkSumFloat64_100000),
+			// "sumx10":        ProfileGo(benchmarkSumFloat64_100k10x),
+			// "readCSVSum10x": ProfileGo(benchmarkReadSumFloat64_100k10x),
+			"mean": ProfileGo(benchmarkMeanFloat64_100000),
+			"min":  ProfileGo(benchmarkMinFloat64_100000),
+			"max":  ProfileGo(benchmarkMaxFloat64_100000),
+			"std":  ProfileGo(benchmarkStdFloat64_100000),
+			// "readCSVSum": ProfileGo(benchmarkReadSumFloat64_100000),
 		},
 		"500k": {
-			"sum2":  ProfileGo(benchmarkSumFloat64_500000),
-			"mean2": ProfileGo(benchmarkMeanFloat64_500000),
+			"sum2": ProfileGo(benchmarkSumFloat64_500000),
+			// 	"mean2": ProfileGo(benchmarkMeanFloat64_500000),
 		},
 		// "5m": {
 		// 	"sum": ProfileGo(benchmarkSumFloat64_5m),
@@ -73,7 +75,7 @@ func RunPythonProfiler() Results {
 	_, thisFile, _, _ := runtime.Caller(0)
 	script := "profile.py"
 	scriptPath := path.Join(path.Dir(thisFile), script)
-	cmd := exec.Command("python", scriptPath)
+	cmd := exec.Command("python3", scriptPath)
 	out, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)

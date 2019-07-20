@@ -10,15 +10,17 @@ def main():
     results = {
         "100k": {
             "sum": sumTest(),
+            # "sumx10": sumTest100k10x(),
+            # "readCSVSum10x": readCSVSumTest10x(),
             "mean": meanTest(),
             "min": minTest(),
             "max": maxTest(),
             "std": stdTest(),
-            "readCSVSum": readCSVSumTest(),
+            # "readCSVSum": readCSVSumTest(),
             },
         "500k": {
             "sum2": sumTest500(),
-            "mean2": meanTest500(),
+        #     "mean2": meanTest500(),
         },
         # "5m": {
         #     "sum": sumTest5m(),
@@ -65,10 +67,12 @@ def get_filepath(s):
 
 files = {
     '100k': '../dataRandom100k1Col.csv',
+    '100k10x': '../dataRandom100k10Col.csv',
     '500k': '../dataRandom500k2Col.csv',
     '5m': '../dataRandom5m1Col.csv',
 }
 df100 = pd.read_csv(get_filepath('100k'))
+df100k10x = pd.read_csv(get_filepath('100k10x'))
 df500 = pd.read_csv(get_filepath('500k'))
 # df5m = pd.read_csv(get_filepath('5m'))
 
@@ -76,6 +80,12 @@ df500 = pd.read_csv(get_filepath('500k'))
 @timer(1000)
 def sumTest():
     s = df100.sum()
+    assert round(s.iloc[0], 2) == 50408.63
+
+
+@timer(100)
+def sumTest100k10x():
+    s = df100k10x.sum()
     assert round(s.iloc[0], 2) == 50408.63
 
 
@@ -130,6 +140,13 @@ def medianTest():
 @timer(50)
 def readCSVSumTest():
     df = pd.read_csv(get_filepath('100k'))
+    s = df.sum()
+    assert round(s.iloc[0], 2) == 50408.63
+
+
+@timer(20)
+def readCSVSumTest10x():
+    df = pd.read_csv(get_filepath('100k10x'))
     s = df.sum()
     assert round(s.iloc[0], 2) == 50408.63
 

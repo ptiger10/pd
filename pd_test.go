@@ -111,6 +111,12 @@ func TestReadCSV(t *testing.T) {
 					[]string{"A", "1", "2"},
 				}),
 				err: false}},
+		{name: "pipe delimiter", args: args{filepath: "csv_tests/pipe.csv",
+			options: []ReadOptions{{Delimiter: '|', HeaderRows: 1, IndexCols: 1}}},
+			want: want{
+				df: dataframe.MustNew([]interface{}{1, 2},
+					dataframe.Config{Index: "foo", Col: []string{"A", "B"}}),
+				err: false}},
 		{"interpolation", args{"csv_tests/pass.csv", []ReadOptions{{IndexCols: 1, HeaderRows: 1}}},
 			want{
 				dataframe.MustNew([]interface{}{
@@ -118,6 +124,8 @@ func TestReadCSV(t *testing.T) {
 				}, dataframe.Config{Index: []string{"foo", "bar"}, Col: []string{"A"}}),
 				false}},
 		{"fail: bad path", args{"foo.csv", nil}, want{dataframe.MustNew(nil), true}},
+		{"fail: bad delimiter", args{"csv_tests/pass.csv",
+			[]ReadOptions{{Delimiter: '\n'}}}, want{dataframe.MustNew(nil), true}},
 		{"fail: empty", args{"csv_tests/empty.csv", nil}, want{dataframe.MustNew(nil), true}},
 		{"fail: corrupted file", args{"csv_tests/corrupted.csv", nil}, want{dataframe.MustNew(nil), true}},
 		{"fail: too many configs", args{"csv_tests/pass.csv", []ReadOptions{{}, {}}}, want{dataframe.MustNew(nil), true}},

@@ -15,14 +15,16 @@ import (
 
 // Descriptions of the benchmarking tests
 var Descriptions = map[string]desc{
-	"sum":        {1, "Sum one column"},
-	"mean":       {2, "Simple mean of one column"},
-	"min":        {4, "Min of one column"},
-	"max":        {5, "Max of one column"},
-	"std":        {6, "Standard deviation of one column"},
-	"readCSVSum": {7, "Read in CSV then calculate sum"},
-	"sum2":       {8, "Sum two columns"},
-	"mean2":      {9, "Mean of two columns"},
+	"sum":           {1, "Sum one column"},
+	"sumx10":        {2, "Sum 10 columns individually"},
+	"mean":          {3, "Simple mean of one column"},
+	"min":           {4, "Min of one column"},
+	"max":           {5, "Max of one column"},
+	"std":           {6, "Standard deviation of one column"},
+	"readCSVSum":    {7, "Read in CSV then calculate sum"},
+	"readCSVSum10x": {7, "Read CSV, sum 10 cols individually"},
+	"sum2":          {8, "Sum two columns"},
+	"mean2":         {9, "Mean of two columns"},
 }
 
 // SampleSizes is all the potential sample sizes and the order in which they should appear in the comparison table.
@@ -33,6 +35,7 @@ var SampleSizes = []string{
 }
 
 var df100k *dataframe.DataFrame
+var df100k10x *dataframe.DataFrame
 var df500k *dataframe.DataFrame
 var df5m *dataframe.DataFrame
 
@@ -81,6 +84,20 @@ func read100k() {
 
 }
 
+func read100k10x() {
+	var err error
+	df100k10x, err = pd.ReadCSV(getPath("100k10x"), pd.ReadOptions{HeaderRows: 1})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	got := math.Round(df100k10x.Sum().At(0).(float64)*100) / 100
+	want := 50408.63
+	if got != want {
+		log.Fatalf("profiler/config.go: reading in test data: df.Sum() got %v, want %v", got, want)
+	}
+}
+
 func read500k() {
 	var err error
 	df500k, err = pd.ReadCSV(getPath("500k"), pd.ReadOptions{HeaderRows: 1})
@@ -118,14 +135,16 @@ func read5m() {
 // ReadData initializes data for use in comparison tetss
 func ReadData() {
 	read100k()
+	read100k10x()
 	read500k()
 	// read5m()
 }
 
 var files = map[string]string{
-	"100k": "../dataRandom100k1Col.csv",
-	"500k": "../dataRandom500k2Col.csv",
-	"5m":   "../dataRandom5m1Col.csv",
+	"100k":    "../dataRandom100k1Col.csv",
+	"100k10x": "../dataRandom100k10Col.csv",
+	"500k":    "../dataRandom500k2Col.csv",
+	"5m":      "../dataRandom5m1Col.csv",
 }
 
 func getPath(s string) string {

@@ -22,6 +22,12 @@ func benchmarkSumFloat64_500000(b *testing.B) {
 	}
 }
 
+func benchmarkSumFloat64_100k10x(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		df100k10x.Sum()
+	}
+}
+
 func benchmarkSumFloat64_100000(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		df100k.Sum()
@@ -105,6 +111,16 @@ func benchmarkSyncStdFloat64_500000(b *testing.B) {
 func benchmarkReadSumFloat64_100000(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		df, err := pd.ReadCSV(getPath("100k"), pd.ReadOptions{HeaderRows: 1})
+		if err != nil {
+			log.Fatal(err)
+		}
+		df.Sum()
+	}
+}
+
+func benchmarkReadSumFloat64_100k10x(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		df, err := pd.ReadCSV(getPath("100k10x"), pd.ReadOptions{HeaderRows: 1})
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -192,8 +192,14 @@ func ReadCSV(path string, config ...ReadOptions) (*dataframe.DataFrame, error) {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %s", err)
 	}
 	reader := csv.NewReader(bytes.NewReader(data))
-	// ducks error because reader is controlled by csv.NewReader, so error cannot be simulated
-	records, _ := reader.ReadAll()
+	if tmp.Delimiter != 0 {
+		reader.Comma = tmp.Delimiter
+	}
+
+	records, err := reader.ReadAll()
+	if err != nil {
+		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): %v", err)
+	}
 	if len(records) == 0 {
 		return dataframe.MustNew(nil), fmt.Errorf("ReadCSV(): input must contain at least one row")
 	}
@@ -244,4 +250,5 @@ type ReadOptions struct {
 	IndexDataTypes  map[int]string
 	ColumnDataTypes map[int]string
 	Rename          map[string]string
+	Delimiter       rune
 }
